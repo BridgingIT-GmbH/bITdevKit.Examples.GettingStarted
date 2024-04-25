@@ -1,4 +1,4 @@
-![bITDevKit](bitDevKit_logo.png)
+![bITDevKit](https://raw.githubusercontent.com/bridgingIT/bITdevKit.Examples.GettingStarted/main/bITDevKit_Logo.png)
 =====================================
 
 # Architecture overview
