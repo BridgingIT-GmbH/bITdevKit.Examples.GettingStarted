@@ -8,7 +8,7 @@
 - Repositories
 
 ## Frameworks
-- .NET 7.0
+- .NET 8.0
 - Entity Framework Core
 - ASP.NET Core
 
