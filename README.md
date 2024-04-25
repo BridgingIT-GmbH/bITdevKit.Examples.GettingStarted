@@ -98,4 +98,4 @@ builder.Services
 ### Test the API
 
 Start the application (CTRL-F5) and use the following HTTP requests to test the API:
-[Core-API.http](./Core-API.http)
+[API.http](./API.http)
