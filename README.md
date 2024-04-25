@@ -1,20 +1,98 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# Architecture overview
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+> An application built using .NET 7 and following a Domain-Driven Design approach by using the BridgingIT DevKit. 
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+## Features
+- Domain Model
+- Commands/ Queries
+- Repositories
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+## Frameworks
+- .NET 7.0
+- Entity Framework Core
+- ASP.NET Core
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+## Getting Started
+
+### Domain Model
+
+```csharp
+public class Customer : AggregateRoot<Guid>
+{
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+}
+```
+
+### Commands & Queries	
+
+Command
+```csharp
+public class CustomerCreateCommand
+    : CommandRequestBase<Customer>
+{
+    public string FirstName { get; set; }
+
+    public string LastName { get; set; }
+
+    public override ValidationResult Validate() =>
+        new Validator().Validate(this);
+
+    public class Validator : AbstractValidator<CustomerCreateCommand>
+    {
+        public Validator()
+        {
+            this.RuleFor(c => c.FirstName).NotNull().NotEmpty().WithMessage("Must not be empty.");
+            this.RuleFor(c => c.LastName).NotNull().NotEmpty().WithMessage("Must not be empty.");
+        }
+    }
+}
+```
+
+Command Handler
+```csharp
+public class CustomerCreateCommandHandler
+    : CommandHandlerBase<CustomerCreateCommand, Customer>
+{
+    private readonly IGenericRepository<Customer> repository;
+
+    public CustomerCreateCommandHandler(
+        ILoggerFactory loggerFactory,
+        IGenericRepository<Customer> repository)
+        : base(loggerFactory)
+    {
+        this.repository = repository;
+    }
+
+    public override async Task<CommandResponse<Customer>> Process(
+        CustomerCreateCommand request,
+        CancellationToken cancellationToken)
+    {
+        var customer = new Customer { FirstName = request.FirstName, LastName = request.LastName };
+        await this.repository.UpsertAsync(customer, cancellationToken).AnyContext();
+
+        return new CommandResponse<Customer> // TODO: use .For?
+        {
+            Result = customer
+        };
+    }
+}
+```
+
+### Service Registrations ([Program.cs](./src/Presentation.Web.Server/Program.cs))
+
+```csharp
+builder.Services.AddCommands();
+builder.Services.AddQueries();
+
+builder.Services
+    .AddSqlServerDbContext<CoreDbContext>(o => o
+        .UseConnectionString(builder.Configuration.GetConnectionString("Default")))
+    .WithDatabaseMigratorService();
+
+```
+
+### Test the API
+
+Start the application (CTRL-F5) and use the following HTTP requests to test the API:
+[Core-API.http](./Core-API.http)
