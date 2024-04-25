@@ -1,3 +1,6 @@
+![bITDevKit](bitDevKit_logo.png)
+=====================================
+
 # Architecture overview
 
 > An application built using .NET 7 and following a Domain-Driven Design approach by using the BridgingIT DevKit. 
