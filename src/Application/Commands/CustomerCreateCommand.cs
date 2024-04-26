@@ -3,10 +3,8 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace BridgingIT.DevKit.Examples.GettingStarted.Core.Application;
-
 using BridgingIT.DevKit.Application.Commands;
-using BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.Model;
+using BridgingIT.DevKit.Examples.GettingStarted.Domain.Model;
 using FluentValidation;
 using FluentValidation.Results;
 

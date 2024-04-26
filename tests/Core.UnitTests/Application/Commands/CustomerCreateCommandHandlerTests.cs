@@ -3,12 +3,11 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace Core.UnitTests.Application.Commands;
+namespace UnitTests.Application.Commands;
 
 using BridgingIT.DevKit.Domain.Repositories;
-using BridgingIT.DevKit.Examples.GettingStarted.Core.Application;
-using BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.Model;
-using Microsoft.Extensions.Logging;
+using BridgingIT.DevKit.Examples.GettingStarted.Application;
+using BridgingIT.DevKit.Examples.GettingStarted.Domain.Model;
 
 public class CustomerCreateCommandHandlerTests
 {

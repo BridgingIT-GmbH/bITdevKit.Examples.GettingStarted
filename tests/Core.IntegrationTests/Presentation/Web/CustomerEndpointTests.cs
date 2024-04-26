@@ -3,10 +3,10 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace Core.IntegrationTests.Presentation.Web;
+namespace IntegrationTests.Presentation.Web;
 
 using System.Text.Json;
-using BridgingIT.DevKit.Examples.GettingStarted.Core.Presentation;
+using BridgingIT.DevKit.Examples.GettingStarted.Presentation;
 
 [IntegrationTest("GettingStarted.Presentation")]
 [Module("Core")]

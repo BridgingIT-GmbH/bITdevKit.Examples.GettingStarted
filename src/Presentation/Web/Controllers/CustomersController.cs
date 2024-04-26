@@ -5,8 +5,8 @@
 
 namespace BridgingIT.DevKit.Ddd.Examples.GettingStarted.Presentation.Web.Controllers;
 
-using BridgingIT.DevKit.Examples.GettingStarted.Core.Application;
-using BridgingIT.DevKit.Examples.GettingStarted.Core.Presentation;
+using BridgingIT.DevKit.Examples.GettingStarted.Application;
+using BridgingIT.DevKit.Examples.GettingStarted.Presentation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

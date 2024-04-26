@@ -1,9 +1,8 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace BridgingIT.DevKit.Examples.GettingStarted.Core.Infrastructure.EntityFramework.Migrations
+namespace BridgingIT.DevKit.Examples.GettingStarted.Infrastructure.EntityFramework.Migrations
 {
     public partial class Initial : Migration
     {

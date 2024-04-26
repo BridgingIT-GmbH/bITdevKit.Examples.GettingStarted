@@ -3,14 +3,14 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace BridgingIT.DevKit.Examples.GettingStarted.Core.Application;
+namespace BridgingIT.DevKit.Examples.GettingStarted.Application;
 
 using System.Threading;
 using System.Threading.Tasks;
 using BridgingIT.DevKit.Application.Commands;
 using BridgingIT.DevKit.Common;
 using BridgingIT.DevKit.Domain.Repositories;
-using BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.Model;
+using BridgingIT.DevKit.Examples.GettingStarted.Domain.Model;
 using Microsoft.Extensions.Logging;
 
 public class CustomerCreateCommandHandler

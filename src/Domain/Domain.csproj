@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>BridgingIT.DevKit.Examples.GettingStarted.Domain</AssemblyName>
+    <RootNamespace>BridgingIT.DevKit.Examples.GettingStarted.Domain</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BridgingIT.DevKit.Domain" />
+    <PackageReference Include="BridgingIT.DevKit.Domain.Mediator" />
+  </ItemGroup>
+
+</Project>

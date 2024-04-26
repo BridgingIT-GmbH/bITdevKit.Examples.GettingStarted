@@ -3,14 +3,14 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace BridgingIT.DevKit.Examples.GettingStarted.Core.Infrastructure;
+namespace BridgingIT.DevKit.Examples.GettingStarted.Infrastructure;
 
-using BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.Model;
+using BridgingIT.DevKit.Examples.GettingStarted.Domain.Model;
 using Microsoft.EntityFrameworkCore;
 
-public class CoreDbContext : DbContext
+public class AppDbContext : DbContext
 {
-    public CoreDbContext(DbContextOptions<CoreDbContext> options)
+    public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
     }

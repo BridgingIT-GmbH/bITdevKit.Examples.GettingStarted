@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <AssemblyName>BridgingIT.DevKit.Examples.GettingStarted.Core.IntegrationTests</AssemblyName>
-    <RootNamespace>BridgingIT.DevKit.Examples.GettingStarted.Core.IntegrationTests</RootNamespace>
+    <AssemblyName>BridgingIT.DevKit.Examples.GettingStarted.UnitTests</AssemblyName>
+    <RootNamespace>BridgingIT.DevKit.Examples.GettingStarted.UnitTests</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <IsPackable>false</IsPackable>
@@ -11,8 +11,8 @@
 
   <ItemGroup>
     <Using Include="Microsoft.Extensions.DependencyInjection" />
+    <Using Include="Microsoft.Extensions.Logging"/>
     <Using Include="BridgingIT.DevKit.Common" />
-    <Using Include="FluentAssertions" />
     <Using Include="NSubstitute" />
     <Using Include="Shouldly" />
     <Using Include="Xunit" />
@@ -20,8 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BridgingIT.DevKit.Common.Utilities.Xunit" />
-    <PackageReference Include="FluentAssertions.Web" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="Shouldly" />
@@ -37,7 +35,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Presentation.Web.Server\Presentation.Web.Server.csproj" />
+    <ProjectReference Include="..\..\src\Application\Application.csproj" />
+    <ProjectReference Include="..\..\src\Domain\Domain.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Presentation\Presentation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Domain\" />
+    <Folder Include="Infrastructure\" />
+    <Folder Include="Presentation\" />
   </ItemGroup>
 
 </Project>
