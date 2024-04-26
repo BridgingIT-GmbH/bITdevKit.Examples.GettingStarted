@@ -5,7 +5,7 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Presentation;
 
-public class CustomerModel
+public class CustomerViewModel
 {
     public string Id { get; set; }
 

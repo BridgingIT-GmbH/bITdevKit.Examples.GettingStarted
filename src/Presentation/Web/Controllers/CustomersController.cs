@@ -22,13 +22,13 @@ public class CustomersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<CustomerModel>>> GetAsync()
+    public async Task<ActionResult<IEnumerable<CustomerViewModel>>> GetAsync()
     {
         var query = new CustomerFindAllQuery();
         var result = await this.mediator.Send(query);
 
         return this.Ok(result?.Result?.Select(e =>
-            new CustomerModel
+            new CustomerViewModel
             {
                 Id = e.Id.ToString(),
                 FirstName = e.FirstName,
@@ -37,7 +37,7 @@ public class CustomersController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> PostAsync([FromBody] CustomerModel model)
+    public async Task<ActionResult> PostAsync([FromBody] CustomerViewModel model)
     {
         if (model is null)
         {

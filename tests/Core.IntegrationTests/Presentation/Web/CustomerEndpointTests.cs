@@ -31,7 +31,7 @@ public class CustomerEndpointTests : IClassFixture<CustomWebApplicationFactoryFi
 
         // Assert
         response.Should().Be200Ok(); // https://github.com/adrianiftode/FluentAssertions.Web
-        response.Should().Satisfy<IEnumerable<CustomerModel>>(
+        response.Should().Satisfy<IEnumerable<CustomerViewModel>>(
             model =>
             {
                 model.ShouldNotBeNull();
@@ -45,7 +45,7 @@ public class CustomerEndpointTests : IClassFixture<CustomWebApplicationFactoryFi
         // Arrange
         this.fixture.Output.WriteLine($"Start Endpoint test for route: {route}");
         var ticks = DateTime.UtcNow.Ticks;
-        var model = new CustomerModel { FirstName = $"John{ticks}", LastName = $"Doe{ticks}" };
+        var model = new CustomerViewModel { FirstName = $"John{ticks}", LastName = $"Doe{ticks}" };
         var content = new StringContent(
             JsonSerializer.Serialize(model, DefaultSystemTextJsonSerializerOptions.Create()), Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
 
