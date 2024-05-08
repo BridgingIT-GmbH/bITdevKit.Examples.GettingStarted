@@ -16,4 +16,9 @@ public class AppDbContext : DbContext
     }
 
     public DbSet<Customer> Customers { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(this.GetType().Assembly);
+    }
 }

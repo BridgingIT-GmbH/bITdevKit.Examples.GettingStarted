@@ -5,31 +5,31 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Application;
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using BridgingIT.DevKit.Application.Queries;
 using BridgingIT.DevKit.Common;
 using BridgingIT.DevKit.Domain.Repositories;
 using BridgingIT.DevKit.Examples.GettingStarted.Domain.Model;
+using EnsureThat;
 using Microsoft.Extensions.Logging;
 
-public class CustomerFindAllQueryHandler
-    : QueryHandlerBase<CustomerFindAllQuery, Result<IEnumerable<Customer>>>
+public class CustomerFindOneQueryHandler : QueryHandlerBase<CustomerFindOneQuery, Result<Customer>>
 {
     private readonly IGenericRepository<Customer> repository;
 
-    public CustomerFindAllQueryHandler(
-        ILoggerFactory loggerFactory,
-        IGenericRepository<Customer> repository)
+    public CustomerFindOneQueryHandler(ILoggerFactory loggerFactory, IGenericRepository<Customer> repository)
         : base(loggerFactory)
     {
+        EnsureArg.IsNotNull(repository, nameof(repository));
+
         this.repository = repository;
     }
 
-    public override async Task<QueryResponse<Result<IEnumerable<Customer>>>> Process(
-        CustomerFindAllQuery query, CancellationToken cancellationToken)
+    public override async Task<QueryResponse<Result<Customer>>> Process(
+        CustomerFindOneQuery query, CancellationToken cancellationToken)
     {
         return QueryResponse.For(
-            await this.repository.FindAllResultAsync(cancellationToken: cancellationToken).AnyContext());
+            await this.repository.FindOneResultAsync(
+                CustomerId.Create(query.CustomerId),
+                cancellationToken: cancellationToken).AnyContext());
     }
 }

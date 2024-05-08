@@ -1,7 +1,11 @@
 @baseUrl = https://localhost:7144
 
 ###################################################################################
-### API [GET] Customers Findall                                                   #
+### API [GET] Customers Find one                                                  #
+GET {{baseUrl}}/api/customers/02ad7224-dd72-4d40-a794-55c5307cf33e HTTP/1.1
+
+###################################################################################
+### API [GET] Customers Find all                                                  #
 GET {{baseUrl}}/api/customers HTTP/1.1
 
 ###################################################################################
@@ -11,5 +15,17 @@ Content-Type: application/json
 
 {
   "firstName": "John{{$randomInt 1000 9999}}",
-  "lastName": "Doe{{$randomInt 1000 9999}}"
+  "lastName": "Doe{{$randomInt 1000 9999}}",
+  "email": "john.doe{{$randomInt 1000 9999}}@example.com"
+}
+
+###################################################################################
+### API [PUT] Customers Update                                                   #
+PUT {{baseUrl}}/api/customers/02ad7224-dd72-4d40-a794-55c5307cf33e HTTP/1.1
+Content-Type: application/json
+
+{
+  "id": "02ad7224-dd72-4d40-a794-55c5307cf33e",
+  "firstName": "John{{$randomInt 1000 9999}}changed",
+  "lastName": "Doe{{$randomInt 1000 9999}}changed"
 }
