@@ -1,0 +1,57 @@
+version: '3.7'
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: bdk_gettingstarted_mssql
+    restart: unless-stopped
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Abcd1234!
+      - MSSQL_PID=Developer
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S mssql -U SA -P 'Abcd1234!' -Q 'select 1'
+    ports:
+      - 14339:1433
+    volumes:
+      - mssql:/var/opt/mssql
+    networks:
+      - bdk_gettingstarted
+
+  mssqlscripts:
+    image: mcr.microsoft.com/mssql-tools:latest
+    container_name: bdk_gettingstarted_mssqlscripts
+    depends_on:
+      - mssql
+    command: /bin/bash -c 'until /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P "Abcd1234!" -Q "SELECT @@VERSION"; do sleep 5; done'
+    networks:
+      - bdk_gettingstarted
+
+  seq:
+    image: datalust/seq:preview
+    container_name: bdk_gettingstarted_seq
+    restart: unless-stopped
+    ports:
+      - 15349:80 # http://localhost:15349 azure:https://ml-software.ch/posts/running-seq-on-azure
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINUSERNAME=admin
+      # https://blog.datalust.co/setting-an-initial-password-when-deploying-seq-to-docker/
+      - SEQ_FIRSTRUN_ADMINPASSWORDHASH=FIQIay86/lqTJOWoq8jeh1KUr3wSfubJJ+/mB+fluLSK+ZhBQQ==
+    volumes:
+      - seq:/data
+    networks:
+    - bdk_gettingstarted
+
+volumes:
+  mssql:
+    name: bdk_gettingstarted_mssql
+    driver: local
+  seq:
+    name: bdk_gettingstarted_seq
+    driver: local
+
+networks:
+  bdk_gettingstarted:
+    name: bdk_gettingstarted
+    driver: bridge

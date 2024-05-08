@@ -11,25 +11,25 @@ using BridgingIT.DevKit.Examples.GettingStarted.Domain.Model;
 using FluentValidation;
 using FluentValidation.Results;
 
-public class CustomerCreateCommand
+public class CustomerUpdateCommand
     : CommandRequestBase<Result<Customer>>
 {
+    public string Id { get; set; }
+
     public string FirstName { get; set; }
 
     public string LastName { get; set; }
 
-    public string Email { get; set; }
-
     public override ValidationResult Validate() =>
         new Validator().Validate(this);
 
-    public class Validator : AbstractValidator<CustomerCreateCommand>
+    public class Validator : AbstractValidator<CustomerUpdateCommand>
     {
         public Validator()
         {
+            this.RuleFor(c => c.Id).NotNull().NotEmpty().WithMessage("Must not be empty.");
             this.RuleFor(c => c.FirstName).NotNull().NotEmpty().WithMessage("Must not be empty.");
             this.RuleFor(c => c.LastName).NotNull().NotEmpty().WithMessage("Must not be empty.");
-            this.RuleFor(c => c.Email).NotNull().NotEmpty().WithMessage("Must not be empty.");
         }
     }
 }

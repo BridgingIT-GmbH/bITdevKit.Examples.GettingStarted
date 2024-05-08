@@ -1,0 +1,101 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "GettingsStarted [Build]",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/BridgingIT.DevKit.Examples.GettingStarted.sln",
+        "--nologo",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "GettingsStarted [Clean]",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "clean",
+        "${workspaceFolder}/BridgingIT.DevKit.Examples.GettingStarted.sln",
+        "--nologo",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "GettingsStarted - Presentation.Web.Server [Build]",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/Presentation.Web.Server/Presentation.Web.Server.csproj",
+        "--nologo",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "GettingsStarted - Presentation.Web.Server [Publish]",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "publish",
+        "${workspaceFolder}/src/Presentation.Web.Server/Presentation.Web.Server.csproj",
+        "--nologo",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "GettingsStarted - Presentation.Web.Server [Watch]",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "${workspaceFolder}/src/Presentation.Web.Server/Presentation.Web.Server.csproj",
+        "--nologo"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "GettingsStarted [Unit Test]",
+      "command": "dotnet",
+      "type": "shell",
+      "args": ["test", "${workspaceFolder}/tests/UnitTests/UnitTests.csproj"],
+      "group": "test",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "GettingsStarted [Integration Test]",
+      "command": "dotnet",
+      "type": "shell",
+      "args": [
+        "test",
+        "${workspaceFolder}/tests/IntegrationTests/IntegrationTests.csproj"
+      ],
+      "group": "test",
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}

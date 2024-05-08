@@ -6,10 +6,50 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Domain.Model;
 
 using BridgingIT.DevKit.Domain.Model;
+using EnsureThat;
 
-public class Customer : AggregateRoot<Guid>
+public class Customer : AggregateRoot<CustomerId, Guid>
 {
-    public string FirstName { get; set; }
+    private Customer()
+    {
+    }
 
-    public string LastName { get; set; }
+    private Customer(string firstName, string lastName, EmailAddress email)
+    {
+        this.FirstName = firstName;
+        this.LastName = lastName;
+        this.Email = email;
+    }
+
+    public string FirstName { get; private set; }
+
+    public string LastName { get; private set; }
+
+    public EmailAddress Email { get; private set; }
+
+    public static Customer Create(string firstName, string lastName, string email)
+    {
+        var customer = new Customer(firstName, lastName, EmailAddress.Create(email));
+
+        customer.DomainEvents.Register(
+            new CustomerCreatedDomainEvent(customer));
+
+        return customer;
+    }
+
+    public Customer ChangeName(string firstName, string lastName)
+    {
+        if (string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(lastName))
+        {
+            return this;
+        }
+
+        this.FirstName = firstName;
+        this.LastName = lastName;
+
+        this.DomainEvents.Register(
+            new CustomerUpdatedDomainEvent(this)/*, true*/);
+
+        return this;
+    }
 }

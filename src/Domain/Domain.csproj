@@ -5,7 +5,6 @@
     <AssemblyName>BridgingIT.DevKit.Examples.GettingStarted.Domain</AssemblyName>
     <RootNamespace>BridgingIT.DevKit.Examples.GettingStarted.Domain</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

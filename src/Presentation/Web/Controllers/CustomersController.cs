@@ -3,55 +3,52 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace BridgingIT.DevKit.Ddd.Examples.GettingStarted.Presentation.Web.Controllers;
+namespace BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Controllers;
 
+using BridgingIT.DevKit.Common;
 using BridgingIT.DevKit.Examples.GettingStarted.Application;
+using BridgingIT.DevKit.Examples.GettingStarted.Domain.Model;
 using BridgingIT.DevKit.Examples.GettingStarted.Presentation;
+using BridgingIT.DevKit.Presentation.Web;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CustomersController : ControllerBase
+public class CustomersController(IMapper mapper, IMediator mediator) : ControllerBase
 {
-    private readonly IMediator mediator;
+    private readonly IMediator mediator = mediator;
+    private readonly IMapper mapper = mapper;
 
-    public CustomersController(IMediator mediator)
+    [HttpGet("{id}", Name = nameof(Get))]
+    public async Task<ActionResult<CustomerModel>> Get(string id, CancellationToken cancellationToken)
     {
-        this.mediator = mediator;
+        var result = (await this.mediator.Send(
+            new CustomerFindOneQuery(id), cancellationToken)).Result;
+        return result.ToOkActionResult<Customer, CustomerModel>(this.mapper);
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<CustomerViewModel>>> GetAsync()
+    public async Task<ActionResult<ICollection<CustomerModel>>> GetAll(CancellationToken cancellationToken)
     {
-        var query = new CustomerFindAllQuery();
-        var result = await this.mediator.Send(query);
-
-        return this.Ok(result?.Result?.Select(e =>
-            new CustomerViewModel
-            {
-                Id = e.Id.ToString(),
-                FirstName = e.FirstName,
-                LastName = e.LastName
-            }));
+        var result = (await this.mediator.Send(
+            new CustomerFindAllQuery(), cancellationToken)).Result;
+        return result.ToOkActionResult<Customer, CustomerModel>(this.mapper);
     }
 
     [HttpPost]
-    public async Task<ActionResult> PostAsync([FromBody] CustomerViewModel model)
+    public async Task<ActionResult<CustomerModel>> PostAsync([FromBody] CustomerModel model, CancellationToken cancellationToken)
     {
-        if (model is null)
-        {
-            return this.BadRequest();
-        }
+        var result = (await this.mediator.Send(
+            this.mapper.Map<CustomerModel, CustomerCreateCommand>(model), cancellationToken)).Result;
+        return result.ToCreatedActionResult<Customer, CustomerModel>(this.mapper, nameof(this.Get), new { id = result.Value?.Id });
+    }
 
-        var command = new CustomerCreateCommand()
-        {
-            FirstName = model.FirstName,
-            LastName = model.LastName
-        };
-
-        var result = await this.mediator.Send(command);
-
-        return this.Created($"/api/customers/{result.Result.Id}", null);
+    [HttpPut("{id}")]
+    public async Task<ActionResult<CustomerModel>> PutAsync([FromBody] CustomerModel model, CancellationToken cancellationToken)
+    {
+        var result = (await this.mediator.Send(
+            this.mapper.Map<CustomerModel, CustomerUpdateCommand>(model), cancellationToken)).Result;
+        return result.ToUpdatedActionResult<Customer, CustomerModel>(this.mapper, nameof(this.Get), new { id = result.Value?.Id });
     }
 }

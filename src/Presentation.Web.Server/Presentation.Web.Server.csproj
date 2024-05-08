@@ -5,7 +5,6 @@
     <AssemblyName>BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server</AssemblyName>
     <RootNamespace>BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +20,7 @@
     <PackageReference Include="Serilog.Enrichers.Thread" />
     <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="Serilog.Sinks.Seq" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
   </ItemGroup>
 

@@ -12,8 +12,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{55BA7C
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
 		API.http = API.http
+		azure-pipelines.yml = azure-pipelines.yml
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props
+		docker-compose.yml = docker-compose.yml
 		global.json = global.json
 		nuget.config = nuget.config
 		README.md = README.md
@@ -21,9 +23,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{55BA7C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Presentation.Web.Server", "src\Presentation.Web.Server\Presentation.Web.Server.csproj", "{E135B1DF-D94B-415E-9E5E-BE18AAF8EA13}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "tests\Core.UnitTests\UnitTests.csproj", "{865AB038-2212-4CE6-B252-F6BA5DF47A08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "tests\UnitTests\UnitTests.csproj", "{865AB038-2212-4CE6-B252-F6BA5DF47A08}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "tests\Core.IntegrationTests\IntegrationTests.csproj", "{E2C2BB57-2AF4-4588-9525-B4201F0C7712}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "tests\IntegrationTests\IntegrationTests.csproj", "{E2C2BB57-2AF4-4588-9525-B4201F0C7712}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application", "src\Application\Application.csproj", "{23DF6A0C-490C-4916-A3E4-FA2472FD9969}"
 EndProject

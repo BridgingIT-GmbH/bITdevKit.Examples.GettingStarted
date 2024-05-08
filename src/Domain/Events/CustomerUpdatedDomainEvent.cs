@@ -3,14 +3,17 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace BridgingIT.DevKit.Examples.GettingStarted.Application;
+namespace BridgingIT.DevKit.Examples.GettingStarted.Domain;
 
-using System.Collections.Generic;
-using BridgingIT.DevKit.Application.Queries;
-using BridgingIT.DevKit.Common;
+using BridgingIT.DevKit.Domain;
 using BridgingIT.DevKit.Examples.GettingStarted.Domain.Model;
 
-public class CustomerFindAllQuery
-    : QueryRequestBase<Result<IEnumerable<Customer>>>
+public class CustomerUpdatedDomainEvent : DomainEventBase
 {
+    public CustomerUpdatedDomainEvent(Customer model)
+    {
+        this.Model = model;
+    }
+
+    public Customer Model { get; }
 }
