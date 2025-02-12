@@ -13,10 +13,7 @@ using FluentValidation.Results;
 
 public class CustomerFindOneQuery : QueryRequestBase<Result<Customer>>
 {
-    public CustomerFindOneQuery(string hostId)
-    {
-        this.CustomerId = hostId;
-    }
+    public CustomerFindOneQuery(string hostId) => this.CustomerId = hostId;
 
     public string CustomerId { get; }
 
@@ -25,9 +22,6 @@ public class CustomerFindOneQuery : QueryRequestBase<Result<Customer>>
 
     public class Validator : AbstractValidator<CustomerFindOneQuery>
     {
-        public Validator()
-        {
-            this.RuleFor(c => c.CustomerId).NotNull().NotEmpty().WithMessage("Must not be empty.");
-        }
+        public Validator() => this.RuleFor(c => c.CustomerId).NotNull().NotEmpty().WithMessage("Must not be empty.");
     }
 }

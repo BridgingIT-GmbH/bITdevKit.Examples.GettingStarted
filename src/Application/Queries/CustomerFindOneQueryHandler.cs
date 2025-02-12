@@ -29,7 +29,7 @@ public class CustomerFindOneQueryHandler : QueryHandlerBase<CustomerFindOneQuery
     {
         return QueryResponse.For(
             await this.repository.FindOneResultAsync(
-                CustomerId.Create(query.CustomerId),
+                Guid.Parse(query.CustomerId),
                 cancellationToken: cancellationToken).AnyContext());
     }
 }

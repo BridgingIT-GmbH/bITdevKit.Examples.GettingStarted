@@ -10,13 +10,17 @@ using BridgingIT.DevKit.Examples.GettingStarted.Application;
 using BridgingIT.DevKit.Examples.GettingStarted.Domain.Model;
 
 [UnitTest("GettingStarted.Application")]
-public class CustomerCreateCommandHandlerTests
+public class CustomerCreateCommandHandlerTests(ITestOutputHelper output) : TestsBase(output, s =>
+    {
+        s.AddInMemoryRepository(new InMemoryContext<Customer>())
+            .WithBehavior<RepositoryLoggingBehavior<Customer>>();
+    })
 {
     [Fact]
     public async Task Process_ValidRequest_SuccessResult()
     {
         // Arrange
-        var repository = Substitute.For<IGenericRepository<Customer>>();
+        var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
         var command = new CustomerCreateCommand { FirstName = "John", LastName = "Doe", Email = "john.doe@example.com" };
         var sut = new CustomerCreateCommandHandler(Substitute.For<ILoggerFactory>(), repository);
 
@@ -24,9 +28,9 @@ public class CustomerCreateCommandHandlerTests
         var response = await sut.Process(command, CancellationToken.None);
 
         // Assert
-        response?.Result.ShouldNotBeNull();
+        response?.Result.ShouldBeSuccess();
+        response.Result.Value.ShouldNotBeNull();
         response.Result.Value.FirstName.ShouldBe(command.FirstName);
         response.Result.Value.LastName.ShouldBe(command.LastName);
-        await repository.Received(1).UpsertAsync(Arg.Any<Customer>(), CancellationToken.None);
     }
 }

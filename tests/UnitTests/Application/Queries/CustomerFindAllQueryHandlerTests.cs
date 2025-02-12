@@ -10,21 +10,19 @@ using BridgingIT.DevKit.Examples.GettingStarted.Application;
 using BridgingIT.DevKit.Examples.GettingStarted.Domain.Model;
 
 [UnitTest("GettingStarted.Application")]
-public class CustomerFindAllQueryHandlerTests
+public class CustomerFindAllQueryHandlerTests(ITestOutputHelper output) : TestsBase(output, s =>
+    {
+        s.AddInMemoryRepository(new InMemoryContext<Customer>())
+            .WithBehavior<RepositoryLoggingBehavior<Customer>>();
+    })
 {
     [Fact]
     public async Task Process_ValidQuery_ReturnsSuccessResultWithCustomers()
     {
         // Arrange
-        var expectedCustomers = new List<Customer>
-        {
-            Customer.Create("John", "Doe", "john.doe@example.com"),
-            Customer.Create("Mary", "Jane", "mary.jane@example.com"),
-        };
-
-        var repository = Substitute.For<IGenericRepository<Customer>>();
-        repository.FindAllAsync(cancellationToken: CancellationToken.None)
-            .Returns(expectedCustomers.AsEnumerable());
+        var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
+        await repository.InsertAsync(Customer.Create("John", "Doe", "john.doe@example.com"));
+        await repository.InsertAsync(Customer.Create("Mary", "Jane", "mary.jane@example.com"));
 
         var sut = new CustomerFindAllQueryHandler(Substitute.For<ILoggerFactory>(), repository);
 
@@ -32,9 +30,8 @@ public class CustomerFindAllQueryHandlerTests
         var response = await sut.Process(new CustomerFindAllQuery(), CancellationToken.None);
 
         // Assert
-        response?.Result.ShouldNotBeNull();
-        response.Result.Value.Count().ShouldBe(expectedCustomers.Count);
-        await repository.Received(1).FindAllAsync(
-            cancellationToken: CancellationToken.None);
+        response?.Result.ShouldBeSuccess();
+        response.Result.Value.ShouldNotBeNull();
+        response.Result.Value.Count().ShouldBe(2);
     }
 }

@@ -21,28 +21,27 @@ public class CustomerUpdateCommandHandler
     public CustomerUpdateCommandHandler(
         ILoggerFactory loggerFactory,
         IGenericRepository<Customer> repository)
-        : base(loggerFactory)
-    {
-        this.repository = repository;
-    }
+        : base(loggerFactory) => this.repository = repository;
 
     public override async Task<CommandResponse<Result<Customer>>> Process(
         CustomerUpdateCommand command, CancellationToken cancellationToken)
     {
         var customerResult = await this.repository.FindOneResultAsync(
-            CustomerId.Create(command.Id), cancellationToken: cancellationToken);
+            Guid.Parse(command.Id), cancellationToken: cancellationToken);
         var customer = customerResult.Value;
         if (customerResult.IsFailure)
         {
             return CommandResponse.For(customerResult);
         }
 
-        Check.Throw(new IBusinessRule[] { /*no rules yet*/ });
+        Rule
+            .Add(RuleSet.IsNotEmpty(command.FirstName))
+            .Throw();
 
         customer.ChangeName(command.FirstName, command.LastName);
 
-        await this.repository.UpsertAsync(customer, cancellationToken).AnyContext();
+        var result = await this.repository.UpdateResultAsync(customer, cancellationToken).AnyContext();
 
-        return CommandResponse.Success(customer);
+        return CommandResponse.For(result);
     }
 }

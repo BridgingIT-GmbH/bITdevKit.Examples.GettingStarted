@@ -8,7 +8,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Domain.Model;
 using BridgingIT.DevKit.Domain.Model;
 using EnsureThat;
 
-public class Customer : AggregateRoot<CustomerId, Guid>
+public class Customer : AggregateRoot<Guid>
 {
     private Customer()
     {

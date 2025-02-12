@@ -49,7 +49,7 @@ stages:
         displayName: Use .NET SDK
         condition: succeeded()
         inputs:
-          version: '8.0.x'
+          version: '9.0.x'
           performMultiLevelLookup: true
           includePreviewVersions: false
 
@@ -100,7 +100,7 @@ stages:
         displayName: Use .NET SDK
         condition: succeeded()
         inputs:
-          version: '8.0.x'
+          version: '9.0.x'
           performMultiLevelLookup: true
           includePreviewVersions: false
 

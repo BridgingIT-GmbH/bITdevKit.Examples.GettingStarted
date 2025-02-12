@@ -21,10 +21,7 @@ public class CustomerFindAllQueryHandler
     public CustomerFindAllQueryHandler(
         ILoggerFactory loggerFactory,
         IGenericRepository<Customer> repository)
-        : base(loggerFactory)
-    {
-        this.repository = repository;
-    }
+        : base(loggerFactory) => this.repository = repository;
 
     public override async Task<QueryResponse<Result<IEnumerable<Customer>>>> Process(
         CustomerFindAllQuery query, CancellationToken cancellationToken)

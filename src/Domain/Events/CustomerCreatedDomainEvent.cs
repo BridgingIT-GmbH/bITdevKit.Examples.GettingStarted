@@ -10,10 +10,7 @@ using BridgingIT.DevKit.Examples.GettingStarted.Domain.Model;
 
 public class CustomerCreatedDomainEvent : DomainEventBase
 {
-    public CustomerCreatedDomainEvent(Customer model)
-    {
-        this.Model = model;
-    }
+    public CustomerCreatedDomainEvent(Customer model) => this.Model = model;
 
     public Customer Model { get; }
 }

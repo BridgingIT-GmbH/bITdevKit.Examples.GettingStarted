@@ -22,11 +22,7 @@ public class DinnerEntityTypeConfiguration : IEntityTypeConfiguration<Customer>
 
         builder.HasKey(d => d.Id);
 
-        builder.Property(d => d.Id)
-            .ValueGeneratedOnAdd()
-            .HasConversion(
-                id => id.Value,
-                value => CustomerId.Create(value));
+        builder.Property(d => d.Id).ValueGeneratedOnAdd();
 
         builder.Property(d => d.FirstName)
             .IsRequired()

@@ -1,6 +1,6 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Domain.Model;
 
-using BridgingIT.DevKit.Domain;
+using BridgingIT.DevKit.Common;
 using BridgingIT.DevKit.Domain.Model;
 
 public class EmailAddress : ValueObject
@@ -9,10 +9,7 @@ public class EmailAddress : ValueObject
     {
     }
 
-    private EmailAddress(string value)
-    {
-        this.Value = value;
-    }
+    private EmailAddress(string value) => this.Value = value;
 
     public string Value { get; private set; }
 
@@ -22,10 +19,9 @@ public class EmailAddress : ValueObject
     {
         value = value?.Trim()?.ToLowerInvariant();
 
-        Check.Throw(new IBusinessRule[]
-        {
-            new EmailAddressIsValidRule(value),
-        });
+        Rule
+            .Add(RuleSet.IsValidEmail(value))
+            .Throw();
 
         return new EmailAddress(value);
     }

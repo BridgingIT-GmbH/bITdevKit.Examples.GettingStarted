@@ -3,7 +3,7 @@
 
 # Architecture overview
 
-> An application built using .NET 8 and following a Domain-Driven Design approach by using the BridgingIT DevKit.
+> An application built using .NET 9 and following a Domain-Driven Design (DDD) approach by using the BridgingIT DevKit.
 
 ## Features
 - Application Commands/Queries
@@ -12,7 +12,7 @@
 - Unit & Integration Tests
 
 ## Frameworks
-- [.NET 8](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8/overview)
+- [.NET 9](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8/overview)
 - [Entity Framework Core](https://learn.microsoft.com/en-us/ef/core/)
 - [ASP.NET Core](https://dotnet.microsoft.com/en-us/apps/aspnet)
 - [Serilog](https://serilog.net/)

@@ -22,17 +22,14 @@ public class CustomerCreateCommandHandler
     public CustomerCreateCommandHandler(
         ILoggerFactory loggerFactory,
         IGenericRepository<Customer> repository)
-        : base(loggerFactory)
-    {
-        this.repository = repository;
-    }
+        : base(loggerFactory) => this.repository = repository;
 
     public override async Task<CommandResponse<Result<Customer>>> Process(
         CustomerCreateCommand command, CancellationToken cancellationToken)
     {
         var customer = Customer.Create(command.FirstName, command.LastName, command.Email);
-        await this.repository.UpsertAsync(customer, cancellationToken).AnyContext();
+        var result = await this.repository.InsertResultAsync(customer, cancellationToken).AnyContext();
 
-        return CommandResponse.Success(customer);
+        return CommandResponse.For(result);
     }
 }
