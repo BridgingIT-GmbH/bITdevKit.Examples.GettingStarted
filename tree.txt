@@ -1,0 +1,448 @@
+Auflistung der Ordnerpfade für Volume Windows
+Volumeseriennummer : 6C0A-13BC
+C:.
+¦   .editorconfig
+¦   .gitattributes
+¦   .gitignore
+¦   API.http
+¦   azure-pipelines.yml
+¦   bITDevKit_Logo.png
+¦   BridgingIT.DevKit.Examples.GettingStarted.code-workspace
+¦   BridgingIT.DevKit.Examples.GettingStarted.sln
+¦   CODE_OF_CONDUCT.md
+¦   Directory.Build.props
+¦   Directory.Packages.props
+¦   docker-compose.yml
+¦   global.json
+¦   GlobalSuppressions.cs
+¦   LICENSE
+¦   nuget.config
+¦   README.md
+¦   tree.txt
+¦   
++---.idea
+¦   +---.idea.BridgingIT.DevKit.Examples.GettingStarted
+¦       +---.idea
+¦               .gitignore
+¦               .name
+¦               encodings.xml
+¦               indexLayout.xml
+¦               projectSettingsUpdater.xml
+¦               vcs.xml
+¦               workspace.xml
+¦               
++---.vscode
+¦       launch.json
+¦       settings.json
+¦       tasks.json
+¦       
++---assets
+¦       image-20240426111718058.png
+¦       image-20240426111823428.png
+¦       image-20240426112042343.png
+¦       image-20240426112136837.png
+¦       image-20240426112716841.png
+¦       Onion.drawio.png
+¦       
++---src
+¦   +---Modules
+¦   ¦   +---Core
+¦   ¦       ¦   Directory.Build.props
+¦   ¦       ¦   
+¦   ¦       +---Core.Application
+¦   ¦       ¦   ¦   Core.Application.csproj
+¦   ¦       ¦   ¦   
+¦   ¦       ¦   +---bin
+¦   ¦       ¦   ¦   +---Debug
+¦   ¦       ¦   ¦       +---net9.0
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Application.deps.json
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Application.dll
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Application.pdb
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.dll
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.pdb
+¦   ¦       ¦   ¦               
+¦   ¦       ¦   +---Commands
+¦   ¦       ¦   ¦       CustomerCreateCommand.cs
+¦   ¦       ¦   ¦       CustomerCreateCommandHandler.cs
+¦   ¦       ¦   ¦       CustomerUpdateCommand.cs
+¦   ¦       ¦   ¦       CustomerUpdateCommandHandler.cs
+¦   ¦       ¦   ¦       
+¦   ¦       ¦   +---obj
+¦   ¦       ¦   ¦   ¦   Application.csproj.nuget.dgspec.json
+¦   ¦       ¦   ¦   ¦   Application.csproj.nuget.g.props
+¦   ¦       ¦   ¦   ¦   Application.csproj.nuget.g.targets
+¦   ¦       ¦   ¦   ¦   Core.Application.csproj.nuget.dgspec.json
+¦   ¦       ¦   ¦   ¦   Core.Application.csproj.nuget.g.props
+¦   ¦       ¦   ¦   ¦   Core.Application.csproj.nuget.g.targets
+¦   ¦       ¦   ¦   ¦   project.assets.json
+¦   ¦       ¦   ¦   ¦   project.nuget.cache
+¦   ¦       ¦   ¦   ¦   project.packagespec.json
+¦   ¦       ¦   ¦   ¦   rider.project.model.nuget.info
+¦   ¦       ¦   ¦   ¦   rider.project.restore.info
+¦   ¦       ¦   ¦   ¦   
+¦   ¦       ¦   ¦   +---Debug
+¦   ¦       ¦   ¦       +---net9.0
+¦   ¦       ¦   ¦           ¦   .NETCoreApp,Version=v9.0.AssemblyAttributes.cs
+¦   ¦       ¦   ¦           ¦   Application.AssemblyInfo.cs
+¦   ¦       ¦   ¦           ¦   Application.AssemblyInfoInputs.cache
+¦   ¦       ¦   ¦           ¦   Application.assets.cache
+¦   ¦       ¦   ¦           ¦   Application.csproj.AssemblyReference.cache
+¦   ¦       ¦   ¦           ¦   Application.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦       ¦   ¦           ¦   Application.GlobalUsings.g.cs
+¦   ¦       ¦   ¦           ¦   BridgingIT.DevKit.Examples.GettingStarted.Core.Application.dll
+¦   ¦       ¦   ¦           ¦   BridgingIT.DevKit.Examples.GettingStarted.Core.Application.pdb
+¦   ¦       ¦   ¦           ¦   Core.App.01B2A2D7.Up2Date
+¦   ¦       ¦   ¦           ¦   Core.Application.AssemblyInfo.cs
+¦   ¦       ¦   ¦           ¦   Core.Application.AssemblyInfoInputs.cache
+¦   ¦       ¦   ¦           ¦   Core.Application.assets.cache
+¦   ¦       ¦   ¦           ¦   Core.Application.csproj.AssemblyReference.cache
+¦   ¦       ¦   ¦           ¦   Core.Application.csproj.CoreCompileInputs.cache
+¦   ¦       ¦   ¦           ¦   Core.Application.csproj.FileListAbsolute.txt
+¦   ¦       ¦   ¦           ¦   Core.Application.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦       ¦   ¦           ¦   Core.Application.GlobalUsings.g.cs
+¦   ¦       ¦   ¦           ¦   Core.Application.sourcelink.json
+¦   ¦       ¦   ¦           ¦   
+¦   ¦       ¦   ¦           +---ref
+¦   ¦       ¦   ¦           ¦       BridgingIT.DevKit.Examples.GettingStarted.Core.Application.dll
+¦   ¦       ¦   ¦           ¦       
+¦   ¦       ¦   ¦           +---refint
+¦   ¦       ¦   ¦                   BridgingIT.DevKit.Examples.GettingStarted.Core.Application.dll
+¦   ¦       ¦   ¦                   
+¦   ¦       ¦   +---Queries
+¦   ¦       ¦           CustomerFindAllQuery.cs
+¦   ¦       ¦           CustomerFindAllQueryHandler.cs
+¦   ¦       ¦           CustomerFindOneQuery.cs
+¦   ¦       ¦           CustomerFindOneQueryHandler.cs
+¦   ¦       ¦           
+¦   ¦       +---Core.Domain
+¦   ¦       ¦   ¦   Core.Domain.csproj
+¦   ¦       ¦   ¦   
+¦   ¦       ¦   +---bin
+¦   ¦       ¦   ¦   +---Debug
+¦   ¦       ¦   ¦       +---net9.0
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.deps.json
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.dll
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.pdb
+¦   ¦       ¦   ¦               
+¦   ¦       ¦   +---Events
+¦   ¦       ¦   ¦       CustomerCreatedDomainEvent.cs
+¦   ¦       ¦   ¦       CustomerUpdatedDomainEvent.cs
+¦   ¦       ¦   ¦       
+¦   ¦       ¦   +---Model
+¦   ¦       ¦   ¦       Customer.cs
+¦   ¦       ¦   ¦       EmailAddress.cs
+¦   ¦       ¦   ¦       
+¦   ¦       ¦   +---obj
+¦   ¦       ¦       ¦   Core.Domain.csproj.nuget.dgspec.json
+¦   ¦       ¦       ¦   Core.Domain.csproj.nuget.g.props
+¦   ¦       ¦       ¦   Core.Domain.csproj.nuget.g.targets
+¦   ¦       ¦       ¦   Domain.csproj.nuget.dgspec.json
+¦   ¦       ¦       ¦   Domain.csproj.nuget.g.props
+¦   ¦       ¦       ¦   Domain.csproj.nuget.g.targets
+¦   ¦       ¦       ¦   project.assets.json
+¦   ¦       ¦       ¦   project.nuget.cache
+¦   ¦       ¦       ¦   project.packagespec.json
+¦   ¦       ¦       ¦   rider.project.model.nuget.info
+¦   ¦       ¦       ¦   rider.project.restore.info
+¦   ¦       ¦       ¦   
+¦   ¦       ¦       +---Debug
+¦   ¦       ¦           +---net9.0
+¦   ¦       ¦               ¦   .NETCoreApp,Version=v9.0.AssemblyAttributes.cs
+¦   ¦       ¦               ¦   BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.dll
+¦   ¦       ¦               ¦   BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.pdb
+¦   ¦       ¦               ¦   Core.Domain.AssemblyInfo.cs
+¦   ¦       ¦               ¦   Core.Domain.AssemblyInfoInputs.cache
+¦   ¦       ¦               ¦   Core.Domain.assets.cache
+¦   ¦       ¦               ¦   Core.Domain.csproj.AssemblyReference.cache
+¦   ¦       ¦               ¦   Core.Domain.csproj.CoreCompileInputs.cache
+¦   ¦       ¦               ¦   Core.Domain.csproj.FileListAbsolute.txt
+¦   ¦       ¦               ¦   Core.Domain.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦       ¦               ¦   Core.Domain.GlobalUsings.g.cs
+¦   ¦       ¦               ¦   Core.Domain.sourcelink.json
+¦   ¦       ¦               ¦   Domain.AssemblyInfo.cs
+¦   ¦       ¦               ¦   Domain.AssemblyInfoInputs.cache
+¦   ¦       ¦               ¦   Domain.assets.cache
+¦   ¦       ¦               ¦   Domain.csproj.AssemblyReference.cache
+¦   ¦       ¦               ¦   Domain.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦       ¦               ¦   Domain.GlobalUsings.g.cs
+¦   ¦       ¦               ¦   
+¦   ¦       ¦               +---ref
+¦   ¦       ¦               ¦       BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.dll
+¦   ¦       ¦               ¦       
+¦   ¦       ¦               +---refint
+¦   ¦       ¦                       BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.dll
+¦   ¦       ¦                       
+¦   ¦       +---Core.Infrastructure
+¦   ¦       ¦   ¦   Core.Infrastructure.csproj
+¦   ¦       ¦   ¦   
+¦   ¦       ¦   +---bin
+¦   ¦       ¦   ¦   +---Debug
+¦   ¦       ¦   ¦       +---net9.0
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Application.dll
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Application.pdb
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.dll
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.pdb
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Infrastructure.deps.json
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Infrastructure.dll
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Infrastructure.pdb
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Infrastructure.runtimeconfig.json
+¦   ¦       ¦   ¦               
+¦   ¦       ¦   +---EntityFramework
+¦   ¦       ¦   ¦   ¦   AppDbContext.cs
+¦   ¦       ¦   ¦   ¦   README.md
+¦   ¦       ¦   ¦   ¦   
+¦   ¦       ¦   ¦   +---Configurations
+¦   ¦       ¦   ¦   ¦       CustomersTypeConfiguration.cs
+¦   ¦       ¦   ¦   ¦       
+¦   ¦       ¦   ¦   +---Migrations
+¦   ¦       ¦   ¦           20240430105430_Initial.cs
+¦   ¦       ¦   ¦           20240430105430_Initial.Designer.cs
+¦   ¦       ¦   ¦           AppDbContextModelSnapshot.cs
+¦   ¦       ¦   ¦           
+¦   ¦       ¦   +---obj
+¦   ¦       ¦       ¦   Core.Infrastructure.csproj.nuget.dgspec.json
+¦   ¦       ¦       ¦   Core.Infrastructure.csproj.nuget.g.props
+¦   ¦       ¦       ¦   Core.Infrastructure.csproj.nuget.g.targets
+¦   ¦       ¦       ¦   Infrastructure.csproj.nuget.dgspec.json
+¦   ¦       ¦       ¦   Infrastructure.csproj.nuget.g.props
+¦   ¦       ¦       ¦   Infrastructure.csproj.nuget.g.targets
+¦   ¦       ¦       ¦   project.assets.json
+¦   ¦       ¦       ¦   project.nuget.cache
+¦   ¦       ¦       ¦   project.packagespec.json
+¦   ¦       ¦       ¦   rider.project.model.nuget.info
+¦   ¦       ¦       ¦   rider.project.restore.info
+¦   ¦       ¦       ¦   
+¦   ¦       ¦       +---Debug
+¦   ¦       ¦           +---net9.0
+¦   ¦       ¦               ¦   .NETCoreApp,Version=v9.0.AssemblyAttributes.cs
+¦   ¦       ¦               ¦   BridgingIT.DevKit.Examples.GettingStarted.Core.Infrastructure.dll
+¦   ¦       ¦               ¦   BridgingIT.DevKit.Examples.GettingStarted.Core.Infrastructure.pdb
+¦   ¦       ¦               ¦   Core.Inf.F45230EC.Up2Date
+¦   ¦       ¦               ¦   Core.Infrastructure.AssemblyInfo.cs
+¦   ¦       ¦               ¦   Core.Infrastructure.AssemblyInfoInputs.cache
+¦   ¦       ¦               ¦   Core.Infrastructure.assets.cache
+¦   ¦       ¦               ¦   Core.Infrastructure.csproj.AssemblyReference.cache
+¦   ¦       ¦               ¦   Core.Infrastructure.csproj.CoreCompileInputs.cache
+¦   ¦       ¦               ¦   Core.Infrastructure.csproj.FileListAbsolute.txt
+¦   ¦       ¦               ¦   Core.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦       ¦               ¦   Core.Infrastructure.genruntimeconfig.cache
+¦   ¦       ¦               ¦   Core.Infrastructure.GlobalUsings.g.cs
+¦   ¦       ¦               ¦   Core.Infrastructure.sourcelink.json
+¦   ¦       ¦               ¦   Infrastructure.AssemblyInfo.cs
+¦   ¦       ¦               ¦   Infrastructure.AssemblyInfoInputs.cache
+¦   ¦       ¦               ¦   Infrastructure.assets.cache
+¦   ¦       ¦               ¦   Infrastructure.csproj.AssemblyReference.cache
+¦   ¦       ¦               ¦   Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦       ¦               ¦   Infrastructure.GlobalUsings.g.cs
+¦   ¦       ¦               ¦   
+¦   ¦       ¦               +---ref
+¦   ¦       ¦               ¦       BridgingIT.DevKit.Examples.GettingStarted.Core.Infrastructure.dll
+¦   ¦       ¦               ¦       
+¦   ¦       ¦               +---refint
+¦   ¦       ¦                       BridgingIT.DevKit.Examples.GettingStarted.Core.Infrastructure.dll
+¦   ¦       ¦                       
+¦   ¦       +---Core.IntegrationTests
+¦   ¦       ¦   ¦   Core.IntegrationTests.csproj
+¦   ¦       ¦   ¦   
+¦   ¦       ¦   +---bin
+¦   ¦       ¦   ¦   +---Debug
+¦   ¦       ¦   ¦       +---net9.0
+¦   ¦       ¦   ¦               .msCoverageSourceRootsMapping_BridgingIT.DevKit.Examples.GettingStarted.Core.IntegrationTests
+¦   ¦       ¦   ¦               .msCoverageSourceRootsMapping_BridgingIT.DevKit.Examples.GettingStarted.IntegrationTests
+¦   ¦       ¦   ¦               CoverletSourceRootsMapping_BridgingIT.DevKit.Examples.GettingStarted.Core.IntegrationTests
+¦   ¦       ¦   ¦               CoverletSourceRootsMapping_BridgingIT.DevKit.Examples.GettingStarted.IntegrationTests
+¦   ¦       ¦   ¦               
+¦   ¦       ¦   +---obj
+¦   ¦       ¦   ¦   ¦   Core.IntegrationTests.csproj.nuget.dgspec.json
+¦   ¦       ¦   ¦   ¦   Core.IntegrationTests.csproj.nuget.g.props
+¦   ¦       ¦   ¦   ¦   Core.IntegrationTests.csproj.nuget.g.targets
+¦   ¦       ¦   ¦   ¦   IntegrationTests.csproj.nuget.dgspec.json
+¦   ¦       ¦   ¦   ¦   IntegrationTests.csproj.nuget.g.props
+¦   ¦       ¦   ¦   ¦   IntegrationTests.csproj.nuget.g.targets
+¦   ¦       ¦   ¦   ¦   project.assets.json
+¦   ¦       ¦   ¦   ¦   project.nuget.cache
+¦   ¦       ¦   ¦   ¦   project.packagespec.json
+¦   ¦       ¦   ¦   ¦   rider.project.model.nuget.info
+¦   ¦       ¦   ¦   ¦   rider.project.restore.info
+¦   ¦       ¦   ¦   ¦   
+¦   ¦       ¦   ¦   +---Debug
+¦   ¦       ¦   ¦       +---net9.0
+¦   ¦       ¦   ¦           ¦   .NETCoreApp,Version=v9.0.AssemblyAttributes.cs
+¦   ¦       ¦   ¦           ¦   Core.IntegrationTests.AssemblyInfo.cs
+¦   ¦       ¦   ¦           ¦   Core.IntegrationTests.AssemblyInfoInputs.cache
+¦   ¦       ¦   ¦           ¦   Core.IntegrationTests.assets.cache
+¦   ¦       ¦   ¦           ¦   Core.IntegrationTests.csproj.AssemblyReference.cache
+¦   ¦       ¦   ¦           ¦   Core.IntegrationTests.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦       ¦   ¦           ¦   Core.IntegrationTests.GlobalUsings.g.cs
+¦   ¦       ¦   ¦           ¦   IntegrationTests.AssemblyInfo.cs
+¦   ¦       ¦   ¦           ¦   IntegrationTests.AssemblyInfoInputs.cache
+¦   ¦       ¦   ¦           ¦   IntegrationTests.assets.cache
+¦   ¦       ¦   ¦           ¦   IntegrationTests.csproj.AssemblyReference.cache
+¦   ¦       ¦   ¦           ¦   IntegrationTests.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦       ¦   ¦           ¦   IntegrationTests.GlobalUsings.g.cs
+¦   ¦       ¦   ¦           ¦   
+¦   ¦       ¦   ¦           +---ref
+¦   ¦       ¦   ¦           +---refint
+¦   ¦       ¦   +---Presentation
+¦   ¦       ¦       +---Web
+¦   ¦       ¦               CustomerEndpointTests.cs
+¦   ¦       ¦               
+¦   ¦       +---Core.Presentation
+¦   ¦       ¦   ¦   Core.Presentation.csproj
+¦   ¦       ¦   ¦   MapperRegister.cs
+¦   ¦       ¦   ¦   
+¦   ¦       ¦   +---bin
+¦   ¦       ¦   ¦   +---Debug
+¦   ¦       ¦   ¦       +---net9.0
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Application.dll
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Application.pdb
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.dll
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Domain.pdb
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Presentation.deps.json
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Presentation.dll
+¦   ¦       ¦   ¦               BridgingIT.DevKit.Examples.GettingStarted.Core.Presentation.pdb
+¦   ¦       ¦   ¦               
+¦   ¦       ¦   +---Models
+¦   ¦       ¦   ¦       CustomerModel.cs
+¦   ¦       ¦   ¦       
+¦   ¦       ¦   +---obj
+¦   ¦       ¦   ¦   ¦   Core.Presentation.csproj.nuget.dgspec.json
+¦   ¦       ¦   ¦   ¦   Core.Presentation.csproj.nuget.g.props
+¦   ¦       ¦   ¦   ¦   Core.Presentation.csproj.nuget.g.targets
+¦   ¦       ¦   ¦   ¦   Presentation.csproj.nuget.dgspec.json
+¦   ¦       ¦   ¦   ¦   Presentation.csproj.nuget.g.props
+¦   ¦       ¦   ¦   ¦   Presentation.csproj.nuget.g.targets
+¦   ¦       ¦   ¦   ¦   project.assets.json
+¦   ¦       ¦   ¦   ¦   project.nuget.cache
+¦   ¦       ¦   ¦   ¦   project.packagespec.json
+¦   ¦       ¦   ¦   ¦   rider.project.model.nuget.info
+¦   ¦       ¦   ¦   ¦   rider.project.restore.info
+¦   ¦       ¦   ¦   ¦   
+¦   ¦       ¦   ¦   +---Debug
+¦   ¦       ¦   ¦       +---net9.0
+¦   ¦       ¦   ¦           ¦   .NETCoreApp,Version=v9.0.AssemblyAttributes.cs
+¦   ¦       ¦   ¦           ¦   BridgingIT.DevKit.Examples.GettingStarted.Core.Presentation.dll
+¦   ¦       ¦   ¦           ¦   BridgingIT.DevKit.Examples.GettingStarted.Core.Presentation.pdb
+¦   ¦       ¦   ¦           ¦   Core.Pre.AA24D287.Up2Date
+¦   ¦       ¦   ¦           ¦   Core.Presentation.AssemblyInfo.cs
+¦   ¦       ¦   ¦           ¦   Core.Presentation.AssemblyInfoInputs.cache
+¦   ¦       ¦   ¦           ¦   Core.Presentation.assets.cache
+¦   ¦       ¦   ¦           ¦   Core.Presentation.csproj.AssemblyReference.cache
+¦   ¦       ¦   ¦           ¦   Core.Presentation.csproj.CoreCompileInputs.cache
+¦   ¦       ¦   ¦           ¦   Core.Presentation.csproj.FileListAbsolute.txt
+¦   ¦       ¦   ¦           ¦   Core.Presentation.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦       ¦   ¦           ¦   Core.Presentation.GlobalUsings.g.cs
+¦   ¦       ¦   ¦           ¦   Core.Presentation.sourcelink.json
+¦   ¦       ¦   ¦           ¦   Presentation.AssemblyInfo.cs
+¦   ¦       ¦   ¦           ¦   Presentation.AssemblyInfoInputs.cache
+¦   ¦       ¦   ¦           ¦   Presentation.assets.cache
+¦   ¦       ¦   ¦           ¦   Presentation.csproj.AssemblyReference.cache
+¦   ¦       ¦   ¦           ¦   Presentation.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦       ¦   ¦           ¦   Presentation.GlobalUsings.g.cs
+¦   ¦       ¦   ¦           ¦   
+¦   ¦       ¦   ¦           +---ref
+¦   ¦       ¦   ¦           ¦       BridgingIT.DevKit.Examples.GettingStarted.Core.Presentation.dll
+¦   ¦       ¦   ¦           ¦       
+¦   ¦       ¦   ¦           +---refint
+¦   ¦       ¦   ¦                   BridgingIT.DevKit.Examples.GettingStarted.Core.Presentation.dll
+¦   ¦       ¦   ¦                   
+¦   ¦       ¦   +---Web
+¦   ¦       ¦       +---Controllers
+¦   ¦       ¦               CustomersController.cs
+¦   ¦       ¦               
+¦   ¦       +---Core.UnitTests
+¦   ¦           ¦   ArchitectureTests.cs
+¦   ¦           ¦   Core.UnitTests.csproj
+¦   ¦           ¦   
+¦   ¦           +---Application
+¦   ¦           ¦   +---Commands
+¦   ¦           ¦   ¦       CustomerCreateCommandHandlerTests.cs
+¦   ¦           ¦   ¦       
+¦   ¦           ¦   +---Queries
+¦   ¦           ¦           CustomerFindAllQueryHandlerTests.cs
+¦   ¦           ¦           
+¦   ¦           +---bin
+¦   ¦           ¦   +---Debug
+¦   ¦           ¦       +---net9.0
+¦   ¦           ¦               .msCoverageSourceRootsMapping_BridgingIT.DevKit.Examples.GettingStarted.Core.UnitTests
+¦   ¦           ¦               .msCoverageSourceRootsMapping_BridgingIT.DevKit.Examples.GettingStarted.UnitTests
+¦   ¦           ¦               CoverletSourceRootsMapping_BridgingIT.DevKit.Examples.GettingStarted.Core.UnitTests
+¦   ¦           ¦               CoverletSourceRootsMapping_BridgingIT.DevKit.Examples.GettingStarted.UnitTests
+¦   ¦           ¦               
+¦   ¦           +---obj
+¦   ¦               ¦   Core.UnitTests.csproj.nuget.dgspec.json
+¦   ¦               ¦   Core.UnitTests.csproj.nuget.g.props
+¦   ¦               ¦   Core.UnitTests.csproj.nuget.g.targets
+¦   ¦               ¦   project.assets.json
+¦   ¦               ¦   project.nuget.cache
+¦   ¦               ¦   project.packagespec.json
+¦   ¦               ¦   rider.project.model.nuget.info
+¦   ¦               ¦   rider.project.restore.info
+¦   ¦               ¦   UnitTests.csproj.nuget.dgspec.json
+¦   ¦               ¦   UnitTests.csproj.nuget.g.props
+¦   ¦               ¦   UnitTests.csproj.nuget.g.targets
+¦   ¦               ¦   
+¦   ¦               +---Debug
+¦   ¦                   +---net9.0
+¦   ¦                       ¦   .NETCoreApp,Version=v9.0.AssemblyAttributes.cs
+¦   ¦                       ¦   Core.UnitTests.AssemblyInfo.cs
+¦   ¦                       ¦   Core.UnitTests.AssemblyInfoInputs.cache
+¦   ¦                       ¦   Core.UnitTests.assets.cache
+¦   ¦                       ¦   Core.UnitTests.csproj.AssemblyReference.cache
+¦   ¦                       ¦   Core.UnitTests.csproj.FileListAbsolute.txt
+¦   ¦                       ¦   Core.UnitTests.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦                       ¦   Core.UnitTests.GlobalUsings.g.cs
+¦   ¦                       ¦   MvcTestingAppManifest.json
+¦   ¦                       ¦   UnitTests.AssemblyInfo.cs
+¦   ¦                       ¦   UnitTests.AssemblyInfoInputs.cache
+¦   ¦                       ¦   UnitTests.assets.cache
+¦   ¦                       ¦   UnitTests.csproj.AssemblyReference.cache
+¦   ¦                       ¦   UnitTests.csproj.CoreCompileInputs.cache
+¦   ¦                       ¦   UnitTests.csproj.FileListAbsolute.txt
+¦   ¦                       ¦   UnitTests.GeneratedMSBuildEditorConfig.editorconfig
+¦   ¦                       ¦   UnitTests.GlobalUsings.g.cs
+¦   ¦                       ¦   UnitTests.sourcelink.json
+¦   ¦                       ¦   
+¦   ¦                       +---ref
+¦   ¦                       +---refint
+¦   +---Presentation.Web.Server
+¦       ¦   appsettings.Development.json
+¦       ¦   appsettings.json
+¦       ¦   Presentation.Web.Server.csproj
+¦       ¦   Program.cs
+¦       ¦   
+¦       +---bin
+¦       ¦   +---Debug
+¦       ¦       +---net9.0
+¦       +---obj
+¦       ¦   ¦   Presentation.Web.Server.csproj.nuget.dgspec.json
+¦       ¦   ¦   Presentation.Web.Server.csproj.nuget.g.props
+¦       ¦   ¦   Presentation.Web.Server.csproj.nuget.g.targets
+¦       ¦   ¦   project.assets.json
+¦       ¦   ¦   project.nuget.cache
+¦       ¦   ¦   project.packagespec.json
+¦       ¦   ¦   rider.project.model.nuget.info
+¦       ¦   ¦   rider.project.restore.info
+¦       ¦   ¦   
+¦       ¦   +---Debug
+¦       ¦       +---net9.0
+¦       ¦           ¦   .NETCoreApp,Version=v9.0.AssemblyAttributes.cs
+¦       ¦           ¦   BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server.MvcApplicationPartsAssemblyInfo.cache
+¦       ¦           ¦   BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server.MvcApplicationPartsAssemblyInfo.cs
+¦       ¦           ¦   Presentation.Web.Server.AssemblyInfo.cs
+¦       ¦           ¦   Presentation.Web.Server.AssemblyInfoInputs.cache
+¦       ¦           ¦   Presentation.Web.Server.assets.cache
+¦       ¦           ¦   Presentation.Web.Server.csproj.AssemblyReference.cache
+¦       ¦           ¦   Presentation.Web.Server.csproj.CoreCompileInputs.cache
+¦       ¦           ¦   Presentation.Web.Server.csproj.FileListAbsolute.txt
+¦       ¦           ¦   Presentation.Web.Server.GeneratedMSBuildEditorConfig.editorconfig
+¦       ¦           ¦   Presentation.Web.Server.GlobalUsings.g.cs
+¦       ¦           ¦   Presentation.Web.Server.sourcelink.json
+¦       ¦           ¦   
+¦       ¦           +---ref
+¦       ¦           +---refint
+¦       ¦           +---staticwebassets
+¦       +---Properties
+¦               launchSettings.json
+¦               
++---tests
