@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <ModuleName>Core</ModuleName>
     <TargetFramework>net9.0</TargetFramework>
-    <AssemblyName>BridgingIT.DevKit.Examples.GettingStarted.UnitTests</AssemblyName>
-    <RootNamespace>BridgingIT.DevKit.Examples.GettingStarted.UnitTests</RootNamespace>
+    <AssemblyName>BridgingIT.DevKit.Examples.GettingStarted.Modules.$(ModuleName).IntegrationTests</AssemblyName>
+    <RootNamespace>BridgingIT.DevKit.Examples.GettingStarted.Modules.$(ModuleName).IntegrationTests</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -12,6 +13,8 @@
     <Using Include="Microsoft.Extensions.DependencyInjection" />
     <Using Include="Microsoft.Extensions.Logging" />
     <Using Include="BridgingIT.DevKit.Common" />
+    <Using Include="Dumpify" />
+    <Using Include="FluentAssertions" />
     <Using Include="NSubstitute" />
     <Using Include="Shouldly" />
     <Using Include="Xunit" />
@@ -21,6 +24,7 @@
   <ItemGroup>
     <PackageReference Include="BridgingIT.DevKit.Common.Utilities.Xunit" />
     <PackageReference Include="Dumpify" />
+    <PackageReference Include="FluentAssertions.Web" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="NetArchTest.eNhancedEdition" />
     <PackageReference Include="NSubstitute" />
@@ -37,16 +41,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Application\Application.csproj" />
-    <ProjectReference Include="..\..\src\Domain\Domain.csproj" />
-    <ProjectReference Include="..\..\src\Infrastructure\Infrastructure.csproj" />
-    <ProjectReference Include="..\..\src\Presentation\Presentation.csproj" />
+    <ProjectReference Include="..\Core.Presentation\Core.Presentation.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Domain\" />
-    <Folder Include="Infrastructure\" />
-    <Folder Include="Presentation\" />
-  </ItemGroup>
-
 </Project>

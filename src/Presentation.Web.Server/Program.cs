@@ -1,8 +1,7 @@
 using BridgingIT.DevKit.Domain.Repositories;
-using BridgingIT.DevKit.Examples.GettingStarted.Domain.Model;
-using BridgingIT.DevKit.Examples.GettingStarted.Infrastructure;
-using BridgingIT.DevKit.Examples.GettingStarted.Presentation;
-using BridgingIT.DevKit.Presentation;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.Core.Domain.Model;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.Core.Infrastructure.EntityFramework;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.Core.Presentation;
 using BridgingIT.DevKit.Presentation.Web;
 using Hellang.Middleware.ProblemDetails;
 
@@ -59,8 +58,11 @@ app.MapControllers();
 
 app.Run();
 
-public partial class Program
+namespace BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server
 {
-    // this partial class is needed to set the accessibilty for the Program class to public
-    // needed for endpoint testing when using the webapplicationfactory  https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-7.0#basic-tests-with-the-default-webapplicationfactory
+    public partial class Program
+    {
+        // this partial class is needed to set the accessibilty for the Program class to public
+        // needed for endpoint testing when using the webapplicationfactory  https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-7.0#basic-tests-with-the-default-webapplicationfactory
+    }
 }

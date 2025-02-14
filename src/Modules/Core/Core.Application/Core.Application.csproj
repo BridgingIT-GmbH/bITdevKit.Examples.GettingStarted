@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <ModuleName>Core</ModuleName>
     <TargetFramework>net9.0</TargetFramework>
-    <AssemblyName>BridgingIT.DevKit.Examples.GettingStarted.Application</AssemblyName>
-    <RootNamespace>BridgingIT.DevKit.Examples.GettingStarted.Application</RootNamespace>
+    <AssemblyName>BridgingIT.DevKit.Examples.GettingStarted.Modules.$(ModuleName).Application</AssemblyName>
+    <RootNamespace>BridgingIT.DevKit.Examples.GettingStarted.Modules.$(ModuleName).Application</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
@@ -13,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Domain\Domain.csproj" />
+    <ProjectReference Include="..\Core.Domain\Core.Domain.csproj" />
   </ItemGroup>
 
 </Project>
