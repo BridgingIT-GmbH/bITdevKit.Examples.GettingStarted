@@ -1,0 +1,65 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/templating/master/schemas/template-config.schema.json",
+  "author": "BridgingIT",
+  "classifications": [
+    "Module"
+  ],
+  "name": "BridgingIT DevKit Module",
+  "identity": "BridgingIT.DevKit.Module.Template",
+  "shortName": "devkitmodule",
+  "tags": {
+    "language": "C#",
+    "type": "item"
+  },
+  "sourceName": "Core",
+  "preferNameDirectory": false,
+  "symbols": {
+    "ModuleName": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "Core",
+      "fileRename": "Core"
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "Core.Application.csproj"
+    },
+    {
+      "path": "Core.Domain.csproj"
+    },
+    {
+      "path": "Core.Infrastructure.csproj"
+    },
+    {
+      "path": "Core.IntegrationTests.csproj"
+    },
+    {
+      "path": "Core.Presentation.csproj"
+    },
+    {
+      "path": "Core.UnitTests.csproj"
+    }
+  ],
+  "postActions": [
+    {
+      "description": "Add projects to solution",
+      "actionId": "D396686C-DE0E-4DE6-906D-291CD29FC5DE",
+      "manualInstructions": [
+        {
+          "text": "Add generated project to solution manually."
+        }
+      ],
+      "args": {
+        "projectFiles": [
+          "Core.Application.csproj",
+          "Core.Domain.csproj",
+          "Core.Infrastructure.csproj",
+          "Core.IntegrationTests.csproj",
+          "Core.Presentation.csproj",
+          "Core.UnitTests.csproj"
+        ]
+      }
+    }
+  ]
+}
