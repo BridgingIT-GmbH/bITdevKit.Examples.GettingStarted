@@ -1,7 +1,9 @@
 {
   "$schema": "https://raw.githubusercontent.com/dotnet/templating/master/schemas/template-config.schema.json",
   "author": "BridgingIT",
-  "classifications": ["Solution"],
+  "classifications": [
+    "Solution"
+  ],
   "name": "BridgingIT DevKit Solution",
   "identity": "BridgingIT.DevKit.Solution.Template",
   "shortName": "devkitsolution",
@@ -12,19 +14,32 @@
   "sourceName": "BridgingIT.DevKit.Examples.GettingStarted",
   "preferNameDirectory": true,
   "symbols": {
-    "CompanyName": {
-      "type": "parameter",
-      "datatype": "string",
-      "defaultValue": "BridgingIT",
-      "replaces": "BridgingIT",
-      "fileRename": "BridgingIT"
-    },
     "SolutionName": {
       "type": "parameter",
       "datatype": "string",
       "defaultValue": "DevKit.Examples.GettingStarted",
       "replaces": "DevKit.Examples.GettingStarted",
       "fileRename": "DevKit.Examples.GettingStarted"
+    },
+    "ModuleName": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "Core",
+      "replaces": "CoreModule",
+      "fileRename": "CoreModule"
     }
-  }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "exclude": [
+            ".git/**/*",
+            ".gitignore",
+            ".gitattributes"
+          ]
+        }
+      ]
+    }
+  ]
 }
