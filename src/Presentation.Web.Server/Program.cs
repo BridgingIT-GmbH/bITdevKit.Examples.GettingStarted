@@ -1,7 +1,7 @@
 using BridgingIT.DevKit.Domain.Repositories;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.Core.Domain.Model;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.Core.Infrastructure.EntityFramework;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.Core.Presentation;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 using BridgingIT.DevKit.Presentation.Web;
 using Hellang.Middleware.ProblemDetails;
 
