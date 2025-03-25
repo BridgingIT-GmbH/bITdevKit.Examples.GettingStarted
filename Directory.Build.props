@@ -17,9 +17,4 @@
     <Using Include="System.Text" />
     <Using Include="System.Linq" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\..\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
-  </ItemGroup>
-
 </Project>

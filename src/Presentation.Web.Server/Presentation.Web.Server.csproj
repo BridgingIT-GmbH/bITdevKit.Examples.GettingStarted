@@ -25,9 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Application\Application.csproj" />
-    <ProjectReference Include="..\Presentation\Presentation.csproj" />
-    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\CoreModule\CoreModule.Infrastructure\CoreModule.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\CoreModule\CoreModule.Presentation\CoreModule.Presentation.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ModuleName>CoreModule</ModuleName>
+    <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation</AssemblyName>
+    <RootNamespace>BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BridgingIT.DevKit.Common.Mapping" />
+    <PackageReference Include="BridgingIT.DevKit.Presentation.Web" />
+    <PackageReference Include="BridgingIT.DevKit.Presentation.Serilog" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CoreModule.Application\CoreModule.Application.csproj" />
+  </ItemGroup>
+
+</Project>
