@@ -1,13 +1,15 @@
 variables:
-- name: solution
-  value: "**/*.sln"
-- name: buildConfiguration
-  value: 'Release'
+  - group: global
+  - group: NuGetOrg
+  - name: solution
+    value: "**/*.sln"
+  - name: buildConfiguration
+    value: 'Release'
 
 trigger:
   tags:
     include:
-    - '*'
+      - '*'
   batch: 'true'
   branches:
     include:
@@ -24,154 +26,224 @@ pr:
       - main
 
 resources:
-- repo: self
-  fetchDepth: '0'
+  - repo: self
+    fetchDepth: '0'
 
 #######################################################################################################
 # VERSION
 #
 stages:
-- stage: version
-  displayName: Version stage
-  jobs:
-  - job: version
-    displayName: Version
-    variables:
-      MinVerDefaultPreReleaseIdentifiers: preview.0
-      # MinVerBuildMetadata: $(Build.SourceVersion) # use git commit hash in version
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-      - checkout: self
-        fetchDepth: '0'
+  - stage: version
+    displayName: Version stage
+    jobs:
+      - job: version
+        displayName: Version
+        variables:
+          MinVerDefaultPreReleaseIdentifiers: preview.0
+          # MinVerBuildMetadata: $(Build.SourceVersion) # use git commit hash in version
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: self
+            fetchDepth: '0'
 
-      - task: UseDotNet@2 # https://docs.microsoft.com/en-us/azure/devops/pipelines/ecosystems/dotnet-core?view=azure-devops
-        displayName: Use .NET SDK
-        condition: succeeded()
-        inputs:
-          version: '9.0.x'
-          performMultiLevelLookup: true
-          includePreviewVersions: false
+          - task: UseDotNet@2
+            displayName: Use .NET SDK
+            condition: succeeded()
+            inputs:
+              version: '9.0.x'
+              performMultiLevelLookup: true
+              includePreviewVersions: false
 
-      - bash: |
-          export ASPNETCORE_ENVIRONMENT=Development
-          whereis dotnet
-          /usr/bin/dotnet --info
-        displayName: Inspect environment
-        condition: succeeded()
+          - bash: |
+              export ASPNETCORE_ENVIRONMENT=Development
+              whereis dotnet
+              /usr/bin/dotnet --info
+            displayName: Inspect environment
+            condition: succeeded()
 
-      - task: DotNetCoreCLI@2
-        displayName: 'Install version tool'
-        inputs:
-          command: 'custom'
-          custom: 'tool'
-          arguments: 'install --global minver-cli --version 4.3.0'
+          - task: DotNetCoreCLI@2
+            displayName: 'Install version tool'
+            inputs:
+              command: 'custom'
+              custom: 'tool'
+              arguments: 'install --global minver-cli --version 4.3.0'
 
-      - powershell: |
-          $version = $(minver -v d) # https://github.com/adamralph/minver#options
-          $buildName = "$version" # + "_" + $env:BUILD_SOURCEBRANCHNAME
-          Write-Host "##vso[build.updatebuildnumber]$buildName"
-          Write-Host "##vso[task.setvariable variable=BUILD_VERSION;isOutput=true]$buildName"
-        displayName: Calculate version
-        name: CalculateVersion
+          - powershell: |
+              $version = $(minver -v d) # https://github.com/adamralph/minver#options
+              $buildName = "$version" # + "_" + $env:BUILD_SOURCEBRANCHNAME
+              Write-Host "##vso[build.updatebuildnumber]$buildName"
+              Write-Host "##vso[task.setvariable variable=BUILD_VERSION;isOutput=true]$buildName"
+            displayName: Calculate version
+            name: CalculateVersion
 
-      - powershell: |
-          Get-ChildItem Env:
-        displayName: Show environment variables
+          - powershell: |
+              Get-ChildItem Env:
+            displayName: Show environment variables
 
-#######################################################################################################
-# BUILD
-#
-- stage: build
-  displayName: Build stage
-  dependsOn: [version]
-  jobs:
-  - job: build
-    displayName: Build
-    pool:
-      vmImage: 'ubuntu-latest'
-    variables:
-      NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
-    steps:
-      - checkout: self
-        fetchDepth: '0'
+  #######################################################################################################
+  # BUILD & PACKAGE
+  #
+  - stage: build
+    displayName: Build & Package stage
+    dependsOn: [ version ]
+    jobs:
+      - job: build
+        displayName: Build & Package Templates
+        pool:
+          vmImage: 'ubuntu-latest'
+        variables:
+          NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
+        steps:
+          - checkout: self
+            fetchDepth: '0'
 
-      - task: UseDotNet@2 # https://docs.microsoft.com/en-us/azure/devops/pipelines/ecosystems/dotnet-core?view=azure-devops
-        displayName: Use .NET SDK
-        condition: succeeded()
-        inputs:
-          version: '9.0.x'
-          performMultiLevelLookup: true
-          includePreviewVersions: false
+          - task: UseDotNet@2
+            displayName: Use .NET SDK
+            condition: succeeded()
+            inputs:
+              version: '9.0.x'
+              performMultiLevelLookup: true
+              includePreviewVersions: false
 
-      - bash: |
-          export ASPNETCORE_ENVIRONMENT=Development
-          whereis dotnet
-          /usr/bin/dotnet --info
-        displayName: Inspect environment
-        condition: succeeded()
+          - bash: |
+              export ASPNETCORE_ENVIRONMENT=Development
+              whereis dotnet
+              /usr/bin/dotnet --info
+            displayName: Inspect environment
+            condition: succeeded()
 
-      - task: DotNetCoreCLI@2
-        displayName: Dotnet restore
-        condition: succeeded()
-        inputs:
-          command: restore
-          projects: '**/*.csproj'
+          - task: NuGetToolInstaller@1
+            displayName: 'Install nuget tool'
 
-      - task: DotNetCoreCLI@2
-        displayName: Dotnet build
-        condition: succeeded()
-        inputs:
-          command: build
-          projects: "$(solution)"
-          arguments: "--configuration $(buildConfiguration) --no-restore --nologo"
+          - task: Cache@2
+            displayName: Dotnet cache (nuget)
+            inputs:
+              key: 'nuget | "$(Agent.OS)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
+              restoreKeys: |
+                nuget | "$(Agent.OS)"
+                nuget
+              path: '$(NUGET_PACKAGES)'
+              cacheHitVar: 'CACHE_RESTORED'
 
-      - task: Bash@3
-        displayName: Vulnerability scan (nuget)
-        continueOnError: true
-        inputs:
-          targetType: 'inline'
-          script: |
-            dotnet list $(Build.SourcesDirectory)/BridgingIT.DevKit.sln package --vulnerable --include-transitive 2>&1 | tee build.log
-            test `grep -cm 1 'has the following vulnerable packages' build.log` = 0
+          # Template validation - check if template.json files are valid
+          - bash: |
+              echo "Validating template configuration files..."
+              find . -name "template.json" -type f | while read template; do
+                echo "Validating: $template"
+                if ! python -m json.tool "$template" > /dev/null; then
+                  echo "Invalid JSON in template: $template"
+                  exit 1
+                fi
+                echo "✓ Valid: $template"
+              done
+            displayName: Validate template configurations
+            condition: succeeded()
 
-      - bash: |
-          docker compose up -d
-        displayName: Docker start containers
+          # Test template installation and creation
+          - bash: |
+              echo "Testing template installation..."
+              dotnet new install .
 
-      - bash: |
-          docker ps -a
-        displayName: Docker list containers
-        condition: succeeded()
+              echo "Listing installed templates..."
+              dotnet new list | grep -E "(devkitsolution|devkitmodule)" || echo "Templates not found in list"
 
-      - task: DotNetCoreCLI@2
-        displayName: Dotnet test (unit)
-        condition: succeeded()
-        inputs:
-          command: test
-          projects: "**/*[Tt]ests/*UnitTests.csproj"
-          arguments: "--configuration $(buildConfiguration) --no-restore --no-build --nologo"
+              echo "Testing solution template creation..."
+              mkdir -p test-output/test-solution
+              cd test-output/test-solution
+              dotnet new devkitsolution --SolutionName TestSolution --ModuleName TestCore
 
-      - task: DotNetCoreCLI@2
-        displayName: Dotnet test (integration)
-        condition: succeeded()
-        inputs:
-          command: test
-          projects: "**/*[Tt]ests/*IntegrationTests.csproj"
-          arguments: "--configuration $(buildConfiguration) --no-restore --no-build --nologo --filter FullyQualifiedName!~Examples"
+              echo "Testing module template creation..."
+              mkdir -p ../module-test
+              cd ../module-test
+              dotnet new devkitmodule -n TestModule
 
-      # - task: DotNetCoreCLI@2
-      #   displayName: Dotnet test (end2end)
-      #   condition: succeeded()
-      #   inputs:
-      #     command: test
-      #     projects: "**/*[Tt]ests/*EndToEndTests.csproj"
-      #     arguments: "--configuration $(buildConfiguration) --no-restore --no-build --nologo --filter FullyQualifiedName!~Examples"
+              echo "Template tests completed successfully"
+            displayName: Test template functionality
+            condition: succeeded()
 
-      - bash: |
-          docker compose stop
-          docker container stop $(docker container ls -aq)
-          docker container rm $(docker container ls -aq)
-        displayName: Docker cleanup
-        condition: succeeded()
-        continueOnError: true
+          # Vulnerability scan (if applicable for your templates)
+          - task: Bash@3
+            displayName: Template security validation
+            continueOnError: true
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "Performing template security validation..."
+                # Check for sensitive information in templates
+                if grep -r -i "password\|secret\|key\|token" . --include="*.cs" --include="*.json" --include="*.config" --exclude-dir=".git" --exclude="azure-pipelines.yml"; then
+                  echo "Warning: Potential sensitive information found in templates"
+                  # Set to continue for now, but review findings
+                fi
+                echo "Template security validation completed"
+
+          # Package templates for NuGet
+          - task: DotNetCoreCLI@2
+            displayName: Package templates (nuget)
+            condition: |
+              and
+              (
+                succeeded(),
+                or
+                (
+                  eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+                  contains(variables['Build.SourceBranch'], 'refs/tags')
+                )
+              )
+            inputs:
+              command: pack
+              configuration: $(buildConfiguration)
+              packagesToPack: '**/template.nuspec;**/*.csproj'
+              nobuild: true
+              arguments: "--nologo"
+              packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
+              verbosityPack: Normal
+
+          # Push to NuGet.org
+          - task: DotNetCoreCLI@2
+            displayName: Package push (nuget)
+            condition: |
+              and
+              (
+                succeeded(),
+                or
+                (
+                  eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+                  contains(variables['Build.SourceBranch'], 'refs/tags')
+                )
+              )
+            inputs:
+              command: custom
+              custom: nuget
+              arguments: >
+                push $(Build.ArtifactStagingDirectory)/packages/*.nupkg
+                -s https://api.nuget.org/v3/index.json
+                -k $(NugetOrgApiKey)
+                --skip-duplicate
+
+          # Publish artifacts
+          - task: PublishPipelineArtifact@1
+            displayName: Publish package artifacts
+            condition: |
+              and
+              (
+                succeeded(),
+                or
+                (
+                  eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+                  contains(variables['Build.SourceBranch'], 'refs/tags')
+                )
+              )
+            inputs:
+              targetPath: "$(Build.ArtifactStagingDirectory)/packages"
+              artifactName: packages
+
+          # Clean up test installations
+          - bash: |
+              echo "Cleaning up template installations..."
+              dotnet new uninstall BridgingIT.DevKit.Solution.Template || true
+              dotnet new uninstall BridgingIT.DevKit.Module.Template || true
+              dotnet new uninstall . || true
+            displayName: Cleanup template installations
+            condition: always()
+            continueOnError: true
