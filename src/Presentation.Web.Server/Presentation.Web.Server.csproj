@@ -6,6 +6,7 @@
     <RootNamespace>BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>true</IsPackable>
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
