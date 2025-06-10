@@ -94,6 +94,7 @@ stages:
           vmImage: 'ubuntu-latest'
         variables:
           NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
+          BUILD_VERSION: $[ stageDependencies.version.version.outputs['CalculateVersion.BUILD_VERSION'] ]
         steps:
           - checkout: self
             fetchDepth: '0'
@@ -113,9 +114,6 @@ stages:
             displayName: Inspect environment
             condition: succeeded()
 
-          - task: NuGetToolInstaller@1
-            displayName: 'Install nuget tool'
-
           # Fixed cache configuration for template projects
           - task: Cache@2
             displayName: Dotnet cache (nuget)
@@ -132,7 +130,7 @@ stages:
               echo "Validating template configuration files..."
               find . -name "template.json" -type f | while read template; do
                 echo "Validating: $template"
-                if ! python -m json.tool "$template" > /dev/null; then
+                if ! python3 -m json.tool "$template" > /dev/null; then
                   echo "Invalid JSON in template: $template"
                   exit 1
                 fi
@@ -163,7 +161,7 @@ stages:
             displayName: Test template functionality
             condition: succeeded()
 
-          # Vulnerability scan (if applicable for your templates)
+          # Template security validation
           - task: Bash@3
             displayName: Template security validation
             continueOnError: true
@@ -178,33 +176,21 @@ stages:
                 fi
                 echo "Template security validation completed"
 
-          # Create NuGet package manually since this is a template project
+          # Update version in nuspec file
           - bash: |
-              echo "Creating NuGet package for templates..."
+              echo "Updating version in nuspec file..."
+              echo "Original version:"
+              grep "<version>" BridgingIT.DevKit.Templates.nuspec
 
-              # Create a temporary nuspec file for the template package
-              cat > BridgingIT.DevKit.Templates.nuspec << 'EOF'
-              <?xml version="1.0" encoding="utf-8"?>
-              <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
-                <metadata>
-                  <id>BridgingIT.DevKit.Templates</id>
-                  <version>$(Build.BuildNumber)</version>
-                  <description>BridgingIT DevKit Templates for creating solutions and modules following Onion Architecture principles</description>
-                  <authors>BridgingIT</authors>
-                  <packageTypes>
-                    <packageType name="Template" />
-                  </packageTypes>
-                  <tags>template dotnet bridgingit devkit onion architecture</tags>
-                </metadata>
-                <files>
-                  <file src="**" target="content" exclude="**/.git/**;**/bin/**;**/obj/**;**/.vs/**;**/test-output/**" />
-                </files>
-              </package>
-              EOF
+              sed -i "s/<version>1\.0\.0<\/version>/<version>$(BUILD_VERSION)<\/version>/g" BridgingIT.DevKit.Templates.nuspec
 
-              # Create the package
-              mkdir -p $(Build.ArtifactStagingDirectory)/packages
-              nuget pack BridgingIT.DevKit.Templates.nuspec -OutputDirectory $(Build.ArtifactStagingDirectory)/packages -Version $(Build.BuildNumber)
+              echo "Updated version:"
+              grep "<version>" BridgingIT.DevKit.Templates.nuspec
+            displayName: Update nuspec version
+            condition: succeeded()
+
+          # Create NuGet package using dotnet pack with nuspec
+          - task: DotNetCoreCLI@2
             displayName: Create template NuGet package
             condition: |
               and
@@ -216,6 +202,11 @@ stages:
                   contains(variables['Build.SourceBranch'], 'refs/tags')
                 )
               )
+            inputs:
+              command: 'pack'
+              packagesToPack: 'BridgingIT.DevKit.Templates.nuspec'
+              configuration: '$(buildConfiguration)'
+              packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
 
           # Push to NuGet.org
           - task: DotNetCoreCLI@2
