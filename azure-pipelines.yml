@@ -186,7 +186,7 @@ stages:
             displayName: Update nuspec version
             condition: succeeded()
 
-          # Create NuGet package using DotNetCoreCLI pack command
+          # Create NuGet package using custom nuget pack command for .nuspec files
           - task: DotNetCoreCLI@2
             displayName: Package pack (nuget)
             condition: |
@@ -200,13 +200,9 @@ stages:
                 )
               )
             inputs:
-              command: pack
-              configuration: $(buildConfiguration)
-              packagesToPack: 'BridgingIT.DevKit.Templates.nuspec'
-              nobuild: true
-              arguments: "--no-restore --no-build --nologo"
-              packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
-              verbosityPack: Normal
+              command: 'custom'
+              custom: 'nuget'
+              arguments: 'pack BridgingIT.DevKit.Templates.nuspec -OutputDirectory $(Build.ArtifactStagingDirectory)/packages -Properties Configuration=$(buildConfiguration) -Verbosity Normal'
 
           # Push to NuGet.org
           - task: DotNetCoreCLI@2
