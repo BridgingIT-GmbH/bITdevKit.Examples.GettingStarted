@@ -182,22 +182,32 @@ stages:
             displayName: Clean test directories
             condition: succeeded()
 
-          # Update version in nuspec file
+          # Update version in csproj file (geändert von nuspec zu csproj)
           - bash: |
-              echo "Updating version in nuspec file..."
+              echo "Updating version in csproj file..."
               echo "Original version:"
-              grep "<version>" BridgingIT.DevKit.Templates.nuspec
+              grep "<PackageVersion>" BridgingIT.DevKit.Templates.csproj
 
-              sed -i "s/<version>1\.0\.0<\/version>/<version>$(BUILD_VERSION)<\/version>/g" BridgingIT.DevKit.Templates.nuspec
+              sed -i "s/<PackageVersion>1\.0\.0<\/PackageVersion>/<PackageVersion>$(BUILD_VERSION)<\/PackageVersion>/g" BridgingIT.DevKit.Templates.csproj
 
               echo "Updated version:"
-              grep "<version>" BridgingIT.DevKit.Templates.nuspec
-            displayName: Update nuspec version
+              grep "<PackageVersion>" BridgingIT.DevKit.Templates.csproj
+            displayName: Update csproj version
             condition: succeeded()
 
-          # Create NuGet package using custom nuget pack command for .nuspec files
+          # Debug file structure before packaging
+          - bash: |
+              echo "Files before packing:"
+              find . -name "BridgingIT.DevKit.Templates.csproj" -type f
+              find . -name "template.json" -type f
+              echo "Current directory contents:"
+              ls -la
+            displayName: Debug file structure
+            condition: succeeded()
+
+          # Create NuGet package using dotnet pack for .csproj (nur das Template-Projekt)
           - task: DotNetCoreCLI@2
-            displayName: Package pack
+            displayName: Package pack (Template only)
             condition: |
               and
               (
@@ -211,12 +221,28 @@ stages:
             inputs:
               command: 'pack'
               configuration: $(buildConfiguration)
-              projects: 'BridgingIT.DevKit.Templates.nuspec'
+              packagesToPack: 'BridgingIT.DevKit.Templates.csproj'
               packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
               arguments: '--no-build --nologo'
               verbosityPack: Normal
 
-          # Push to NuGet.org
+          # Debug package contents
+          - bash: |
+              echo "Generated packages:"
+              ls -la $(Build.ArtifactStagingDirectory)/packages/
+              echo "Package contents:"
+              if ls $(Build.ArtifactStagingDirectory)/packages/*.nupkg 1> /dev/null 2>&1; then
+                for pkg in $(Build.ArtifactStagingDirectory)/packages/*.nupkg; do
+                  echo "Package: $pkg"
+                  unzip -l "$pkg" | head -20
+                done
+              else
+                echo "No .nupkg files found!"
+              fi
+            displayName: Debug package contents
+            condition: succeeded()
+
+          # Push to NuGet.org (spezifisch nur das Template-Paket)
           - task: DotNetCoreCLI@2
             displayName: Package push (nuget)
             condition: |
@@ -233,7 +259,7 @@ stages:
               command: custom
               custom: nuget
               arguments: >
-                push $(Build.ArtifactStagingDirectory)/packages/*.nupkg
+                push $(Build.ArtifactStagingDirectory)/packages/BridgingIT.DevKit.Templates.*.nupkg
                 -s https://api.nuget.org/v3/index.json
                 -k $(NugetOrgApiKey)
                 --skip-duplicate

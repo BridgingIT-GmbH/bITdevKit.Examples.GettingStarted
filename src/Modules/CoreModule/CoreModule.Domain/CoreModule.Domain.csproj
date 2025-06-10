@@ -6,7 +6,7 @@
     <AssemblyName>BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain</AssemblyName>
     <RootNamespace>BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
-    <IsPackable>true</IsPackable>
+    <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);NU5104</NoWarn>
   </PropertyGroup>
 
