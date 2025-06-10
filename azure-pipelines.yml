@@ -40,7 +40,6 @@ stages:
         displayName: Version
         variables:
           MinVerDefaultPreReleaseIdentifiers: preview.0
-          # MinVerBuildMetadata: $(Build.SourceVersion) # use git commit hash in version
         pool:
           vmImage: 'ubuntu-latest'
         steps:
@@ -70,8 +69,12 @@ stages:
               arguments: 'install --global minver-cli --version 4.3.0'
 
           - powershell: |
-              $version = $(minver -v d) # https://github.com/adamralph/minver#options
-              $buildName = "$version" # + "_" + $env:BUILD_SOURCEBRANCHNAME
+              $version = $(minver -v d)
+              # Force a pre-release suffix if on main, because of pre-release dependencies
+              if ($env:BUILD_SOURCEBRANCH -eq "refs/heads/main") {
+                  $version = "$version-preview"
+              }
+              $buildName = "$version"
               Write-Host "##vso[build.updatebuildnumber]$buildName"
               Write-Host "##vso[task.setvariable variable=BUILD_VERSION;isOutput=true]$buildName"
             displayName: Calculate version
@@ -113,6 +116,14 @@ stages:
               /usr/bin/dotnet --info
             displayName: Inspect environment
             condition: succeeded()
+
+          # Restore NuGet packages
+          - task: DotNetCoreCLI@2
+            displayName: Dotnet restore (nuget)
+            condition: succeeded()
+            inputs:
+              command: restore
+              verbosityRestore: Normal
 
           # Template validation - check if template.json files are valid
           - bash: |
@@ -158,10 +169,8 @@ stages:
               targetType: 'inline'
               script: |
                 echo "Performing template security validation..."
-                # Check for sensitive information in templates
                 if grep -r -i "password\|secret\|key\|token" . --include="*.cs" --include="*.json" --include="*.config" --exclude-dir=".git" --exclude="azure-pipelines.yml"; then
                   echo "Warning: Potential sensitive information found in templates"
-                  # Set to continue for now, but review findings
                 fi
                 echo "Template security validation completed"
 
@@ -204,9 +213,8 @@ stages:
               configuration: $(buildConfiguration)
               projects: 'BridgingIT.DevKit.Templates.nuspec'
               packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
-              arguments: '--no-restore --no-build --nologo'
+              arguments: '--no-build --nologo'
               verbosityPack: Normal
-              nobuild: true
 
           # Push to NuGet.org
           - task: DotNetCoreCLI@2
