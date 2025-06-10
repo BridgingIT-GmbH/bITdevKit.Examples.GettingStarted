@@ -200,10 +200,9 @@ stages:
                 )
               )
             inputs:
-              command: 'pack' # Hier nur 'pack' verwenden
-              # Das .nuspec wird direkt als Projektpfad behandelt
+              command: 'pack'
               projects: 'BridgingIT.DevKit.Templates.nuspec'
-              arguments: '--output "$(Build.ArtifactStagingDirectory)/packages" --configuration $(buildConfiguration) --verbosity Normal'
+              arguments: '--output "$(Build.ArtifactStagingDirectory)/packages" --configuration $(buildConfiguration) --verbosity Normal /p:NoWarn=NU5104'
 
           # Push to NuGet.org
           - task: DotNetCoreCLI@2
