@@ -116,10 +116,11 @@ stages:
           - task: NuGetToolInstaller@1
             displayName: 'Install nuget tool'
 
+          # Fixed cache configuration for template projects
           - task: Cache@2
             displayName: Dotnet cache (nuget)
             inputs:
-              key: 'nuget | "$(Agent.OS)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
+              key: 'nuget | "$(Agent.OS)" | Directory.Packages.props, nuget.config'
               restoreKeys: |
                 nuget | "$(Agent.OS)"
                 nuget
@@ -177,9 +178,34 @@ stages:
                 fi
                 echo "Template security validation completed"
 
-          # Package templates for NuGet
-          - task: DotNetCoreCLI@2
-            displayName: Package templates (nuget)
+          # Create NuGet package manually since this is a template project
+          - bash: |
+              echo "Creating NuGet package for templates..."
+
+              # Create a temporary nuspec file for the template package
+              cat > BridgingIT.DevKit.Templates.nuspec << 'EOF'
+              <?xml version="1.0" encoding="utf-8"?>
+              <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+                <metadata>
+                  <id>BridgingIT.DevKit.Templates</id>
+                  <version>$(Build.BuildNumber)</version>
+                  <description>BridgingIT DevKit Templates for creating solutions and modules following Onion Architecture principles</description>
+                  <authors>BridgingIT</authors>
+                  <packageTypes>
+                    <packageType name="Template" />
+                  </packageTypes>
+                  <tags>template dotnet bridgingit devkit onion architecture</tags>
+                </metadata>
+                <files>
+                  <file src="**" target="content" exclude="**/.git/**;**/bin/**;**/obj/**;**/.vs/**;**/test-output/**" />
+                </files>
+              </package>
+              EOF
+
+              # Create the package
+              mkdir -p $(Build.ArtifactStagingDirectory)/packages
+              nuget pack BridgingIT.DevKit.Templates.nuspec -OutputDirectory $(Build.ArtifactStagingDirectory)/packages -Version $(Build.BuildNumber)
+            displayName: Create template NuGet package
             condition: |
               and
               (
@@ -190,14 +216,6 @@ stages:
                   contains(variables['Build.SourceBranch'], 'refs/tags')
                 )
               )
-            inputs:
-              command: pack
-              configuration: $(buildConfiguration)
-              packagesToPack: '**/template.nuspec;**/*.csproj'
-              nobuild: true
-              arguments: "--nologo"
-              packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
-              verbosityPack: Normal
 
           # Push to NuGet.org
           - task: DotNetCoreCLI@2
