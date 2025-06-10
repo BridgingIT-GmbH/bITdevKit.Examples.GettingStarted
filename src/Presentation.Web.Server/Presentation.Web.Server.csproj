@@ -5,6 +5,7 @@
     <AssemblyName>BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server</AssemblyName>
     <RootNamespace>BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

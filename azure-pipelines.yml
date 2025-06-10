@@ -188,7 +188,7 @@ stages:
 
           # Create NuGet package using custom nuget pack command for .nuspec files
           - task: DotNetCoreCLI@2
-            displayName: Package pack (nuget)
+            displayName: Package pack
             condition: |
               and
               (
@@ -200,9 +200,10 @@ stages:
                 )
               )
             inputs:
-              command: 'custom'
-              custom: 'nuget'
-              arguments: 'pack BridgingIT.DevKit.Templates.nuspec -OutputDirectory $(Build.ArtifactStagingDirectory)/packages -Properties Configuration=$(buildConfiguration) -Verbosity Normal'
+              command: 'pack' # Hier nur 'pack' verwenden
+              # Das .nuspec wird direkt als Projektpfad behandelt
+              projects: 'BridgingIT.DevKit.Templates.nuspec'
+              arguments: '--output "$(Build.ArtifactStagingDirectory)/packages" --configuration $(buildConfiguration) --verbosity Normal'
 
           # Push to NuGet.org
           - task: DotNetCoreCLI@2

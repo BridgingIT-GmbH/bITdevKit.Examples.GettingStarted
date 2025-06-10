@@ -6,6 +6,7 @@
     <AssemblyName>BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure</AssemblyName>
     <RootNamespace>BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
