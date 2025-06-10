@@ -186,9 +186,9 @@ stages:
             displayName: Update nuspec version
             condition: succeeded()
 
-          # Create NuGet package using nuget pack with nuspec (NOT dotnet pack)
-          - task: NuGetCommand@2
-            displayName: Create template NuGet package
+          # Create NuGet package using DotNetCoreCLI pack command
+          - task: DotNetCoreCLI@2
+            displayName: Package pack (nuget)
             condition: |
               and
               (
@@ -200,14 +200,16 @@ stages:
                 )
               )
             inputs:
-              command: 'pack'
+              command: pack
+              configuration: $(buildConfiguration)
               packagesToPack: 'BridgingIT.DevKit.Templates.nuspec'
-              configuration: '$(buildConfiguration)'
-              packDestination: '$(Build.ArtifactStagingDirectory)/packages'
-              versioningScheme: 'off'
+              nobuild: true
+              arguments: "--no-restore --no-build --nologo"
+              packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
+              verbosityPack: Normal
 
           # Push to NuGet.org
-          - task: NuGetCommand@2
+          - task: DotNetCoreCLI@2
             displayName: Package push (nuget)
             condition: |
               and
@@ -220,10 +222,13 @@ stages:
                 )
               )
             inputs:
-              command: 'push'
-              packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/*.nupkg'
-              nuGetFeedType: 'external'
-              publishFeedCredentials: 'NuGetOrg'
+              command: custom
+              custom: nuget
+              arguments: >
+                push $(Build.ArtifactStagingDirectory)/packages/*.nupkg
+                -s https://api.nuget.org/v3/index.json
+                -k $(NugetOrgApiKey)
+                --skip-duplicate
 
           # Publish artifacts
           - task: PublishPipelineArtifact@1
