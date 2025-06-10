@@ -117,12 +117,13 @@ stages:
             displayName: Inspect environment
             condition: succeeded()
 
-          # Restore NuGet packages
+          # Restore NuGet packages (nur für das Template-Projekt)
           - task: DotNetCoreCLI@2
             displayName: Dotnet restore (nuget)
             condition: succeeded()
             inputs:
               command: restore
+              projects: 'BridgingIT.DevKit.Templates.csproj'
               verbosityRestore: Normal
 
           # Template validation - check if template.json files are valid
