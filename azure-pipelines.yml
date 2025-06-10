@@ -206,8 +206,8 @@ stages:
             displayName: Debug file structure
             condition: succeeded()
 
-          # Create NuGet package using dotnet pack for .csproj (nur das Template-Projekt)
-          - task: DotNetCoreCLI@2
+          # Create NuGet package using nuget pack (funktioniert besser für Templates)
+          - task: NuGetCommand@2
             displayName: Package pack (Template only)
             condition: |
               and
@@ -221,11 +221,11 @@ stages:
               )
             inputs:
               command: 'pack'
-              configuration: $(buildConfiguration)
               packagesToPack: 'BridgingIT.DevKit.Templates.csproj'
-              packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
-              arguments: '--no-build --no-restore --nologo'
-              verbosityPack: Normal
+              configuration: $(buildConfiguration)
+              packDestination: '$(Build.ArtifactStagingDirectory)/packages'
+              versioningScheme: 'byEnvVar'
+              versionEnvVar: 'BUILD_VERSION'
 
           # Debug package contents
           - bash: |
