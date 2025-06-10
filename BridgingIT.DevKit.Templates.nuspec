@@ -20,7 +20,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
   </metadata>
   <files>
-    <!-- Include all template files -->
-    <file src="**" target="content" exclude="*.nupkg;*.nuspec;azure-pipelines.yml;README.md;.git/**/*;.vs/**/*;bin/**/*;obj/**/*;*.user;*.suo" />
+    <!-- Include template files -->
+    <file src="**/*" target="content" exclude="*.nupkg;*.nuspec;azure-pipelines*.yml;README.md;.git/**/*;.vs/**/*;bin/**/*;obj/**/*;*.user;*.suo;test-output/**/*" />
   </files>
 </package>

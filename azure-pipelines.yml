@@ -114,17 +114,6 @@ stages:
             displayName: Inspect environment
             condition: succeeded()
 
-          # Fixed cache configuration for template projects
-          - task: Cache@2
-            displayName: Dotnet cache (nuget)
-            inputs:
-              key: 'nuget | "$(Agent.OS)" | Directory.Packages.props, nuget.config'
-              restoreKeys: |
-                nuget | "$(Agent.OS)"
-                nuget
-              path: '$(NUGET_PACKAGES)'
-              cacheHitVar: 'CACHE_RESTORED'
-
           # Template validation - check if template.json files are valid
           - bash: |
               echo "Validating template configuration files..."
@@ -176,6 +165,14 @@ stages:
                 fi
                 echo "Template security validation completed"
 
+          # Clean up test directories before packaging
+          - bash: |
+              echo "Cleaning up test directories..."
+              rm -rf test-output/
+              echo "Test directories cleaned"
+            displayName: Clean test directories
+            condition: succeeded()
+
           # Update version in nuspec file
           - bash: |
               echo "Updating version in nuspec file..."
@@ -189,8 +186,8 @@ stages:
             displayName: Update nuspec version
             condition: succeeded()
 
-          # Create NuGet package using dotnet pack with nuspec
-          - task: DotNetCoreCLI@2
+          # Create NuGet package using nuget pack with nuspec (NOT dotnet pack)
+          - task: NuGetCommand@2
             displayName: Create template NuGet package
             condition: |
               and
@@ -206,10 +203,11 @@ stages:
               command: 'pack'
               packagesToPack: 'BridgingIT.DevKit.Templates.nuspec'
               configuration: '$(buildConfiguration)'
-              packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
+              packDestination: '$(Build.ArtifactStagingDirectory)/packages'
+              versioningScheme: 'off'
 
           # Push to NuGet.org
-          - task: DotNetCoreCLI@2
+          - task: NuGetCommand@2
             displayName: Package push (nuget)
             condition: |
               and
@@ -222,13 +220,10 @@ stages:
                 )
               )
             inputs:
-              command: custom
-              custom: nuget
-              arguments: >
-                push $(Build.ArtifactStagingDirectory)/packages/*.nupkg
-                -s https://api.nuget.org/v3/index.json
-                -k $(NugetOrgApiKey)
-                --skip-duplicate
+              command: 'push'
+              packagesToPush: '$(Build.ArtifactStagingDirectory)/packages/*.nupkg'
+              nuGetFeedType: 'external'
+              publishFeedCredentials: 'NuGetOrg'
 
           # Publish artifacts
           - task: PublishPipelineArtifact@1
