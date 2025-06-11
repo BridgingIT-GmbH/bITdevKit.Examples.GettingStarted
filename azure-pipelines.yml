@@ -213,6 +213,15 @@ stages:
             displayName: Clean test directories
             condition: succeeded()
 
+          # Minimal restore for template project (generates required assets.json)
+          - task: DotNetCoreCLI@2
+            displayName: Minimal restore (template project)
+            condition: succeeded()
+            inputs:
+              command: restore
+              projects: 'BridgingIT.DevKit.Templates.csproj'
+              verbosityRestore: Minimal
+
           # Update version in csproj file
           - bash: |
               echo "Updating version in csproj file..."
@@ -248,7 +257,7 @@ stages:
             inputs:
               command: 'custom'
               custom: 'pack'
-              arguments: 'BridgingIT.DevKit.Templates.csproj --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/packages --no-build --nologo --include-symbols --no-restore --verbosity Normal'
+              arguments: 'BridgingIT.DevKit.Templates.csproj --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/packages --no-build --nologo --include-symbols --verbosity Normal'
 
           # Push to NuGet.org
           - task: DotNetCoreCLI@2
