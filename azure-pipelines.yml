@@ -250,7 +250,7 @@ stages:
               configuration: $(buildConfiguration)
               projects: 'BridgingIT.DevKit.Templates.csproj'
               packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
-              arguments: '--no-build --nologo --include-symbols'
+              arguments: '--no-build --nologo --include-symbols --no-restore'
               verbosityPack: Normal
 
           # Push to NuGet.org
