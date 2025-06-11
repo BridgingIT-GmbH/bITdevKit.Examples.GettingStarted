@@ -232,7 +232,7 @@ stages:
             displayName: Update csproj version
             condition: succeeded()
 
-          # Create NuGet package using csproj
+          # Create NuGet package using custom command
           - task: DotNetCoreCLI@2
             displayName: Package pack
             condition: |
@@ -246,12 +246,9 @@ stages:
                 )
               )
             inputs:
-              command: 'pack'
-              configuration: $(buildConfiguration)
-              projects: 'BridgingIT.DevKit.Templates.csproj'
-              packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
-              arguments: '--no-build --nologo --include-symbols --no-restore'
-              verbosityPack: Normal
+              command: 'custom'
+              custom: 'pack'
+              arguments: 'BridgingIT.DevKit.Templates.csproj --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/packages --no-build --nologo --include-symbols --no-restore --verbosity Normal'
 
           # Push to NuGet.org
           - task: DotNetCoreCLI@2
