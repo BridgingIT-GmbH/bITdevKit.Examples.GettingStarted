@@ -117,14 +117,13 @@ stages:
             displayName: Inspect environment
             condition: succeeded()
 
-          # Template-Projekte brauchen normalerweise keinen Restore
-          # - task: DotNetCoreCLI@2
-          #   displayName: Dotnet restore (nuget)
-          #   condition: succeeded()
-          #   inputs:
-          #     command: restore
-          #     projects: 'BridgingIT.DevKit.Templates.csproj'
-          #     verbosityRestore: Normal
+          # Restore NuGet packages
+          - task: DotNetCoreCLI@2
+            displayName: Dotnet restore (nuget)
+            condition: succeeded()
+            inputs:
+              command: restore
+              verbosityRestore: Normal
 
           # Template validation - check if template.json files are valid
           - bash: |
@@ -153,10 +152,28 @@ stages:
               cd test-output/test-solution
               dotnet new devkitsolution --SolutionName TestSolution --ModuleName TestCore
 
-              echo "Testing module template creation..."
-              mkdir -p ../module-test
-              cd ../module-test
-              dotnet new devkitmodule -n TestModule
+              # Verify that src folder structure was created correctly
+              if [ -d "src" ]; then
+                echo "✓ src folder created successfully"
+                ls -la src/
+              else
+                echo "✗ src folder missing!"
+                exit 1
+              fi
+
+              if [ -d "src/Modules" ]; then
+                echo "✓ src/Modules folder created successfully"
+              else
+                echo "✗ src/Modules folder missing!"
+                exit 1
+              fi
+
+              if [ -d "src/Presentation.Web.Server" ]; then
+                echo "✓ src/Presentation.Web.Server folder created successfully"
+              else
+                echo "✗ src/Presentation.Web.Server folder missing!"
+                exit 1
+              fi
 
               echo "Template tests completed successfully"
             displayName: Test template functionality
@@ -183,32 +200,28 @@ stages:
             displayName: Clean test directories
             condition: succeeded()
 
-          # Update version in csproj file (geändert von nuspec zu csproj)
+          # Update version in csproj file
           - bash: |
               echo "Updating version in csproj file..."
               echo "Original version:"
+              grep "<Version>" BridgingIT.DevKit.Templates.csproj
               grep "<PackageVersion>" BridgingIT.DevKit.Templates.csproj
 
-              sed -i "s/<PackageVersion>1\.0\.0<\/PackageVersion>/<PackageVersion>$(BUILD_VERSION)<\/PackageVersion>/g" BridgingIT.DevKit.Templates.csproj
+              # Update Version, AssemblyVersion, FileVersion, PackageVersion
+              sed -i "s|<Version>.*</Version>|<Version>$(BUILD_VERSION)</Version>|g" BridgingIT.DevKit.Templates.csproj
+              sed -i "s|<AssemblyVersion>.*</AssemblyVersion>|<AssemblyVersion>$(BUILD_VERSION).0</AssemblyVersion>|g" BridgingIT.DevKit.Templates.csproj
+              sed -i "s|<FileVersion>.*</FileVersion>|<FileVersion>$(BUILD_VERSION).0</FileVersion>|g" BridgingIT.DevKit.Templates.csproj
+              sed -i "s|<PackageVersion>.*</PackageVersion>|<PackageVersion>$(BUILD_VERSION)</PackageVersion>|g" BridgingIT.DevKit.Templates.csproj
 
               echo "Updated version:"
+              grep "<Version>" BridgingIT.DevKit.Templates.csproj
               grep "<PackageVersion>" BridgingIT.DevKit.Templates.csproj
             displayName: Update csproj version
             condition: succeeded()
 
-          # Debug file structure before packaging
-          - bash: |
-              echo "Files before packing:"
-              find . -name "BridgingIT.DevKit.Templates.csproj" -type f
-              find . -name "template.json" -type f
-              echo "Current directory contents:"
-              ls -la
-            displayName: Debug file structure
-            condition: succeeded()
-
-          # Create NuGet package using nuget pack (funktioniert besser für Templates)
-          - task: NuGetCommand@2
-            displayName: Package pack (Template only)
+          # Create NuGet package using csproj
+          - task: DotNetCoreCLI@2
+            displayName: Package pack
             condition: |
               and
               (
@@ -221,29 +234,13 @@ stages:
               )
             inputs:
               command: 'pack'
-              packagesToPack: 'BridgingIT.DevKit.Templates.csproj'
               configuration: $(buildConfiguration)
-              packDestination: '$(Build.ArtifactStagingDirectory)/packages'
-              versioningScheme: 'byEnvVar'
-              versionEnvVar: 'BUILD_VERSION'
+              projects: 'BridgingIT.DevKit.Templates.csproj'
+              packDirectory: '$(Build.ArtifactStagingDirectory)/packages'
+              arguments: '--no-build --nologo --include-symbols'
+              verbosityPack: Normal
 
-          # Debug package contents
-          - bash: |
-              echo "Generated packages:"
-              ls -la $(Build.ArtifactStagingDirectory)/packages/
-              echo "Package contents:"
-              if ls $(Build.ArtifactStagingDirectory)/packages/*.nupkg 1> /dev/null 2>&1; then
-                for pkg in $(Build.ArtifactStagingDirectory)/packages/*.nupkg; do
-                  echo "Package: $pkg"
-                  unzip -l "$pkg" | head -20
-                done
-              else
-                echo "No .nupkg files found!"
-              fi
-            displayName: Debug package contents
-            condition: succeeded()
-
-          # Push to NuGet.org (spezifisch nur das Template-Paket)
+          # Push to NuGet.org
           - task: DotNetCoreCLI@2
             displayName: Package push (nuget)
             condition: |
@@ -260,7 +257,7 @@ stages:
               command: custom
               custom: nuget
               arguments: >
-                push $(Build.ArtifactStagingDirectory)/packages/BridgingIT.DevKit.Templates.*.nupkg
+                push $(Build.ArtifactStagingDirectory)/packages/*.nupkg
                 -s https://api.nuget.org/v3/index.json
                 -k $(NugetOrgApiKey)
                 --skip-duplicate
@@ -285,8 +282,8 @@ stages:
           # Clean up test installations
           - bash: |
               echo "Cleaning up template installations..."
+              dotnet new uninstall BridgingIT.DevKit.Templates || true
               dotnet new uninstall BridgingIT.DevKit.Solution.Template || true
-              dotnet new uninstall BridgingIT.DevKit.Module.Template || true
               dotnet new uninstall . || true
             displayName: Cleanup template installations
             condition: always()
