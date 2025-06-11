@@ -70,8 +70,8 @@ stages:
 
           - powershell: |
               $version = $(minver -v d)
-              # Force a pre-release suffix if on main, because of pre-release dependencies
-              if ($env:BUILD_SOURCEBRANCH -eq "refs/heads/main") {
+              # Only add preview suffix if version doesn't already contain preview
+              if ($env:BUILD_SOURCEBRANCH -eq "refs/heads/main" -and $version -notlike "*preview*") {
                   $version = "$version-preview"
               }
               $buildName = "$version"
