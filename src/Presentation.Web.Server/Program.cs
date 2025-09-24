@@ -26,7 +26,6 @@ builder.Services
     .WithDatabaseMigratorService();
 
 builder.Services.AddEntityFrameworkRepository<Customer, AppDbContext>()
-    //.WithTransactions<NullRepositoryTransaction<Customer>>()
     .WithBehavior<RepositoryTracingBehavior<Customer>>()
     .WithBehavior<RepositoryLoggingBehavior<Customer>>();
 // ===^ DevKit registrations ^===
@@ -35,7 +34,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddProblemDetails(o => Configure.ProblemDetails(o, true));
-// builder.Services.AddProblemDetails(Configure.ProblemDetails);
 
 // ===============================================================================================
 // Configure the HTTP request pipeline
