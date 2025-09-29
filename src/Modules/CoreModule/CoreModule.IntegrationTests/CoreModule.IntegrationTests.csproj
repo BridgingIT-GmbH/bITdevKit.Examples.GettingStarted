@@ -8,6 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);NU5104</NoWarn>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,6 +43,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Presentation.Web.Server\Presentation.Web.Server.csproj" />
     <ProjectReference Include="..\CoreModule.Presentation\CoreModule.Presentation.csproj" />
   </ItemGroup>
 </Project>
