@@ -19,8 +19,8 @@ builder.Services.AddModules(builder.Configuration, builder.Environment)
 // Configure the services
 builder.Services.AddRequester()
     .AddHandlers().WithBehavior(typeof(ModuleScopeBehavior<,>));
-//builder.Services.AddNotifier()
-//    .AddHandlers().WithBehavior(typeof(ModuleScopeBehavior<,>));
+builder.Services.AddNotifier()
+    .AddHandlers().WithBehavior(typeof(ModuleScopeBehavior<,>));
 
 builder.Services.AddMapping()
     .WithMapster<CoreModuleMapperRegister>();
@@ -48,6 +48,7 @@ app.UseCors();
 app.UseProblemDetails();
 app.UseHttpsRedirection();
 app.UseAuthorization();
+
 app.MapModules();
 app.MapControllers();
 app.MapEndpoints();
