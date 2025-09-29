@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BridgingIT.DevKit.Infrastructure.EntityFramework" />
+    <PackageReference Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -22,6 +22,10 @@
   <ItemGroup>
     <ProjectReference Include="..\CoreModule.Application\CoreModule.Application.csproj" />
     <ProjectReference Include="..\CoreModule.Domain\CoreModule.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="EntityFramework\Migrations\" />
   </ItemGroup>
 
 </Project>

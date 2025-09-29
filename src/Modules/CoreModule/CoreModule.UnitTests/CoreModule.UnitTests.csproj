@@ -41,6 +41,8 @@
   <ItemGroup>
     <ProjectReference Include="..\CoreModule.Application\CoreModule.Application.csproj" />
     <ProjectReference Include="..\CoreModule.Domain\CoreModule.Domain.csproj" />
+    <ProjectReference Include="..\CoreModule.Infrastructure\CoreModule.Infrastructure.csproj" />
+    <ProjectReference Include="..\CoreModule.Presentation\CoreModule.Presentation.csproj" />
   </ItemGroup>
 
 </Project>

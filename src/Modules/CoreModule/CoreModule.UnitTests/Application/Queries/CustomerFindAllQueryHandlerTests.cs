@@ -6,12 +6,17 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Queries;
 
 using BridgingIT.DevKit.Domain.Repositories;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application.Queries;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 
 [UnitTest("GettingStarted.Application")]
 public class CustomerFindAllQueryHandlerTests(ITestOutputHelper output) : TestsBase(output, s =>
     {
+        s.AddMapping().WithMapster<CoreModuleMapperRegister>();
+        s.AddRequester().AddHandlers();
+        s.AddNotifier().AddHandlers();
+
         s.AddInMemoryRepository(new InMemoryContext<Customer>())
             .WithBehavior<RepositoryLoggingBehavior<Customer>>();
     })
@@ -20,18 +25,18 @@ public class CustomerFindAllQueryHandlerTests(ITestOutputHelper output) : TestsB
     public async Task Process_ValidQuery_ReturnsSuccessResultWithCustomers()
     {
         // Arrange
+        var requester = this.ServiceProvider.GetService<IRequester>();
         var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
         await repository.InsertAsync(Customer.Create("John", "Doe", "john.doe@example.com"));
         await repository.InsertAsync(Customer.Create("Mary", "Jane", "mary.jane@example.com"));
-
-        var sut = new CustomerFindAllQueryHandler(Substitute.For<ILoggerFactory>(), repository);
+        var query = new CustomerFindAllQuery();
 
         // Act
-        var response = await sut.Process(new CustomerFindAllQuery(), CancellationToken.None);
+        var response = await requester.SendAsync(query, null, CancellationToken.None);
 
         // Assert
-        response?.Result.ShouldBeSuccess();
-        response.Result.Value.ShouldNotBeNull();
-        response.Result.Value.Count().ShouldBe(2);
+        response.ShouldBeSuccess();
+        response.Value.ShouldNotBeNull();
+        response.Value.Count().ShouldBe(2);
     }
 }

@@ -12,6 +12,9 @@
 
   <ItemGroup>
     <PackageReference Include="BridgingIT.DevKit.Domain" />
-    <PackageReference Include="BridgingIT.DevKit.Domain.Mediator" />
+    <PackageReference Include="BridgingIT.DevKit.Domain.CodeGen" >
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>

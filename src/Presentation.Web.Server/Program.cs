@@ -1,6 +1,4 @@
-using BridgingIT.DevKit.Domain.Repositories;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
+using BridgingIT.DevKit.Common;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 using BridgingIT.DevKit.Presentation.Web;
 using Hellang.Middleware.ProblemDetails;
@@ -8,27 +6,26 @@ using Hellang.Middleware.ProblemDetails;
 // ===============================================================================================
 // Configure the host
 var builder = WebApplication.CreateBuilder(args);
-// ===v DevKit registrations v===
 builder.Host.ConfigureLogging();
-// ===^ DevKit registrations ^===
+
+// ===============================================================================================
+// Configure the modules
+builder.Services.AddModules(builder.Configuration, builder.Environment)
+    .WithModule<CoreModule>()
+    .WithModuleContextAccessors()
+    .WithRequestModuleContextAccessors();
 
 // ===============================================================================================
 // Configure the services
-// ===v DevKit registrations v===
-builder.Services.AddMediatR();
-builder.Services.AddMapping().WithMapster<MapperRegister>();
-builder.Services.AddCommands();
-builder.Services.AddQueries();
+builder.Services.AddRequester()
+    .AddHandlers().WithBehavior(typeof(ModuleScopeBehavior<,>));
+//builder.Services.AddNotifier()
+//    .AddHandlers().WithBehavior(typeof(ModuleScopeBehavior<,>));
 
-builder.Services
-    .AddSqlServerDbContext<AppDbContext>(o => o
-        .UseConnectionString(builder.Configuration.GetConnectionString("Default")))
-    .WithDatabaseMigratorService();
+builder.Services.AddMapping()
+    .WithMapster<CoreModuleMapperRegister>();
 
-builder.Services.AddEntityFrameworkRepository<Customer, AppDbContext>()
-    .WithBehavior<RepositoryTracingBehavior<Customer>>()
-    .WithBehavior<RepositoryLoggingBehavior<Customer>>();
-// ===^ DevKit registrations ^===
+builder.Services.AddEndpoints<SystemEndpoints>(builder.Environment.IsDevelopment());
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -44,15 +41,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// ===v DevKit registrations v===
 app.UseRequestCorrelation();
 app.UseRequestLogging();
-// ===^ DevKit registrations ^===
 
+app.UseCors();
 app.UseProblemDetails();
 app.UseHttpsRedirection();
 app.UseAuthorization();
+app.MapModules();
 app.MapControllers();
+app.MapEndpoints();
 
 app.Run();
 

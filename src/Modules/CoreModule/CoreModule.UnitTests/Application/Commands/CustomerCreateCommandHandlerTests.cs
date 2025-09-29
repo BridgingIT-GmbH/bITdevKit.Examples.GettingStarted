@@ -6,12 +6,17 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Commands;
 
 using BridgingIT.DevKit.Domain.Repositories;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application.Commands;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 
 [UnitTest("GettingStarted.Application")]
 public class CustomerCreateCommandHandlerTests(ITestOutputHelper output) : TestsBase(output, s =>
     {
+        s.AddMapping().WithMapster<CoreModuleMapperRegister>();
+        s.AddRequester().AddHandlers();
+        s.AddNotifier().AddHandlers();
+
         s.AddInMemoryRepository(new InMemoryContext<Customer>())
             .WithBehavior<RepositoryLoggingBehavior<Customer>>();
     })
@@ -20,17 +25,18 @@ public class CustomerCreateCommandHandlerTests(ITestOutputHelper output) : Tests
     public async Task Process_ValidRequest_SuccessResult()
     {
         // Arrange
-        var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
-        var command = new CustomerCreateCommand { FirstName = "John", LastName = "Doe", Email = "john.doe@example.com" };
-        var sut = new CustomerCreateCommandHandler(Substitute.For<ILoggerFactory>(), repository);
+        var requester = this.ServiceProvider.GetService<IRequester>();
+        var command = new CustomerCreateCommand(
+            new CustomerModel() { FirstName = "John", LastName = "Doe", Email = "john.doe@example.com" });
 
         // Act
-        var response = await sut.Process(command, CancellationToken.None);
+        var response = await requester.SendAsync(command, null, CancellationToken.None);
 
         // Assert
-        response?.Result.ShouldBeSuccess();
-        response.Result.Value.ShouldNotBeNull();
-        response.Result.Value.FirstName.ShouldBe(command.FirstName);
-        response.Result.Value.LastName.ShouldBe(command.LastName);
+        response.ShouldBeSuccess();
+        response.Value.ShouldNotBeNull();
+        response.Value.Id.ShouldNotBe(Guid.Empty.ToString());
+        response.Value.FirstName.ShouldBe(command.Model.FirstName);
+        response.Value.LastName.ShouldBe(command.Model.LastName);
     }
 }
