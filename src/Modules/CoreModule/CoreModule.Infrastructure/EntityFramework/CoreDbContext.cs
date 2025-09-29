@@ -12,18 +12,13 @@ using Microsoft.EntityFrameworkCore;
 /// Application database context for the CoreModule.
 /// Provides access to domain aggregates persisted in the relational database and applies EF Core mappings from the current assembly.
 /// </summary>
-public class CoreDbContext : DbContext
+/// <remarks>
+/// Initializes a new instance of the <see cref="CoreDbContext"/> class.
+/// Configured via <see cref="DbContextOptions{AppDbContext}"/> dependency injection.
+/// </remarks>
+/// <param name="options">The database context options (provider, connection string, etc.).</param>
+public class CoreDbContext(DbContextOptions<CoreDbContext> options) : DbContext(options)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CoreDbContext"/> class.
-    /// Configured via <see cref="DbContextOptions{AppDbContext}"/> dependency injection.
-    /// </summary>
-    /// <param name="options">The database context options (provider, connection string, etc.).</param>
-    public CoreDbContext(DbContextOptions<CoreDbContext> options)
-        : base(options)
-    {
-    }
-
     /// <summary>
     /// Gets or sets the <see cref="DbSet{TEntity}"/> for managing <see cref="Customer"/> entities.
     /// Represents the "Customers" table in the database.
