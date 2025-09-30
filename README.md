@@ -1,254 +1,367 @@
+﻿# BridgingIT DevKit GettingStarted Example
+
 ![bITDevKit](https://raw.githubusercontent.com/bridgingIT/bITdevKit.Examples.GettingStarted/main/bITDevKit_Logo.png)
-=====================================
 
-# Architecture overview
-
-> An application built using .NET 9 and following a Domain-Driven Design (DDD) approach by using the BridgingIT DevKit.
+An application built using .NET 9 and following a Domain-Driven Design (DDD) approach by using the BridgingIT DevKit (bIT DevKit).
 
 ## Features
-- Application Commands/Queries
-- Domain Model, ValueObjects, Events, Rules, TypedIds, Repositories
-- Presentation Model
-- Unit & Integration Tests
+- Modular architecture with CoreModule as an example.
+- Application layer with Commands (e.g., CustomerCreateCommand) and Queries (e.g., CustomerFindAllQuery, CustomerFindOneQuery) using IRequester.
+- Domain layer with Aggregates (Customer), Value Objects (EmailAddress, CustomerId), Enumerations (CustomerStatus), Domain Events (CustomerCreatedDomainEvent, CustomerUpdatedDomainEvent), and Business Rules (e.g., EmailShouldBeUniqueRule).
+- Infrastructure layer with Entity Framework Core (CoreDbContext, migrations, configurations) and Generic Repositories with behaviors (logging, audit, domain event publishing).
+- Presentation layer with Web API Endpoints for CRUD operations on Customers, using minimal API-style routing.
+- Startup tasks for seeding domain data (CoreDomainSeederTask).
+- Job scheduling with Quartz (e.g., CustomerExportJob).
+- Mapping with Mapster (CoreModuleMapperRegister).
+- Comprehensive testing: Unit tests (e.g., for command/query handlers, architecture rules), Integration tests (e.g., for endpoints).
+- Architecture validation tests to enforce Onion Architecture dependencies and domain rules (e.g., no public constructors on entities/value objects).
 
 ## Frameworks
-- [.NET 9](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8/overview)
+- [.NET 9](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9/overview)
 - [Entity Framework Core](https://learn.microsoft.com/en-us/ef/core/)
 - [ASP.NET Core](https://dotnet.microsoft.com/en-us/apps/aspnet)
 - [Serilog](https://serilog.net/)
 - [xUnit.net](https://xunit.net/), [NSubstitute](https://nsubstitute.github.io/), [Shouldly](https://docs.shouldly.org/)
+- [Mapster](https://github.com/MapsterMapper/Mapster) for object mapping
+- [FluentValidation](https://fluentvalidation.net/) for validation
+- [Quartz.NET](https://www.quartz-scheduler.net/) for job scheduling
 
 ## Getting Started
 
 ### Running the Application
 
-The supporting containers should first be started with `docker-compose up` or `docker-compose up -d`.
-Then the Presentation.Web.Server project can be set as the startup project.
-On `CTRL+F5` this will start the host at [https://localhost:7144](https://localhost:7144).
+1. Ensure you have .NET 9 SDK installed.
+2. Configure the database connection string in `appsettings.json` under "CoreModule:ConnectionStrings:Default" (e.g., SQL Server LocalDB).
+3. Optionally, start supporting containers with `docker-compose up` or `docker-compose up -d` for SQL Server and Seq logging.
+4. Set `Presentation.Web.Server` as the startup project.
+5. Run with `CTRL+F5` to start the host at [https://localhost:7144](https://localhost:7144).
 
-- [SQL Server](https://learn.microsoft.com/en-us/sql/sql-server/?view=sql-server-ver16) details: `Server=127.0.0.1,14339;Database=bit_devkit_gettingstarted;User=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=true;encrypt=false;`
-- [Swagger UI](https://swagger.io/docs/) is available [here](https://localhost:7144/swagger/index.html).
-- [Seq](https://docs.datalust.co/docs/an-overview-of-seq) Dashboard is available [here](http://localhost:15349).
+- **SQL Server** details: Use the connection string from `appsettings.json` (e.g., `Server=(localdb)\\MSSQLLocalDB;Database=bit_devkit_gettingstarted;Trusted_Connection=True`).
+- **Swagger UI** is available [here](https://localhost:7144/swagger/index.html).
+- **Seq** Dashboard (if using containers) is available [here](http://localhost:15349).
+
+The application will automatically migrate the database on startup (via DatabaseMigratorService) and seed initial data (via CoreDomainSeederTask) in development mode.
 
 ### Architecture Overview
 
-The GettingStarted project, powered by bITDevKit, is structured around key architectural layers:
+The GettingStarted project follows Onion Architecture principles, powered by bIT DevKit for modular DDD:
 
 ![](assets/Onion.drawio.png)
 
+- **Core (Domain)**: Business logic, aggregates, value objects, events.
+- **Application**: Commands, queries, handlers with behaviors (retry, timeout).
+- **Infrastructure**: Persistence (EF Core), repositories with behaviors (logging, audit).
+- **Presentation**: Web API endpoints, module registration.
+
 ### Solution Structure
 
-<img src="./assets/image-20240426112716841.png" alt="image-20240426112716841" style="zoom:50%;" />
+```
+BridgingIT.DevKit.Examples.GettingStarted.sln
+├── src
+│   ├── Modules
+│   │   └── CoreModule
+│   │       ├── CoreModule.Application
+│   │       ├── CoreModule.Domain
+│   │       ├── CoreModule.Infrastructure
+│   │       ├── CoreModule.Presentation
+│   │       ├── CoreModule.UnitTests
+│   │       └── CoreModule.IntegrationTests
+│   └── Presentation.Web.Server
+└── docker-compose.yml
+```
 
 ### Application
 
-Contains commands, queries, and their respective handlers.
+Contains commands, queries, and handlers for business operations.
 
 #### Commands
 
-([CustomerCreateCommand.cs](./src/Application/Commands/CustomerCreateCommand.cs))
+([CustomerCreateCommand.cs](./src/Modules/CoreModule/CoreModule.Application/Commands/CustomerCreateCommand.cs))
 
 ```csharp
-public class CustomerCreateCommand
-    : CommandRequestBase<Customer>
+public class CustomerCreateCommand(CustomerModel model) : RequestBase<CustomerModel>
 {
-    public string FirstName { get; set; }
-
-    public string LastName { get; set; }
-
-    public override ValidationResult Validate() =>
-        new Validator().Validate(this);
+    public CustomerModel Model { get; set; } = model;
 
     public class Validator : AbstractValidator<CustomerCreateCommand>
     {
         public Validator()
         {
-            this.RuleFor(c => c.FirstName).NotNull().NotEmpty().WithMessage("Must not be empty.");
-            this.RuleFor(c => c.LastName).NotNull().NotEmpty().WithMessage("Must not be empty.");
+            this.RuleFor(c => c.Model).NotNull();
+            this.RuleFor(c => c.Model.FirstName).NotNull().NotEmpty().WithMessage("Must not be empty.");
+            this.RuleFor(c => c.Model.LastName).NotNull().NotEmpty().WithMessage("Must not be empty.");
+            this.RuleFor(c => c.Model.Email).NotNull().NotEmpty().WithMessage("Must not be empty.");
         }
     }
 }
 ```
 
-([CustomerCreateCommandHandler.cs](./src/Application/Commands/CustomerCreateCommandHandler.cs))
+([CustomerCreateCommandHandler.cs](./src/Modules/CoreModule/CoreModule.Application/Commands/CustomerCreateCommandHandler.cs))
 
 ```csharp
-public class CustomerCreateCommandHandler
-    : CommandHandlerBase<CustomerCreateCommand, Customer>
+[HandlerRetry(2, 100)]   // retry twice, wait 100ms between retries
+[HandlerTimeout(500)]    // timeout after 500ms execution
+public class CustomerCreateCommandHandler(
+    ILoggerFactory loggerFactory,
+    IMapper mapper,
+    IGenericRepository<Customer> repository)
+    : RequestHandlerBase<CustomerCreateCommand, CustomerModel>(loggerFactory)
 {
-    private readonly IGenericRepository<Customer> repository;
-
-    public CustomerCreateCommandHandler(
-        ILoggerFactory loggerFactory,
-        IGenericRepository<Customer> repository)
-        : base(loggerFactory)
-    {
-        this.repository = repository;
-    }
-
-    public override async Task<CommandResponse<Customer>> Process(
+    protected override async Task<Result<CustomerModel>> HandleAsync(
         CustomerCreateCommand request,
+        SendOptions options,
         CancellationToken cancellationToken)
     {
-        var customer = new Customer { FirstName = request.FirstName, LastName = request.LastName };
-        await this.repository.UpsertAsync(customer, cancellationToken).AnyContext();
-
-        return new CommandResponse<Customer> // TODO: use .For?
-        {
-            Result = customer
-        };
+        var customer = mapper.Map<CustomerModel, Customer>(request.Model);
+        return await repository.InsertResultAsync(customer, cancellationToken: cancellationToken)
+            .Tap(_ => Console.WriteLine("AUDIT"))
+            .Map(mapper.Map<Customer, CustomerModel>);
     }
 }
 ```
 
 #### Queries
 
+([CustomerFindAllQuery.cs](./src/Modules/CoreModule/CoreModule.Application/Queries/CustomerFindAllQuery.cs))
 
+```csharp
+public class CustomerFindAllQuery : RequestBase<IEnumerable<CustomerModel>>
+{
+    public Specification<Customer>? Filter { get; set; } = null;
+}
+```
+
+([CustomerFindAllQueryHandler.cs](./src/Modules/CoreModule/CoreModule.Application/Queries/CustomerFindAllQueryHandler.cs))
+
+```csharp
+[HandlerRetry(2, 100)]   // retry twice, wait 100ms between retries
+[HandlerTimeout(500)]    // timeout after 500ms execution
+public class CustomerFindAllQueryHandler(
+    ILoggerFactory loggerFactory,
+    IMapper mapper,
+    IGenericRepository<Customer> repository)
+    : RequestHandlerBase<CustomerFindAllQuery, IEnumerable<CustomerModel>>(loggerFactory)
+{
+    protected override async Task<Result<IEnumerable<CustomerModel>>> HandleAsync(
+        CustomerFindAllQuery request,
+        SendOptions options,
+        CancellationToken cancellationToken) =>
+        await repository.FindAllResultAsync(request.Filter, cancellationToken: cancellationToken)
+            .Tap(_ => Console.WriteLine("AUDIT"))
+            .Map(mapper.Map<Customer, CustomerModel>);
+}
+```
 
 ### Domain
 
-Defining your core business logic with domain models and aggregates.
+Core business logic with domain models and aggregates.
 
 #### Aggregates
 
+([Customer.cs](./src/Modules/CoreModule/CoreModule.Domain/Model/Customer.cs))
+
 ```csharp
-public class Customer : AggregateRoot<Guid>
+[DebuggerDisplay("Id={Id}, Name={FirstName} {LastName}, Status={Status}")]
+[TypedEntityId<Guid>]
+public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
 {
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
+    public string FirstName { get; private set; }
+    public string LastName { get; private set; }
+    public EmailAddress Email { get; private set; }
+    public CustomerStatus Status { get; private set; } = CustomerStatus.Lead;
+    public Guid ConcurrencyVersion { get; set; }
+
+    public static Customer Create(string firstName, string lastName, string email)
+    {
+        var customer = new Customer(firstName, lastName, EmailAddress.Create(email));
+        customer.DomainEvents.Register(new CustomerCreatedDomainEvent(customer));
+        return customer;
+    }
+
+    // Additional methods for changing name, email, status with domain event registration
+}
+```
+
+#### Value Objects
+
+([EmailAddress.cs](./src/Modules/CoreModule/CoreModule.Domain/Model/EmailAddress.cs))
+
+```csharp
+[DebuggerDisplay("Value={Value}")]
+public class EmailAddress : ValueObject
+{
+    public string Value { get; private set; }
+
+    public static EmailAddress Create(string value)
+    {
+        value = value?.Trim()?.ToLowerInvariant();
+        Rule.Add(RuleSet.IsValidEmail(value)).Throw();
+        return new EmailAddress(value);
+    }
+
+    protected override IEnumerable<object> GetAtomicValues()
+    {
+        yield return this.Value;
+    }
+}
+```
+
+#### Enumerations
+
+([CustomerStatus.cs](./src/Modules/CoreModule/CoreModule.Domain/Model/CustomerStatus.cs))
+
+```csharp
+[DebuggerDisplay("Id={Id}, Value={Value}")]
+public class CustomerStatus : Enumeration
+{
+    public static readonly CustomerStatus Lead = new(1, nameof(Lead), "Lead customer");
+    public static readonly CustomerStatus Active = new(2, nameof(Active), "Active customer");
+    public static readonly CustomerStatus Retired = new(3, nameof(Retired), "Retired customer");
+
+    // Additional properties and methods
+}
+```
+
+#### Domain Events
+
+([CustomerCreatedDomainEvent.cs](./src/Modules/CoreModule/CoreModule.Domain/Events/CustomerCreatedDomainEvent.cs))
+
+```csharp
+public class CustomerCreatedDomainEvent(Customer model) : DomainEventBase
+{
+    public Customer Model { get; } = model;
 }
 ```
 
 ### Infrastructure
 
-Providing the backbone with a DbContext setup and repository implementations.
+Persistence setup with EF Core.
 
 #### DbContext
 
-([AppDbContext.cs](./src/Infrastructure/EntityFramework/AppDbContext.cs))
+([CoreDbContext.cs](./src/Modules/CoreModule/CoreModule.Infrastructure/EntityFramework/CoreDbContext.cs))
 
-````csharp
-public class AppDbContext : DbContext
+```csharp
+public class CoreDbContext(DbContextOptions<CoreDbContext> options) : DbContext(options)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options)
-        : base(options)
-    {
-    }
-
     public DbSet<Customer> Customers { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(this.GetType().Assembly);
+    }
 }
-````
+```
+
+#### Configurations
+
+([CustomerTypeConfiguration.cs](./src/Modules/CoreModule/CoreModule.Infrastructure/EntityFramework/Configurations/CustomerTypeConfiguration.cs))
+
+```csharp
+public class CustomerTypeConfiguration : IEntityTypeConfiguration<Customer>
+{
+    public void Configure(EntityTypeBuilder<Customer> builder)
+    {
+        builder.ToTable("Customers").HasKey(x => x.Id).IsClustered(false);
+        // Additional property configurations for Id, Names, Email, Status, AuditState
+    }
+}
+```
+
+#### Migrations
+
+Initial migration creates Customers table with audit fields.
 
 ### Presentation
 
-Serves as the entry point for external interactions, focusing on delivering data and services to clients.
+Web API endpoints and module registration.
 
-#### CompositeRoot (Registrations)
+#### Module Registration
 
-([Program.cs](./src/Presentation.Web.Server/Program.cs))
+([CoreModule.cs](./src/Modules/CoreModule/CoreModule.Presentation/CoreModule.cs))
 
 ```csharp
-builder.Services.AddCommands();
-builder.Services.AddQueries();
+public class CoreModule : WebModuleBase
+{
+    public override IServiceCollection Register(
+        IServiceCollection services,
+        IConfiguration configuration = null,
+        IWebHostEnvironment environment = null)
+    {
+        var moduleConfiguration = this.Configure<CoreModuleConfiguration, CoreModuleConfiguration.Validator>(services, configuration);
 
-builder.Services
-    .AddSqlServerDbContext<CoreDbContext>(o => o
-        .UseConnectionString(builder.Configuration.GetConnectionString("Default")))
-    .WithDatabaseMigratorService();
+        services.AddStartupTasks(o => o.WithTask<CoreDomainSeederTask>(o => o.Enabled(environment.IsLocalDevelopment())));
+        services.AddJobScheduling(o => o.StartupDelay(configuration["JobScheduling:StartupDelay"]), configuration)
+            .WithSqlServerStore(configuration["JobScheduling:Quartz:quartz.dataSource.default.connectionString"])
+            .WithJob<CustomerExportJob>().Cron(CronExpressions.EveryHour).Named(nameof(CustomerExportJob)).RegisterScoped();
+
+        services.AddSqlServerDbContext<CoreDbContext>(o => o.UseConnectionString(moduleConfiguration.ConnectionStrings["Default"]).UseLogger())
+            .WithDatabaseMigratorService(o => o.Enabled(environment.IsLocalDevelopment()).DeleteOnStartup(environment.IsLocalDevelopment()));
+
+        services.AddEntityFrameworkRepository<Customer, CoreDbContext>()
+            .WithBehavior<RepositoryLoggingBehavior<Customer>>()
+            .WithBehavior<RepositoryAuditStateBehavior<Customer>>()
+            .WithBehavior<RepositoryDomainEventPublisherBehavior<Customer>>();
+
+        services.AddEndpoints<CoreCustomerEndpoints>();
+
+        return services;
+    }
+}
 ```
 
-#### ViewModels
+#### Endpoints
 
-([CustomerViewModel.cs](./src/Presentation/ViewModels/CustomerViewModel.cs))
+([CoreCustomerEndpoints.cs](./src/Modules/CoreModule/CoreModule.Presentation/Web/Endpoints/CoreCustomerEndpoints.cs))
 
-````csharp
-public class CustomerViewModel
+```csharp
+public class CoreCustomerEndpoints : EndpointsBase
 {
-    public string Id { get; set; }
+    public override void Map(IEndpointRouteBuilder app)
+    {
+        var group = app.MapGroup("api/core/customers").WithTags("Core.Customers");
 
-    public string FirstName { get; set; }
+        group.MapGet("/{id:guid}", CustomerFindOne).WithName("Core.Customers.GetById");
+        group.MapGet("", CustomerFindAll).WithName("Core.Customers.GetAll");
+        group.MapPost("", CustomerCreate).WithName("Core.Customers.Create");
+        group.MapPut("/{id:guid}", CustomerUpdate).WithName("Core.Customers.Update");
+        group.MapDelete("/{id:guid}", CustomerDelete).WithName("Core.Customers.Delete");
+    }
 
-    public string LastName { get; set; }
+    // Handler methods for each endpoint using IRequester
 }
-````
+```
 
-#### Web API (Controllers)
+#### Mapper Registration
 
-([CustomersController.cs](./src/Presentation/Web/Controllers/CustomersController.cs))
+([CoreModuleMapperRegister.cs](./src/Modules/CoreModule/CoreModule.Presentation/CoreModuleMapperRegister.cs))
 
-````csharp
-[ApiController]
-[Route("api/[controller]")]
-public class CustomersController : ControllerBase
+```csharp
+public class CoreModuleMapperRegister : IRegister
 {
-    private readonly IMediator mediator;
-
-    public CustomersController(IMediator mediator)
+    public void Register(TypeAdapterConfig config)
     {
-        this.mediator = mediator;
-    }
-
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<CustomerViewModel>>> GetAsync()
-    {
-        var query = new CustomerFindAllQuery();
-        var result = await this.mediator.Send(query);
-
-        return this.Ok(result?.Result?.Select(e =>
-            new CustomerViewModel
-            {
-                Id = e.Id.ToString(),
-                FirstName = e.FirstName,
-                LastName = e.LastName
-            }));
-    }
-
-    [HttpPost]
-    public async Task<ActionResult> PostAsync([FromBody] CustomerViewModel model)
-    {
-        if (model is null)
-        {
-            return this.BadRequest();
-        }
-
-        var command = new CustomerCreateCommand()
-        {
-            FirstName = model.FirstName,
-            LastName = model.LastName
-        };
-
-        var result = await this.mediator.Send(command);
-
-        return this.Created($"/api/customers/{result.Result.Id}", null);
+        // Configurations for value objects, enumerations, and aggregate-DTO mappings
     }
 }
-````
-
-
+```
 
 ### Testing the API
 
-Ensuring reliability through comprehensive unit, integration, and HTTP tests.
-
 #### Swagger UI
 
-Start the application (CTRL-F5) and use the following UI to test the API:
-
-[Swagger UI](https://localhost:7144/swagger/index.html)
-
-![image-20240426112042343](./assets/image-20240426112042343.png)
+Start the application (CTRL-F5) and test via [Swagger UI](https://localhost:7144/swagger/index.html).
 
 #### Unit Tests
 
-<img src="./assets/image-20240426111823428.png" alt="image-20240426111823428" style="zoom:50%;" />
+Run tests in `CoreModule.UnitTests` (e.g., CustomerCreateCommandHandlerTests, ArchitectureTests).
 
 #### Integration Tests
 
-<img src="./assets/image-20240426111718058.png" alt="image-20240426111718058" style="zoom:50%;" />
+Run tests in `CoreModule.IntegrationTests` (e.g., CustomerEndpointTests for HTTP responses).
 
-#### Http Tests
+#### HTTP Tests
 
-Start the application (CTRL-F5) and use the following HTTP requests to test the API:
-[API.http](./API.http)
-
-![image-20240426112136837](./assets/image-20240426112136837.png)
+Use tools like Postman or VS HTTP file to test endpoints:
+- GET /api/core/customers
+- POST /api/core/customers with body { "firstName": "John", "lastName": "Doe", "email": "john.doe@example.com" }
