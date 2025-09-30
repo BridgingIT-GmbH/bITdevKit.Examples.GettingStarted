@@ -244,7 +244,7 @@ For more information about .NET template development, see the [official document
 - **GitHub Issues**: [Report issues or request features](https://github.com/BridgingIT-GmbH/bITdevKit/issues)
 - **NuGet Package**: [BridgingIT.DevKit.Templates on NuGet.org](https://www.nuget.org/packages/BridgingIT.DevKit.Templates)
 - **Documentation**: [BridgingIT DevKit Documentation](https://github.com/BridgingIT-GmbH/bITdevKit)
-~~~~
+---
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
