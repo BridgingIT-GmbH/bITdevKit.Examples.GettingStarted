@@ -47,6 +47,12 @@ public class CoreModuleConfiguration
     public IReadOnlyDictionary<string, string> ConnectionStrings { get; set; }
 
     /// <summary>
+    /// Gets or sets the delay before starting the seeder task, represented as a time interval string.
+    /// </summary>
+    /// <remarks>The value should be specified in the format "hh:mm:ss". This delay determines how long the system waits after initialization before launching the seeder task.</remarks>
+    public string SeederTaskStartupDelay { get; set; } = "00:00:05";
+
+    /// <summary>
     /// FluentValidation validator for <see cref="CoreModuleConfiguration"/>.
     /// Ensures that the configuration is not null or empty and includes a
     /// connection string entry named <c>"Default"</c>.

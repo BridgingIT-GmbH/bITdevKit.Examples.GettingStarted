@@ -34,9 +34,16 @@ public class CoreModule : WebModuleBase
         IConfiguration configuration = null,
         IWebHostEnvironment environment = null)
     {
+        // get the module configuration from appsettings.json or environment variables
         var moduleConfiguration = this.Configure<CoreModuleConfiguration, CoreModuleConfiguration.Validator>(services, configuration);
 
-        // dbcontext
+        // startup tasks setup
+        services.AddStartupTasks(o => o
+            .StartupDelay(moduleConfiguration.SeederTaskStartupDelay))
+            .WithTask<CoreDomainSeederTask>(o => o
+                .Enabled(environment.IsLocalDevelopment()));
+
+        // entity framework setup
         services.AddSqlServerDbContext<CoreDbContext>(o => o
                 .UseConnectionString(moduleConfiguration.ConnectionStrings["Default"])
                 .UseLogger()/*.UseSimpleLogger()*/)
@@ -47,13 +54,13 @@ public class CoreModule : WebModuleBase
                 .Enabled(environment.IsLocalDevelopment())
                 .DeleteOnStartup(environment.IsLocalDevelopment()));
 
-        // repositories
+        // repository setup
         services.AddEntityFrameworkRepository<Customer, CoreDbContext>()
             .WithBehavior<RepositoryLoggingBehavior<Customer>>()
             .WithBehavior<RepositoryAuditStateBehavior<Customer>>()
             .WithBehavior<RepositoryDomainEventPublisherBehavior<Customer>>();
 
-        // endpoints
+        // endpoints registration
         services.AddEndpoints<CoreCustomerEndpoints>();
 
         return services;
