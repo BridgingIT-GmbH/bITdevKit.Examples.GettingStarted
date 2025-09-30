@@ -40,14 +40,18 @@ public class CoreModule : WebModuleBase
         services.AddSqlServerDbContext<CoreDbContext>(o => o
                 .UseConnectionString(moduleConfiguration.ConnectionStrings["Default"])
                 .UseLogger()/*.UseSimpleLogger()*/)
-            .WithDatabaseMigratorService(o => o
+            //.WithDatabaseCreatorService(o => o // create the database based on the dbcontext and entity type configurations
+            //    .Enabled(environment.IsLocalDevelopment())
+            //    .DeleteOnStartup(environment.IsLocalDevelopment()))
+            .WithDatabaseMigratorService(o => o // create the database and apply existing migrations
                 .Enabled(environment.IsLocalDevelopment())
                 .DeleteOnStartup(environment.IsLocalDevelopment()));
 
         // repositories
         services.AddEntityFrameworkRepository<Customer, CoreDbContext>()
             .WithBehavior<RepositoryLoggingBehavior<Customer>>()
-            .WithBehavior<RepositoryAuditStateBehavior<Customer>>();
+            .WithBehavior<RepositoryAuditStateBehavior<Customer>>()
+            .WithBehavior<RepositoryDomainEventPublisherBehavior<Customer>>();
 
         // endpoints
         services.AddEndpoints<CoreCustomerEndpoints>();

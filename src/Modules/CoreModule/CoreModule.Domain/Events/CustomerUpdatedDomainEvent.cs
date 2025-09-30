@@ -8,9 +8,19 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Ev
 using BridgingIT.DevKit.Domain;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
-public class CustomerUpdatedDomainEvent : DomainEventBase
+/// <summary>
+/// Domain event that is raised whenever an existing <see cref="Customer"/> aggregate has been updated.
+/// </summary>
+/// <remarks>
+/// Follows the Domain Events pattern in DDD:
+/// - Published by the <see cref="Customer"/> aggregate (e.g., in  <c>ChangeName</c>, <c>ChangeEmail</c>, <c>ChangeStatus</c>).
+/// - Consumed by one or more <see cref="DomainEventHandlerBase{TEvent}"/>
+///   implementations to trigger side effects such as updating projections, sending notifications or audit logging.
+/// </remarks>
+public class CustomerUpdatedDomainEvent(Customer model) : DomainEventBase
 {
-    public CustomerUpdatedDomainEvent(Customer model) => this.Model = model;
-
-    public Customer Model { get; }
+    /// <summary>
+    /// Gets the updated <see cref="Customer"/> aggregate instance that triggered this event.
+    /// </summary>
+    public Customer Model { get; } = model;
 }
