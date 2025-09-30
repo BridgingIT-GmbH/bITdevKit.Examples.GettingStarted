@@ -5,6 +5,7 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 
+using BridgingIT.DevKit.Application;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
@@ -39,17 +40,22 @@ public class CoreModule : WebModuleBase
 
         // startup tasks setup
         services.AddStartupTasks(o => o
-            .StartupDelay(moduleConfiguration.SeederTaskStartupDelay))
+            /*.StartupDelay(moduleConfiguration.SeederTaskStartupDelay)*/) // wait some time before starting the tasks
             .WithTask<CoreDomainSeederTask>(o => o
                 .Enabled(environment.IsLocalDevelopment()));
+
+        // job scheduling setup
+        services.AddJobScheduling(o => o
+            .StartupDelay(configuration["JobScheduling:StartupDelay"]), configuration) // wait some time before starting the scheduler
+            .WithSqlServerStore(configuration["JobScheduling:Quartz:quartz.dataSource.default.connectionString"])
+            .WithJob<CustomerExportJob>()
+                .Cron(CronExpressions.EveryHour)
+                .Named(nameof(CustomerExportJob)).RegisterScoped();
 
         // entity framework setup
         services.AddSqlServerDbContext<CoreDbContext>(o => o
                 .UseConnectionString(moduleConfiguration.ConnectionStrings["Default"])
                 .UseLogger()/*.UseSimpleLogger()*/)
-            //.WithDatabaseCreatorService(o => o // create the database based on the dbcontext and entity type configurations
-            //    .Enabled(environment.IsLocalDevelopment())
-            //    .DeleteOnStartup(environment.IsLocalDevelopment()))
             .WithDatabaseMigratorService(o => o // create the database and apply existing migrations
                 .Enabled(environment.IsLocalDevelopment())
                 .DeleteOnStartup(environment.IsLocalDevelopment()));

@@ -24,6 +24,7 @@
     <PackageReference Include="Serilog.Sinks.File" />
     <PackageReference Include="Serilog.Sinks.Seq" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
+    <PackageReference Include="Quartz.Serialization.Json" />
   </ItemGroup>
 
   <ItemGroup>

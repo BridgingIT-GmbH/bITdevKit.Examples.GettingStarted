@@ -37,9 +37,9 @@ public class CoreDomainSeederTask(
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        this.logger.LogInformation("{LogKey} seed core (task={StartupTaskType})", "IFR", this.GetType().PrettyName());
-
         await databaseReadyService.WaitForReadyAsync(cancellationToken: cancellationToken);
+
+        this.logger.LogInformation("{LogKey} seed core (task={StartupTaskType})", "IFR", this.GetType().PrettyName());
 
         await this.SeedCustomers(customerRepository, cancellationToken);
     }

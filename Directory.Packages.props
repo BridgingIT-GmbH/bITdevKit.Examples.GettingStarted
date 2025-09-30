@@ -4,8 +4,7 @@
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="BridgingIT.DevKit.Application.Commands" Version="9.0.18" />
-    <PackageVersion Include="BridgingIT.DevKit.Application.Queries" Version="9.0.18" />
+    <PackageVersion Include="BridgingIT.DevKit.Application.JobScheduling" Version="9.0.18" />
     <PackageVersion Include="BridgingIT.DevKit.Common.Mapping" Version="9.0.18" />
     <PackageVersion Include="BridgingIT.DevKit.Common.Utilities.Xunit" Version="9.0.18" />
     <PackageVersion Include="BridgingIT.DevKit.Domain" Version="9.0.18" />
@@ -38,5 +37,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageVersion>
+    <PackageVersion Include="Quartz.Serialization.Json" Version="3.14.0" />
   </ItemGroup>
 </Project>
