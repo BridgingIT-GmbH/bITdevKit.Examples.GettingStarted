@@ -43,10 +43,10 @@ builder.Services.AddMapping()
 builder.Services.AddEndpoints<SystemEndpoints>(); // builder.Environment.IsDevelopment()
 
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddProblemDetails(o => Configure.ProblemDetails(o, true));
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
+builder.Services.AddSwaggerGen();
 
 // ===============================================================================================
 // Configure the HTTP request pipeline
