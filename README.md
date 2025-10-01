@@ -18,18 +18,18 @@ An application built using .NET 9 and following a Domain-Driven Design (DDD) app
 ## Frameworks and Libaries
 - [.NET 9](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9/overview)
 - [ASP.NET Core](https://dotnet.microsoft.com/en-us/apps/aspnet)
-- [Entity Framework Core](https://learn.microsoft.com/en-us/ef/core/)
-- [Serilog](https://serilog.net/)
+- [Entity Framework Core](https://learn.microsoft.com/en-us/ef/core/) for data access
+- [Serilog](https://serilog.net/) for structured logging
 - [Mapster](https://github.com/MapsterMapper/Mapster) for object mapping
 - [FluentValidation](https://fluentvalidation.net/) for validation
 - [Quartz.NET](https://www.quartz-scheduler.net/) for job scheduling
-- [xUnit.net](https://xunit.net/), [NSubstitute](https://nsubstitute.github.io/), [Shouldly](https://docs.shouldly.org/)
+- [xUnit.net](https://xunit.net/), [NSubstitute](https://nsubstitute.github.io/), [Shouldly](https://docs.shouldly.org/) for testing
 ---
 ## Getting Started
 
 ### Running the Application
 
-1. Ensure you have .NET 9 SDK installed.
+1. Ensure you have .NET 9/10 SDK installed.
 2. Configure the database connection string in `appsettings.json` under "CoreModule:ConnectionStrings:Default" (e.g., SQL Server LocalDB).
 3. Optionally, start supporting containers with `docker-compose up` or `docker-compose up -d` for SQL Server and Seq logging.
 4. Set `Presentation.Web.Server` as the startup project.
@@ -39,11 +39,11 @@ An application built using .NET 9 and following a Domain-Driven Design (DDD) app
 - **Swagger UI** is available [here](https://localhost:7144/swagger/index.html).
 - **Seq** Dashboard (if using containers) is available [here](http://localhost:15349).
 
-The application will automatically migrate the database on startup (via DatabaseMigratorService) and seed initial data (via CoreDomainSeederTask) in development mode.
+The application will automatically migrate the database on startup (via DatabaseMigratorService in CoreModule) and seed initial data (via CoreDomainSeederTask) in development mode.
 
 ### Architecture Overview
 
-The GettingStarted project follows Onion Architecture principles, powered by bIT DevKit for modular DDD:
+The GettingStarted project follows Clean/Onion Architecture principles, powered by bIT DevKit for modular DDD:
 
 ![](assets/Onion.drawio.png)
 
