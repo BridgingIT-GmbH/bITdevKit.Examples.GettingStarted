@@ -40,13 +40,13 @@ builder.Services.AddNotifier()
 builder.Services.AddMapping()
     .WithMapster<CoreModuleMapperRegister>();
 
-builder.Services.AddEndpoints<SystemEndpoints>(builder.Environment.IsDevelopment());
+builder.Services.AddEndpoints<SystemEndpoints>(); // builder.Environment.IsDevelopment()
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddProblemDetails(o => Configure.ProblemDetails(o, true));
-builder.Services.AddOpenApi(); // .NET 9 built-in OpenAPI document generation (runtime + build-time support)
+builder.Services.AddOpenApi();
 
 // ===============================================================================================
 // Configure the HTTP request pipeline
@@ -55,7 +55,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.MapOpenApi(); // Expose /openapi/v1.json in development
+    app.MapOpenApi();
 }
 
 app.UseRequestCorrelation();
