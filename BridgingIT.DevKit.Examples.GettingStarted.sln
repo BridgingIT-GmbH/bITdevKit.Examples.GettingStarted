@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.8.34112.27
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11018.127 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D4BDCFA9-1B0D-49F6-BFFF-E90BC0781417}"
 EndProject
@@ -9,15 +9,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{55BA7C
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
-		API.http = API.http
 		azure-pipelines.yml = azure-pipelines.yml
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props
 		docker-compose.yml = docker-compose.yml
 		global.json = global.json
 		nuget.config = nuget.config
-		README.md = README.md
 		README-template.md = README-template.md
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Presentation.Web.Server", "src\Presentation.Web.Server\Presentation.Web.Server.csproj", "{E135B1DF-D94B-415E-9E5E-BE18AAF8EA13}"
@@ -25,6 +24,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{EDA346E9-95B9-477F-A7BD-E5EA750ADA15}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CoreModule", "CoreModule", "{C8C69834-9EA3-41C0-8FD2-C3B682A8491D}"
+	ProjectSection(SolutionItems) = preProject
+		src\Modules\CoreModule\Core-API.http = src\Modules\CoreModule\Core-API.http
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreModule.Application", "src\Modules\CoreModule\CoreModule.Application\CoreModule.Application.csproj", "{14FDE655-849B-46E9-8380-AB3DEA1E68E2}"
 EndProject

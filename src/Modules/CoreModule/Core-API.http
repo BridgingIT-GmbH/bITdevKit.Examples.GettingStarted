@@ -2,15 +2,15 @@
 
 ###################################################################################
 ### API [GET] Customers Find one                                                  #
-GET {{baseUrl}}/api/customers/02ad7224-dd72-4d40-a794-55c5307cf33e HTTP/1.1
+GET {{baseUrl}}/api/core/customers/e4f672fe-82d8-7cb3-444f-4486bf6fb163 HTTP/1.1
 
 ###################################################################################
 ### API [GET] Customers Find all                                                  #
-GET {{baseUrl}}/api/customers HTTP/1.1
+GET {{baseUrl}}/api/core/customers HTTP/1.1
 
 ###################################################################################
 ### API [POST] Customers Create                                                   #
-POST {{baseUrl}}/api/customers HTTP/1.1
+POST {{baseUrl}}/api/core/customers HTTP/1.1
 Content-Type: application/json
 
 {
@@ -21,11 +21,11 @@ Content-Type: application/json
 
 ###################################################################################
 ### API [PUT] Customers Update                                                   #
-PUT {{baseUrl}}/api/customers/02ad7224-dd72-4d40-a794-55c5307cf33e HTTP/1.1
+PUT {{baseUrl}}/api/core/customers/e4f672fe-82d8-7cb3-444f-4486bf6fb163 HTTP/1.1
 Content-Type: application/json
 
 {
-  "id": "02ad7224-dd72-4d40-a794-55c5307cf33e",
+  "id": "e4f672fe-82d8-7cb3-444f-4486bf6fb163",
   "firstName": "John{{$randomInt 1000 9999}}changed",
   "lastName": "Doe{{$randomInt 1000 9999}}changed"
 }
