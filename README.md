@@ -5,14 +5,13 @@
 An application built using .NET 9 and following a Domain-Driven Design (DDD) approach by using the BridgingIT DevKit (bIT DevKit).
 
 ## Features
-- Modular architecture with CoreModule as an example.
-- Application layer with Commands (e.g., CustomerCreateCommand) and Queries (e.g., CustomerFindAllQuery, CustomerFindOneQuery) using IRequester.
-- Domain layer with Aggregates (Customer), Value Objects (EmailAddress, CustomerId), Enumerations (CustomerStatus), Domain Events (CustomerCreatedDomainEvent, CustomerUpdatedDomainEvent), and Business Rules (e.g., EmailShouldBeUniqueRule).
-- Infrastructure layer with Entity Framework Core (CoreDbContext, migrations, configurations) and Generic Repositories with behaviors (logging, audit, domain event publishing).
+- Modular architecture with CoreModule as an example. [Modules](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-modules.md)
+- Application layer with Commands (e.g., CustomerCreateCommand) and Queries (e.g., CustomerFindAllQuery, CustomerFindOneQuery) using IRequester. [Requester](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-requester-notifier.md)
+- Domain layer with Aggregates (Customer), Value Objects (EmailAddress, CustomerId), Enumerations (CustomerStatus), Domain Events (CustomerCreatedDomainEvent, CustomerUpdatedDomainEvent), and Business Rules (e.g., EmailShouldBeUniqueRule). [Domain](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-domain-models.md), [Rules](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-rules.md)
+- Infrastructure layer with Entity Framework Core (CoreDbContext, migrations, configurations) and Generic Repositories with behaviors (logging, audit, domain event publishing). [Repositories](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-domain-repositories.md)
 - Presentation layer with Web API Endpoints for CRUD operations on Customers, using minimal API-style routing.
-- Startup tasks for seeding domain data (CoreDomainSeederTask).
-- Job scheduling with Quartz (e.g., CustomerExportJob).
-- Mapping with Mapster (CoreModuleMapperRegister).
+- Startup tasks for seeding domain data (CoreDomainSeederTask). [StartupTasks](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-startuptasks.md)
+- Job scheduling with Quartz (e.g., CustomerExportJob). [JobScheduling](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-jobscheduling.md)
 - Comprehensive testing: Unit tests (e.g., for command/query handlers, architecture rules), Integration tests (e.g., for endpoints).
 - Architecture validation tests to enforce Onion Architecture dependencies and domain rules (e.g., no public constructors on entities/value objects).
 
