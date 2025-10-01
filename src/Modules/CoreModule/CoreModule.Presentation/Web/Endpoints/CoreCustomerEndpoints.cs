@@ -133,7 +133,7 @@ public partial class CoreCustomerEndpoints : EndpointsBase
     {
         return (await requester.SendAsync(
             new CustomerCreateCommand(model), cancellationToken: cancellationToken))
-            .MapHttpCreated(value => $"/api/core/assets/{value.Id}"); // return created resource URI
+            .MapHttpCreated(value => $"/api/core/customers/{value.Id}"); // return created resource URI
     }
 
     /// <summary>
