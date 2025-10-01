@@ -73,9 +73,9 @@ public partial class CoreCustomerEndpoints : EndpointsBase
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
         // PUT /api/core/customers/{id}/status -> Update customer status (Active, Retired, etc.)
-        group.MapPut("/{id:guid}/status", CustomerChangeStatus)
+        group.MapPut("/{id:guid}/status", CustomerUpdateStatus)
             //.RequireEntityPermission<Customer>(Permission.Write)
-            .WithName("Core.Customers.ChangeStatus")
+            .WithName("Core.Customers.UpdateStatus")
             .Produces<CustomerModel>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -155,7 +155,7 @@ public partial class CoreCustomerEndpoints : EndpointsBase
     /// Changes the status of a customer to the provided status id.
     /// </summary>
     private static async Task<
-        Results<Ok<CustomerModel>, NotFound, UnauthorizedHttpResult, BadRequest, ProblemHttpResult>> CustomerChangeStatus(
+        Results<Ok<CustomerModel>, NotFound, UnauthorizedHttpResult, BadRequest, ProblemHttpResult>> CustomerUpdateStatus(
         [FromServices] IRequester requester,
         [FromRoute] string id,
         [FromBody] CustomerUpdateStatusRequestModel body,

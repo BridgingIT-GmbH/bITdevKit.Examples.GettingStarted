@@ -39,13 +39,13 @@ public class CustomerModel
     public string Email { get; set; }
 
     /// <summary>
+    /// Gets or sets the current status of the customer (Enumeration Id).
+    /// </summary>
+    public int Status { get; set; } = CustomerStatus.Lead.Id;
+
+    /// <summary>
     /// Gets or sets the concurrency version (as a string Guid).
     /// Used for optimistic concurrency control to prevent conflicting updates.
     /// </summary>
     public string ConcurrencyVersion { get; set; }
-
-    /// <summary>
-    /// Gets or sets the current status of the customer (Enumeration Id).
-    /// </summary>
-    public int Status { get; set; } = CustomerStatus.Lead.Id;
 }
