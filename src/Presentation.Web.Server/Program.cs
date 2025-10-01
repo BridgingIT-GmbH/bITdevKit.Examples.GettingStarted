@@ -3,9 +3,7 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-using BridgingIT.DevKit.Application;
 using BridgingIT.DevKit.Common;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 using BridgingIT.DevKit.Presentation.Web;
 using Hellang.Middleware.ProblemDetails;
@@ -25,9 +23,18 @@ builder.Services.AddModules(builder.Configuration, builder.Environment)
 // ===============================================================================================
 // Configure the services
 builder.Services.AddRequester()
-    .AddHandlers().WithBehavior(typeof(ModuleScopeBehavior<,>));
+    .AddHandlers()
+    .WithBehavior(typeof(ModuleScopeBehavior<,>))
+    .WithBehavior(typeof(ValidationPipelineBehavior<,>))
+    .WithBehavior(typeof(RetryPipelineBehavior<,>))
+    .WithBehavior(typeof(TimeoutPipelineBehavior<,>));
 builder.Services.AddNotifier()
-    .AddHandlers().WithBehavior(typeof(ModuleScopeBehavior<,>));
+    .AddHandlers()
+    .WithBehavior(typeof(ModuleScopeBehavior<,>))
+    .WithBehavior(typeof(ValidationPipelineBehavior<,>))
+    .WithBehavior(typeof(RetryPipelineBehavior<,>))
+    .WithBehavior(typeof(TimeoutPipelineBehavior<,>));
+    ;
 
 builder.Services.AddMapping()
     .WithMapster<CoreModuleMapperRegister>();
