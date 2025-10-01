@@ -15,6 +15,8 @@
     <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)</OpenApiDocumentsDirectory>
     <OpenApiGenerateDocumentsOptions>--file-name openapi</OpenApiGenerateDocumentsOptions>
   </PropertyGroup>
+  <!-- Generate OpenAPI document after build -->
+  <Target Name="GenerateOpenApiAfterBuild" AfterTargets="Build" DependsOnTargets="GenerateOpenApiDocuments" />
 
   <ItemGroup>
     <PackageReference Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" />
@@ -37,8 +39,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Modules\CoreModule\CoreModule.Infrastructure\CoreModule.Infrastructure.csproj" />
-    <ProjectReference Include="..\Modules\CoreModule\CoreModule.Presentation\CoreModule.Presentation.csproj" />
+    <ProjectReference
+      Include="..\Modules\CoreModule\CoreModule.Infrastructure\CoreModule.Infrastructure.csproj" />
+    <ProjectReference
+      Include="..\Modules\CoreModule\CoreModule.Presentation\CoreModule.Presentation.csproj" />
   </ItemGroup>
 
 </Project>
