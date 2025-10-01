@@ -5,6 +5,8 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
+
 /// <summary>
 /// Data transfer object (DTO) representing a <see cref="Domain.Model.Customer"/>.
 /// Used by the application and presentation layers to expose Customers to clients.
@@ -41,4 +43,9 @@ public class CustomerModel
     /// Used for optimistic concurrency control to prevent conflicting updates.
     /// </summary>
     public string ConcurrencyVersion { get; set; }
+
+    /// <summary>
+    /// Gets or sets the current status of the customer (Enumeration Id).
+    /// </summary>
+    public int Status { get; set; } = CustomerStatus.Lead.Id;
 }

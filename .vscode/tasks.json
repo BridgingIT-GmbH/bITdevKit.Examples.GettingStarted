@@ -79,20 +79,20 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "GettingsStarted [Unit Test]",
+      "label": "GettingsStarted - Core [Unit Test]",
       "command": "dotnet",
       "type": "shell",
-      "args": ["test", "${workspaceFolder}/tests/UnitTests/UnitTests.csproj"],
+      "args": ["test", "${workspaceFolder}/tests/Modules/CoreModule/CoreModule.UnitTests/CoreModule.UnitTests.csproj"],
       "group": "test",
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "GettingsStarted [Integration Test]",
+      "label": "GettingsStarted - Core [Integration Test]",
       "command": "dotnet",
       "type": "shell",
       "args": [
         "test",
-        "${workspaceFolder}/tests/IntegrationTests/IntegrationTests.csproj"
+        "${workspaceFolder}/tests/Modules/CoreModule/CoreModule.IntegrationTests/CoreModule.IntegrationTests.csproj"
       ],
       "group": "test",
       "problemMatcher": "$msCompile"

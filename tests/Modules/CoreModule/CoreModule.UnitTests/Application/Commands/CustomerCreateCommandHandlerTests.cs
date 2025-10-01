@@ -3,7 +3,7 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application;
+namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Commands;
 
 using BridgingIT.DevKit.Domain.Repositories;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
@@ -11,7 +11,7 @@ using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 
 [UnitTest("GettingStarted.Application")]
-public class CustomerFindAllQueryHandlerTests(ITestOutputHelper output) : TestsBase(output, s =>
+public class CustomerCreateCommandHandlerTests(ITestOutputHelper output) : TestsBase(output, s =>
     {
         s.AddMapping().WithMapster<CoreModuleMapperRegister>();
         s.AddRequester().AddHandlers();
@@ -22,21 +22,21 @@ public class CustomerFindAllQueryHandlerTests(ITestOutputHelper output) : TestsB
     })
 {
     [Fact]
-    public async Task Process_ValidQuery_ReturnsSuccessResultWithCustomers()
+    public async Task Process_ValidRequest_SuccessResult()
     {
         // Arrange
         var requester = this.ServiceProvider.GetService<IRequester>();
-        var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
-        await repository.InsertAsync(Customer.Create("John", "Doe", "john.doe@example.com"));
-        await repository.InsertAsync(Customer.Create("Mary", "Jane", "mary.jane@example.com"));
-        var query = new CustomerFindAllQuery();
+        var command = new CustomerCreateCommand(
+            new CustomerModel() { FirstName = "John", LastName = "Doe", Email = "john.doe@example.com" });
 
         // Act
-        var response = await requester.SendAsync(query, null, CancellationToken.None);
+        var response = await requester.SendAsync(command, null, CancellationToken.None);
 
         // Assert
         response.ShouldBeSuccess();
         response.Value.ShouldNotBeNull();
-        response.Value.Count().ShouldBe(2);
+        response.Value.Id.ShouldNotBe(Guid.Empty.ToString());
+        response.Value.FirstName.ShouldBe(command.Model.FirstName);
+        response.Value.LastName.ShouldBe(command.Model.LastName);
     }
 }

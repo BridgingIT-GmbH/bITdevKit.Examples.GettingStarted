@@ -20,7 +20,7 @@ using Microsoft.AspNetCore.Routing;
 /// Includes read, create, update, and delete operations.
 /// Endpoints are grouped under <c>/api/core/customers</c>.
 /// </summary>
-public class CoreCustomerEndpoints : EndpointsBase
+public partial class CoreCustomerEndpoints : EndpointsBase
 {
     /// <summary>
     /// Maps the <see cref="Customer"/> endpoints to the given <see cref="IEndpointRouteBuilder"/>.
@@ -66,6 +66,16 @@ public class CoreCustomerEndpoints : EndpointsBase
         group.MapPut("/{id:guid}", CustomerUpdate)
             //.RequireEntityPermission<Customer>(Permission.Write)
             .WithName("Core.Customers.Update")
+            .Produces<CustomerModel>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        // PUT /api/core/customers/{id}/status -> Update customer status (Active, Retired, etc.)
+        group.MapPut("/{id:guid}/status", CustomerChangeStatus)
+            //.RequireEntityPermission<Customer>(Permission.Write)
+            .WithName("Core.Customers.ChangeStatus")
             .Produces<CustomerModel>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -138,6 +148,21 @@ public class CoreCustomerEndpoints : EndpointsBase
     {
         return (await requester.SendAsync(
             new CustomerUpdateCommand(model), cancellationToken: cancellationToken))
+            .MapHttpOk();
+    }
+
+    /// <summary>
+    /// Changes the status of a customer to the provided status id.
+    /// </summary>
+    private static async Task<
+        Results<Ok<CustomerModel>, NotFound, UnauthorizedHttpResult, BadRequest, ProblemHttpResult>> CustomerChangeStatus(
+        [FromServices] IRequester requester,
+        [FromRoute] string id,
+        [FromBody] CustomerUpdateStatusRequestModel body,
+        CancellationToken cancellationToken = default)
+    {
+        return (await requester.SendAsync(
+            new CustomerUpdateStatusCommand(id, body.StatusId), cancellationToken: cancellationToken))
             .MapHttpOk();
     }
 
