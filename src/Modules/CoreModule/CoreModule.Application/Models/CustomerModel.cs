@@ -41,7 +41,7 @@ public class CustomerModel
     /// <summary>
     /// Gets or sets the current status of the customer (Enumeration Id).
     /// </summary>
-    public int Status { get; set; } = CustomerStatus.Lead.Id;
+    public int Status { get; set; }
 
     /// <summary>
     /// Gets or sets the concurrency version (as a string Guid).

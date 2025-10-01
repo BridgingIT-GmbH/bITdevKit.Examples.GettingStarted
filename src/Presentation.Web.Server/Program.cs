@@ -40,7 +40,7 @@ builder.Services.AddNotifier()
 builder.Services.AddMapping()
     .WithMapster<CoreModuleMapperRegister>();
 
-// builder.Services.AddEndpoints<SystemEndpoints>(builder.Environment.IsDevelopment());
+builder.Services.AddEndpoints<SystemEndpoints>(builder.Environment.IsDevelopment());
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

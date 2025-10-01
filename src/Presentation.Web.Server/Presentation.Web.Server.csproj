@@ -12,18 +12,9 @@
   <!-- OpenAPI build-time generation configuration -->
   <PropertyGroup>
     <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
-    <OpenApiDocumentsDirectory>.</OpenApiDocumentsDirectory>
+    <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)</OpenApiDocumentsDirectory>
+    <OpenApiGenerateDocumentsOptions>--file-name openapi</OpenApiGenerateDocumentsOptions>
   </PropertyGroup>
-
-  <!-- Copy the generated OpenAPI JSON (produced under obj/.../EndpointInfo/) to project root as  openapi.json -->
-  <Target Name="CopyOpenApiToRoot" AfterTargets="Build">
-    <PropertyGroup>
-      <_OpenApiSourceFile>$(IntermediateOutputPath)EndpointInfo\$(MSBuildProjectName).json</_OpenApiSourceFile>
-      <_OpenApiDestFile>$(MSBuildProjectDirectory)\openapi.json</_OpenApiDestFile>
-    </PropertyGroup>
-    <Message Text="OpenAPI Copy: $(_OpenApiSourceFile) -> $(_OpenApiDestFile)" Importance="High" Condition="Exists('$(_OpenApiSourceFile)')" />
-    <Copy SourceFiles="$(_OpenApiSourceFile)" DestinationFiles="$(_OpenApiDestFile)" SkipUnchangedFiles="true" Condition="Exists('$(_OpenApiSourceFile)')" />
-  </Target>
 
   <ItemGroup>
     <PackageReference Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" />
