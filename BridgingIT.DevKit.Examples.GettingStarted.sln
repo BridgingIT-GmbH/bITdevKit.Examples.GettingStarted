@@ -26,6 +26,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CoreModule", "CoreModule", "{C8C69834-9EA3-41C0-8FD2-C3B682A8491D}"
 	ProjectSection(SolutionItems) = preProject
 		src\Modules\CoreModule\Core-API.http = src\Modules\CoreModule\Core-API.http
+		src\Modules\CoreModule\README.md = src\Modules\CoreModule\README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreModule.Application", "src\Modules\CoreModule\CoreModule.Application\CoreModule.Application.csproj", "{14FDE655-849B-46E9-8380-AB3DEA1E68E2}"

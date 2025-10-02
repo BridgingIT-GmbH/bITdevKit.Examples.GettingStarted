@@ -5,9 +5,9 @@
 
 using BridgingIT.DevKit.Common;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
+using BridgingIT.DevKit.Presentation;
 using BridgingIT.DevKit.Presentation.Web;
 using Hellang.Middleware.ProblemDetails;
-using Microsoft.AspNetCore.OpenApi;
 
 // ===============================================================================================
 // Configure the host
@@ -35,29 +35,25 @@ builder.Services.AddNotifier()
     .WithBehavior(typeof(ValidationPipelineBehavior<,>))
     .WithBehavior(typeof(RetryPipelineBehavior<,>))
     .WithBehavior(typeof(TimeoutPipelineBehavior<,>));
-    ;
 
-builder.Services.AddMapping()
-    .WithMapster<CoreModuleMapperRegister>();
-
-builder.Services.AddEndpoints<SystemEndpoints>(); // builder.Environment.IsDevelopment()
+builder.Services.AddEndpoints<SystemEndpoints>(builder.Environment.IsLocalDevelopment());
 
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails(o => Configure.ProblemDetails(o, true));
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen();
 
 // ===============================================================================================
 // Configure the HTTP request pipeline
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(o => o.SwaggerEndpoint("/openapi.json", "v1"));
     app.MapOpenApi();
 }
 
+app.UseStaticFiles();
 app.UseRequestCorrelation();
 app.UseRequestLogging();
 

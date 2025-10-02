@@ -16,6 +16,7 @@
 ##                                                                               ##
 ## Variables:                                                                    ##
 ##  @customerId       A seeded existing customer (read/update/delete scenarios)  ##
+##  @concurrencyVersion The concurrency version of the existing customer         ##
 ##                                                                               ##
 ###################################################################################
 

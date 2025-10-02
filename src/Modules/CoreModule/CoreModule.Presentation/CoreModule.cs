@@ -66,6 +66,10 @@ public class CoreModule : WebModuleBase
             .WithBehavior<RepositoryAuditStateBehavior<Customer>>()
             .WithBehavior<RepositoryDomainEventPublisherBehavior<Customer>>();
 
+        // mapping setup
+        services.AddMapping()
+            .WithMapster<CoreModuleMapperRegister>();
+
         // endpoints registration
         services.AddEndpoints<CoreCustomerEndpoints>();
 

@@ -12,10 +12,10 @@
   <!-- OpenAPI build-time generation configuration -->
   <PropertyGroup>
     <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
-    <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)</OpenApiDocumentsDirectory>
+    <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/wwwroot</OpenApiDocumentsDirectory>
     <OpenApiGenerateDocumentsOptions>--file-name openapi</OpenApiGenerateDocumentsOptions>
   </PropertyGroup>
-  <!-- Generate OpenAPI document after build -->
+  <!-- OpenAPI generate document after build -->
   <Target Name="GenerateOpenApiAfterBuild" AfterTargets="Build" DependsOnTargets="GenerateOpenApiDocuments" />
 
   <ItemGroup>
@@ -39,10 +39,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference
-      Include="..\Modules\CoreModule\CoreModule.Infrastructure\CoreModule.Infrastructure.csproj" />
-    <ProjectReference
-      Include="..\Modules\CoreModule\CoreModule.Presentation\CoreModule.Presentation.csproj" />
+    <ProjectReference Include="..\Modules\CoreModule\CoreModule.Infrastructure\CoreModule.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\CoreModule\CoreModule.Presentation\CoreModule.Presentation.csproj" />
   </ItemGroup>
 
 </Project>
