@@ -55,7 +55,8 @@
     <Content Include="Directory.Build.props" Pack="true" PackagePath="content/" />
     <Content Include="Directory.Packages.props" Pack="true" PackagePath="content/" />
     <Content Include="BridgingIT.DevKit.Examples.GettingStarted.sln" Pack="true" PackagePath="content/" />
-    <Content Include="Core-API.http" Pack="true" PackagePath="content/" />
+    <Content Include="src\Modules\CoreModule\Core-API.http" Pack="true" PackagePath="content/" />
+	<Content Include="src\Modules\CoreModule\README.md" Pack="true" PackagePath="content/" />
     <Content Include="CODE_OF_CONDUCT.md" Pack="true" PackagePath="content/" />
     <Content Include="README.md" Pack="true" PackagePath="content/" />
     <Content Include="LICENSE" Pack="true" PackagePath="content/" />
