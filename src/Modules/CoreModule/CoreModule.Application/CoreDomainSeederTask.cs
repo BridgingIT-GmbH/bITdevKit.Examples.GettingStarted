@@ -10,6 +10,7 @@ using BridgingIT.DevKit.Common;
 using BridgingIT.DevKit.Domain.Repositories;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -24,8 +25,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 public class CoreDomainSeederTask(
     ILoggerFactory loggerFactory,
     IGenericRepository<Customer> customerRepository,
+    //IServiceScopeFactory scopeFactory,
     IDatabaseReadyService databaseReadyService) : IStartupTask
-{
+    {
     private readonly ILogger<CoreDomainSeederTask> logger =
         loggerFactory?.CreateLogger<CoreDomainSeederTask>() ??
         NullLoggerFactory.Instance.CreateLogger<CoreDomainSeederTask>();
@@ -40,6 +42,9 @@ public class CoreDomainSeederTask(
         await databaseReadyService.WaitForReadyAsync(cancellationToken: cancellationToken);
 
         this.logger.LogInformation("{LogKey} seed core (task={StartupTaskType})", "IFR", this.GetType().PrettyName());
+
+        //using var scope = scopeFactory.CreateScope();
+        //var customerRepository = scope.ServiceProvider.GetRequiredService<IGenericRepository<Customer>>();
 
         await this.SeedCustomers(customerRepository, cancellationToken);
     }
