@@ -345,11 +345,70 @@ public class CoreModuleMapperRegister : IRegister
 }
 ```
 
-### Testing the API
+Perfect 🚀 — let’s make it **short and developer‑oriented**, but also **informative** about how the OpenAPI part is setup (MSBuild, package references, and post‑build step).  
 
-#### Swagger UI
+Here’s a **drop‑in section** for your README that matches the style of what you already have:
 
-Start the application (CTRL-F5) and test via [Swagger UI](https://localhost:7144/swagger/index.html).
+---
+
+### OpenAPI Specification and Swagger UI
+
+The project uses **build‑time OpenAPI** documentation creation.
+
+- On **build**, the OpenAPI specification is generated to `wwwroot/openapi.json`.  
+- ASP.NET Core serves this as a **static file** at [https://localhost:7144/openapi.json](https://localhost:7144/openapi.json).
+- **Swagger UI** ([https://localhost:7144/swagger/index.html](https://localhost:7144/swagger/index.html)) is configured to use the generated specification.
+
+This ensures the specification is **consistent across environments** and available as a build artifact.
+
+#### Setup
+
+- **Packages used**:  
+  - `Microsoft.AspNetCore.OpenApi`  
+  - `Microsoft.Extensions.ApiDescription.Server`  
+  - `Swashbuckle.AspNetCore.SwaggerUI` (for the UI only)
+
+- **Project file configuration** (`Presentation.Web.Server.csproj`):
+  ```xml
+  <PropertyGroup>
+    <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
+    <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/wwwroot</OpenApiDocumentsDirectory>
+    <OpenApiGenerateDocumentsOptions>--file-name openapi</OpenApiGenerateDocumentsOptions>
+  </PropertyGroup>
+  <Target Name="GenerateOpenApiAfterBuild" AfterTargets="Build" DependsOnTargets="GenerateOpenApiDocuments" />
+  ```
+
+- **OpenApi services and static files** (`Program.cs`):
+  ```csharp
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddOpenApi();
+    ...
+    app.UseSwaggerUI(o =>
+    {
+        o.SwaggerEndpoint("/openapi.json", "v1");
+        app.MapOpenApi();
+    });
+    app.UseStaticFiles();
+  ```
+
+
+This ensures `openapi.json` is automatically created **after each build**. More information can be found in the [Microsoft Docs](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/aspnetcore-openapi#generate-openapi-documents-at-build-time).
+
+#### Client generation
+
+The generated specification can be used to build strongly‑typed clients:
+
+```bash
+# TypeScript client
+nswag openapi2tsclient /input:src/Presentation.Web.Server/wwwroot/openapi.json /output:Client.ts
+
+# C# client
+nswag openapi2csclient /input:src/Presentation.Web.Server/wwwroot/openapi.json /output:Client.cs
+```
+
+Since Swagger UI serves the exact same specification as a static asset, it can be targeted at the following endpoint: `https://localhost:7144/openapi.json`
+
+### Testing
 
 #### Unit Tests
 
@@ -361,9 +420,12 @@ Run tests in `CoreModule.IntegrationTests` (e.g., CustomerEndpointTests for HTTP
 
 #### HTTP Tests
 
-Use tools like Postman or VS HTTP file to test endpoints:
+Use tools like Bruno/Postman or VS HTTP file to test endpoints:
 - GET /api/core/customers
 - POST /api/core/customers with body { "firstName": "John", "lastName": "Doe", "email": "john.doe@example.com" }
+
+A few example requests are in [Core-API.http](./src/Modules/CoreModule/Core-API.http).
+
 --- 
 ## License
 
