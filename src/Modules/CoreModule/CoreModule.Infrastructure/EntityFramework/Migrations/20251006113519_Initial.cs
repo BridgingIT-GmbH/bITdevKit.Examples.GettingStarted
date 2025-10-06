@@ -11,8 +11,12 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "core");
+
             migrationBuilder.CreateTable(
                 name: "Customers",
+                schema: "core",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -50,7 +54,8 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Customers");
+                name: "Customers",
+                schema: "core");
         }
     }
 }

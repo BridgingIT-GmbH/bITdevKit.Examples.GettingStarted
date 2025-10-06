@@ -6,6 +6,7 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
 
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
+using BridgingIT.DevKit.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
@@ -17,24 +18,11 @@ using Microsoft.EntityFrameworkCore;
 /// Configured via <see cref="DbContextOptions{AppDbContext}"/> dependency injection.
 /// </remarks>
 /// <param name="options">The database context options (provider, connection string, etc.).</param>
-public class CoreDbContext(DbContextOptions<CoreDbContext> options) : DbContext(options)
+public class CoreDbContext(DbContextOptions<CoreDbContext> options) : ModuleDbContextBase(options)
 {
     /// <summary>
     /// Gets or sets the <see cref="DbSet{TEntity}"/> for managing <see cref="Customer"/> entities.
     /// Represents the "Customers" table in the database.
     /// </summary>
     public DbSet<Customer> Customers { get; set; }
-
-    /// <summary>
-    /// Called by EF Core during model creation.
-    /// Applies all <see cref="IEntityTypeConfiguration{TEntity}"/> implementations
-    /// found in the same assembly (e.g. <c>CustomerTypeConfiguration</c>).
-    /// </summary>
-    /// <param name="modelBuilder">The model builder instance used to configure entity mappings.</param>
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        // Automatically register all IEntityTypeConfiguration<TEntity> mappings
-        // in this assembly — this keeps DbContext clean and scalable as the model grows
-        modelBuilder.ApplyConfigurationsFromAssembly(this.GetType().Assembly);
-    }
 }

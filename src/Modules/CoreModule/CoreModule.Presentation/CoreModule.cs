@@ -55,7 +55,7 @@ public class CoreModule : WebModuleBase
         // entity framework setup
         services.AddSqlServerDbContext<CoreDbContext>(o => o
                 .UseConnectionString(moduleConfiguration.ConnectionStrings["Default"])
-                .UseLogger()/*.UseSimpleLogger()*/)
+                .UseLogger(true, true)/*.UseSimpleLogger()*/)
             .WithDatabaseMigratorService(o => o // create the database and apply existing migrations
                 .Enabled(environment.IsLocalDevelopment())
                 .DeleteOnStartup(environment.IsLocalDevelopment()));

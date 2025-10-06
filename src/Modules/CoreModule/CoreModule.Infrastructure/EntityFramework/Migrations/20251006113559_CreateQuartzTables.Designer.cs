@@ -12,14 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework.Migrations
 {
     [DbContext(typeof(CoreDbContext))]
-    [Migration("20250929211741_Initial")]
-    partial class Initial
+    [Migration("20251006113559_CreateQuartzTables")]
+    partial class CreateQuartzTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("core")
                 .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
@@ -57,7 +58,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
 
                     SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("Id"), false);
 
-                    b.ToTable("Customers", (string)null);
+                    b.ToTable("Customers", "core");
                 });
 
             modelBuilder.Entity("BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model.Customer", b =>
@@ -131,7 +132,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
 
                             b1.HasKey("CustomerId");
 
-                            b1.ToTable("Customers");
+                            b1.ToTable("Customers", "core");
 
                             b1.WithOwner()
                                 .HasForeignKey("CustomerId");
