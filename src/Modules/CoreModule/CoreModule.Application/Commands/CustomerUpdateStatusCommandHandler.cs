@@ -25,7 +25,7 @@ public class CustomerUpdateStatusCommandHandler(
         CancellationToken cancellationToken) =>
         await repository.FindOneResultAsync(CustomerId.Create(request.CustomerId), cancellationToken: cancellationToken)
             // Change status (idempotent if same)
-            .Tap(e => e.ChangeStatus(request.StatusId))
+            .Tap(e => e.ChangeStatus(request.Status))
             // Persist
             .BindAsync(async (customer, ct) =>
                 await repository.UpdateResultAsync(customer, ct), cancellationToken)

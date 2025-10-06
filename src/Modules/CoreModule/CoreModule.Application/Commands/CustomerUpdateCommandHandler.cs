@@ -21,8 +21,8 @@ using FluentValidation;
 /// - Rule validation similar to <see cref="CustomerCreateCommandHandler"/>, but must consider
 ///   excluding the current customer when checking uniqueness (TODO noted).
 /// </remarks>
-[HandlerRetry(2, 100)]   // retry on transient failures
-[HandlerTimeout(500)]    // max execution 500ms
+//[HandlerRetry(2, 100)]   // retry on transient failures
+//[HandlerTimeout(500)]    // max execution 500ms
 public class CustomerUpdateCommandHandler(
     IMapper mapper,
     IGenericRepository<Customer> repository)
@@ -39,8 +39,13 @@ public class CustomerUpdateCommandHandler(
     protected override async Task<Result<CustomerModel>> HandleAsync(
         CustomerUpdateCommand request,
         SendOptions options,
-        CancellationToken cancellationToken) =>
-        await Result.Success()
+        CancellationToken cancellationToken)
+    {
+        //var customer = mapper.Map<CustomerModel, Customer>(request.Model);
+        //var result = await repository.UpdateResultAsync(customer, cancellationToken);
+        //retunr mapper.Map<Customer, CustomerModel>(result.Value);
+
+        return await Result.Success()
 
             // Map from DTO -> domain entity
             .Map(mapper.Map<CustomerModel, Customer>(request.Model))
@@ -50,7 +55,6 @@ public class CustomerUpdateCommandHandler(
                 .Add(RuleSet.IsNotEmpty(customer.FirstName))
                 .Add(RuleSet.IsNotEmpty(customer.LastName))
                 .Add(RuleSet.NotEqual(customer.LastName, "notallowed"))
-
                 // TODO: Check unique email excluding the current entity (currently disabled)
                 //.Add(new EmailShouldBeUniqueRule(customer.Email, repository))
 
@@ -62,12 +66,12 @@ public class CustomerUpdateCommandHandler(
 
             // Update in repository
             .BindAsync(async (customer, ct) =>
-                await repository.UpdateResultAsync(customer, ct),
-                cancellationToken)
+                await repository.UpdateResultAsync(customer, ct), cancellationToken)
 
             // Side-effect (audit or logging)
             .Tap(_ => Console.WriteLine("AUDIT"))
 
             // Map domain entity -> DTO result
             .Map(mapper.Map<Customer, CustomerModel>);
+    }
 }

@@ -38,7 +38,7 @@ public class CustomerModel
     /// </summary>
     public string Email { get; set; }
 
-    /// <summary>
+    /// <summary>up
     /// Gets or sets the current status of the customer (Enumeration Id).
     /// </summary>
     public int Status { get; set; }

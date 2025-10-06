@@ -5,9 +5,9 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
+using System.Diagnostics;
 using BridgingIT.DevKit.Domain.Model;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Events;
-using System.Diagnostics;
 
 /// <summary>
 /// Represents a customer aggregate root with personal details, email address, and lead/status information.
@@ -98,11 +98,9 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
             return this;
         }
 
-        this.ApplyChange(this.FirstName, firstName,
-            v => this.FirstName = v);
+        this.ApplyChange(this.FirstName, firstName, v => this.FirstName = v);
 
-        this.ApplyChange(this.LastName, lastName,
-            v => this.LastName = v);
+        this.ApplyChange(this.LastName, lastName, v => this.LastName = v);
 
         return this;
     }
@@ -122,8 +120,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
 
         var newEmail = EmailAddress.Create(email);
 
-        return this.ApplyChange(this.Email, newEmail,
-            v => this.Email = v);
+        return this.ApplyChange(this.Email, newEmail, v => this.Email = v);
     }
 
     /// <summary>
@@ -139,8 +136,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
             return this;
         }
 
-        return this.ApplyChange(this.Status, status,
-            v => this.Status = v);
+        return this.ApplyChange(this.Status, status, v => this.Status = v);
     }
 
     /// <summary>
