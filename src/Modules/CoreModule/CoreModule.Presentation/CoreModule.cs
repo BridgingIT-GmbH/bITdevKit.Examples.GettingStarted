@@ -79,7 +79,7 @@ public class CoreModule() : WebModuleBase(nameof(CoreModule).ToLower())
             .WithMapster<CoreModuleMapperRegister>();
 
         // endpoints registration
-        services.AddEndpoints<CoreModuleCustomerEndpoints>();
+        services.AddEndpoints<CustomerEndpoints>();
 
         return services;
     }

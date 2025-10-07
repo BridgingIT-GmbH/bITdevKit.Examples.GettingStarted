@@ -5,11 +5,8 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation.Web;
 
-public partial class CoreModuleCustomerEndpoints
-{
-    /// <summary>
-    /// Request body for changing customer status.
-    /// </summary>
-    /// <param name="StatusId">Enumeration Id of target status.</param>
-    private sealed record CustomerUpdateStatusRequestModel(int StatusId);
-}
+/// <summary>
+/// Request body for changing customer status.
+/// </summary>
+/// <param name="StatusId">Enumeration Id of target status.</param>
+public sealed record CustomerUpdateStatusRequestModel(int StatusId);

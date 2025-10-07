@@ -5,12 +5,12 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/api/core/customers/{id}": {
+    "/api/coremodule/customers/{id}": {
       "get": {
         "tags": [
-          "Core.Customers"
+          "CoreModule.Customers"
         ],
-        "operationId": "Core.Customers.GetById",
+        "operationId": "CoreModule.Customers.GetById",
         "parameters": [
           {
             "name": "id",
@@ -63,9 +63,9 @@
       },
       "put": {
         "tags": [
-          "Core.Customers"
+          "CoreModule.Customers"
         ],
-        "operationId": "Core.Customers.Update",
+        "operationId": "CoreModule.Customers.Update",
         "parameters": [
           {
             "name": "id",
@@ -127,9 +127,9 @@
       },
       "delete": {
         "tags": [
-          "Core.Customers"
+          "CoreModule.Customers"
         ],
-        "operationId": "Core.Customers.Delete",
+        "operationId": "CoreModule.Customers.Delete",
         "parameters": [
           {
             "name": "id",
@@ -174,12 +174,12 @@
         }
       }
     },
-    "/api/core/customers": {
+    "/api/coremodule/customers": {
       "get": {
         "tags": [
-          "Core.Customers"
+          "CoreModule.Customers"
         ],
-        "operationId": "Core.Customers.GetAll",
+        "operationId": "CoreModule.Customers.GetAll",
         "responses": {
           "200": {
             "description": "OK",
@@ -221,9 +221,9 @@
       },
       "post": {
         "tags": [
-          "Core.Customers"
+          "CoreModule.Customers"
         ],
-        "operationId": "Core.Customers.Create",
+        "operationId": "CoreModule.Customers.Create",
         "requestBody": {
           "content": {
             "application/json": {
@@ -270,12 +270,12 @@
         }
       }
     },
-    "/api/core/customers/{id}/status": {
+    "/api/coremodule/customers/{id}/status": {
       "put": {
         "tags": [
-          "Core.Customers"
+          "CoreModule.Customers"
         ],
-        "operationId": "Core.Customers.UpdateStatus",
+        "operationId": "CoreModule.Customers.UpdateStatus",
         "parameters": [
           {
             "name": "id",
@@ -592,7 +592,7 @@
   },
   "tags": [
     {
-      "name": "Core.Customers"
+      "name": "CoreModule.Customers"
     },
     {
       "name": "_system"

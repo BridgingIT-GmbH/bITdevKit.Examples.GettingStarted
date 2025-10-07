@@ -15,9 +15,9 @@
 
     <!-- Package-Metadaten -->
     <PackageId>BridgingIT.DevKit.Templates</PackageId>
-    <Title>BridgingIT DevKit Solution Templates</Title>
+    <Title>BridgingIT.DevKit Solution Templates</Title>
     <Authors>BridgingIT</Authors>
-    <Description>BridgingIT DevKit Solution Templates für die schnelle Erstellung von modularen .NET Anwendungen mit Clean Architecture Prinzipien</Description>
+    <Description>BridgingIT.DevKit Solution Templates für die schnelle Erstellung von modularen .NET Anwendungen mit Clean Architecture Prinzipien</Description>
     <Copyright>Copyright (c) 2024 BridgingIT</Copyright>
     <PackageTags>bridgingit;devkit;template;dotnet;clean-architecture;solution;cqrs;ddd</PackageTags>
     <RepositoryUrl>https://github.com/bridgingIT/bIT.devkit-examples-gettingstarted</RepositoryUrl>
@@ -25,7 +25,7 @@
     <PackageProjectUrl>https://github.com/bridgingIT/bIT.devkit-examples-gettingstarted</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Initial release of BridgingIT DevKit Solution Templates</PackageReleaseNotes>
+    <PackageReleaseNotes>Initial release of BridgingIT.DevKit Solution Templates</PackageReleaseNotes>
 
     <!-- Versions-Informationen -->
     <Version>1.0.0</Version>

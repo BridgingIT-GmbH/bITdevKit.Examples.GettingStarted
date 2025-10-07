@@ -4,9 +4,9 @@
   "classifications": [
     "Solution"
   ],
-  "name": "BridgingIT DevKit Solution",
+  "name": "BridgingIT.DevKit Solution",
   "identity": "BridgingIT.DevKit.Solution.Template",
-  "shortName": "devkitsolution",
+  "shortName": "bitdevkitsolution",
   "tags": {
     "language": "C#",
     "type": "solution"
@@ -27,6 +27,25 @@
       "defaultValue": "Core",
       "replaces": "CoreModule",
       "fileRename": "CoreModule"
+    },
+    "ModuleNameLower": {
+      "type": "generated",
+      "generator": "casing",
+      "parameters": {
+        "source": "ModuleName",
+        "casing": "lowerCase"
+      },
+      "replaces": "coremodule"
+    },
+    "ModuleNameLowerShort": {
+      "type": "generated",
+      "generator": "casing",
+      "parameters": {
+        "source": "ModuleName",
+        "casing": "lowerCase",
+        "value": "${ModuleName}"
+      },
+      "replaces": "core"
     }
   },
   "sources": [

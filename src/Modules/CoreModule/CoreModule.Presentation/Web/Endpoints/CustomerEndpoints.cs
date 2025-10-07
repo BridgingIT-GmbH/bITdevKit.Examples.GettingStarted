@@ -18,9 +18,9 @@ using Microsoft.AspNetCore.Routing;
 /// <summary>
 /// Defines HTTP API endpoints for managing <see cref="Customer"/> aggregates.
 /// Includes read, create, update, and delete operations.
-/// Endpoints are grouped under <c>/api/core/customers</c>.
+/// Endpoints are grouped under <c>/api/coremodule/customers</c>.
 /// </summary>
-public partial class CoreModuleCustomerEndpoints : EndpointsBase
+public partial class CustomerEndpoints : EndpointsBase
 {
     /// <summary>
     /// Maps the <see cref="Customer"/> endpoints to the given <see cref="IEndpointRouteBuilder"/>.
@@ -30,7 +30,7 @@ public partial class CoreModuleCustomerEndpoints : EndpointsBase
     {
         // Group all customer endpoints under a common route & tag for OpenAPI/Swagger
         var group = app
-            .MapGroup("api/CoreModule/customers")//.RequireAuthorization()
+            .MapGroup("api/coremodule/customers")//.RequireAuthorization()
             .WithTags("CoreModule.Customers");
 
         // GET /api/core/customers/{id} -> Find one customer by ID
