@@ -30,7 +30,7 @@ public partial class CoreModuleCustomerEndpoints : EndpointsBase
     {
         // Group all customer endpoints under a common route & tag for OpenAPI/Swagger
         var group = app
-            .MapGroup("api/coremodule/customers")//.RequireAuthorization()
+            .MapGroup("api/CoreModule/customers")//.RequireAuthorization()
             .WithTags("CoreModule.Customers");
 
         // GET /api/core/customers/{id} -> Find one customer by ID

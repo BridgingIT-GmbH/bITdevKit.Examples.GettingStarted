@@ -423,3 +423,4 @@ FodyWeavers.xsd
 # Custom
 /src/**/*.db
 /.tmp/
+/TestOutput/

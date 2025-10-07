@@ -1,17 +1,17 @@
 @baseUrl = https://localhost:7144
 
 ####################################################################################
-## CoreModule API Integration Tests                                               ##
+## CoreModule Module API Integration Tests                                        ##
 ##                                                                                ##
 ## This file exercises the full set of endpoints exposed by the CoreModule module ##
 ## ------------------------------------------------------------------------------ ##
 ## Endpoints covered:                                                             ##
-##  GET    /api/coremodule/customers/{id}          (Find one)                     ##
-##  GET    /api/coremodule/customers               (Find all / list)              ##
-##  POST   /api/coremodule/customers               (Create)                       ##
-##  PUT    /api/coremodule/customers/{id}          (Update)                       ##
-##  PUT    /api/coremodule/customers/{id}/status   (Update status)                ##
-##  DELETE /api/coremodule/customers/{id}          (Delete)                       ##
+##  GET    /api/CoreModule/customers/{id}          (Find one)                     ##
+##  GET    /api/CoreModule/customers               (Find all / list)              ##
+##  POST   /api/CoreModule/customers               (Create)                       ##
+##  PUT    /api/CoreModule/customers/{id}          (Update)                       ##
+##  PUT    /api/CoreModule/customers/{id}/status   (Update status)                ##
+##  DELETE /api/CoreModule/customers/{id}          (Delete)                       ##
 ##                                                                                ##
 ## Variables:                                                                     ##
 ##  @customerId       A seeded existing customer (read/update/delete scenarios)   ##
@@ -26,15 +26,15 @@
 
 ###################################################################################
 ### [GET] Customers - Find One                                                  ###
-GET {{baseUrl}}/api/coremodule/customers/{{customerId}} HTTP/1.1
+GET {{baseUrl}}/api/CoreModule/customers/{{customerId}} HTTP/1.1
 
 ###################################################################################
 ### [GET] Customers - Find All                                                  ###
-GET {{baseUrl}}/api/coremodule/customers HTTP/1.1
+GET {{baseUrl}}/api/CoreModule/customers HTTP/1.1
 
 ###################################################################################
 ### [POST] Customers - Create                                                   ###
-POST {{baseUrl}}/api/coremodule/customers HTTP/1.1
+POST {{baseUrl}}/api/CoreModule/customers HTTP/1.1
 Content-Type: application/json
 
 {
@@ -48,7 +48,7 @@ Content-Type: application/json
 
 ###################################################################################
 ### [PUT] Customers - Update                                                    ###
-PUT {{baseUrl}}/api/coremodule/customers/{{customerId}} HTTP/1.1
+PUT {{baseUrl}}/api/CoreModule/customers/{{customerId}} HTTP/1.1
 Content-Type: application/json
 
 {
@@ -62,7 +62,7 @@ Content-Type: application/json
 
 ###################################################################################
 ### [PUT] Customers - Change Status -> Active                                   ###
-PUT {{baseUrl}}/api/coremodule/customers/{{customerId}}/status HTTP/1.1
+PUT {{baseUrl}}/api/CoreModule/customers/{{customerId}}/status HTTP/1.1
 Content-Type: application/json
 
 {
@@ -72,7 +72,7 @@ Content-Type: application/json
 ###################################################################################
 ### [PUT] Customers - Change Status -> Retired                                  ###
 ### (Run after Create; updates newly created customer)                          ###
-PUT {{baseUrl}}/api/coremodule/customers/{{customerId}}/status HTTP/1.1
+PUT {{baseUrl}}/api/CoreModule/customers/{{customerId}}/status HTTP/1.1
 Content-Type: application/json
 
 {
@@ -82,16 +82,16 @@ Content-Type: application/json
 ###################################################################################
 ### [DELETE] Customers - Delete (Created)                                       ###
 ### (Idempotent test - expect 204 first time, 404 if repeated)                  ###
-DELETE {{baseUrl}}/api/coremodule/customers/{{customerId}} HTTP/1.1
+DELETE {{baseUrl}}/api/CoreModule/customers/{{customerId}} HTTP/1.1
 
 ###################################################################################
 ### [NEGATIVE] Customers - Get Not Found (Random GUID)                          ###
 ### (Should return 404)                                                         ###
-GET {{baseUrl}}/api/coremodule/customers/00000000-0000-0000-0000-000000000001 HTTP/1.1
+GET {{baseUrl}}/api/CoreModule/customers/00000000-0000-0000-0000-000000000001 HTTP/1.1
 
 ###################################################################################
 ### [NEGATIVE] Customers - Change Status Invalid (Expect 400)                   ###
-PUT {{baseUrl}}/api/coremodule/customers/{{customerId}}/status HTTP/1.1
+PUT {{baseUrl}}/api/CoreModule/customers/{{customerId}}/status HTTP/1.1
 Content-Type: application/json
 
 {
