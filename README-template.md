@@ -103,26 +103,25 @@ After adding a new module, the template will automatically add the generated pro
 The template creates a solution following Onion Architecture principles with the test projects included within the same directory as their corresponding implementation projects:
 
 ```
-YourSolution/
+YourCompany.YourProduct/
 ├── src/
 │   ├── Modules/
 │   │   ├── Core/
-│   │   │   ├── Core.Application.csproj
-│   │   │   ├── Core.Domain.csproj
-│   │   │   ├── Core.Infrastructure.csproj
-│   │   │   ├── Core.IntegrationTests.csproj
-│   │   │   ├── Core.Presentation.csproj
-│   │   │   └── Core.UnitTests.csproj
+│   │   │   ├── Core.Application/
+│   │   │   ├── Core.Domain/
+│   │   │   ├── Core.Infrastructure/
+│   │   │   ├── Core.IntegrationTests/
+│   │   │   ├── Core.Presentation/
+│   │   │   └── Core.UnitTests/
 │   │   ├── Orders/
-│   │   │   ├── Orders.Application.csproj
-│   │   │   ├── Orders.Domain.csproj
-│   │   │   ├── Orders.Infrastructure.csproj
-│   │   │   ├── Orders.IntegrationTests.csproj
-│   │   │   ├── Orders.Presentation.csproj
-│   │   │   └── Orders.UnitTests.csproj
+│   │   │   ├── Orders.Application/
+│   │   │   ├── Orders.Domain/
+│   │   │   ├── Orders.Infrastructure/
+│   │   │   ├── Orders.IntegrationTests/
+│   │   │   ├── Orders.Presentation/
+│   │   │   └── Orders.UnitTests/
 │   └── Presentation.Web.Server/
-│       └── Presentation.Web.Server.csproj
-└── YourSolution.sln
+└── YourCompany.YourProduct.sln
 ```
 
 ## Available Templates
@@ -130,7 +129,7 @@ YourSolution/
 | Template Name | Short Name | Description |
 |---------------|------------|-------------|
 | BridgingIT DevKit Solution | `devkitsolution` | Creates a complete solution with initial module following Onion Architecture |
-| BridgingIT DevKit Module | `devkitmodule` | Adds a new module to an existing solution |
+| BridgingIT DevKit Modul  e | `devkitmodule` | Adds a new module to an existing solution |
 
 ## Template Parameters
 
@@ -139,7 +138,7 @@ YourSolution/
 | Parameter | Description | Default Value |
 |-----------|-------------|---------------|
 | `--SolutionName` | Name of the solution | `DevKit.Examples.GettingStarted` |
-| `--ModuleName` | Name of the initial module | `Core` |
+| `--ModuleName`   | Name of the initial module | `Core` |
 
 ### DevKit Module Template
 
