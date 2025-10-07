@@ -30,13 +30,13 @@ public partial class CoreModuleCustomerEndpoints : EndpointsBase
     {
         // Group all customer endpoints under a common route & tag for OpenAPI/Swagger
         var group = app
-            .MapGroup("api/core/customers")//.RequireAuthorization()
-            .WithTags("Core.Customers");
+            .MapGroup("api/coremodule/customers")//.RequireAuthorization()
+            .WithTags("CoreModule.Customers");
 
         // GET /api/core/customers/{id} -> Find one customer by ID
         group.MapGet("/{id:guid}", CustomerFindOne)
             //.RequireEntityPermission<Customer>(Permission.Read)
-            .WithName("Core.Customers.GetById")
+            .WithName("CoreModule.Customers.GetById")
             .Produces<CustomerModel>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -46,7 +46,7 @@ public partial class CoreModuleCustomerEndpoints : EndpointsBase
         // GET /api/core/customers -> Find all customers (with optional query filters)
         group.MapGet("", CustomerFindAll)
             //.RequireEntityPermission<Customer>(Permission.List)
-            .WithName("Core.Customers.GetAll")
+            .WithName("CoreModule.Customers.GetAll")
             .WithFilterSchema()
             .Produces<IEnumerable<CustomerModel>>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -56,7 +56,7 @@ public partial class CoreModuleCustomerEndpoints : EndpointsBase
         // POST /api/core/customers -> Create new customer
         group.MapPost("", CustomerCreate)
             //.RequireEntityPermission<Customer>(Permission.Write)
-            .WithName("Core.Customers.Create")
+            .WithName("CoreModule.Customers.Create")
             .Produces<CustomerModel>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status400BadRequest)
@@ -65,7 +65,7 @@ public partial class CoreModuleCustomerEndpoints : EndpointsBase
         // PUT /api/core/customers/{id} -> Update existing customer
         group.MapPut("/{id:guid}", CustomerUpdate)
             //.RequireEntityPermission<Customer>(Permission.Write)
-            .WithName("Core.Customers.Update")
+            .WithName("CoreModule.Customers.Update")
             .Produces<CustomerModel>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -75,7 +75,7 @@ public partial class CoreModuleCustomerEndpoints : EndpointsBase
         // PUT /api/core/customers/{id}/status -> Update customer status (Active, Retired, etc.)
         group.MapPut("/{id:guid}/status", CustomerUpdateStatus)
             //.RequireEntityPermission<Customer>(Permission.Write)
-            .WithName("Core.Customers.UpdateStatus")
+            .WithName("CoreModule.Customers.UpdateStatus")
             .Produces<CustomerModel>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -85,7 +85,7 @@ public partial class CoreModuleCustomerEndpoints : EndpointsBase
         // DELETE /api/core/customers/{id} -> Delete customer by ID
         group.MapDelete("/{id:guid}", CustomerDelete)
             //.RequireEntityPermission<Customer>(Permission.Delete)
-            .WithName("Core.Customers.Delete")
+            .WithName("CoreModule.Customers.Delete")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status401Unauthorized)
