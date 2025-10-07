@@ -18,11 +18,17 @@ using Microsoft.EntityFrameworkCore;
 /// Configured via <see cref="DbContextOptions{AppDbContext}"/> dependency injection.
 /// </remarks>
 /// <param name="options">The database context options (provider, connection string, etc.).</param>
-public class CoreDbContext(DbContextOptions<CoreDbContext> options) : ModuleDbContextBase(options)
+public class CoreDbContext(DbContextOptions<CoreDbContext> options) : ModuleDbContextBase(options), IOutboxDomainEventContext
 {
     /// <summary>
     /// Gets or sets the <see cref="DbSet{TEntity}"/> for managing <see cref="Customer"/> entities.
     /// Represents the "Customers" table in the database.
     /// </summary>
     public DbSet<Customer> Customers { get; set; }
+
+    /// <summary>
+    /// Gets or sets the <see cref="DbSet{TEntity}"/> for managing <see cref="OutboxDomainEvent"/> entities.
+    /// Represents the "OutboxDomainEvents" table in the database.
+    /// </summary>
+    public DbSet<OutboxDomainEvent> OutboxDomainEvents { get; set; }
 }

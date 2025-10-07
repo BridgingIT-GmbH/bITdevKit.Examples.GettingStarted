@@ -10,6 +10,7 @@ using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation.Web;
+using BridgingIT.DevKit.Infrastructure.EntityFramework;
 using BridgingIT.DevKit.Presentation;
 using Common;
 using DevKit.Domain.Repositories;
@@ -55,16 +56,23 @@ public class CoreModule : WebModuleBase
         // entity framework setup
         services.AddSqlServerDbContext<CoreDbContext>(o => o
                 .UseConnectionString(moduleConfiguration.ConnectionStrings["Default"])
-                .UseLogger(true, true)/*.UseSimpleLogger()*/)
+                .UseLogger(true, true) // TODO: does not work together with a ModuleDbContextBase
+                .UseSimpleLogger())
             .WithDatabaseMigratorService(o => o // create the database and apply existing migrations
                 .Enabled(environment.IsLocalDevelopment())
-                .DeleteOnStartup(environment.IsLocalDevelopment()));
+                .DeleteOnStartup(environment.IsLocalDevelopment()))
+            .WithOutboxDomainEventService(o => o
+                .ProcessingInterval("00:00:30")
+                .ProcessingModeImmediate() // forwards the outbox event, through a queue, to the outbox worker
+                .StartupDelay("00:00:15")
+                .PurgeOnStartup());
 
         // repository setup
         services.AddEntityFrameworkRepository<Customer, CoreDbContext>()
             .WithBehavior<RepositoryLoggingBehavior<Customer>>()
             .WithBehavior<RepositoryAuditStateBehavior<Customer>>()
-            .WithBehavior<RepositoryDomainEventPublisherBehavior<Customer>>();
+            .WithBehavior<RepositoryOutboxDomainEventBehavior<Customer, CoreDbContext>>();
+            //.WithBehavior<RepositoryDomainEventPublisherBehavior<Customer>>();
 
         // mapping setup
         services.AddMapping()

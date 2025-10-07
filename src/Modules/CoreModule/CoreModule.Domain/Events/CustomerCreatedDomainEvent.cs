@@ -16,10 +16,10 @@ using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 /// - Published by the <see cref="Customer"/> aggregate (e.g., in  <c>ChangeName</c>, <c>ChangeEmail</c>, <c>ChangeStatus</c>).
 /// - Consumed by one or more <see cref="DomainEventHandlerBase{TEvent}"/>
 ///   implementations to trigger side effects such as creating projections, sending notifications or audit logging.
-public class CustomerCreatedDomainEvent(Customer model) : DomainEventBase
+public partial class CustomerCreatedDomainEvent(Customer model) : DomainEventBase
 {
     /// <summary>
     /// Gets the created <see cref="Customer"/> aggregate instance that triggered this event.
     /// </summary>
-    public Customer Model { get; } = model;
+    public Customer Model { get; private set; } = model;
 }

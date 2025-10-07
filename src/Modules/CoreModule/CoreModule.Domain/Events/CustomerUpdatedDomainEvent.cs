@@ -17,10 +17,10 @@ using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 /// - Consumed by one or more <see cref="DomainEventHandlerBase{TEvent}"/>
 ///   implementations to trigger side effects such as updating projections, sending notifications or audit logging.
 /// </remarks>
-public class CustomerUpdatedDomainEvent(Customer model) : DomainEventBase
+public partial class CustomerUpdatedDomainEvent(Customer model) : DomainEventBase
 {
     /// <summary>
     /// Gets the updated <see cref="Customer"/> aggregate instance that triggered this event.
     /// </summary>
-    public Customer Model { get; } = model;
+    public Customer Model { get; private set; } = model;
 }
