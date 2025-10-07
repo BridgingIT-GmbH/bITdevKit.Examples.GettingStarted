@@ -61,9 +61,9 @@ public class CoreModuleConfiguration
     {
         public Validator()
         {
-            this.RuleFor(c => c.ConnectionStrings)
-                .NotNull().NotEmpty()
-                .Must(c => c.ContainsKey("Default"))
+            this.RuleFor(c => c).NotNull();
+            this.RuleFor(c => c.ConnectionStrings).NotNull().NotEmpty()
+                .Must(c => c?.ContainsKey("Default") == true)
                 .WithMessage("Connection string with name 'Default' is required");
         }
     }

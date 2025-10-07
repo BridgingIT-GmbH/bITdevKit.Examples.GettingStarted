@@ -1,0 +1,87 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "F:\\projects\\bit\\bIT.bITdevKit.Examples.GettingStarted\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{55BA7C7A-C7A2-4B89-B761-F6871E2FBE20}|assets{55BA7C7A-C7A2-4B89-B761-F6871E2FBE20}|F:\\projects\\bit\\bIT.bITdevKit.Examples.GettingStarted\\README-template.md||{24510B54-A648-4D69-A6C5-F68CBDF07546}",
+      "RelativeMoniker": "D:0:0:{55BA7C7A-C7A2-4B89-B761-F6871E2FBE20}|assets{55BA7C7A-C7A2-4B89-B761-F6871E2FBE20}|solutionrelative:README-template.md||{24510B54-A648-4D69-A6C5-F68CBDF07546}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{55BA7C7A-C7A2-4B89-B761-F6871E2FBE20}|assets{55BA7C7A-C7A2-4B89-B761-F6871E2FBE20}|F:\\projects\\bit\\bIT.bITdevKit.Examples.GettingStarted\\README.md||{24510B54-A648-4D69-A6C5-F68CBDF07546}",
+      "RelativeMoniker": "D:0:0:{55BA7C7A-C7A2-4B89-B761-F6871E2FBE20}|assets{55BA7C7A-C7A2-4B89-B761-F6871E2FBE20}|solutionrelative:README.md||{24510B54-A648-4D69-A6C5-F68CBDF07546}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E135B1DF-D94B-415E-9E5E-BE18AAF8EA13}|src\\Presentation.Web.Server\\Presentation.Web.Server.csproj|f:\\projects\\bit\\bit.bitdevkit.examples.gettingstarted\\src\\presentation.web.server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{E135B1DF-D94B-415E-9E5E-BE18AAF8EA13}|src\\Presentation.Web.Server\\Presentation.Web.Server.csproj|solutionrelative:src\\presentation.web.server\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 4,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:130:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "README-template.md",
+              "DocumentMoniker": "F:\\projects\\bit\\bIT.bITdevKit.Examples.GettingStarted\\README-template.md",
+              "RelativeDocumentMoniker": "README-template.md",
+              "ToolTip": "F:\\projects\\bit\\bIT.bITdevKit.Examples.GettingStarted\\README-template.md",
+              "RelativeToolTip": "README-template.md",
+              "ViewState": "AgIAAFAAAAAAAAAAAAAUwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-04-08T13:39:00.729Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "F:\\projects\\bit\\bIT.bITdevKit.Examples.GettingStarted\\src\\Presentation.Web.Server\\appsettings.json",
+              "RelativeDocumentMoniker": "src\\Presentation.Web.Server\\appsettings.json",
+              "ToolTip": "F:\\projects\\bit\\bIT.bITdevKit.Examples.GettingStarted\\src\\Presentation.Web.Server\\appsettings.json",
+              "RelativeToolTip": "src\\Presentation.Web.Server\\appsettings.json",
+              "ViewState": "AgIAACwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-04-08T13:10:01.283Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "README.md",
+              "DocumentMoniker": "F:\\projects\\bit\\bIT.bITdevKit.Examples.GettingStarted\\README.md",
+              "RelativeDocumentMoniker": "README.md",
+              "ToolTip": "F:\\projects\\bit\\bIT.bITdevKit.Examples.GettingStarted\\README.md",
+              "RelativeToolTip": "README.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAPsAAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2025-04-08T12:46:10.11Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

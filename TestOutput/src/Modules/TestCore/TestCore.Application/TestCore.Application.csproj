@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ModuleName>TestCore</ModuleName>
+    <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>TestOutput.Modules.TestCore.Application</AssemblyName>
+    <RootNamespace>TestOutput.Modules.TestCore.Application</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);NU5104</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BridgingIT.DevKit.Common.Mapping" />
+    <PackageReference Include="BridgingIT.DevKit.Application.JobScheduling" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TestCore.Domain\TestCore.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,112 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Basis-Einstellungen -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeSymbols>false</IncludeSymbols>
+    <IsPackable>true</IsPackable>
+    <PackageType>Template</PackageType>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <DevelopmentDependency>true</DevelopmentDependency>
+
+    <!-- Package-Metadaten -->
+    <PackageId>BridgingIT.DevKit.Templates</PackageId>
+    <Title>BridgingIT DevKit Solution Templates</Title>
+    <Authors>BridgingIT</Authors>
+    <Description>BridgingIT DevKit Solution Templates für die schnelle Erstellung von modularen .NET Anwendungen mit Clean Architecture Prinzipien</Description>
+    <Copyright>Copyright (c) 2024 BridgingIT</Copyright>
+    <PackageTags>bridgingit;devkit;template;dotnet;clean-architecture;solution;cqrs;ddd</PackageTags>
+    <RepositoryUrl>https://github.com/bridgingIT/bIT.devkit-examples-gettingstarted</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/bridgingIT/bIT.devkit-examples-gettingstarted</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>Initial release of BridgingIT DevKit Solution Templates</PackageReleaseNotes>
+
+    <!-- Versions-Informationen -->
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <PackageVersion>1.0.0</PackageVersion>
+
+    <!-- Template-spezifische Eigenschaften -->
+    <LocalizeTemplates>false</LocalizeTemplates>
+
+    <!-- Readme Datei -->
+    <PackageReadmeFile>README-template.md</PackageReadmeFile>
+
+    <!-- Icon Datei -->
+    <PackageIcon>bITDevKit_Logo.png</PackageIcon>
+  </PropertyGroup>
+
+  <!-- Template-Inhalt für Multi-Template Package -->
+  <ItemGroup>
+    <!-- Source Verzeichnis komplett mit Struktur -->
+    <Content Include="src\**\*" Exclude="src\**\bin\**\*;src\**\obj\**\*" Pack="true" PackagePath="content/src/" />
+
+    <!-- Solution Template Konfigurationsdateien -->
+    <Content Include="global.json" Pack="true" PackagePath="content/" />
+    <Content Include="nuget.config" Pack="true" PackagePath="content/" />
+    <Content Include="azure-pipelines.yml" Pack="true" PackagePath="content/" />
+    <Content Include="Directory.Build.props" Pack="true" PackagePath="content/" />
+    <Content Include="Directory.Packages.props" Pack="true" PackagePath="content/" />
+    <Content Include="TestOutput.sln" Pack="true" PackagePath="content/" />
+    <Content Include="src\Modules\TestCore\TestCore-API.http" Pack="true" PackagePath="content/" />
+	<Content Include="src\Modules\TestCore\TestCore-README.md" Pack="true" PackagePath="content/" />
+    <Content Include="CODE_OF_CONDUCT.md" Pack="true" PackagePath="content/" />
+    <Content Include="README.md" Pack="true" PackagePath="content/" />
+    <Content Include="LICENSE" Pack="true" PackagePath="content/" />
+    <Content Include="GlobalSuppressions.cs" Pack="true" PackagePath="content/" />
+    <None Include="docker-compose.yml" Pack="true" PackagePath="content/" />
+    <None Include=".editorconfig" Pack="true" PackagePath="content/" />
+    <Content Include=".vscode\**\*" Pack="true" PackagePath="content/.vscode/" />
+    <Content Include="assets\**\*" Pack="true" PackagePath="content/assets/" />
+
+    <!-- Solution Template Config -->
+    <None Include=".template.config\template.json" Pack="true" PackagePath="content/.template.config/" />
+
+    <!-- Package README -->
+    <None Include="README-template.md" Pack="true" PackagePath="\" />
+
+    <!-- Package Icon -->
+    <None Include="bITDevKit_Logo.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <!-- Explizite Ausschlüsse -->
+  <ItemGroup>
+    <!-- Build-Ausgaben -->
+    <Content Remove="bin\**\*" />
+    <Content Remove="obj\**\*" />
+    <Content Remove="src\**\bin\**\*" />
+    <Content Remove="src\**\obj\**\*" />
+	<Content Remove=".tmp\**\*" />
+
+    <!-- IDE-Dateien -->
+    <Content Remove=".vs\**\*" />
+    <Content Remove=".idea\**\*" />
+    <Content Remove="**\*.user" />
+    <Content Remove="**\*.suo" />
+    <Content Remove="**\*.cache" />
+
+    <!-- Git -->
+    <Content Remove=".git\**\*" />
+
+    <!-- Bereits erstellte NuGet-Packages -->
+    <Content Remove="nupkg\**\*" />
+    <Content Remove="**\*.nupkg" />
+
+    <!-- Diese .csproj-Datei selbst -->
+    <Content Remove="BridgingIT.DevKit.Templates.csproj" />
+  </ItemGroup>
+
+  <!-- Alle Compile-Aktionen entfernen -->
+  <ItemGroup>
+    <Compile Remove="**\*" />
+    <EmbeddedResource Remove="**\*" />
+  </ItemGroup>
+
+</Project>

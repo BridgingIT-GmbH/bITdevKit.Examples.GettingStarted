@@ -21,7 +21,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-public class CoreModule : WebModuleBase
+public class CoreModule() : WebModuleBase(nameof(CoreModule).ToLower())
 {
     /// <summary>
     /// Registers the core module's services, database context, repositories, and endpoints with the specified service
@@ -42,7 +42,7 @@ public class CoreModule : WebModuleBase
         // startup tasks setup
         services.AddStartupTasks(o => o
             /*.StartupDelay(moduleConfiguration.SeederTaskStartupDelay)*/) // wait some time before starting the tasks
-            .WithTask<CoreDomainSeederTask>(o => o
+            .WithTask<CoreModuleDomainSeederTask>(o => o
                 .Enabled(environment.IsLocalDevelopment()));
 
         // job scheduling setup
@@ -54,7 +54,7 @@ public class CoreModule : WebModuleBase
                 .Named(nameof(CustomerExportJob)).RegisterScoped();
 
         // entity framework setup
-        services.AddSqlServerDbContext<CoreDbContext>(o => o
+        services.AddSqlServerDbContext<CoreModuleDbContext>(o => o
                 .UseConnectionString(moduleConfiguration.ConnectionStrings["Default"])
                 .UseLogger(true, true) // TODO: does not work together with a ModuleDbContextBase
                 .UseSimpleLogger())
@@ -68,10 +68,10 @@ public class CoreModule : WebModuleBase
                 .PurgeOnStartup());
 
         // repository setup
-        services.AddEntityFrameworkRepository<Customer, CoreDbContext>()
+        services.AddEntityFrameworkRepository<Customer, CoreModuleDbContext>()
             .WithBehavior<RepositoryLoggingBehavior<Customer>>()
             .WithBehavior<RepositoryAuditStateBehavior<Customer>>()
-            .WithBehavior<RepositoryOutboxDomainEventBehavior<Customer, CoreDbContext>>();
+            .WithBehavior<RepositoryOutboxDomainEventBehavior<Customer, CoreModuleDbContext>>();
             //.WithBehavior<RepositoryDomainEventPublisherBehavior<Customer>>();
 
         // mapping setup
@@ -79,7 +79,7 @@ public class CoreModule : WebModuleBase
             .WithMapster<CoreModuleMapperRegister>();
 
         // endpoints registration
-        services.AddEndpoints<CoreCustomerEndpoints>();
+        services.AddEndpoints<CoreModuleCustomerEndpoints>();
 
         return services;
     }

@@ -5,7 +5,7 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation.Web;
 
-public partial class CoreCustomerEndpoints
+public partial class CoreModuleCustomerEndpoints
 {
     /// <summary>
     /// Request body for changing customer status.

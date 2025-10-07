@@ -1,24 +1,25 @@
 @baseUrl = https://localhost:7144
 
-###################################################################################
-## CoreModule Customer API Integration Tests (HTTP file)                         ##
-##                                                                               ##
-## This file exercises the full set of customer endpoints exposed by             ##
-## `CoreCustomerEndpoints`                                                       ##
-##                                                                               ##
-## Endpoints covered:                                                            ##
-##  GET    /api/core/customers/{id}          (Find one)                          ##
-##  GET    /api/core/customers               (Find all / list)                   ##
-##  POST   /api/core/customers               (Create)                            ##
-##  PUT    /api/core/customers/{id}          (Update)                            ##
-##  PUT    /api/core/customers/{id}/status   (Update status)                     ##
-##  DELETE /api/core/customers/{id}          (Delete)                            ##
-##                                                                               ##
-## Variables:                                                                    ##
-##  @customerId       A seeded existing customer (read/update/delete scenarios)  ##
-##  @concurrencyVersion The concurrency version of the existing customer         ##
-##                                                                               ##
-###################################################################################
+####################################################################################
+## CoreModule API Integration Tests                                               ##
+##                                                                                ##
+## This file exercises the full set of endpoints exposed by the CoreModule module ##
+## ------------------------------------------------------------------------------ ##
+## Endpoints covered:                                                             ##
+##  GET    /api/core/customers/{id}          (Find one)                           ##
+##  GET    /api/core/customers               (Find all / list)                    ##
+##  POST   /api/core/customers               (Create)                             ##
+##  PUT    /api/core/customers/{id}          (Update)                             ##
+##  PUT    /api/core/customers/{id}/status   (Update status)                      ##
+##  DELETE /api/core/customers/{id}          (Delete)                             ##
+##                                                                                ##
+## Variables:                                                                     ##
+##  @customerId       A seeded existing customer (read/update/delete scenarios)   ##
+##  @concurrencyVersion The concurrency version of the existing customer          ##
+##                                                                                ##
+## ------------------------------------------------------------------------------ ##
+## Use with vs code extension: https://github.com/Huachao/vscode-restclient       ##
+####################################################################################
 
 @customerId = e4f672fe-82d8-7cb3-444f-4486bf6fb163
 @concurrencyVersion = 31810000-a4f4-f875-030c-08de04d8b018
