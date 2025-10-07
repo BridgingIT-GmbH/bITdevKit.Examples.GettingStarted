@@ -5,52 +5,27 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
 
+using BridgingIT.DevKit.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Configuration;
 
 /// <summary>
-/// Provides a factory for creating instances of <see cref="CoreDbContext"/> during design-time operations,
-/// such as Entity Framework Core migrations. This class is used by the EF Core tools to instantiate
-/// the DbContext without running the full application startup logic.
+/// A factory for creating instances of <see cref="CoreDbContext"/> during design-time operations,
+/// such as Entity Framework Core migrations. Extends the generic factory to provide SQL Server-specific configuration
+/// for the CoreModule, using a convention-based connection string key.
 /// </summary>
-public class CoreDbContextFactory : IDesignTimeDbContextFactory<CoreDbContext>
+public class CoreDbContextFactory : ModuleDbContextFactory<CoreDbContext>
 {
     /// <summary>
-    /// Creates an instance of <see cref="CoreDbContext"/> for use in design-time operations,
-    /// such as generating Entity Framework Core migrations. The connection string is sourced
-    /// from the command-line arguments (if provided) or falls back to configuration settings.
+    /// Initializes a new instance of the <see cref="CoreDbContextFactory"/> class with settings specific to CoreModule.
+    /// Uses SQL Server as the database provider and retrieves the connection string from a convention-based key
+    /// ("Modules:Core:ConnectionStrings:Default") or a command-line override.
     /// </summary>
-    /// <param name="args">Command-line arguments passed by the EF Core tools. Supports a "--connection-string" argument to override the configuration.</param>
-    /// <returns>An instance of <see cref="CoreDbContext"/> configured with the appropriate database connection.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when no valid connection string is found in command-line arguments or configuration.</exception>
-    public CoreDbContext CreateDbContext(string[] args)
+    public CoreDbContextFactory()
+        : base(
+            options: (builder, connectionString) =>
+                builder.UseSqlServer(
+                    connectionString,
+                    sqlOptions => sqlOptions.MigrationsAssembly(typeof(CoreDbContext).Assembly.GetName().Name)))
     {
-        // Check for connection string in command-line arguments
-        var connectionString = args.FirstOrDefault(a => a.StartsWith("--connection-string=", StringComparison.OrdinalIgnoreCase))?.Split('=')[1];
-
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            // Build configuration from appsettings.json if no command-line override is provided
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
-                .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: false)
-                .AddEnvironmentVariables()
-                .Build();
-
-            // Retrieve the connection string from configuration
-            connectionString = configuration["Modules:Core:ConnectionStrings:Default"]
-                ?? throw new InvalidOperationException("Connection string for module Core not found in settings or command-line arguments.");
-        }
-
-        // Configure DbContextOptions
-        var optionsBuilder = new DbContextOptionsBuilder<CoreDbContext>();
-        optionsBuilder.UseSqlServer(connectionString, sqlOptions =>
-        {
-            sqlOptions.MigrationsAssembly(typeof(CoreDbContext).Assembly.GetName().Name);
-        });
-
-        return new CoreDbContext(optionsBuilder.Options);
     }
 }
