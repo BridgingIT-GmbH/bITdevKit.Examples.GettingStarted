@@ -39,8 +39,7 @@ public class CustomerDeleteCommandHandler(
         CustomerDeleteCommand request,
         SendOptions options,
         CancellationToken cancellationToken) =>
-        await Result<Unit>.Success()
-
+            await Result<Unit>.Success()
             // Attempt deletion in repository
             .BindAsync(async (_, ct) =>
                 await repository.DeleteResultAsync(CustomerId.Create(request.Id), cancellationToken)

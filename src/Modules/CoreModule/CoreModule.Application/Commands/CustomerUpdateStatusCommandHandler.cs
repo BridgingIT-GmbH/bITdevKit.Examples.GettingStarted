@@ -23,7 +23,9 @@ public class CustomerUpdateStatusCommandHandler(
         CustomerUpdateStatusCommand request,
         SendOptions options,
         CancellationToken cancellationToken) =>
-        await repository.FindOneResultAsync(CustomerId.Create(request.CustomerId), cancellationToken: cancellationToken)
+            // Load existing entity
+            await repository.FindOneResultAsync(CustomerId.Create(request.CustomerId), cancellationToken: cancellationToken)
+
             // Change status (idempotent if same)
             .Tap(e => e.ChangeStatus(request.Status))
             // Persist

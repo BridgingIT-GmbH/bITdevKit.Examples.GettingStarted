@@ -46,7 +46,8 @@ public class CustomerFindAllQueryHandler(
         CustomerFindAllQuery request,
         SendOptions options,
         CancellationToken cancellationToken) =>
-        await repository.FindAllResultAsync(request.Filter, cancellationToken: cancellationToken)
+            // Load all matching customers from repository
+            await repository.FindAllResultAsync(request.Filter, cancellationToken: cancellationToken)
 
             // Side-effect: audit, logging, telemetry, etc.
             .Tap(_ => Console.WriteLine("AUDIT"))

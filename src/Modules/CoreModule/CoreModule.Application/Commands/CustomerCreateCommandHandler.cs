@@ -43,10 +43,9 @@ public class CustomerCreateCommandHandler(
         CustomerCreateCommand request,
         SendOptions options,
         CancellationToken cancellationToken) =>
-        await Result.Success()
-
-            // Map DTO -> domain aggregate
-            .Map(mapper.Map<CustomerModel, Customer>(request.Model))
+        await
+            // Map from DTO -> domain entity
+            mapper.MapResult<CustomerModel, Customer>(request.Model)
 
             // Validate domain rules (fail fast if rules broken)
             .UnlessAsync(async (customer, ct) => await Rule

@@ -45,7 +45,8 @@ public class CustomerFindOneQueryHandler(
         CustomerFindOneQuery request,
         SendOptions options,
         CancellationToken cancellationToken) =>
-        await repository.FindOneResultAsync(CustomerId.Create(request.CustomerId), cancellationToken: cancellationToken)
+            // Load the customer from the repository by ID
+            await repository.FindOneResultAsync(CustomerId.Create(request.CustomerId), cancellationToken: cancellationToken)
 
             // Side-effect: audit/logging/telemetry etc.
             .Tap(_ => Console.WriteLine("AUDIT"))

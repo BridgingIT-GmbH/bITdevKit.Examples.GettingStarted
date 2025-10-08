@@ -39,16 +39,9 @@ public class CustomerUpdateCommandHandler(
     protected override async Task<Result<CustomerModel>> HandleAsync(
         CustomerUpdateCommand request,
         SendOptions options,
-        CancellationToken cancellationToken)
-    {
-        //var customer = mapper.Map<CustomerModel, Customer>(request.Model);
-        //var result = await repository.UpdateResultAsync(customer, cancellationToken);
-        //retunr mapper.Map<Customer, CustomerModel>(result.Value);
-
-        return await Result.Success()
-
+        CancellationToken cancellationToken) =>
             // Map from DTO -> domain entity
-            .Map(mapper.Map<CustomerModel, Customer>(request.Model))
+            await mapper.MapResult<CustomerModel, Customer>(request.Model)
 
             // Run business rules
             .UnlessAsync(async (customer, ct) => await Rule
@@ -73,5 +66,5 @@ public class CustomerUpdateCommandHandler(
 
             // Map domain entity -> DTO result
             .Map(mapper.Map<Customer, CustomerModel>);
-    }
+            //.MapResult<Customer, CustomerModel>(mapper);
 }
