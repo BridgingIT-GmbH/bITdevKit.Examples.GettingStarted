@@ -28,11 +28,15 @@ public class CustomerUpdateStatusCommandHandler(
 
             // Change status (idempotent if same)
             .Tap(e => e.ChangeStatus(request.Status))
-            // Persist
+
+            // Update in repository
             .BindAsync(async (customer, ct) =>
                 await repository.UpdateResultAsync(customer, ct), cancellationToken)
-            // Audit
+
+            // Side-effect: audit/logging/telemetry etc.
             .Tap(_ => Console.WriteLine("AUDIT"))
-            // Map
-            .Map(mapper.Map<Customer, CustomerModel>);
+
+            // Map domain entity -> DTO result
+            .MapResult<Customer, CustomerModel>(mapper);
+            //.Map(mapper.Map<Customer, CustomerModel>);
 }

@@ -7,6 +7,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Applicati
 
 using BridgingIT.DevKit.Common;
 using BridgingIT.DevKit.Domain.Repositories;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Events;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
 /// <summary>
@@ -22,9 +23,12 @@ using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 [HandlerRetry(2, 100)]   // retry on transient errors (2 attempts, 100ms wait)
 [HandlerTimeout(500)]    // operation must complete within 500ms
 public class CustomerDeleteCommandHandler(
-    IGenericRepository<Customer> repository)
+    IGenericRepository<Customer> repository,
+    INotifier notifier)
     : RequestHandlerBase<CustomerDeleteCommand, Unit>
 {
+    private readonly INotifier notifier = notifier;
+
     /// <summary>
     /// Handles the <see cref="CustomerDeleteCommand"/> request.
     /// Deletes the <see cref="Customer"/> with the given Id if it exists.
@@ -39,21 +43,25 @@ public class CustomerDeleteCommandHandler(
         CustomerDeleteCommand request,
         SendOptions options,
         CancellationToken cancellationToken) =>
-            await Result<Unit>.Success()
-            // Attempt deletion in repository
-            .BindAsync(async (_, ct) =>
-                await repository.DeleteResultAsync(CustomerId.Create(request.Id), cancellationToken)
+            await Result
+                // Load existing entity
+                .BindAsync(async ct =>
+                    (await repository.FindOneResultAsync(request.Id, cancellationToken: ct)).Value, cancellationToken)
 
-                    // Ensure deletion actually occurred
-                    .Ensure(e => e == RepositoryActionResult.Deleted, new EntityNotFoundError())
+                // Register domain event
+                .Tap(e => e.DomainEvents.Register(new CustomerDeletedDomainEvent(e)))
 
-                    // Register domain event
-                    //.Tap(e => e.DomainEvents.Register(new CustomerDeletedDomainEvent(e)))
+                // Attempt deletion in repository
+                .BindAsync(async (e, ct) =>
+                    await repository.DeleteResultAsync(e, cancellationToken: ct), cancellationToken)
 
-                    // Side-effect: log/audit
-                    .Tap(_ => Console.WriteLine("AUDIT"))
+                // Publish domain events
+                .TapAsync(async (e, ct) =>
+                    await e.entity.DomainEvents.PublishAsync(this.notifier, ct), cancellationToken: cancellationToken)
 
-                    // Map repository action result → Unit (since no response body expected)
-                    .Map(_ => Unit.Value),
-                cancellationToken: cancellationToken);
+                // Side-effect: log/audit
+                .Tap(_ => Console.WriteLine("AUDIT"))
+
+                // Return unit on finish
+                .Unwrap();
 }

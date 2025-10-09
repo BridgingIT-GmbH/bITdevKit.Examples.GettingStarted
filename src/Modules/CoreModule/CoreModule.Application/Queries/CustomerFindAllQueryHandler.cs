@@ -52,6 +52,7 @@ public class CustomerFindAllQueryHandler(
             // Side-effect: audit, logging, telemetry, etc.
             .Tap(_ => Console.WriteLine("AUDIT"))
 
-            // Map domain entities -> DTOs
+            // Map domain entities -> DTOs result
             .Map(mapper.Map<Customer, CustomerModel>);
+            //TODO: .MapResult<Customer, CustomerModel>(mapper) for collections not yet supported
 }

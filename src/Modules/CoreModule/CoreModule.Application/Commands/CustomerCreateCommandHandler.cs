@@ -58,14 +58,14 @@ public class CustomerCreateCommandHandler(
             // Register domain event
             .Tap(e => e.DomainEvents.Register(new CustomerCreatedDomainEvent(e)))
 
-            // Persist
+            // Insert into repository
             .BindAsync(async (customer, ct) =>
-                await repository.InsertResultAsync(customer, cancellationToken),
-                cancellationToken: cancellationToken)
+                await repository.InsertResultAsync(customer, cancellationToken), cancellationToken: cancellationToken)
 
             // Side-effects (Auditing, logging, etc.)
             .Tap(_ => Console.WriteLine("AUDIT"))
 
-            // Map persisted entity -> DTO
-            .Map(mapper.Map<Customer, CustomerModel>);
+            // Map domain entity -> DTO result
+            .MapResult<Customer, CustomerModel>(mapper);
+            //.Map(mapper.Map<Customer, CustomerModel>);
 }

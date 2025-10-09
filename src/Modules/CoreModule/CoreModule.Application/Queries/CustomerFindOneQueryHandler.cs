@@ -51,6 +51,7 @@ public class CustomerFindOneQueryHandler(
             // Side-effect: audit/logging/telemetry etc.
             .Tap(_ => Console.WriteLine("AUDIT"))
 
-            // Map domain entity -> DTO
-            .Map(mapper.Map<Customer, CustomerModel>);
+            // Map domain entity -> DTO result
+            .MapResult<Customer, CustomerModel>(mapper);
+            //.Map(mapper.Map<Customer, CustomerModel>);
 }

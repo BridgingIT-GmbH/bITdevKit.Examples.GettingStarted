@@ -43,7 +43,7 @@ public class CustomerUpdateCommandHandler(
             // Map from DTO -> domain entity
             await mapper.MapResult<CustomerModel, Customer>(request.Model)
 
-            // Run business rules
+            // Run some business rules
             .UnlessAsync(async (customer, ct) => await Rule
                 .Add(RuleSet.IsNotEmpty(customer.FirstName))
                 .Add(RuleSet.IsNotEmpty(customer.LastName))
@@ -51,8 +51,7 @@ public class CustomerUpdateCommandHandler(
                 // TODO: Check unique email excluding the current entity (currently disabled)
                 //.Add(new EmailShouldBeUniqueRule(customer.Email, repository))
 
-                .CheckAsync(cancellationToken),
-                cancellationToken: cancellationToken)
+                .CheckAsync(cancellationToken), cancellationToken: cancellationToken)
 
             // Register domain event
             .Tap(e => e.DomainEvents.Register(new CustomerUpdatedDomainEvent(e)))
@@ -65,6 +64,6 @@ public class CustomerUpdateCommandHandler(
             .Tap(_ => Console.WriteLine("AUDIT"))
 
             // Map domain entity -> DTO result
-            .Map(mapper.Map<Customer, CustomerModel>);
-            //.MapResult<Customer, CustomerModel>(mapper);
+            .MapResult<Customer, CustomerModel>(mapper);
+            //.Map(mapper.Map<Customer, CustomerModel>);
 }
