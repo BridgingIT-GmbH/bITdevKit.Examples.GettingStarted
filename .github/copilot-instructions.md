@@ -1,5 +1,6 @@
 # Copilot / LLM Project Instructions
 
+These instructions guide AI contributions to the BridgingIT DevKit GettingStarted Example project. They cover architecture, coding standards, naming conventions, layering rules, and best practices to ensure high-quality, maintainable code.
 
 ## Code Style and Structure
 - Write concise, idiomatic C# code.
@@ -213,3 +214,9 @@ Provide: current filename(s), goal (e.g., split large handler), constraints (no 
     UnitTests/
     IntegrationTests/
 ```
+
+### 23.1 Folder Exclusions
+- `obj/` and `bin/` folders should be excluded from AI processing to avoid noise from build artifacts.
+- `Migrations/` folders can be excluded unless specifically working on database schema changes.
+- `.tmp/` folders should be excluded as they contain temporary files not relevant to the project structure.
+- `.template.config/` can be included only when working on template definitions.
