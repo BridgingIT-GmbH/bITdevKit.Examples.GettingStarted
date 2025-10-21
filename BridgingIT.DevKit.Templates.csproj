@@ -51,7 +51,7 @@
     <!-- Solution Template Konfigurationsdateien -->
     <Content Include="global.json" Pack="true" PackagePath="content/" />
     <Content Include="nuget.config" Pack="true" PackagePath="content/" />
-    <Content Include="azure-pipelines.yml" Pack="true" PackagePath="content/" />
+    <Content Include=".azure\azure-pipelines.yml" Pack="true" PackagePath="content/" />
     <Content Include="Directory.Build.props" Pack="true" PackagePath="content/" />
     <Content Include="Directory.Packages.props" Pack="true" PackagePath="content/" />
     <Content Include="BridgingIT.DevKit.Examples.GettingStarted.sln" Pack="true" PackagePath="content/" />
