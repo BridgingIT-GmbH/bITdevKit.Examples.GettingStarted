@@ -1,8 +1,8 @@
 {
-  "openapi": "3.0.4",
+  "openapi": "3.0.1",
   "info": {
-    "title": "BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server | v1",
-    "version": "1.0.0"
+    "title": "GettingsStarted API",
+    "version": "v1.0"
   },
   "paths": {
     "/api/coremodule/customers/{id}": {
@@ -10,6 +10,7 @@
         "tags": [
           "CoreModule.Customers"
         ],
+        "description": "Gets a customer by its unique identifier.",
         "operationId": "CoreModule.Customers.GetById",
         "parameters": [
           {
@@ -34,14 +35,21 @@
             }
           },
           "404": {
-            "description": "Not Found"
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad Request",
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ResultProblemDetails"
                 }
               }
             }
@@ -54,7 +62,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ResultProblemDetails"
                 }
               }
             }
@@ -65,6 +73,7 @@
         "tags": [
           "CoreModule.Customers"
         ],
+        "description": "Updates the details of an existing customer identified by its unique identifier.",
         "operationId": "CoreModule.Customers.Update",
         "parameters": [
           {
@@ -105,7 +114,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ResultProblemDetails"
                 }
               }
             }
@@ -113,12 +122,22 @@
           "401": {
             "description": "Unauthorized"
           },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultProblemDetails"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ResultProblemDetails"
                 }
               }
             }
@@ -129,6 +148,7 @@
         "tags": [
           "CoreModule.Customers"
         ],
+        "description": "Deletes an existing customer identified by its unique identifier.",
         "operationId": "CoreModule.Customers.Delete",
         "parameters": [
           {
@@ -153,7 +173,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ResultProblemDetails"
                 }
               }
             }
@@ -166,7 +186,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ResultProblemDetails"
                 }
               }
             }
@@ -179,7 +199,17 @@
         "tags": [
           "CoreModule.Customers"
         ],
+        "description": "Gets all customers matching the specified filter criteria.",
         "operationId": "CoreModule.Customers.GetAll",
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/FilterModel"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -199,7 +229,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ResultProblemDetails"
                 }
               }
             }
@@ -212,7 +242,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ResultProblemDetails"
                 }
               }
             }
@@ -223,6 +253,7 @@
         "tags": [
           "CoreModule.Customers"
         ],
+        "description": "Creates a new customer with the provided details.",
         "operationId": "CoreModule.Customers.Create",
         "requestBody": {
           "content": {
@@ -249,7 +280,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ResultProblemDetails"
                 }
               }
             }
@@ -262,7 +293,63 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ResultProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/coremodule/customers/search": {
+      "post": {
+        "tags": [
+          "CoreModule.Customers"
+        ],
+        "description": "Searches for customers matching the specified filter criteria.",
+        "operationId": "CoreModule.Customers.Search",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FilterModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerModel"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultProblemDetails"
                 }
               }
             }
@@ -275,6 +362,7 @@
         "tags": [
           "CoreModule.Customers"
         ],
+        "description": "Updates the status of an existing customer identified by its unique identifier.",
         "operationId": "CoreModule.Customers.UpdateStatus",
         "parameters": [
           {
@@ -315,7 +403,7 @@
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ResultProblemDetails"
                 }
               }
             }
@@ -323,12 +411,59 @@
           "401": {
             "description": "Unauthorized"
           },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultProblemDetails"
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
               "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
+                  "$ref": "#/components/schemas/ResultProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/coremodule/customers/exception": {
+      "delete": {
+        "tags": [
+          "CoreModule.Customers"
+        ],
+        "description": "Endpoint that always throws an exception for testing purposes.",
+        "operationId": "CoreModule.Customers.Delete2",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultProblemDetails"
                 }
               }
             }
@@ -457,10 +592,391 @@
           }
         }
       }
+    },
+    "/api/_system/identity/connect/.well-known/openid-configuration": {
+      "get": {
+        "tags": [
+          "_system/identity/connect"
+        ],
+        "description": "Returns the OpenID Connect discovery document.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpenIdConfiguration"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/_system/identity/connect/authorize": {
+      "get": {
+        "tags": [
+          "_system/identity/connect"
+        ],
+        "description": "Shows the signin page for user selection.",
+        "parameters": [
+          {
+            "name": "response_type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "redirect_uri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/_system/identity/connect/authorize/callback": {
+      "get": {
+        "tags": [
+          "_system/identity/connect"
+        ],
+        "description": "Handles the user selection and generates authorization code.",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "password",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "response_type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client_id",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "redirect_uri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Found"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/_system/identity/connect/token": {
+      "post": {
+        "tags": [
+          "_system/identity/connect"
+        ],
+        "description": "Issues tokens for various grant types.",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "grant_type": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "client_id": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "client_secret": {
+                        "type": "string",
+                        "default": null
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string",
+                        "default": null
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "redirect_uri": {
+                        "type": "string",
+                        "default": null
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "refresh_token": {
+                        "type": "string",
+                        "default": null
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "username": {
+                        "type": "string",
+                        "default": null
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "password": {
+                        "type": "string",
+                        "default": null
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "scope": {
+                        "type": "string",
+                        "default": null
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OAuth2Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/_system/identity/connect/userinfo": {
+      "get": {
+        "tags": [
+          "_system/identity/connect"
+        ],
+        "description": "Returns information about the authenticated user.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserInfoResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/_system/identity/connect/logout": {
+      "get": {
+        "tags": [
+          "_system/identity/connect"
+        ],
+        "description": "Handles user logout.",
+        "parameters": [
+          {
+            "name": "id_token_hint",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "post_logout_redirect_uri",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "302": {
+            "description": "Found"
+          }
+        }
+      }
+    },
+    "/api/_system/identity/connect/debuginfo": {
+      "get": {
+        "tags": [
+          "_system/identity/connect"
+        ],
+        "description": "Returns debug information about the identity provider configuration.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DebugInfoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "CompositeSpecification": {
+        "type": "object",
+        "properties": {
+          "nodes": {
+            "type": "array",
+            "nullable": true
+          }
+        },
+        "nullable": true
+      },
       "CustomerModel": {
         "type": "object",
         "properties": {
@@ -476,6 +992,15 @@
             "type": "string",
             "nullable": true
           },
+          "number": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
           "email": {
             "type": "string",
             "nullable": true
@@ -484,24 +1009,262 @@
             "type": "integer",
             "format": "int32"
           },
+          "statusEnum": {
+            "$ref": "#/components/schemas/CustomerStatusSample"
+          },
           "concurrencyVersion": {
             "type": "string",
             "nullable": true
           }
         }
       },
+      "CustomerStatusSample": {
+        "enum": [
+          "Unknown",
+          "Active",
+          "Inactive",
+          "Suspended"
+        ]
+      },
       "CustomerUpdateStatusRequestModel": {
-        "required": [
-          "statusId"
-        ],
         "type": "object",
         "properties": {
-          "statusId": {
+          "status": {
             "type": "integer",
             "format": "int32"
           }
         }
       },
+      "DebugInfoResponse": {
+        "type": "object",
+        "properties": {
+          "tokenIssuer": {
+            "type": "string",
+            "nullable": true
+          },
+          "tokenProvider": {
+            "type": "string",
+            "nullable": true
+          },
+          "configuredClients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DevClientDebugInfo"
+            },
+            "nullable": true
+          },
+          "configuredUsers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserDebugInfo"
+            },
+            "nullable": true
+          },
+          "endpoints": {
+            "$ref": "#/components/schemas/EndpointDebugInfo"
+          }
+        }
+      },
+      "DevClientDebugInfo": {
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "redirectUris": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "allowedScopes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        }
+      },
+      "EndpointDebugInfo": {
+        "type": "object",
+        "properties": {
+          "authorization": {
+            "type": "string",
+            "nullable": true
+          },
+          "token": {
+            "type": "string",
+            "nullable": true
+          },
+          "userInfo": {
+            "type": "string",
+            "nullable": true
+          },
+          "logout": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "nullable": true
+      },
+      "FilterCriteria": {
+        "nullable": true
+      },
+      "FilterModel": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "noTracking": {
+            "type": "boolean"
+          },
+          "orderings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FilterOrderCriteria"
+            },
+            "nullable": true
+          },
+          "filters": {
+            "type": "array",
+            "nullable": true
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "hierarchy": {
+            "type": "string",
+            "nullable": true
+          },
+          "hierarchyMaxDepth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "_FilterCriteriaSchema": {
+            "$ref": "#/components/schemas/FilterCriteria"
+          },
+          "_CompositeSpecificationSchema": {
+            "$ref": "#/components/schemas/CompositeSpecification"
+          },
+          "_SpecificationNodeSchema": {
+            "$ref": "#/components/schemas/SpecificationNode"
+          }
+        }
+      },
+      "FilterOrderCriteria": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "nullable": true
+          },
+          "direction": {
+            "$ref": "#/components/schemas/OrderDirection"
+          }
+        }
+      },
+      "OAuth2Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "nullable": true
+          },
+          "error_description": {
+            "type": "string",
+            "nullable": true
+          },
+          "error_uri": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "OpenIdConfiguration": {
+        "type": "object",
+        "properties": {
+          "issuer": {
+            "type": "string",
+            "nullable": true
+          },
+          "authorization_endpoint": {
+            "type": "string",
+            "nullable": true
+          },
+          "token_endpoint": {
+            "type": "string",
+            "nullable": true
+          },
+          "userinfo_endpoint": {
+            "type": "string",
+            "nullable": true
+          },
+          "end_session_endpoint": {
+            "type": "string",
+            "nullable": true
+          },
+          "grant_types_supported": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "response_types_supported": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "response_modes_supported": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "scopes_supported": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "claims_supported": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "token_endpoint_auth_methods_supported": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        }
+      },
+      "OrderDirection": { },
       "ProblemDetails": {
         "type": "object",
         "properties": {
@@ -527,6 +1290,109 @@
             "nullable": true
           }
         }
+      },
+      "ProblemError": {
+        "type": "object",
+        "additionalProperties": { },
+        "description": "Represents an individual error entry with flexible structure for additional data"
+      },
+      "ResultProblemData": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/ResultProblemResult"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProblemError"
+            },
+            "description": "Collection of additional errors outside the result object",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { },
+        "description": "Data section included within a problem details response",
+        "nullable": true
+      },
+      "ResultProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "A URI reference that identifies the problem type",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "description": "A short, human-readable summary of the problem",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "description": "The HTTP status code",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "description": "A human-readable explanation specific to this occurrence",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "description": "A URI reference that identifies the specific occurrence of the problem",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/ResultProblemData"
+          }
+        },
+        "additionalProperties": { },
+        "description": "A Problem Details response containing result information and contextual data (RFC 7807)"
+      },
+      "ResultProblemError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { },
+        "description": "Represents an individual error entry with a message and optional metadata"
+      },
+      "ResultProblemResult": {
+        "type": "object",
+        "properties": {
+          "isSuccess": {
+            "type": "boolean",
+            "description": "Indicates whether the operation completed successfully"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Collection of informational or diagnostic messages from the operation",
+            "nullable": true
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResultProblemError"
+            },
+            "description": "Collection of domain or technical errors encountered during the operation",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { },
+        "description": "Represents the operation outcome with success status, messages, and errors",
+        "nullable": true
+      },
+      "SpecificationNode": {
+        "nullable": true
       },
       "SystemInfo": {
         "type": "object",
@@ -587,15 +1453,132 @@
             "format": "int32"
           }
         }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "nullable": true
+          },
+          "refresh_token": {
+            "type": "string",
+            "nullable": true
+          },
+          "expires_in": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "refresh_expires_in": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "token_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "id_token": {
+            "type": "string",
+            "nullable": true
+          },
+          "session_state": {
+            "type": "string",
+            "nullable": true
+          },
+          "scope": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "UserDebugInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "isDefault": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UserInfoResponse": {
+        "type": "object",
+        "properties": {
+          "sub": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "given_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "family_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "preferred_username": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "email_verified": {
+            "type": "boolean"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "oauth2",
+        "description": "JWT Bearer token authentication using OAuth 2.0"
       }
     }
   },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ],
   "tags": [
     {
       "name": "CoreModule.Customers"
     },
     {
       "name": "_system"
+    },
+    {
+      "name": "_system/identity/connect"
     }
   ]
 }

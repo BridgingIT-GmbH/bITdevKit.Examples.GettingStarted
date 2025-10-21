@@ -10,62 +10,112 @@ using BridgingIT.DevKit.Domain.Repositories;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Events;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
+using System;
 
 /// <summary>
 /// Handler for <see cref="CustomerCreateCommand"/> that performs business validation,
-/// enforces rules, persists a new <see cref="Customer"/> entity and maps back to DTO.
+/// enforces rules, persists a new <see cref="Customer"/> entity, logs steps, and maps back to DTO.
 /// </summary>
-/// <remarks>
-/// - Configured with retry (<see cref="HandlerRetryAttribute"/>) and timeout (<see cref="HandlerTimeoutAttribute"/>).
-/// - Enforces <see cref="EmailShouldBeUniqueRule"/> and other inline domain rules.
-/// - Persists via <see cref="IGenericRepository{T}"/>.
-/// - Returns the created <see cref="CustomerModel"/>.
-/// </remarks>
-[HandlerRetry(2, 100)]   // retry 2 times on transient failures, wait 100ms between attempts
-[HandlerTimeout(500)]    // timeout of 500ms enforced for handling
+[HandlerRetry(2, 100)]
+[HandlerTimeout(500)]
 public class CustomerCreateCommandHandler(
+    ILogger<CustomerCreateCommandHandler> logger,
     IMapper mapper,
-    IGenericRepository<Customer> repository)
+    IGenericRepository<Customer> repository,
+    ISequenceNumberGenerator numberGenerator,
+    TimeProvider timeProvider)
     : RequestHandlerBase<CustomerCreateCommand, CustomerModel>
 {
     /// <summary>
-    /// Handles the <see cref="CustomerCreateCommand"/> asynchronously.
-    /// 1. Maps the DTO to a <see cref="Customer"/> aggregate.
-    /// 2. Validates domain invariants and rules.
-    /// 3. Inserts the entity into the repository if valid.
-    /// 4. Maps entity back to <see cref="CustomerModel"/> for response.
+    /// Handles the <see cref="CustomerCreateCommand"/>. Steps:
+    /// 1. Map DTO to <see cref="Customer"/> aggregate.
+    /// 2. Validate inline rules (basic invariants, e.g., names not empty).
+    /// 3. Persist changes via repository update.
+    /// 4. Perform audit/logging side-effects.
+    /// 5. Map created domain aggregate to <see cref="CustomerModel"/>.
     /// </summary>
-    /// <param name="request">The incoming create command instance.</param>
-    /// <param name="options">Send options provided by the pipeline (e.g. retries).</param>
-    /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>A <see cref="Result{CustomerModel}"/> indicating success or failure.</returns>
     protected override async Task<Result<CustomerModel>> HandleAsync(
         CustomerCreateCommand request,
         SendOptions options,
         CancellationToken cancellationToken) =>
-        await
-            // Map from DTO -> domain entity
-            mapper.MapResult<CustomerModel, Customer>(request.Model)
+            await Result<CustomerModel>
+                // STEP 1 — Create initial context
+                .Bind<CustomerCreateContext>(() => new(request.Model))
+                .Log(logger, "Context created {@Context}", r => [r.Value])
+                .Ensure((ctx) => ctx.Model.FirstName != ctx.Model.LastName,
+                    new ValidationError("Firstname cannot be same as lastname", "Firstname"))
 
-            // Validate domain rules (fail fast if rules broken)
-            .UnlessAsync(async (customer, ct) => await Rule
-                .Add(RuleSet.IsNotEmpty(customer.FirstName))  // name required
-                .Add(RuleSet.IsNotEmpty(customer.LastName))   // name required
-                .Add(RuleSet.NotEqual(customer.LastName, "notallowed")) // reject forbidden values
-                .Add(new EmailShouldBeUniqueRule(customer.Email, repository)) // email must be unique
-                .CheckAsync(cancellationToken), cancellationToken: cancellationToken)
+                // STEP 2 — Validate model
+                .UnlessAsync(async (ctx, ct) => await Rule
+                    .Add(RuleSet.IsNotEmpty(ctx.Model.FirstName))  // name required
+                    .Add(RuleSet.IsNotEmpty(ctx.Model.LastName))   // name required
+                    .Add(RuleSet.NotEqual(ctx.Model.LastName, "notallowed")) // reject forbidden values
+                    .Add(new EmailShouldBeUniqueRule(ctx.Model.Email, repository)) // email must be unique
+                    .CheckAsync(cancellationToken), cancellationToken: cancellationToken)
 
-            // Register domain event
-            .Tap(e => e.DomainEvents.Register(new CustomerCreatedDomainEvent(e)))
+                // STEP 3 — Generate sequence number
+                .BindResultAsync(this.GenerateSequenceAsync, this.CaptureNumber, cancellationToken)
+                //.BindAsync(async (ctx, ct) => await numberGenerator.GetNextAsync(CodeModuleConstants.CustomerNumberSequenceName, "core", ct))
 
-            // Insert into repository
-            .BindAsync(async (customer, ct) =>
-                await repository.InsertResultAsync(customer, cancellationToken), cancellationToken: cancellationToken)
+                .Log(logger, "Customer number created{@Number}", r => [r.Value.Number])
 
-            // Side-effects (Auditing, logging, etc.)
-            .Tap(_ => Console.WriteLine("AUDIT"))
+                // STEP 4 — Create aggregate
+                .Bind(this.CreateEntity)
 
-            // Map domain entity -> DTO result
-            .MapResult<Customer, CustomerModel>(mapper);
-            //.Map(mapper.Map<Customer, CustomerModel>);
+                // STEP 6 — Save aggregate to repository
+                .BindResultAsync(this.PersistEntityAsync, this.CapturePersistedEntity, cancellationToken)
+
+                // STEP 7 — Side effects (audit/logging)
+                .Log(logger, "AUDIT - Customer {Id} created for {Email}", r => [r.Value.Entity.Id, r.Value.Entity.Email.Value])
+
+                // STEP 8 — Map domain → DTO
+                .Map(this.ToModel)
+                .Log(logger, "Mapped to {@Model}", r => [r.Value]);
+
+    private async Task<Result<long>> GenerateSequenceAsync(CustomerCreateContext ctx, CancellationToken ct)
+    {
+        return await numberGenerator.GetNextAsync(CodeModuleConstants.CustomerNumberSequenceName, "core", ct); //.Value;
+    }
+
+    private CustomerCreateContext CaptureNumber(CustomerCreateContext ctx, long seq)
+    {
+        ctx.Number = CustomerNumber.Create(timeProvider.GetUtcNow().UtcDateTime, seq);
+        return ctx;
+    }
+
+    private CustomerCreateContext CreateEntity(CustomerCreateContext ctx)
+    {
+        ctx.Entity = Customer.Create(
+            ctx.Model.FirstName,
+            ctx.Model.LastName,
+            ctx.Model.Email,
+            ctx.Number);
+        return ctx;
+    }
+
+    private async Task<Result<Customer>> PersistEntityAsync(CustomerCreateContext ctx, CancellationToken ct)
+    {
+        return await repository.InsertResultAsync(ctx.Entity, ct).AnyContext();
+    }
+
+    private CustomerCreateContext CapturePersistedEntity(CustomerCreateContext ctx, Customer entity)
+    {
+        ctx.Entity = entity;
+        return ctx;
+    }
+
+    private CustomerModel ToModel(CustomerCreateContext ctx)
+    {
+        return mapper.Map<Customer, CustomerModel>(ctx.Entity);
+    }
+
+    private class CustomerCreateContext(CustomerModel model)
+    {
+        public CustomerModel Model { get; init; } = model;
+
+        public CustomerNumber Number { get; set; }
+
+        public Customer Entity { get; set; }
+    }
 }

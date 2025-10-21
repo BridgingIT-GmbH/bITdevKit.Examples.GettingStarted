@@ -1,4 +1,4 @@
-// MIT-License
+﻿// MIT-License
 // Copyright BridgingIT GmbH - All Rights Reserved
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
@@ -36,21 +36,37 @@ builder.Services.AddNotifier()
     .WithBehavior(typeof(RetryPipelineBehavior<,>))
     .WithBehavior(typeof(TimeoutPipelineBehavior<,>));
 
+builder.Services.ConfigureJson(); // configure the json serializer options
 builder.Services.AddEndpoints<SystemEndpoints>(builder.Environment.IsLocalDevelopment());
+builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(); // TODO: needed for openapi gen, even with no controllers
+#pragma warning disable CS0618 // Type or member is obsolete
 builder.Services.AddProblemDetails(o => Configure.ProblemDetails(o, true));
+#pragma warning restore CS0618 // Type or member is obsolete
+builder.Services.AddSingleton(TimeProvider.System);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddOpenApi();
+// ===============================================================================================
+// Configure OpenAPI generation (openapi.json)
+builder.Services.AddAppOpenApi();
+
+// ===============================================================================================
+// Configure CORS
+builder.Services.AddAppCors(); // TODO: not needed for pure APIs
+
+// ===============================================================================================
+// Configure API Authentication/Authorization
+builder.Services.AddScoped<ICurrentUserAccessor, HttpCurrentUserAccessor>();
+builder.Services.AddJwtBearerAuthentication(builder.Configuration); //.AddCookieAuthentication(); // optional cookie authentication for web applications
+builder.Services.AddAppIdentityProvider(builder.Environment.IsLocalDevelopment(), builder.Configuration);
 
 // ===============================================================================================
 // Configure the HTTP request pipeline
 var app = builder.Build();
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsLocalDevelopment())
 {
-    app.UseSwaggerUI(o => o.SwaggerEndpoint("/openapi.json", "v1"));
     app.MapOpenApi();
+    app.MapScalar();
 }
 
 app.UseStaticFiles();
@@ -60,7 +76,13 @@ app.UseRequestLogging();
 app.UseCors();
 app.UseProblemDetails();
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseModules();
+
+app.UseCurrentUserLogging();
 
 app.MapModules();
 app.MapControllers();

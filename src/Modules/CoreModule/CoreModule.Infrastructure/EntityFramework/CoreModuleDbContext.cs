@@ -5,6 +5,7 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
 
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using BridgingIT.DevKit.Infrastructure.EntityFramework;
 using Microsoft.EntityFrameworkCore;
@@ -31,4 +32,12 @@ public class CoreModuleDbContext(DbContextOptions<CoreModuleDbContext> options) 
     /// Represents the "OutboxDomainEvents" table in the database.
     /// </summary>
     public DbSet<OutboxDomainEvent> OutboxDomainEvents { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.HasSequence<int>(CodeModuleConstants.CustomerNumberSequenceName)
+            .StartsAt(100000);
+
+        base.OnModelCreating(modelBuilder);
+    }
 }

@@ -33,10 +33,10 @@ An application built using .NET 9 and following a Domain-Driven Design (DDD) app
 2. Configure the database connection string in `appsettings.json` under "CoreModule:ConnectionStrings:Default" (e.g., SQL Server LocalDB).
 3. Optionally, start supporting containers with `docker-compose up` or `docker-compose up -d` for SQL Server and Seq logging.
 4. Set `Presentation.Web.Server` as the startup project.
-5. Run with `CTRL+F5` to start the host at [https://localhost:7144](https://localhost:7144).
+5. Run with `CTRL+F5` to start the host at [https://localhost:5001](https://localhost:5001).
 
 - **SQL Server** details: Use the connection string from `appsettings.json` (e.g., `Server=(localdb)\\MSSQLLocalDB;Database=bit_devkit_gettingstarted;Trusted_Connection=True`).
-- **Swagger UI** is available [here](https://localhost:7144/swagger/index.html).
+- **Swagger UI** is available [here](https://localhost:5001/swagger/index.html).
 - **Seq** Dashboard (if using containers) is available [here](http://localhost:15349).
 
 The application will automatically migrate the database on startup (via DatabaseMigratorService in CoreModule) and seed initial data (via CoreDomainSeederTask) in development mode.
@@ -356,8 +356,8 @@ Here’s a **drop‑in section** for your README that matches the style of what 
 The project uses **build‑time OpenAPI** documentation creation.
 
 - On **build**, the OpenAPI specification is generated to `wwwroot/openapi.json`.  
-- ASP.NET Core serves this as a **static file** at [https://localhost:7144/openapi.json](https://localhost:7144/openapi.json).
-- **Swagger UI** ([https://localhost:7144/swagger/index.html](https://localhost:7144/swagger/index.html)) is configured to use the generated specification.
+- ASP.NET Core serves this as a **static file** at [https://localhost:5001/openapi.json](https://localhost:5001/openapi.json).
+- **Swagger UI** ([https://localhost:5001/swagger/index.html](https://localhost:5001/swagger/index.html)) is configured to use the generated specification.
 
 This ensures the specification is **consistent across environments** and available as a build artifact.
 
@@ -406,7 +406,7 @@ nswag openapi2tsclient /input:src/Presentation.Web.Server/wwwroot/openapi.json /
 nswag openapi2csclient /input:src/Presentation.Web.Server/wwwroot/openapi.json /output:Client.cs
 ```
 
-Since Swagger UI serves the exact same specification as a static asset, it can be targeted at the following endpoint: `https://localhost:7144/openapi.json`
+Since Swagger UI serves the exact same specification as a static asset, it can be targeted at the following endpoint: `https://localhost:5001/openapi.json`
 
 ### Testing
 

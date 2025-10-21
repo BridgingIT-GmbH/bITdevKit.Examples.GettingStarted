@@ -14,6 +14,11 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
             migrationBuilder.EnsureSchema(
                 name: "core");
 
+            migrationBuilder.CreateSequence<int>(
+                name: "CustomerNumbers",
+                schema: "core",
+                startValue: 100000L);
+
             migrationBuilder.CreateTable(
                 name: "__Outbox_DomainEvents",
                 schema: "core",
@@ -41,6 +46,8 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: false),
+                    Number = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    DateOfBirth = table.Column<DateTime>(type: "date", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     ConcurrencyVersion = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -102,6 +109,10 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
 
             migrationBuilder.DropTable(
                 name: "Customers",
+                schema: "core");
+
+            migrationBuilder.DropSequence(
+                name: "CustomerNumbers",
                 schema: "core");
         }
     }

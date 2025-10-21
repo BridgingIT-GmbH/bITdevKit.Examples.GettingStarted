@@ -1,25 +1,16 @@
-// MIT-License
+﻿// MIT-License
 // Copyright BridgingIT GmbH - All Rights Reserved
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Commands;
 
-using BridgingIT.DevKit.Domain.Repositories;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests;
 
 [UnitTest("GettingStarted.Application")]
-public class CustomerUpdateStatusCommandHandlerTests(ITestOutputHelper output) : TestsBase(output, s =>
-    {
-        s.AddMapping().WithMapster<CoreModuleMapperRegister>();
-        s.AddRequester().AddHandlers();
-        s.AddNotifier().AddHandlers();
-
-        s.AddInMemoryRepository(new InMemoryContext<Customer>())
-            .WithBehavior<RepositoryLoggingBehavior<Customer>>();
-    })
+public class CustomerUpdateStatusCommandHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
     [Fact]
     public async Task ChangeStatus_FromLeadToActive_SetsActive()

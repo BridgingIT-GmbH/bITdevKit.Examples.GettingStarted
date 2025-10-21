@@ -30,8 +30,8 @@ public class CustomerUpdateStatusCommandHandler(
             .Tap(e => e.ChangeStatus(request.Status))
 
             // Update in repository
-            .BindAsync(async (customer, ct) =>
-                await repository.UpdateResultAsync(customer, ct), cancellationToken)
+            .BindAsync(async (e, ct) =>
+                await repository.UpdateResultAsync(e, ct), cancellationToken)
 
             // Side-effect: audit/logging/telemetry etc.
             .Tap(_ => Console.WriteLine("AUDIT"))

@@ -34,7 +34,7 @@ public class CustomerUpdateCommandHandler(
     /// 2. Validate inline rules (basic invariants, e.g., names not empty).
     /// 3. Persist changes via repository update.
     /// 4. Perform audit/logging side-effects.
-    /// 5. Map updated domain aggregate back to <see cref="CustomerModel"/>.
+    /// 5. Map updated domain aggregate to <see cref="CustomerModel"/>.
     /// </summary>
     protected override async Task<Result<CustomerModel>> HandleAsync(
         CustomerUpdateCommand request,
@@ -44,10 +44,10 @@ public class CustomerUpdateCommandHandler(
             await mapper.MapResult<CustomerModel, Customer>(request.Model)
 
             // Run some business rules
-            .UnlessAsync(async (customer, ct) => await Rule
-                .Add(RuleSet.IsNotEmpty(customer.FirstName))
-                .Add(RuleSet.IsNotEmpty(customer.LastName))
-                .Add(RuleSet.NotEqual(customer.LastName, "notallowed"))
+            .UnlessAsync(async (e, ct) => await Rule
+                .Add(RuleSet.IsNotEmpty(e.FirstName))
+                .Add(RuleSet.IsNotEmpty(e.LastName))
+                .Add(RuleSet.NotEqual(e.LastName, "notallowed"))
                 // TODO: Check unique email excluding the current entity (currently disabled)
                 //.Add(new EmailShouldBeUniqueRule(customer.Email, repository))
 
@@ -57,8 +57,8 @@ public class CustomerUpdateCommandHandler(
             .Tap(e => e.DomainEvents.Register(new CustomerUpdatedDomainEvent(e)))
 
             // Update in repository
-            .BindAsync(async (customer, ct) =>
-                await repository.UpdateResultAsync(customer, ct), cancellationToken)
+            .BindAsync(async (e, ct) =>
+                await repository.UpdateResultAsync(e, ct), cancellationToken)
 
             // Side-effect (audit or logging)
             .Tap(_ => Console.WriteLine("AUDIT"))

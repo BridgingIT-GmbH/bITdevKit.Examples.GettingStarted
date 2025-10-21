@@ -33,8 +33,7 @@ public class CustomerDeleteCommand(string id) : RequestBase<Unit>
         public Validator()
         {
             this.RuleFor(c => c.Id)
-                .MustBeValidGuid()
-                .WithMessage("Invalid guid.");
+                .MustBeValidGuid().WithMessage("Invalid guid.");
         }
     }
 }

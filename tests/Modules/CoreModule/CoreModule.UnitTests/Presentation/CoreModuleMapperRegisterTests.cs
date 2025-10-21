@@ -23,7 +23,7 @@ public class CoreModuleMapperRegisterTests
     {
         // Arrange
         var customerId = Guid.NewGuid();
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com")
+        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create(DateTime.Now, 100000))
             .ChangeStatus(CustomerStatus.Active);
         customer.Id = CustomerId.Create(customerId);
         customer.ConcurrencyVersion = Guid.NewGuid();

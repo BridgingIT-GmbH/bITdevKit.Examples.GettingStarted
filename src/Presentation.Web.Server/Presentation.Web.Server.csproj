@@ -22,19 +22,20 @@
     <PackageReference Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" />
     <PackageReference Include="BridgingIT.DevKit.Presentation.Web" />
     <PackageReference Include="BridgingIT.DevKit.Presentation.Serilog" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" />
+    <PackageReference Include="Scalar.AspNetCore" />
     <PackageReference Include="Serilog.Enrichers.Environment" />
     <PackageReference Include="Serilog.Enrichers.ShortTypeName" />
     <PackageReference Include="Serilog.Enrichers.Thread" />
     <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="Serilog.Sinks.File" />
     <PackageReference Include="Serilog.Sinks.Seq" />
-    <PackageReference Include="Swashbuckle.AspNetCore" />
     <PackageReference Include="Quartz.Serialization.Json" />
   </ItemGroup>
 

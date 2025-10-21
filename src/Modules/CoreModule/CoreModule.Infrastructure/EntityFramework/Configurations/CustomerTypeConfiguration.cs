@@ -40,16 +40,29 @@ public class CustomerTypeConfiguration : IEntityTypeConfiguration<Customer>
             .IsRequired()
             .HasMaxLength(128);
 
+        // Map CustomerNumber value object → string in database
+        builder.Property(d => d.Number)
+            .IsRequired()
+            .HasConversion(
+                number => number.Value,                  // when saving
+                value => CustomerNumber.Create(value)) // when loading
+            .HasMaxLength(256);
+
         // Last name is required with max length 512
         builder.Property(d => d.LastName)
             .IsRequired()
             .HasMaxLength(512);
 
+        builder.Property(d => d.DateOfBirth)
+            .IsRequired(false)
+            .HasConversion<DateOnlyConverter, DateOnlyComparer>()
+            .HasColumnType("date");
+
         // Map EmailAddress value object → string in database
         builder.Property(x => x.Email)
             .IsRequired()
             .HasConversion(
-                email => email.Value,               // when saving
+                email => email.Value,                // when saving
                 value => EmailAddress.Create(value)) // when loading
             .HasMaxLength(256);
 

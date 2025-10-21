@@ -33,16 +33,13 @@ public class CustomerCreateCommand(CustomerModel model) : RequestBase<CustomerMo
             this.RuleFor(c => c.Model.Id).MustBeDefaultOrEmptyGuid();
 
             this.RuleFor(c => c.Model.FirstName)
-                .NotNull().NotEmpty()
-                .WithMessage("Must not be empty.");
+                .NotNull().NotEmpty().WithMessage("Must not be empty.");
 
             this.RuleFor(c => c.Model.LastName)
-                .NotNull().NotEmpty()
-                .WithMessage("Must not be empty.");
+                .NotNull().NotEmpty().WithMessage("Must not be empty.");
 
             this.RuleFor(c => c.Model.Email)
-                .NotNull().NotEmpty()
-                .WithMessage("Must not be empty.");
+                .NotNull().NotEmpty().WithMessage("Must not be empty.");
         }
     }
 }

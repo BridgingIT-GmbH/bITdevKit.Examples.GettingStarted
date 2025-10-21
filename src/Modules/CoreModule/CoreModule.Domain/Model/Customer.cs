@@ -32,11 +32,12 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <param name="firstName">The first name of the customer.</param>
     /// <param name="lastName">The last name of the customer.</param>
     /// <param name="email">The validated <see cref="EmailAddress"/> of the customer.</param>
-    private Customer(string firstName, string lastName, EmailAddress email)
+    private Customer(string firstName, string lastName, EmailAddress email, CustomerNumber number)
     {
         this.FirstName = firstName;
         this.LastName = lastName;
         this.Email = email;
+        this.Number = number;
     }
 
     /// <summary>
@@ -48,6 +49,16 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// Gets the last name of the customer.
     /// </summary>
     public string LastName { get; private set; }
+
+    /// <summary>
+    /// Gets the unique customer number associated with this customer.
+    /// </summary>
+    public CustomerNumber Number { get; private set; }
+
+    /// <summary>
+    /// Gets the date of birth associated with the entity, if available.
+    /// </summary>
+    public DateOnly? DateOfBirth { get; private set; }
 
     /// <summary>
     /// Gets the email address of the customer.
@@ -72,9 +83,9 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <param name="lastName">The last name of the customer.</param>
     /// <param name="email">The email address of the customer.</param>
     /// <returns>A new <see cref="Customer"/> instance.</returns>
-    public static Customer Create(string firstName, string lastName, string email)
+    public static Customer Create(string firstName, string lastName, string email, CustomerNumber number)
     {
-        var customer = new Customer(firstName, lastName, EmailAddress.Create(email));
+        var customer = new Customer(firstName, lastName, EmailAddress.Create(email), number);
 
         customer.DomainEvents.Register(
             new CustomerCreatedDomainEvent(customer));

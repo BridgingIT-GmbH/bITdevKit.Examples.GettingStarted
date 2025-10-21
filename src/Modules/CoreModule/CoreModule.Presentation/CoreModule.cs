@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 public class CoreModule() : WebModuleBase(nameof(CoreModule).ToLower())
 {
@@ -57,7 +58,8 @@ public class CoreModule() : WebModuleBase(nameof(CoreModule).ToLower())
         services.AddSqlServerDbContext<CoreModuleDbContext>(o => o
                 .UseConnectionString(moduleConfiguration.ConnectionStrings["Default"])
                 .UseLogger(true, true) // TODO: does not work together with a ModuleDbContextBase
-                .UseSimpleLogger())
+                /*.UseSimpleLogger()*/)
+            .WithSequenceNumberGenerator()
             .WithDatabaseMigratorService(o => o // create the database and apply existing migrations
                 .Enabled(environment.IsLocalDevelopment())
                 .DeleteOnStartup(environment.IsLocalDevelopment()))
@@ -73,6 +75,7 @@ public class CoreModule() : WebModuleBase(nameof(CoreModule).ToLower())
             .WithBehavior<RepositoryAuditStateBehavior<Customer>>()
             .WithBehavior<RepositoryOutboxDomainEventBehavior<Customer, CoreModuleDbContext>>();
             //.WithBehavior<RepositoryDomainEventPublisherBehavior<Customer>>();
+        services.AddScoped(_ => new RepositoryAuditStateBehaviorOptions { SoftDeleteEnabled = false });
 
         // mapping setup
         services.AddMapping()

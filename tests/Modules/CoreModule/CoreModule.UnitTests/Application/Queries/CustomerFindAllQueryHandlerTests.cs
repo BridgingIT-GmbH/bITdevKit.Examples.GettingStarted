@@ -8,27 +8,20 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests
 using BridgingIT.DevKit.Domain.Repositories;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests;
 
 [UnitTest("GettingStarted.Application")]
-public class CustomerFindAllQueryHandlerTests(ITestOutputHelper output) : TestsBase(output, s =>
-    {
-        s.AddMapping().WithMapster<CoreModuleMapperRegister>();
-        s.AddRequester().AddHandlers();
-        s.AddNotifier().AddHandlers();
-
-        s.AddInMemoryRepository(new InMemoryContext<Customer>())
-            .WithBehavior<RepositoryLoggingBehavior<Customer>>();
-    })
+public class CustomerFindAllQueryHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
     [Fact]
     public async Task Process_ValidQuery_ReturnsSuccessResultWithCustomers()
     {
         // Arrange
+        var timeProvider = this.ServiceProvider.GetService<TimeProvider>();
         var requester = this.ServiceProvider.GetService<IRequester>();
         var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
-        await repository.InsertAsync(Customer.Create("John", "Doe", "john.doe@example.com"));
-        await repository.InsertAsync(Customer.Create("Mary", "Jane", "mary.jane@example.com"));
+        await repository.InsertAsync(Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create(timeProvider.GetUtcNow(), 100000)));
+        await repository.InsertAsync(Customer.Create("Mary", "Jane", "mary.jane@example.com", CustomerNumber.Create(timeProvider.GetUtcNow(), 100001)));
         var query = new CustomerFindAllQuery();
 
         // Act

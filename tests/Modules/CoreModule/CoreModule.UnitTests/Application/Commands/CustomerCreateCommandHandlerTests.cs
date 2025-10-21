@@ -5,21 +5,11 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Commands;
 
-using BridgingIT.DevKit.Domain.Repositories;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests;
 
 [UnitTest("GettingStarted.Application")]
-public class CustomerCreateCommandHandlerTests(ITestOutputHelper output) : TestsBase(output, s =>
-    {
-        s.AddMapping().WithMapster<CoreModuleMapperRegister>();
-        s.AddRequester().AddHandlers();
-        s.AddNotifier().AddHandlers();
-
-        s.AddInMemoryRepository(new InMemoryContext<Customer>())
-            .WithBehavior<RepositoryLoggingBehavior<Customer>>();
-    })
+public class CustomerCreateCommandHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
     [Fact]
     public async Task Process_ValidRequest_SuccessResult()

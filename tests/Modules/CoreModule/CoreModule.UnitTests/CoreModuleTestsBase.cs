@@ -1,0 +1,31 @@
+﻿// MIT-License
+// Copyright BridgingIT GmbH - All Rights Reserved
+// Use of this source code is governed by an MIT-style license that can be
+// found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
+
+namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests;
+
+using BridgingIT.DevKit.Domain.Repositories;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
+using Microsoft.Extensions.Time.Testing;
+
+public class CoreModuleTestsBase(ITestOutputHelper output, Action<IServiceCollection> additionalServices = null) : TestsBase(output, services =>
+    {
+        RegisterServices(services);
+        additionalServices?.Invoke(services);
+    })
+{
+    private static void RegisterServices(IServiceCollection services)
+    {
+        services.AddMapping().WithMapster<CoreModuleMapperRegister>();
+        services.AddRequester().AddHandlers();
+        services.AddNotifier().AddHandlers();
+        services.AddSingleton<TimeProvider>(new FakeTimeProvider(new DateTimeOffset(2024, 1, 1, 1, 0, 1, TimeSpan.Zero)));
+
+        services.AddInMemoryRepository(new InMemoryContext<Customer>())
+            .WithSequenceNumberGenerator(CodeModuleConstants.CustomerNumberSequenceName, 100000)
+            .WithBehavior<RepositoryLoggingBehavior<Customer>>();
+    }
+}

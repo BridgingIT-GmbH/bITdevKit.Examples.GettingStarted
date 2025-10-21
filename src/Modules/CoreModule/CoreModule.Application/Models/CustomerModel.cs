@@ -5,8 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-
 /// <summary>
 /// Data transfer object (DTO) representing a <see cref="Domain.Model.Customer"/>.
 /// Used by the application and presentation layers to expose Customers to clients.
@@ -33,6 +31,16 @@ public class CustomerModel
     public string LastName { get; set; }
 
     /// <summary>
+    /// Gets or sets the number associated with this instance.
+    /// </summary>
+    public string Number { get; set; }
+
+    /// <summary>
+    /// Gets the date of birth associated with the entity, if available.
+    /// </summary>
+    public DateOnly? DateOfBirth { get; set; }
+
+    /// <summary>
     /// Gets or sets the customer's email address.
     /// Stored in normalized lowercase form, validated against domain rules.
     /// </summary>
@@ -43,9 +51,22 @@ public class CustomerModel
     /// </summary>
     public int Status { get; set; }
 
+    public CustomerStatusSample StatusEnum { get; set; } = CustomerStatusSample.Active;
+
     /// <summary>
     /// Gets or sets the concurrency version (as a string Guid).
     /// Used for optimistic concurrency control to prevent conflicting updates.
     /// </summary>
     public string ConcurrencyVersion { get; set; }
+}
+
+/// <summary>
+/// Sample enum representing possible customer states (for demonstration).
+/// </summary>
+public enum CustomerStatusSample
+{
+    Unknown = 0,
+    Active = 1,
+    Inactive = 2,
+    Suspended = 3
 }

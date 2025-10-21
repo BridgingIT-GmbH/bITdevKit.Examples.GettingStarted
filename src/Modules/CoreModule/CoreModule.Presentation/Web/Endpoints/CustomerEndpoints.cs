@@ -7,176 +7,131 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentat
 
 using BridgingIT.DevKit.Common;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
-using BridgingIT.DevKit.Presentation;
 using BridgingIT.DevKit.Presentation.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
+using System.Threading;
 
-/// <summary>
-/// Defines HTTP API endpoints for managing <see cref="Customer"/> aggregates.
-/// Includes read, create, update, and delete operations.
-/// Endpoints are grouped under <c>/api/coremodule/customers</c>.
-/// </summary>
-public partial class CustomerEndpoints : EndpointsBase
+public class CustomerEndpoints : EndpointsBase
 {
-    /// <summary>
-    /// Maps the <see cref="Customer"/> endpoints to the given <see cref="IEndpointRouteBuilder"/>.
-    /// </summary>
-    /// <param name="app">The endpoint route builder.</param>
     public override void Map(IEndpointRouteBuilder app)
     {
-        // Group all customer endpoints under a common route & tag for OpenAPI/Swagger
         var group = app
-            .MapGroup("api/coremodule/customers")//.RequireAuthorization()
+            .MapGroup("api/coremodule/customers")
+            .RequireAuthorization()
             .WithTags("CoreModule.Customers");
 
-        // GET /api/core/customers/{id} -> Find one customer by ID
-        group.MapGet("/{id:guid}", CustomerFindOne)
-            //.RequireEntityPermission<Customer>(Permission.Read)
+        // GET /{id:guid} -> Find one customer by ID
+        group.MapGet("/{id:guid}",
+            async ([FromServices] IRequester requester, [FromServices] ILogger logger,
+                   [FromRoute] string id, CancellationToken ct)
+                   => (await requester
+                    .SendAsync(new CustomerFindOneQuery(id), cancellationToken: ct))
+                    .MapHttpOk(logger))
             .WithName("CoreModule.Customers.GetById")
-            .Produces<CustomerModel>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status404NotFound)
+            .WithDescription("Gets a customer by its unique identifier.")
             .Produces(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesResultProblem(StatusCodes.Status400BadRequest)
+            .ProducesResultProblem(StatusCodes.Status500InternalServerError);
 
-        // GET /api/core/customers -> Find all customers (with optional query filters)
-        group.MapGet("", CustomerFindAll)
-            //.RequireEntityPermission<Customer>(Permission.List)
+        // GET -> Find all customers (query filters)
+        group.MapGet("",
+            async (HttpContext context,
+                   [FromServices] IRequester requester,
+                   [FromQuery] FilterModel filter, CancellationToken ct)
+                   => (await requester
+                    .SendAsync(new CustomerFindAllQuery { Filter = filter }, cancellationToken: ct))
+                    .MapHttpOkAll())
             .WithName("CoreModule.Customers.GetAll")
-            .WithFilterSchema()
-            .Produces<IEnumerable<CustomerModel>>(StatusCodes.Status200OK)
+            .WithDescription("Gets all customers matching the specified filter criteria.")
             .Produces(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesResultProblem(StatusCodes.Status400BadRequest)
+            .ProducesResultProblem(StatusCodes.Status500InternalServerError);
 
-        // POST /api/core/customers -> Create new customer
-        group.MapPost("", CustomerCreate)
-            //.RequireEntityPermission<Customer>(Permission.Write)
+        // POST /search -> Search customers (body filters)
+        group.MapPost("search",
+            async (HttpContext context,
+                   [FromServices] IRequester requester,
+                   [FromBody] FilterModel filter, CancellationToken ct)
+                   => (await requester
+                    .SendAsync(new CustomerFindAllQuery { Filter = filter }, cancellationToken: ct))
+                    .MapHttpOkAll())
+            .WithName("CoreModule.Customers.Search")
+            .WithDescription("Searches for customers matching the specified filter criteria.")
+            .Produces(StatusCodes.Status401Unauthorized)
+            .ProducesResultProblem(StatusCodes.Status400BadRequest)
+            .ProducesResultProblem(StatusCodes.Status500InternalServerError);
+
+        // POST -> Create new customer
+        group.MapPost("",
+            async ([FromServices] IRequester requester,
+                   [FromBody] CustomerModel model, CancellationToken ct)
+                   => (await requester
+                    .SendAsync(new CustomerCreateCommand(model), cancellationToken: ct))
+                    .MapHttpCreated(v => $"/api/core/customers/{v.Id}"))
             .WithName("CoreModule.Customers.Create")
-            .Produces<CustomerModel>(StatusCodes.Status201Created)
+            .WithDescription("Creates a new customer with the provided details.")
             .Produces(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesResultProblem(StatusCodes.Status400BadRequest)
+            .ProducesResultProblem(StatusCodes.Status500InternalServerError);
 
-        // PUT /api/core/customers/{id} -> Update existing customer
-        group.MapPut("/{id:guid}", CustomerUpdate)
-            //.RequireEntityPermission<Customer>(Permission.Write)
+        // PUT /{id} -> Update existing customer
+        group.MapPut("/{id:guid}",
+            async ([FromServices] IRequester requester,
+                   [FromRoute] string id,
+                   [FromBody] CustomerModel model, CancellationToken ct)
+                   => (await requester
+                    .SendAsync(new CustomerUpdateCommand(model), cancellationToken: ct))
+                    .MapHttpOk())
             .WithName("CoreModule.Customers.Update")
-            .Produces<CustomerModel>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status404NotFound)
+            .WithDescription("Updates the details of an existing customer identified by its unique identifier.")
             .Produces(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesResultProblem(StatusCodes.Status400BadRequest)
+            .ProducesResultProblem(StatusCodes.Status409Conflict)
+            .ProducesResultProblem(StatusCodes.Status500InternalServerError);
 
-        // PUT /api/core/customers/{id}/status -> Update customer status (Active, Retired, etc.)
-        group.MapPut("/{id:guid}/status", CustomerUpdateStatus)
-            //.RequireEntityPermission<Customer>(Permission.Write)
+        // PUT /{id}/status -> Update customer status
+        group.MapPut("/{id:guid}/status",
+            async ([FromServices] IRequester requester,
+                   [FromRoute] string id,
+                   [FromBody] CustomerUpdateStatusRequestModel body, CancellationToken ct)
+                   => (await requester
+                    .SendAsync(new CustomerUpdateStatusCommand(id, body.Status), cancellationToken: ct))
+                    .MapHttpOk())
             .WithName("CoreModule.Customers.UpdateStatus")
-            .Produces<CustomerModel>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status404NotFound)
+            .WithDescription("Updates the status of an existing customer identified by its unique identifier.")
             .Produces(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
+            .ProducesResultProblem(StatusCodes.Status400BadRequest)
+            .ProducesResultProblem(StatusCodes.Status409Conflict)
+            .ProducesResultProblem(StatusCodes.Status500InternalServerError);
 
-        // DELETE /api/core/customers/{id} -> Delete customer by ID
-        group.MapDelete("/{id:guid}", CustomerDelete)
-            //.RequireEntityPermission<Customer>(Permission.Delete)
+        // DELETE /{id:guid} -> Delete customer
+        group.MapDelete("/{id:guid}",
+            async ([FromServices] IRequester requester,
+                   [FromRoute] string id, CancellationToken ct)
+                   => (await requester
+                    .SendAsync(new CustomerDeleteCommand(id), cancellationToken: ct))
+                    .MapHttpNoContent())
             .WithName("CoreModule.Customers.Delete")
-            .Produces(StatusCodes.Status204NoContent)
-            .Produces(StatusCodes.Status404NotFound)
+            .WithDescription("Deletes an existing customer identified by its unique identifier.")
             .Produces(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status500InternalServerError);
-    }
+            .ProducesResultProblem(StatusCodes.Status400BadRequest)
+            .ProducesResultProblem(StatusCodes.Status500InternalServerError);
 
-    /// <summary>
-    /// Finds a single <see cref="Customer"/> by its ID.
-    /// </summary>
-    private static async Task<
-        Results<Ok<CustomerModel>, NotFound, UnauthorizedHttpResult, BadRequest, ProblemHttpResult>> CustomerFindOne(
-        [FromServices] IRequester requester,
-        [FromRoute] string id,
-        CancellationToken cancellationToken = default)
-    {
-        return (await requester.SendAsync(
-            new CustomerFindOneQuery(id), cancellationToken: cancellationToken))
-            .MapHttpOk();
-    }
-
-    /// <summary>
-    /// Returns all <see cref="Customer"/> entities.
-    /// Supports filtering via query parameters (converted into <c>QueryFilter</c>).
-    /// </summary>
-    private static async Task<
-        Results<Ok<IEnumerable<CustomerModel>>, UnauthorizedHttpResult, BadRequest, ProblemHttpResult>> CustomerFindAll(
-        HttpContext context,
-        [FromServices] IRequester requester,
-        CancellationToken cancellationToken = default)
-    {
-        return (await requester.SendAsync(
-            new CustomerFindAllQuery { Filter = await context.FromQueryFilterAsync() }, cancellationToken: cancellationToken))
-            .MapHttpOkAll();
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="Customer"/> from the request body.
-    /// </summary>
-    private static async Task<
-        Results<Created<CustomerModel>, UnauthorizedHttpResult, BadRequest, ProblemHttpResult>> CustomerCreate(
-        [FromServices] IRequester requester,
-        [FromBody] CustomerModel model,
-        CancellationToken cancellationToken = default)
-    {
-        return (await requester.SendAsync(
-            new CustomerCreateCommand(model), cancellationToken: cancellationToken))
-            .MapHttpCreated(value => $"/api/core/customers/{value.Id}"); // return created resource URI
-    }
-
-    /// <summary>
-    /// Updates an existing <see cref="Customer"/> with the provided data.
-    /// </summary>
-    private static async Task<
-        Results<Ok<CustomerModel>, NotFound, UnauthorizedHttpResult, BadRequest, ProblemHttpResult>> CustomerUpdate(
-        [FromServices] IRequester requester,
-        [FromRoute] string id,
-        [FromBody] CustomerModel model,
-        CancellationToken cancellationToken = default)
-    {
-        return (await requester.SendAsync(
-            new CustomerUpdateCommand(model), cancellationToken: cancellationToken))
-            .MapHttpOk();
-    }
-
-    /// <summary>
-    /// Changes the status of a customer to the provided status id.
-    /// </summary>
-    private static async Task<
-        Results<Ok<CustomerModel>, NotFound, UnauthorizedHttpResult, BadRequest, ProblemHttpResult>> CustomerUpdateStatus(
-        [FromServices] IRequester requester,
-        [FromRoute] string id,
-        [FromBody] CustomerUpdateStatusRequestModel body,
-        CancellationToken cancellationToken = default)
-    {
-        return (await requester.SendAsync(
-            new CustomerUpdateStatusCommand(id, body.StatusId), cancellationToken: cancellationToken))
-            .MapHttpOk();
-    }
-
-    /// <summary>
-    /// Deletes a <see cref="Customer"/> by its ID.
-    /// </summary>
-    private static async Task<
-        Results<NoContent, NotFound, UnauthorizedHttpResult, BadRequest, ProblemHttpResult>> CustomerDelete(
-        [FromServices] IRequester requester,
-        [FromRoute] string id,
-        CancellationToken cancellationToken = default)
-    {
-        return (await requester.SendAsync(
-            new CustomerDeleteCommand(id), cancellationToken: cancellationToken))
-            .MapHttpNoContent();
+        group.MapDelete("/exception",
+            async (CancellationToken ct) =>
+                   {
+                       await Task.Delay(0, ct); // to make method async
+                       throw new ApplicationException("Deliberate exception for testing purposes.");
+                   })
+            .WithName("CoreModule.Customers.Delete2")
+            .WithDescription("Endpoint that always throws an exception for testing purposes.")
+            .Produces(StatusCodes.Status401Unauthorized)
+            .ProducesResultProblem(StatusCodes.Status400BadRequest)
+            .ProducesResultProblem(StatusCodes.Status500InternalServerError);
     }
 }

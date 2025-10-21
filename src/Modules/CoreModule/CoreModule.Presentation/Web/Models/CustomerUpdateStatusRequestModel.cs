@@ -8,5 +8,16 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentat
 /// <summary>
 /// Request body for changing customer status.
 /// </summary>
-/// <param name="StatusId">Enumeration Id of target status.</param>
-public sealed record CustomerUpdateStatusRequestModel(int StatusId);
+public class CustomerUpdateStatusRequestModel
+{
+    private CustomerUpdateStatusRequestModel()
+    {
+    }
+
+    public CustomerUpdateStatusRequestModel(int status)
+    {
+        this.Status = status;
+    }
+
+    public int Status { get; set; }
+}

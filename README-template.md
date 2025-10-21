@@ -203,10 +203,11 @@ git clone https://github.com/bridgingIT/bIT.devkit-examples-gettingstarted.git
 cd bIT.devkit-examples-gettingstarted
 
 # Install templates from local source
+dotnet new uninstall .
 dotnet new install .
 
 # Test template creation
-dotnet new bitdevkitsolution --SolutionName TestSolution --ModuleName TestCore -o ./projects/TestSolution
+dotnet new bitdevkitsolution --SolutionName TestSolution --ModuleName Core -o ../TestSolution
 ```
 
 ## Custom Modifications
