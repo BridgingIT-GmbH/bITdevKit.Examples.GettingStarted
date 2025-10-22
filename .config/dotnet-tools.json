@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "isRoot": true,
+  "tools": {
+    "microsoft.openapi.kiota": {
+      "version": "1.28.0",
+      "commands": [
+        "kiota"
+      ],
+      "rollForward": false
+    },
+    "dotnet-ef": {
+      "version": "9.0.10",
+      "commands": [
+        "dotnet-ef"
+      ],
+      "rollForward": false
+    },
+    "minver-cli": {
+      "version": "6.0.0",
+      "commands": [
+        "minver"
+      ],
+      "rollForward": false
+    }
+  }
+}
