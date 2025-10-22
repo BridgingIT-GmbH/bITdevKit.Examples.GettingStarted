@@ -39,6 +39,7 @@ public static class ProgramExtensions
             //    "Blazor WASM Frontend",
             //    "blazor-wasm",
             //    $"{builder.Configuration["Authentication:Authority"]}/authentication/login-callback", $"{builder.Configuration["Authentication:Authority"]}/authentication/logout-callback")
+            .WithClient("test", "test-client")
             .WithClient(
                 "Scalar",
                 "scalar",

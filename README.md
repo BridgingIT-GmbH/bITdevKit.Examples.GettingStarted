@@ -436,49 +436,58 @@ This appendix documents building, tagging, pushing, pulling and running the `Pre
 - Local registry running: `docker compose up -d`.
 
 ### Build Image
-```bash
-docker build -t gettingstarted-web:latest -f src/Presentation.Web.Server/Dockerfile .
+```pwsh
+docker build -t bdk_gettingstarted-web:latest -f src/Presentation.Web.Server/Dockerfile .
 ```
 
 ### Tag For Local Registry
-```bash
-docker tag gettingstarted-web:latest localhost:5500/gettingstarted-web:latest
+```pwsh
+docker tag bdk_gettingstarted-web:latest localhost:5500/bdk_gettingstarted-web:latest
 ```
 
 ### Push To Local Registry
-```bash
-docker push localhost:5500/gettingstarted-web:latest
+```pwsh
+docker push localhost:5500/bdk_gettingstarted-web:latest
 ```
 List Local Registry catalog:
-```bash
+```pwsh
 curl http://localhost:5500/v2/_catalog
 ```
 
 ### Run Container
-```bash
-docker run -d -p8080:8080 --name gettingstarted-web localhost:5500/gettingstarted-web:latest
+```pwsh
+docker run -d -p8080:8080 --name bdk_gettingstarted-web localhost:5500/bdk_gettingstarted-web:latest
 ```
 or
-```bash
-docker run -d -p 8080:8080 --name gettingstarted-web --network bdk_gettingstarted -e ASPNETCORE_ENVIRONMENT=Development -e Modules__CoreModule__ConnectionStrings__Default="Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;" -e JobScheduling__Quartz__quartz.dataSource.default.connectionString="Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;" -e Authentication__Authority="http://localhost:8080" localhost:5500/gettingstarted-web:latest
+```pwsh
+docker run `
+  -d `
+  -p 8080:8080 `
+  --name bdk_gettingstarted-web `
+  --network bdk_gettingstarted `
+  -e ASPNETCORE_ENVIRONMENT=Development `
+  -e "Modules__CoreModule__ConnectionStrings__Default=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;" `
+  -e "JobScheduling__Quartz__quartz.dataSource.default.connectionString=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;" `
+  -e "Authentication__Authority=http://localhost:8080" `
+  localhost:5500/bdk_gettingstarted-web:latest
 ```
 
 Test Running Container:
-```bash
+```pwsh
 curl http://localhost:8080/api/_system/info
 ```
 or browse to [http://localhost:8080/scalar](http://localhost:8080/scalar)
 
 Tail logs:
-```bash
-docker logs -f gettingstarted-web
+```pwsh
+docker logs -f bdk_gettingstarted-web
 ```
 
 ### Stop/Remove Image & Container
-```bash
-docker stop gettingstarted-web
-docker rm -f gettingstarted-web
-docker rmi localhost:5500/gettingstarted-web:latest gettingstarted-web:latest
+```pwsh
+docker stop bdk_gettingstarted-web
+docker rm -f bdk_gettingstarted-web
+docker rmi localhost:5500/bdk_gettingstarted-web:latest bdk_gettingstarted-web:latest
 ```
 
 --- 

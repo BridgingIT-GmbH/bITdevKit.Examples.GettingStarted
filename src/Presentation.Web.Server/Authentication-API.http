@@ -1,6 +1,6 @@
-@client_id = blazor-wasm
-@username = luke.skywalker@starwars.com
-@password = starwars
+@client_id = test-client
+@username = clever.dragon@example.com
+@password = fantasy
 
 ###############################################################################################
 ## Authentication API Integration Tests                                                      ##
@@ -33,10 +33,7 @@ Content-Type: application/json
 
 #############################################
 ### 2. Resource Owner Password Flow
-# @name sign_in
-@access_token = {{sign_in.response.body.access_token}}
-@refresh_token = {{sign_in.response.body.refresh_token}}
-
+# @name login
 POST {{baseUrl}}/api/_system/identity/connect/token
 Content-Type: application/x-www-form-urlencoded
 
@@ -46,28 +43,29 @@ grant_type=password
 &password={{password}}
 &scope=openid profile email roles
 
-########################### ##################
+
+#############################################
 ### 3. Get User Info using Access Token
 GET {{baseUrl}}/api/_system/identity/connect/userinfo
-Authorization: Bearer {{access_token}}
+Authorization: Bearer {{login.response.body.$.access_token}}
 Content-Type: application/json
 
 #############################################
 ### 4. Refresh Access Token
 # @name refresh
-POST {{baseUrl}}/api/_system/identity/token
+POST {{baseUrl}}/api/_system/identity/connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=refresh_token
 &client_id={{client_id}}
-&refresh_token={{refresh_token}}
+&refresh_token={{login.response.body.$.refresh_token}}
 
 #############################################
 ### 5. Authorization Code Flow
 ### 5.1 Get Authorization Code (Browser Required)
 ### Copy this URL to browser:
 ### https://localhost:5001/api/_system/identity/connect/authorize?response_type=code&client_id=blazor-wasm&scope=openid%20profile%20email%20roles&redirect_uri=https%3A%2F%2Flocalhost%3A5001%2Fauthentication%2Flogin-callback&state=random123
-GET {{baseUrl}}/api/_system/identity/authorize
+GET {{baseUrl}}/api/_system/identity/connect/authorize
     ?response_type=code
     &client_id={{client_id}}
     &scope=openid profile email roles
@@ -75,7 +73,7 @@ GET {{baseUrl}}/api/_system/identity/authorize
     &state=random123
 
 ### 5.2 Exchange Code for Token
-POST {{authority}}/token
+POST {{baseUrl}}/api/_system/identity/connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=authorization_code
