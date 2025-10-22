@@ -41,7 +41,21 @@ services:
     volumes:
       - seq:/data
     networks:
-    - bdk_gettingstarted
+      - bdk_gettingstarted
+
+  # Local private Docker registry for tagging & pushing module/host images (accessible at http://localhost:5500)
+  registry:
+    image: registry:2
+    container_name: bdk_gettingstarted_registry
+    restart: unless-stopped
+    ports:
+      - 5500:5000
+    environment:
+      - REGISTRY_STORAGE_DELETE_ENABLED=true
+    volumes:
+      - registry:/var/lib/registry
+    networks:
+      - bdk_gettingstarted
 
 volumes:
   mssql:
@@ -49,6 +63,9 @@ volumes:
     driver: local
   seq:
     name: bdk_gettingstarted_seq
+    driver: local
+  registry:
+    name: bdk_gettingstarted_registry
     driver: local
 
 networks:
