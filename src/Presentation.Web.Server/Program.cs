@@ -8,6 +8,8 @@ using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 using BridgingIT.DevKit.Presentation;
 using BridgingIT.DevKit.Presentation.Web;
 using Hellang.Middleware.ProblemDetails;
+using Microsoft.Extensions.Hosting;
+using System;
 
 // ===============================================================================================
 // Configure the host
@@ -37,7 +39,7 @@ builder.Services.AddNotifier()
     .WithBehavior(typeof(TimeoutPipelineBehavior<,>));
 
 builder.Services.ConfigureJson(); // configure the json serializer options
-builder.Services.AddEndpoints<SystemEndpoints>(builder.Environment.IsLocalDevelopment());
+builder.Services.AddEndpoints<SystemEndpoints>(builder.Environment.IsLocalDevelopment() || builder.Environment.IsContainerized());
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddControllers(); // TODO: needed for openapi gen, even with no controllers
@@ -58,12 +60,12 @@ builder.Services.AddAppCors(); // TODO: not needed for pure APIs
 // Configure API Authentication/Authorization
 builder.Services.AddScoped<ICurrentUserAccessor, HttpCurrentUserAccessor>();
 builder.Services.AddJwtBearerAuthentication(builder.Configuration); //.AddCookieAuthentication(); // optional cookie authentication for web applications
-builder.Services.AddAppIdentityProvider(builder.Environment.IsLocalDevelopment(), builder.Configuration);
+builder.Services.AddAppIdentityProvider(builder.Environment.IsLocalDevelopment() || builder.Environment.IsContainerized(), builder.Configuration);
 
 // ===============================================================================================
 // Configure the HTTP request pipeline
 var app = builder.Build();
-if (app.Environment.IsLocalDevelopment())
+if (app.Environment.IsLocalDevelopment() || app.Environment.IsContainerized())
 {
     app.MapOpenApi();
     app.MapScalar();

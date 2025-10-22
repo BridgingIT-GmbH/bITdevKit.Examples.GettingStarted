@@ -44,7 +44,7 @@ public class CoreModule() : WebModuleBase(nameof(CoreModule).ToLower())
         services.AddStartupTasks(o => o
             /*.StartupDelay(moduleConfiguration.SeederTaskStartupDelay)*/) // wait some time before starting the tasks
             .WithTask<CoreModuleDomainSeederTask>(o => o
-                .Enabled(environment.IsLocalDevelopment()));
+                .Enabled(environment.IsLocalDevelopment() || environment.IsContainerized()));
 
         // job scheduling setup
         services.AddJobScheduling(o => o
@@ -61,8 +61,8 @@ public class CoreModule() : WebModuleBase(nameof(CoreModule).ToLower())
                 /*.UseSimpleLogger()*/)
             .WithSequenceNumberGenerator()
             .WithDatabaseMigratorService(o => o // create the database and apply existing migrations
-                .Enabled(environment.IsLocalDevelopment())
-                .DeleteOnStartup(environment.IsLocalDevelopment()))
+                .Enabled(environment.IsLocalDevelopment() || environment.IsContainerized())
+                .DeleteOnStartup(environment.IsLocalDevelopment() || environment.IsContainerized()))
             .WithOutboxDomainEventService(o => o
                 .ProcessingInterval("00:00:30")
                 .ProcessingModeImmediate() // forwards the outbox event, through a queue, to the outbox worker

@@ -426,6 +426,61 @@ Use tools like Bruno/Postman or VS HTTP file to test endpoints:
 
 A few example requests are in [Core-API.http](./src/Modules/CoreModule/Core-API.http).
 
+---
+## Appendix: Docker & Local Registry Usage
+
+This appendix documents building, tagging, pushing, pulling and running the `Presentation.Web.Server` container image with the local registry (`registry` service in `docker-compose.yml` on port `5500`). Local registry is useful for testing container images without pushing to a public registry, more details [here](https://www.docker.com/blog/how-to-use-your-own-registry-2/).
+
+### Prerequisites
+- Docker installed (Desktop or Engine).
+- Local registry running: `docker compose up -d`.
+
+### Build Image
+```bash
+docker build -t gettingstarted-web:latest -f src/Presentation.Web.Server/Dockerfile .
+```
+
+### Tag For Local Registry
+```bash
+docker tag gettingstarted-web:latest localhost:5500/gettingstarted-web:latest
+```
+
+### Push To Local Registry
+```bash
+docker push localhost:5500/gettingstarted-web:latest
+```
+List Local Registry catalog:
+```bash
+curl http://localhost:5500/v2/_catalog
+```
+
+### Run Container
+```bash
+docker run -d -p8080:8080 --name gettingstarted-web localhost:5500/gettingstarted-web:latest
+```
+or
+```bash
+docker run -d -p 8080:8080 --name gettingstarted-web --network bdk_gettingstarted -e ASPNETCORE_ENVIRONMENT=Development -e Modules__CoreModule__ConnectionStrings__Default="Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;" -e JobScheduling__Quartz__quartz.dataSource.default.connectionString="Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;" -e Authentication__Authority="http://localhost:8080" localhost:5500/gettingstarted-web:latest
+```
+
+Test Running Container:
+```bash
+curl http://localhost:8080/api/_system/info
+```
+or browse to [http://localhost:8080/scalar](http://localhost:8080/scalar)
+
+Tail logs:
+```bash
+docker logs -f gettingstarted-web
+```
+
+### Stop/Remove Image & Container
+```bash
+docker stop gettingstarted-web
+docker rm -f gettingstarted-web
+docker rmi localhost:5500/gettingstarted-web:latest gettingstarted-web:latest
+```
+
 --- 
 ## License
 

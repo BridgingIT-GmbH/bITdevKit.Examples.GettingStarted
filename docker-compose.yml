@@ -43,7 +43,6 @@ services:
     networks:
       - bdk_gettingstarted
 
-  # Local private Docker registry for tagging & pushing module/host images (accessible at http://localhost:5500)
   registry:
     image: registry:2
     container_name: bdk_gettingstarted_registry
