@@ -339,6 +339,7 @@ public static class ResultExtensions
         Func<T, TInner, T> merge)
     {
         var result = await task.AnyContext();
+
         return result.BindResult(func, merge);
     }
 
@@ -363,8 +364,8 @@ public static class ResultExtensions
         CancellationToken cancellationToken = default)
     {
         var result = await task.AnyContext();
+
         return await result
-            .BindResultAsync(func, merge, cancellationToken)
-            .AnyContext();
+            .BindResultAsync(func, merge, cancellationToken).AnyContext();
     }
 }

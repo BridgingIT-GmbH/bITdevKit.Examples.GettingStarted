@@ -25,7 +25,7 @@ public class CoreModuleTestsBase(ITestOutputHelper output, Action<IServiceCollec
         services.AddSingleton<TimeProvider>(new FakeTimeProvider(new DateTimeOffset(2024, 1, 1, 1, 0, 1, TimeSpan.Zero)));
 
         services.AddInMemoryRepository(new InMemoryContext<Customer>())
-            .WithSequenceNumberGenerator(CodeModuleConstants.CustomerNumberSequenceName, 100000)
+            .WithSequenceNumberGenerator(CodeModuleConstants.CustomerNumberSequenceName, 100000, schema: "core")
             .WithBehavior<RepositoryLoggingBehavior<Customer>>();
     }
 }

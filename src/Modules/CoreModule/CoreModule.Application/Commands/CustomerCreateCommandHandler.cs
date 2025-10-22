@@ -75,7 +75,8 @@ public class CustomerCreateCommandHandler(
 
     private async Task<Result<long>> GenerateSequenceAsync(CustomerCreateContext ctx, CancellationToken ct)
     {
-        return await numberGenerator.GetNextAsync(CodeModuleConstants.CustomerNumberSequenceName, "core", ct); //.Value;
+        var r = await numberGenerator.GetNextAsync(CodeModuleConstants.CustomerNumberSequenceName, "core", ct); //.Value;
+        return r;
     }
 
     private CustomerCreateContext CaptureNumber(CustomerCreateContext ctx, long seq)

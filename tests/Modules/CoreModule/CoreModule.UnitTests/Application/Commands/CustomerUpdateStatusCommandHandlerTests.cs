@@ -5,6 +5,7 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Commands;
 
+using BridgingIT.DevKit.Domain.Repositories;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests;
@@ -16,6 +17,8 @@ public class CustomerUpdateStatusCommandHandlerTests(ITestOutputHelper output) :
     public async Task ChangeStatus_FromLeadToActive_SetsActive()
     {
         var requester = this.ServiceProvider.GetService<IRequester>();
+        var sequenceNumberGenerator = this.ServiceProvider.GetService<ISequenceNumberGenerator>();
+        var i = await sequenceNumberGenerator.GetNextAsync(CodeModuleConstants.CustomerNumberSequenceName);
         var created = await requester.SendAsync(new CustomerCreateCommand(new CustomerModel
         {
             FirstName = "Bob",
@@ -24,7 +27,8 @@ public class CustomerUpdateStatusCommandHandlerTests(ITestOutputHelper output) :
         }), null, CancellationToken.None);
         created.ShouldBeSuccess();
 
-        var result = await requester.SendAsync(new CustomerUpdateStatusCommand(created.Value.Id, CustomerStatus.Active.Id), null, CancellationToken.None);
+        var result = await requester.SendAsync(
+            new CustomerUpdateStatusCommand(created.Value.Id, CustomerStatus.Active.Id), null, CancellationToken.None);
 
         result.ShouldBeSuccess();
         result.Value.Status.ShouldBe(CustomerStatus.Active.Id);
@@ -42,7 +46,8 @@ public class CustomerUpdateStatusCommandHandlerTests(ITestOutputHelper output) :
         }), null, CancellationToken.None);
         created.ShouldBeSuccess();
 
-        var result = await requester.SendAsync(new CustomerUpdateStatusCommand(created.Value.Id, CustomerStatus.Retired.Id), null, CancellationToken.None);
+        var result = await requester.SendAsync(
+            new CustomerUpdateStatusCommand(created.Value.Id, CustomerStatus.Retired.Id), null, CancellationToken.None);
 
         result.ShouldBeSuccess();
         result.Value.Status.ShouldBe(CustomerStatus.Retired.Id);
