@@ -21,8 +21,8 @@ using Microsoft.Extensions.Logging;
 /// - Returns <see cref="Unit"/> on successful deletion.
 /// - Produces <see cref="EntityNotFoundError"/> if the customer does not exist.
 /// </remarks>
-[HandlerRetry(2, 100)]   // retry on transient errors (2 attempts, 100ms wait)
-[HandlerTimeout(500)]    // operation must complete within 500ms
+//[HandlerRetry(2, 100)]   // retry on transient errors (2 attempts, 100ms wait)
+//[HandlerTimeout(500)]    // operation must complete within 500ms
 public class CustomerDeleteCommandHandler(
     ILogger<CustomerDeleteCommandHandler> logger,
     IGenericRepository<Customer> repository,

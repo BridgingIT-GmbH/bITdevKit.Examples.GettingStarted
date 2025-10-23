@@ -8,6 +8,7 @@ using Shouldly;
 using System;
 using Xunit;
 
+[UnitTest("Presentation")]
 public class CoreModuleMapperRegisterTests
 {
     private readonly TypeAdapterConfig config;

@@ -16,6 +16,7 @@ public class TypesFixture
     public Types Types { get; } = Types.FromPath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
 }
 
+[UnitTest("Architecture")]
 public class ArchitectureTests : IClassFixture<TypesFixture>
 {
     private readonly ITestOutputHelper output;

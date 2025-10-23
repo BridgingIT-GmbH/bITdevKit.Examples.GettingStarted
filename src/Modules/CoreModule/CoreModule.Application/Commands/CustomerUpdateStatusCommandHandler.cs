@@ -12,8 +12,8 @@ using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 /// <summary>
 /// Handler for <see cref="CustomerUpdateStatusCommand"/>. Loads the customer, changes status, persists and returns updated DTO.
 /// </summary>
-[HandlerRetry(2, 100)]
-[HandlerTimeout(500)]
+//[HandlerRetry(2, 100)]
+//[HandlerTimeout(500)]
 public class CustomerUpdateStatusCommandHandler(
     IMapper mapper,
     IGenericRepository<Customer> repository)

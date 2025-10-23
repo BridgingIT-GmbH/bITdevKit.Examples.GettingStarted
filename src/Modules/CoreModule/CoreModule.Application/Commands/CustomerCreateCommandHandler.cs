@@ -17,8 +17,8 @@ using System;
 /// Handler for <see cref="CustomerCreateCommand"/> that performs business validation,
 /// enforces rules, persists a new <see cref="Customer"/> entity, logs steps, and maps back to DTO.
 /// </summary>
-[HandlerRetry(2, 100)]
-[HandlerTimeout(500)]
+//[HandlerRetry(2, 100)]
+//[HandlerTimeout(500)]
 public class CustomerCreateCommandHandler(
     ILogger<CustomerCreateCommandHandler> logger,
     IMapper mapper,
