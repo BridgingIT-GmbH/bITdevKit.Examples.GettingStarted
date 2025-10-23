@@ -97,5 +97,17 @@
       "group": "test",
       "problemMatcher": "$msCompile"
     }
+    ,
+    {
+      "label": "GettingsStarted - Presentation.Web.Server [Docker Build & Run]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/run-docker-presentation.ps1"
+      ],
+      "problemMatcher": []
+    }
   ]
 }
