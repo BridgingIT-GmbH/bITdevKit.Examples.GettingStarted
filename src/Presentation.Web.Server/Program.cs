@@ -8,6 +8,8 @@ using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 using BridgingIT.DevKit.Presentation;
 using BridgingIT.DevKit.Presentation.Web;
 using Hellang.Middleware.ProblemDetails;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using System;
 
@@ -63,6 +65,15 @@ builder.Services.AddJwtBearerAuthentication(builder.Configuration); //.AddCookie
 builder.Services.AddAppIdentityProvider(builder.Environment.IsLocalDevelopment() || builder.Environment.IsContainerized(), builder.Configuration);
 
 // ===============================================================================================
+// Configure Health Checks
+builder.Services.AddHealthChecks()
+    // readiness checks
+    .AddCheck("self", () => HealthCheckResult.Healthy()); // liveness
+    // .AddSqlServer(builder.Configuration.GetConnectionString("Default"),
+    //     name: "sql", failureStatus: HealthStatus.Unhealthy, timeout: TimeSpan.FromSeconds(2))
+    // .AddRedis(builder.Configuration.GetConnectionString("Redis"), "redis");
+
+// ===============================================================================================
 // Configure the HTTP request pipeline
 var app = builder.Build();
 if (app.Environment.IsLocalDevelopment() || app.Environment.IsContainerized())
@@ -89,6 +100,22 @@ app.UseCurrentUserLogging();
 app.MapModules();
 app.MapControllers();
 app.MapEndpoints();
+
+// Liveness: only confirms the app is running
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = r => r.Name == "self",
+    //ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+// Readiness: checks all except "self" or vice-versa depending on your naming
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = r => r.Name != "self",
+    //ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
+
+app.MapHealthChecks("/health");
 
 app.Run();
 

@@ -26,8 +26,7 @@ ENV ASPNETCORE_URLS=http://+:8080 \
 # Expose HTTP port
 EXPOSE 8080
 
-# TODO: Add a health endpoint in app and then enable a healthcheck here, e.g.:
-# HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=3 \
-# CMD wget -qO- http://localhost:8080/health || exit1
+HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=3 \
+  CMD wget -qO- http://localhost:8080/health/live || exit 1
 
 ENTRYPOINT ["dotnet", "BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server.dll"]
