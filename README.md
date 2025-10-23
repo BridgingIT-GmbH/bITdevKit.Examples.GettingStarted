@@ -474,13 +474,29 @@ docker run `
 
 Test Running Container:
 ```pwsh
-curl http://localhost:8080/api/_system/info
+curl http://localhost:8080/api/_system/info -v
 ```
 or browse to [http://localhost:8080/scalar](http://localhost:8080/scalar)
 
 Tail logs:
 ```pwsh
 docker logs -f bdk_gettingstarted-web
+```
+
+### Build and Run Container
+
+```pwsh
+docker build -t localhost:5500/bdk_gettingstarted-web:latest -f src/Presentation.Web.Server/Dockerfile .; if ($?) {
+  (docker stop bdk_gettingstarted-web 2>$null | Out-Null); (docker rm bdk_gettingstarted-web 2>$null | Out-Null);
+  New-Item -ItemType Directory -Force -Path "$PWD/logs" | Out-Null
+  docker run --name bdk_gettingstarted-web -p 8080:8080 --network bdk_gettingstarted `
+    -e ASPNETCORE_ENVIRONMENT=Development `
+    -e "Modules__CoreModule__ConnectionStrings__Default=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;" `
+    -e "JobScheduling__Quartz__quartz.dataSource.default.connectionString=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;" `
+    -e "Authentication__Authority=http://localhost:8080" `
+    -v "${PWD}/logs:/.logs" `
+    localhost:5500/bdk_gettingstarted-web:latest
+}
 ```
 
 ### Stop/Remove Image & Container

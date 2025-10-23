@@ -43,7 +43,6 @@ grant_type=password
 &password={{password}}
 &scope=openid profile email roles
 
-
 #############################################
 ### 3. Get User Info using Access Token
 GET {{baseUrl}}/api/_system/identity/connect/userinfo
