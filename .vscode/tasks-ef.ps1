@@ -18,7 +18,7 @@ param(
   [Parameter()] [string] $StartupProject = 'src/Presentation.Web.Server/Presentation.Web.Server.csproj',
   [Parameter()] [string] $InfrastructureProject = '', # if empty, will infer from Module
   [Parameter()] [string] $MigrationName,
-  [Parameter()] [string] $OutputDirectory = './.tmp',
+  [Parameter()] [string] $OutputDirectory = './.tmp/ef',
   # Do NOT declare a Verbose switch here; PowerShell supplies -Verbose as a common parameter automatically.
   [Parameter()] [switch] $Force # used for reset confirmation bypass
 )

@@ -116,7 +116,10 @@
       "type": "shell",
       "args": [
         "test",
-        "${workspaceFolder}/tests/Modules/CoreModule/CoreModule.UnitTests/CoreModule.UnitTests.csproj"
+        "${workspaceFolder}/tests/Modules/CoreModule/CoreModule.UnitTests/CoreModule.UnitTests.csproj",
+        "--collect:XPlat Code Coverage",
+        "--results-directory",
+        "${workspaceFolder}/.tmp/tests/coverage"
       ],
       "group": "test",
       "problemMatcher": "$msCompile"
@@ -127,7 +130,10 @@
       "type": "shell",
       "args": [
         "test",
-        "${workspaceFolder}/tests/Modules/CoreModule/CoreModule.IntegrationTests/CoreModule.IntegrationTests.csproj"
+        "${workspaceFolder}/tests/Modules/CoreModule/CoreModule.IntegrationTests/CoreModule.IntegrationTests.csproj",
+        "--collect:XPlat Code Coverage",
+        "--results-directory",
+        "${workspaceFolder}/.tmp/tests/coverage"
       ],
       "group": "test",
       "problemMatcher": "$msCompile"
@@ -383,6 +389,84 @@
         "focus": true,
         "panel": "dedicated"
       },
+      "problemMatcher": []
+    }
+    ,
+    {
+      "label": "Solution [security vulnerabilities]",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "list",
+        "${workspaceFolder}/BridgingIT.DevKit.Examples.GettingStarted.sln",
+        "package",
+        "--vulnerable"
+      ],
+      "problemMatcher": []
+    }
+    ,
+    {
+      "label": "Solution [security outdated packages]",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "list",
+        "${workspaceFolder}/BridgingIT.DevKit.Examples.GettingStarted.sln",
+        "package",
+        "--outdated"
+      ],
+      "problemMatcher": []
+    }
+    ,
+    {
+      "label": "Solution [format check]",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "format",
+        "${workspaceFolder}/BridgingIT.DevKit.Examples.GettingStarted.sln",
+        "--verify-no-changes"
+      ],
+      "problemMatcher": []
+    }
+    ,
+    {
+      "label": "Solution [format apply]",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "format",
+        "${workspaceFolder}/BridgingIT.DevKit.Examples.GettingStarted.sln"
+      ],
+      "problemMatcher": []
+    }
+    ,
+    {
+      "label": "Solution [analyzers report]",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/BridgingIT.DevKit.Examples.GettingStarted.sln",
+        "-warnaserror",
+        "/p:RunAnalyzers=true",
+        "/p:EnableNETAnalyzers=true",
+        "/p:AnalysisLevel=latest",
+        "/p:ErrorLog=${workspaceFolder}/.tmp/analyzers/analyzers.sarif"
+      ],
+      "problemMatcher": "$msCompile"
+    }
+    ,
+    {
+      "label": "Solution [coverage report html]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-coverage.ps1",
+        "-Html"
+      ],
       "problemMatcher": []
     }
   ]
