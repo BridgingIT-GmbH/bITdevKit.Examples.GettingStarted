@@ -1,0 +1,6 @@
+extends: "spectral:oas"
+
+rules:
+  info-contact: off # disable if contact not provided
+  info-description: warn
+  operation-description: warn

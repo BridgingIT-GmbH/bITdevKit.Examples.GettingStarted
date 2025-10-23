@@ -22,6 +22,13 @@
         "minver"
       ],
       "rollForward": false
+    },
+    "csharprepl": {
+      "version": "0.6.7",
+      "commands": [
+        "csharprepl"
+      ],
+      "rollForward": false
     }
   }
 }

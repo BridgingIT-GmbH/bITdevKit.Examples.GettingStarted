@@ -1,0 +1,152 @@
+services:
+  db:
+    image: postgres:17
+    container_name: bdk_gettingstarted_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonar
+    volumes:
+      - sonarqube_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "sonar", "-d", "sonar"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - bdk_gettingstarted
+
+  sonarqube:
+    image: sonarqube:latest
+    container_name: bdk_gettingstarted_sonarqube
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    ports:
+      - 9000:9000
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+      SONAR_CE_JAVAOPTS: -Xmx1g -Xms512m
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "STATUS=$(curl -s http://localhost:9000/api/system/status | sed -n 's/.*\"status\":\"\\([A-Z]*\\)\".*/\\1/p'); [ \"$STATUS\" = \"UP\" ]",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+    networks:
+      - bdk_gettingstarted
+
+  init:
+    image: curlimages/curl:8.10.1
+    container_name: bdk_gettingstarted_sonarqube_init
+    depends_on:
+      - sonarqube
+      # sonarqube:
+      #   condition: service_healthy
+    volumes:
+      - sonarqube_token:/shared/token:delegated
+    environment:
+      # SONAR_HOST: http://sonarqube:9000
+      PROJECT_KEY: bdk-gettingstarted
+      PROJECT_NAME: BDK Getting Started
+      TOKEN_NAME: scanner-token
+      ADMIN_USER: admin
+      ADMIN_PASS: admin
+    networks:
+      - bdk_gettingstarted
+    command: >
+      sh -eu -c '
+        SONAR_HOST=http://sonarqube:9000
+        echo "Using SONAR_HOST=${SONAR_HOST}"
+        echo "$(date) Waiting for SonarQube to be UP..."
+        for i in $(seq 1 60); do
+          BODY=$(curl -sS "http://sonarqube:9000/api/system/status" || true)
+          echo "$(date) Status body: ${BODY:-<empty>}"
+          echo "$BODY" | grep -q '"UP"' && { echo "$(date) SonarQube is UP"; break; }
+          sleep 5
+          echo "$(date) Retry $i/$60..."
+        done
+        echo "$BODY" | grep -q '"UP"' || { echo "Never reached UP"; exit 1; }
+
+        echo "Creating project..."
+        set +e
+        CREATE_CODE=$(curl -sS -u "$ADMIN_USER:$ADMIN_PASS" -o /tmp/resp -w "%{http_code}" -X POST \
+          "http://sonarqube:9000/api/projects/create?name=$(printf %s "$PROJECT_NAME" | sed "s/ /%20/g")&project=$PROJECT_KEY")
+        CREATE_BODY=$(cat /tmp/resp)
+        set -e
+        if [ "$CREATE_CODE" = "200" ] || [ "$CREATE_CODE" = "201" ] || printf "%s" "$CREATE_BODY" | grep -qi "already exists"; then
+          echo "Project ensured ($CREATE_CODE)"
+        else
+          echo "Project create failed ($CREATE_CODE): $CREATE_BODY" >&2
+          exit 1
+        fi
+
+        echo "Generating token..."
+        GEN_CODE=$(curl -sS -u "$ADMIN_USER:$ADMIN_PASS" -o /tmp/gen -w "%{http_code}" -X POST \
+          "http://sonarqube:9000/api/user_tokens/generate?name=$(printf %s "$TOKEN_NAME" | sed "s/ /%20/g")&type=GLOBAL_ANALYSIS_TOKEN")
+        GEN_BODY=$(cat /tmp/gen)
+        [ "$GEN_CODE" = "200" ] || { echo "Token API failed ($GEN_CODE): $GEN_BODY" >&2; exit 1; }
+
+        TOKEN=$(printf "%s" "$GEN_BODY" | sed -n "s/.*\"token\":\"\\([^\"]*\\)\".*/\\1/p")
+        [ -n "$TOKEN" ] || { echo "Failed to parse token: $GEN_BODY" >&2; exit 1; }
+
+        mkdir -p /shared/token
+        printf "%s\n" "$TOKEN" > /shared/token/token.txt
+        echo "Token generated and saved"
+      '
+
+  sonar-scanner:
+    image: sonarsource/sonar-scanner-cli:latest
+    container_name: bdk_gettingstarted_scanner
+    depends_on:
+      - init
+    volumes:
+      - .:/usr/src
+      - sonarqube_token:/shared/token:ro
+    environment:
+      SONAR_HOST_URL: http://sonarqube:9000
+      SONAR_LOGIN_FILE: /shared/token/token.txt
+      SONAR_SCANNER_OPTS: >
+        -Dsonar.projectKey=bdk-gettingstarted
+        -Dsonar.projectBaseDir=.
+        -Dsonar.slnFile=BridgingIT.DevKit.Examples.GettingStarted.sln
+        -Dsonar.cs.opencover.reportsPaths=coverage.xml
+        -Dsonar.exclusions=**/tests/**,.azure/**,.github/**,.vscode/**,.template.config/**,logs/**,assets/**
+    entrypoint: ["sh", "-c", "read SONAR_LOGIN < $SONAR_LOGIN_FILE && export SONAR_LOGIN && sonar-scanner"]
+    networks:
+      - bdk_gettingstarted
+
+volumes:
+  sonarqube_data:
+    name: bdk_gettingstarted_sonarqube_data
+    driver: local
+  sonarqube_logs:
+    name: bdk_gettingstarted_sonarqube_logs
+    driver: local
+  sonarqube_extensions:
+    name: bdk_gettingstarted_sonarqube_extensions
+    driver: local
+  sonarqube_token:
+    name: bdk_gettingstarted_sonarqube_token
+    driver: local
+  sonarqube_db:
+    name: bdk_gettingstarted_postgresql
+    driver: local
+
+networks:
+  bdk_gettingstarted:
+    external: true
+    name: bdk_gettingstarted

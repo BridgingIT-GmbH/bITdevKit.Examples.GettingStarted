@@ -476,6 +476,7 @@
         "tags": [
           "_system"
         ],
+        "operationId": "System.Get",
         "responses": {
           "200": {
             "description": "OK",
@@ -508,6 +509,7 @@
         "tags": [
           "_system"
         ],
+        "operationId": "System.GetEcho",
         "responses": {
           "200": {
             "description": "OK",
@@ -537,6 +539,7 @@
         "tags": [
           "_system"
         ],
+        "operationId": "System.GetInfo",
         "responses": {
           "200": {
             "description": "OK",
@@ -566,6 +569,7 @@
         "tags": [
           "_system"
         ],
+        "operationId": "System.GetModules",
         "responses": {
           "200": {
             "description": "OK",
@@ -599,6 +603,7 @@
           "_system/identity/connect"
         ],
         "description": "Returns the OpenID Connect discovery document.",
+        "operationId": "System.IdentityProvider.WellKnownConfiguration",
         "responses": {
           "200": {
             "description": "OK",
@@ -619,6 +624,7 @@
           "_system/identity/connect"
         ],
         "description": "Shows the signin page for user selection.",
+        "operationId": "System.IdentityProvider.Authorize",
         "parameters": [
           {
             "name": "response_type",
@@ -686,6 +692,7 @@
           "_system/identity/connect"
         ],
         "description": "Handles the user selection and generates authorization code.",
+        "operationId": "System.IdentityProvider.AuthorizeCallback",
         "parameters": [
           {
             "name": "email",
@@ -760,6 +767,7 @@
           "_system/identity/connect"
         ],
         "description": "Issues tokens for various grant types.",
+        "operationId": "System.IdentityProvider.Token",
         "requestBody": {
           "content": {
             "application/x-www-form-urlencoded": {
@@ -881,6 +889,7 @@
           "_system/identity/connect"
         ],
         "description": "Returns information about the authenticated user.",
+        "operationId": "System.IdentityProvider.UserInfo",
         "responses": {
           "200": {
             "description": "OK",
@@ -911,6 +920,7 @@
           "_system/identity/connect"
         ],
         "description": "Handles user logout.",
+        "operationId": "System.IdentityProvider.Logout",
         "parameters": [
           {
             "name": "id_token_hint",
@@ -950,6 +960,7 @@
           "_system/identity/connect"
         ],
         "description": "Returns debug information about the identity provider configuration.",
+        "operationId": "System.IdentityProvider.DebugInfo",
         "responses": {
           "200": {
             "description": "OK",

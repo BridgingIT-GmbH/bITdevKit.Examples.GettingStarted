@@ -24,6 +24,8 @@
             "titleBar.inactiveBackground": "#150b2099",
             "titleBar.inactiveForeground": "#e7e7e799"
         },
-        "peacock.color": "#150b20"
+        "peacock.color": "#150b20",
+        "entityframework.project": "src\\Modules\\CoreModule\\CoreModule.Infrastructure",
+        "entityframework.startupProject": "src\\Presentation.Web.Server"
     }
 }

@@ -1,8 +1,30 @@
 {
   "version": "2.0.0",
+  "inputs": [
+    {
+      "id": "efMigrationName",
+      "type": "promptString",
+      "description": "EF Core migration name (leave blank to auto-generate Migration_<timestamp>)",
+      "default": ""
+    },
+    {
+      "id": "efResetConfirm",
+      "type": "pickString",
+      "description": "Confirm EF migrations reset (squash). Choose 'y' to proceed.",
+      "options": ["n","y"],
+      "default": "n"
+    },
+    {
+      "id": "efRemoveAllConfirm",
+      "type": "pickString",
+      "description": "Confirm removal of ALL migration files (irreversible). Choose 'y' to proceed.",
+      "options": ["n","y"],
+      "default": "n"
+    }
+  ],
   "tasks": [
     {
-      "label": "GettingsStarted [Build]",
+      "label": "Solution [dotnet build]",
       "command": "dotnet",
       "type": "process",
       "args": [
@@ -19,7 +41,7 @@
       }
     },
     {
-      "label": "GettingsStarted [Clean]",
+      "label": "Solution [dotnet clean]",
       "command": "dotnet",
       "type": "process",
       "args": [
@@ -36,7 +58,17 @@
       }
     },
     {
-      "label": "GettingsStarted - Presentation.Web.Server [Build]",
+      "label": "Solution [dotnet tool restore]",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "tool",
+        "restore"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Presentation.Web.Server [dotnet build]",
       "command": "dotnet",
       "type": "process",
       "args": [
@@ -53,7 +85,7 @@
       }
     },
     {
-      "label": "GettingsStarted - Presentation.Web.Server [Publish]",
+      "label": "Presentation.Web.Server [dotnet publish]",
       "command": "dotnet",
       "type": "process",
       "args": [
@@ -66,7 +98,7 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "GettingsStarted - Presentation.Web.Server [Watch]",
+      "label": "Presentation.Web.Server [dotnet watch]",
       "command": "dotnet",
       "type": "process",
       "args": [
@@ -79,15 +111,18 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "GettingsStarted - Core [Unit Test]",
+      "label": "CoreModule [dotnet test unit]",
       "command": "dotnet",
       "type": "shell",
-      "args": ["test", "${workspaceFolder}/tests/Modules/CoreModule/CoreModule.UnitTests/CoreModule.UnitTests.csproj"],
+      "args": [
+        "test",
+        "${workspaceFolder}/tests/Modules/CoreModule/CoreModule.UnitTests/CoreModule.UnitTests.csproj"
+      ],
       "group": "test",
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "GettingsStarted - Core [Integration Test]",
+      "label": "CoreModule [dotnet test integration]",
       "command": "dotnet",
       "type": "shell",
       "args": [
@@ -96,17 +131,258 @@
       ],
       "group": "test",
       "problemMatcher": "$msCompile"
-    }
-    ,
+    },
     {
-      "label": "GettingsStarted - Presentation.Web.Server [Docker Build & Run]",
+      "label": "Presentation.Web.Server [docker build & run]",
       "type": "shell",
       "command": "pwsh",
       "args": [
         "-NoProfile",
         "-File",
-        "${workspaceFolder}/.vscode/run-docker-presentation.ps1"
+        "${workspaceFolder}/.vscode/tasks-docker.ps1",
+        "docker-build-run"
       ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Presentation.Web.Server [docker build]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-docker.ps1",
+        "docker-build"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Presentation.Web.Server [docker run]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-docker.ps1",
+        "docker-run"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Presentation.Web.Server [docker stop]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-docker.ps1",
+        "docker-stop"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Presentation.Web.Server [docker remove]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-docker.ps1",
+        "docker-remove"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Infra [docker compose up]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-docker.ps1",
+        "compose-up"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Infra [docker compose up & pull]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-docker.ps1",
+        "compose-up",
+        "-Pull"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Infra [docker compose down & clean]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-docker.ps1",
+        "compose-down-clean"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Infra [docker compose down]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-docker.ps1",
+        "compose-down"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Misc [combine sources]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-misc.ps1",
+        "combine-sources"
+      ],
+      "problemMatcher": []
+    }
+    ,
+    {
+      "label": "Misc [clean workspace]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-misc.ps1",
+        "clean"
+      ],
+      "problemMatcher": []
+    }
+    ,
+    {
+      "label": "OpenAPI [lint]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-openapi.ps1",
+        "lint"
+      ],
+      "problemMatcher": []
+    }
+    ,
+    {
+      "label": "CoreModule [ef info]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","info","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "problemMatcher": []
+    },
+    {
+      "label": "CoreModule [ef list migrations]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","list","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "problemMatcher": []
+    },
+    {
+      "label": "CoreModule [ef add migration]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","add","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "options": {
+        "env": {
+          "EF_MIGRATION_NAME": "${input:efMigrationName}"
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "CoreModule [ef remove migration]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","remove","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "problemMatcher": []
+    },
+    {
+      "label": "CoreModule [ef apply migrations]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","apply","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "problemMatcher": []
+    },
+    {
+      "label": "CoreModule [ef undo migration]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","undo","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "problemMatcher": []
+    },
+    {
+      "label": "CoreModule [ef migration status]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","status","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "problemMatcher": []
+    },
+    {
+      "label": "CoreModule [ef reset migrations]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","reset","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "options": {
+        "env": {
+          "EF_RESET_CONFIRM": "${input:efResetConfirm}"
+        }
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "CoreModule [ef export script]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","script","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "problemMatcher": []
+    }
+    ,
+    {
+      "label": "CoreModule [ef remove all migrations]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","removeall","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "options": {
+        "env": {
+          "EF_REMOVEALL_CONFIRM": "${input:efRemoveAllConfirm}"
+        }
+      },
+      "problemMatcher": []
+    }
+    ,
+    {
+      "label": "Misc [csharp repl]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-misc.ps1",
+        "repl"
+      ],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated"
+      },
       "problemMatcher": []
     }
   ]
