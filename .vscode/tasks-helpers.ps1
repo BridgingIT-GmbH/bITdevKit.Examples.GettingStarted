@@ -31,21 +31,22 @@ function Get-DevKitModules {
   [string[]]$filtered
 }
 
-function Ensure-PSMenuAvailable {
+function Ensure-SpectreConsoleAvailable {
   param([switch] $Quiet)
-  $moduleName = 'PSMenu'
+  $moduleName = 'PwshSpectreConsole'
+  $env:IgnoreSpectreEncoding = $true
   if (Get-Module -ListAvailable -Name $moduleName) {
-    if (-not $Quiet) { Write-DevKitInfo "PSMenu module available." }
+    if (-not $Quiet) { Write-DevKitInfo "SpectreConsole module available." }
   } else {
-    if (-not $Quiet) { Write-DevKitWarn "PSMenu module not found. Installing (CurrentUser)..." }
+    if (-not $Quiet) { Write-DevKitWarn "SpectreConsole module not found. Installing (CurrentUser)..." }
     try {
       Install-Module -Name $moduleName -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop
-      if (-not $Quiet) { Write-DevKitInfo "PSMenu installation successful." }
+      if (-not $Quiet) { Write-DevKitInfo "SpectreConsole module installation successful." }
     } catch {
-      Write-DevKitError "Failed to install PSMenu: $($_.Exception.Message). Falling back to basic selection."; return $false
+      Write-DevKitError "Failed to install SpectreConsole module: $($_.Exception.Message)."; throw [System.Exception] "SpectreConsole install failed"
     }
   }
-  try { Import-Module $moduleName -Force; return $true } catch { Write-DevKitError "Failed to import PSMenu: $($_.Exception.Message)."; return $false }
+  try { Import-Module $moduleName -Force; return $true } catch { Write-DevKitError "Failed to import SpectreConsole module: $($_.Exception.Message)."; throw [System.Exception] "SpectreConsole import failed" }
 }
 
 function Select-DevKitModule {
@@ -53,51 +54,30 @@ function Select-DevKitModule {
     [string[]] $Available,
     [string] $Requested,
     [string] $EnvVarName = 'TEST_MODULE',
-    [switch] $AllowAll,
-    [switch] $NonInteractive
+    [switch] $AllowAll
   )
+  Write-Host "------------------------------"
   if (-not $Available -or $Available.Count -eq 0) { throw [System.Exception] 'No modules discovered.' }
+  if ($Available.Count -eq 1 -and -not $AllowAll) { return $Available[0] }
 
-  # Resolve requested precedence: explicit param > env var > (interactive / default)
+  # Resolve requested precedence: explicit param > env var > interactive
   $envValue = if ($EnvVarName) { (Get-Item -Path Env:$EnvVarName -ErrorAction SilentlyContinue).Value } else { $null }
   $selection = if ($Requested) { $Requested } elseif ($envValue) { $envValue } else { $null }
-
   if ($selection -and $AllowAll -and $selection -ieq 'All') { return 'All' }
   if ($selection -and $selection -in $Available) { return $selection }
   if ($selection -and $selection -notin $Available) { Write-DevKitWarn "Requested module '$selection' not in available set: $($Available -join ', '). Ignoring."; $selection = $null }
 
-  if ($NonInteractive) {
-    $auto = $Available[0]
-    Write-DevKitWarn "NonInteractive mode: auto-selected module '$auto'"; return $auto
-  }
-
-  # Try PSMenu interactive selection
-  $psmenuOk = Ensure-PSMenuAvailable -Quiet
-  if ($psmenuOk) {
-    $menuItems = @()
-    for ($i=0; $i -lt $Available.Count; $i++){ $menuItems += "[$i] $($Available[$i])" }
-    if ($AllowAll) { $menuItems += '[A] All Modules' }
-    Write-Host "Use arrow keys / Enter to choose a module:" -ForegroundColor Cyan
-    $chosen = Show-Menu -MenuItems $menuItems
-  if (-not $chosen) { return $null }
-    if ($AllowAll -and $chosen.StartsWith('[A]')) { return 'All' }
-    if ($chosen -match '^\[(?<idx>\d+)\]') {
-      $idx = [int]$Matches.idx
-      if ($idx -ge 0 -and $idx -lt $Available.Count) { return $Available[$idx] }
-    }
-  return $null
-  }
-
-  # Fallback basic prompt selection
-  Write-Host 'Select Module:' -ForegroundColor Cyan
-  for ($i=0; $i -lt $Available.Count; $i++){ Write-Host "  [$i] $($Available[$i])" }
-  if ($AllowAll) { Write-Host '  [A] All' }
-  $raw = Read-Host 'Enter choice'
-  if ($AllowAll -and $raw -eq 'A') { return 'All' }
-  if ($raw -match '^[0-9]+$') {
-    $idx=[int]$raw; if ($idx -ge 0 -and $idx -lt $Available.Count) { return $Available[$idx] }
-  }
-  return $null
+  # Require SpectreConsole (no fallback)
+  if (-not (Ensure-SpectreConsoleAvailable -Quiet)) { throw [System.Exception] 'SpectreConsole module required but not available.' }
+  $choices = @()
+  if ($AllowAll) { $choices += 'All' }
+  $choices += $Available
+  $choices += 'Cancel'
+  $selected = Read-SpectreSelection -Title 'Select Module' -Choices $choices -EnableSearch
+  if (-not $selected -or $selected -eq 'Cancel') { throw [System.OperationCanceledException] 'Module selection cancelled.' }
+  if ($AllowAll -and $selected -eq 'All') { return 'All' }
+  if ($selected -in $Available) { return $selected }
+  throw [System.Exception] "Unexpected selection '$selected'"
 }
 
 # Dot-sourced script: no Export-ModuleMember needed.

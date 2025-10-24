@@ -38,10 +38,6 @@ function Run-TestsForModule([string] $ModuleName){
   $proj = Build-TestProjectPath $ModuleName $Kind
   Section "Testing $Kind for $ModuleName"
   $args = @('test', $proj)
-  if (-not $Module) {
-    $Module = Select-DevKitModule -Title "Select Test Module" -AllowAll
-  if ($null -eq $Module) { exit 0 }
-  }
   if ($Coverage) { $args += @('--collect:XPlat Code Coverage','--results-directory','./.tmp/tests/coverage') }
   Step "dotnet $($args -join ' ')"
   dotnet $args

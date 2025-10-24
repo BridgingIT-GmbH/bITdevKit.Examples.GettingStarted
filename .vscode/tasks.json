@@ -1,14 +1,6 @@
 {
   "version": "2.0.0",
-  "inputs": [
-    {
-      "id": "efMigrationName",
-      "type": "promptString",
-      "description": "EF Core migration name (leave blank to auto-generate Migration_<timestamp>)",
-      "default": ""
-    },
-
-  ],
+  "inputs": [],
   "tasks": [
     {
       "label": "Solution [dotnet build]",
@@ -48,10 +40,7 @@
       "label": "Solution [dotnet tool restore]",
       "command": "dotnet",
       "type": "process",
-      "args": [
-        "tool",
-        "restore"
-      ],
+      "args": ["tool", "restore"],
       "problemMatcher": []
     },
     {
@@ -101,7 +90,12 @@
       "label": "Solution [tests unit]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-tests.ps1","unit"],
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-tests.ps1",
+        "unit"
+      ],
       "group": "test",
       "problemMatcher": []
     },
@@ -109,7 +103,12 @@
       "label": "Solution [tests integration]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-tests.ps1","integration"],
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-tests.ps1",
+        "integration"
+      ],
       "group": "test",
       "problemMatcher": []
     },
@@ -117,8 +116,13 @@
       "label": "Solution [tests unit all]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-tests.ps1","unit"],
-      "options": { "env": { "TEST_MODULE": "All" }},
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-tests.ps1",
+        "unit"
+      ],
+      "options": { "env": { "TEST_MODULE": "All" } },
       "group": "test",
       "problemMatcher": []
     },
@@ -126,8 +130,13 @@
       "label": "Solution [tests integration all]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-tests.ps1","integration"],
-      "options": { "env": { "TEST_MODULE": "All" }},
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-tests.ps1",
+        "integration"
+      ],
+      "options": { "env": { "TEST_MODULE": "All" } },
       "group": "test",
       "problemMatcher": []
     },
@@ -251,8 +260,7 @@
         "combine-sources"
       ],
       "problemMatcher": []
-    }
-    ,
+    },
     {
       "label": "Misc [clean workspace]",
       "type": "shell",
@@ -264,8 +272,7 @@
         "clean"
       ],
       "problemMatcher": []
-    }
-    ,
+    },
     {
       "label": "OpenAPI [lint]",
       "type": "shell",
@@ -277,77 +284,125 @@
         "lint"
       ],
       "problemMatcher": []
-    }
-    ,
+    },
     {
       "label": "Solution [ef migration info]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","info"],
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-ef.ps1",
+        "info"
+      ],
       "problemMatcher": []
     },
     {
       "label": "Solution [ef migration list]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","list"],
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-ef.ps1",
+        "list"
+      ],
       "problemMatcher": []
     },
     {
       "label": "Solution [ef migration add]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","add"],
-      "options": {"env": {"EF_MIGRATION_NAME": "${input:efMigrationName}"}},
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-ef.ps1",
+        "add"
+      ],
       "problemMatcher": []
     },
     {
       "label": "Solution [ef migration remove]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","remove"],
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-ef.ps1",
+        "remove"
+      ],
       "problemMatcher": []
     },
     {
       "label": "Solution [ef migration apply]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","apply"],
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-ef.ps1",
+        "apply"
+      ],
       "problemMatcher": []
     },
     {
       "label": "Solution [ef migration undo]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","undo"],
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-ef.ps1",
+        "undo"
+      ],
       "problemMatcher": []
     },
     {
       "label": "Solution [ef migration status]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","status"],
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-ef.ps1",
+        "status"
+      ],
       "problemMatcher": []
     },
     {
       "label": "Solution [ef migration reset]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","reset"],
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-ef.ps1",
+        "reset"
+      ],
       "problemMatcher": []
     },
     {
       "label": "Solution [ef migration script]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","script"],
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-ef.ps1",
+        "script"
+      ],
       "problemMatcher": []
     },
     {
       "label": "Solution [ef migration removeall]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","removeall"],
+      "args": [
+        "-NoProfile",
+        "-File",
+        "${workspaceFolder}/.vscode/tasks-ef.ps1",
+        "removeall"
+      ],
       "problemMatcher": []
     },
     {
@@ -367,8 +422,7 @@
         "panel": "dedicated"
       },
       "problemMatcher": []
-    }
-    ,
+    },
     {
       "label": "Solution [security vulnerabilities]",
       "command": "dotnet",
@@ -380,8 +434,7 @@
         "--vulnerable"
       ],
       "problemMatcher": []
-    }
-    ,
+    },
     {
       "label": "Solution [security outdated packages]",
       "command": "dotnet",
@@ -393,8 +446,7 @@
         "--outdated"
       ],
       "problemMatcher": []
-    }
-    ,
+    },
     {
       "label": "Solution [format check]",
       "command": "dotnet",
@@ -405,8 +457,7 @@
         "--verify-no-changes"
       ],
       "problemMatcher": []
-    }
-    ,
+    },
     {
       "label": "Solution [format apply]",
       "command": "dotnet",
@@ -416,8 +467,7 @@
         "${workspaceFolder}/BridgingIT.DevKit.Examples.GettingStarted.sln"
       ],
       "problemMatcher": []
-    }
-    ,
+    },
     {
       "label": "Solution [analyzers report]",
       "command": "dotnet",
@@ -432,8 +482,7 @@
         "/p:ErrorLog=${workspaceFolder}/.tmp/analyzers/analyzers.sarif"
       ],
       "problemMatcher": "$msCompile"
-    }
-    ,
+    },
     {
       "label": "Solution [coverage report html]",
       "type": "shell",

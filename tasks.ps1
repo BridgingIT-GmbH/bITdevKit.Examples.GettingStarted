@@ -10,8 +10,6 @@
   Optional exact task label to run directly (bypasses menu).
 .PARAMETER List
   List all available task labels (alphabetically) then exit.
-.PARAMETER NonInteractive
-  Force non-interactive mode (no menu). Useful for CI when specifying -Task.
 
 .EXAMPLES
   pwsh -File tasks.ps1                # interactive menu loop
@@ -23,10 +21,10 @@
 #>
 param(
   [string] $Task,
-  [switch] $List,
-  [switch] $NonInteractive
+  [switch] $List
 )
 
+$env:IgnoreSpectreEncoding = $true
 $ErrorActionPreference = 'Stop'
 $tasksFile = Join-Path $PSScriptRoot '.vscode/tasks.json'
 if (-not (Test-Path $tasksFile)) { Write-Error "tasks.json not found at $tasksFile"; exit 1 }
@@ -98,11 +96,9 @@ function Invoke-Task($task) {
       $expandedArgs += $ea
     } else { $expandedArgs += $a }
   }
-  # Auto-append -NonInteractive for known devkit scripts needing stable behavior outside VS Code.
   $scriptPathArg = $expandedArgs | Select-Object -First 3 | Select-Object -Last 1
   $joinedArgs = ($expandedArgs -join ' ')
-  if ($joinedArgs -match '\.vscode/tasks-tests.ps1' -and ($expandedArgs -notcontains '-NonInteractive')) { $expandedArgs += '-NonInteractive' }
-  if ($joinedArgs -match '\.vscode/tasks-ef.ps1' -and ($expandedArgs -notcontains '-NonInteractive')) { $expandedArgs += '-NonInteractive' }
+
   $cmdLinePreview = $task.command + ' ' + ($expandedArgs -join ' ')
   Write-Host "Command: $cmdLinePreview" -ForegroundColor DarkGray
   try {
@@ -128,32 +124,51 @@ function Invoke-Task($task) {
   return $exitCode
 }
 
+function Ensure-SpectreConsoleAvailable {
+  param([switch] $Quiet)
+  $moduleName = 'PwshSpectreConsole'
+  if (Get-Module -ListAvailable -Name $moduleName) {
+    if (-not $Quiet) { Write-Host "SpectreConsole module available." -ForegroundColor DarkGray }
+  } else {
+    if (-not $Quiet) { Write-Host "SpectreConsole module not found. Installing (CurrentUser)..." -ForegroundColor DarkYellow }
+    try {
+      Install-Module -Name $moduleName -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop
+      if (-not $Quiet) { Write-Host "SpectreConsole module installation successful." -ForegroundColor DarkGray }
+    } catch {
+      if (-not $Quiet) { Write-Host "Failed to install SpectreConsole module: $($_.Exception.Message)." -ForegroundColor Red }
+      return $false
+    }
+  }
+  try { Import-Module $moduleName -Force; return $true } catch { if (-not $Quiet) { Write-Host "Failed to import SpectreConsole module: $($_.Exception.Message)." -ForegroundColor Red }; return $false }
+}
+
 function Show-MenuLoop($tasks) {
   if (-not $tasks -or $tasks.Count -eq 0) { Write-Host 'No tasks available.' -ForegroundColor Red; return }
-  $usePSMenu = $false
-  if (Get-Command Show-Menu -ErrorAction SilentlyContinue) { $usePSMenu = $true } elseif (Get-Module -ListAvailable -Name PSMenu) { Import-Module PSMenu -Force; $usePSMenu = $true }
-  elseif (Get-Module -ListAvailable -Name PSMenu) { Import-Module PSMenu -Force; $usePSMenu = $true }
-  elseif (Get-Command Install-Module -ErrorAction SilentlyContinue) {
-    try { Install-Module -Name PSMenu -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop; Import-Module PSMenu -Force; $usePSMenu = $true } catch { Write-Host 'PSMenu unavailable; falling back to numeric selection.' -ForegroundColor DarkYellow }
-  }
+  $spectreOk = Ensure-SpectreConsoleAvailable -Quiet
   while ($true) {
-    Write-Host "Select a task (Ctrl+C to exit):" -ForegroundColor Green
-    $labels = $tasks | Select-Object -ExpandProperty label
-  $indexed = for ($i=0; $i -lt $labels.Count; $i++){ "[$i] $($labels[$i])" }
-    $choiceLabel = $null
-    if ($usePSMenu) {
-      $choiceLabel = Show-Menu -MenuItems $indexed
+  $labels = $tasks | Select-Object -ExpandProperty label
+  $labels += 'Cancel'
+    # Escape Spectre markup brackets by doubling them (Spectre Console treats [ ] as markup delimiters)
+    $escapedMap = @{}
+    $escapedLabels = foreach ($l in $labels) {
+      $e = ($l -replace '\[','[[') -replace '\]',']]'   # simple escape strategy
+      $escapedMap[$e] = $l
+      $e
+    }
+    if ($spectreOk -and (Get-Command Read-SpectreSelection -ErrorAction SilentlyContinue)) {
+  $selectionEscaped = Read-SpectreSelection -PageSize 8 -EnableSearch -Title 'Select Task (Ctrl+C or Cancel to exit)' -Choices $escapedLabels
+      if (-not $selectionEscaped) { return }
+      $selection = $escapedMap[$selectionEscaped]
+  if (-not $selection) { return }
+  if ($selection -eq 'Cancel') { return }
+      $selected = $tasks | Where-Object { $_.label -eq $selection }
+      if ($selected) { Invoke-Task $selected | Out-Null }
     } else {
+      Write-Host 'Select a task (Ctrl+C to exit):' -ForegroundColor Green
       for ($i=0; $i -lt $labels.Count; $i++){ Write-Host "  [$i] $($labels[$i])" }
       $raw = Read-Host 'Enter choice'
-      if ($raw -match '^[0-9]+$') { $idx = [int]$raw; if ($idx -ge 0 -and $idx -lt $labels.Count) { $choiceLabel = $indexed[$idx] } }
-    }
-    if (-not $choiceLabel) { Write-Host 'No selection; exiting.' -ForegroundColor DarkYellow; return }
-    if ($choiceLabel -match '^\[(?<idx>\d+)\]') {
-      $idx = [int]$Matches.idx
-      $selected = $tasks[$idx]
-      Invoke-Task $selected | Out-Null
-      # loop resumes
+      if (-not $raw) { return }
+      if ($raw -match '^[0-9]+$') { $idx=[int]$raw; if ($idx -ge 0 -and $idx -lt $labels.Count) { $selected=$tasks[$idx]; Invoke-Task $selected | Out-Null } }
     }
   }
 }
@@ -167,10 +182,6 @@ if ($Task) {
   $match = $allTasks | Where-Object { $_.label -eq $Task }
   if (-not $match) { Write-Error "Task '$Task' not found."; Write-Host 'Available:'; $allTasks | Select-Object -ExpandProperty label; exit 2 }
   Invoke-Task $match | Out-Null; exit $LASTEXITCODE
-}
-
-if ($NonInteractive) {
-  Write-Host 'NonInteractive mode requires -Task parameter.' -ForegroundColor Red; exit 3
 }
 
 Show-MenuLoop -tasks $allTasks

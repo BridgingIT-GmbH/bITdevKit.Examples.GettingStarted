@@ -60,6 +60,17 @@ function Resolve-ModuleAndContext() {
   $ctxFiles = @(Get-ChildItem -Path $infraDir -Recurse -Filter '*DbContext.cs' -File -ErrorAction SilentlyContinue)
   if (-not $ctxFiles -or $ctxFiles.Count -eq 0) { Fail "No DbContext files found under $infraDir" 107 }
   $discoveredContexts = @($ctxFiles | ForEach-Object { $_.BaseName } | Sort-Object -Unique)
+  # If multiple contexts, optionally allow interactive selection (Spectre) with Cancel
+  if (-not $NonInteractive -and $discoveredContexts.Count -gt 1) {
+    if (Get-Command Read-SpectreSelection -ErrorAction SilentlyContinue) {
+      try {
+        $ctxChoices = $discoveredContexts + 'Cancel'
+        $chosenCtx = Read-SpectreSelection -Title "Select DbContext" -Choices $ctxChoices -EnableSearch
+        if ($chosenCtx -and $chosenCtx -ne 'Cancel') { $script:DbContext = $chosenCtx }
+        elseif ($chosenCtx -eq 'Cancel') { Write-Host 'DbContext selection cancelled.' -ForegroundColor DarkYellow; exit 0 }
+      } catch { Write-Host "Spectre DbContext selection failed: $($_.Exception.Message). Using first." -ForegroundColor DarkYellow }
+    }
+  }
   if (-not $script:DbContext -and $DbContext) { $script:DbContext = $DbContext }
   if (-not $script:DbContext -and $env:EF_DBCONTEXT) { $script:DbContext = $env:EF_DBCONTEXT }
   if (-not $script:DbContext) { $script:DbContext = $discoveredContexts[0] }
@@ -143,8 +154,16 @@ function Add-Migration() {
     $envName = $env:EF_MIGRATION_NAME
     if ($envName) { $MigrationName = $envName }
   }
+  if (-not $MigrationName -and -not $NonInteractive) {
+    # Attempt interactive Spectre prompt for migration name; fallback to generated timestamp if cancelled/blank
+    if (Get-Command Read-SpectreText -ErrorAction SilentlyContinue) {
+      try {
+        $inputName = Read-SpectreText -Message 'Enter Migration Name (blank = auto timestamp)' -AllowEmpty
+        if ($inputName) { $MigrationName = $inputName }
+      } catch { Write-Host "Spectre text prompt failed: $($_.Exception.Message)" -ForegroundColor DarkYellow }
+    }
+  }
   if (-not $MigrationName) {
-    # Auto-generate a name to keep task non-interactive (timestamp-based)
     $MigrationName = 'Migration_' + (Get-Date -Format 'yyyyMMdd_HHmmss')
     Write-Host "No migration name provided. Using generated name: $MigrationName" -ForegroundColor DarkYellow
   }
