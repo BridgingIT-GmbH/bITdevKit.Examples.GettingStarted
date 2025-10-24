@@ -13,13 +13,14 @@
 #>
 param(
   [Parameter(Position=0)] [string] $Command = 'help',
-  [Parameter()] [string] $Module,                # removed default; will be resolved dynamically
-  [Parameter()] [string] $DbContext,             # removed default; will be resolved dynamically
+  [Parameter()] [string] $Module,                # module name (can be provided or discovered)
+  [Parameter()] [string] $DbContext,             # dbcontext name (discovered after module selection)
   [Parameter()] [string] $StartupProject = 'src/Presentation.Web.Server/Presentation.Web.Server.csproj',
-  [Parameter()] [string] $InfrastructureProject = '', # if empty, will infer from Module
+  [Parameter()] [string] $InfrastructureProject = '', # override inferred infrastructure project
   [Parameter()] [string] $MigrationName,
   [Parameter()] [string] $OutputDirectory = './.tmp/ef',
-  [Parameter()] [switch] $Force # used for reset confirmation bypass
+  # (Force parameter removed: destructive actions run without extra confirmation)
+  [Parameter()] [switch] $NonInteractive         # force non-interactive selection behavior
 )
 
 $ErrorActionPreference = 'Stop'
@@ -29,83 +30,58 @@ Write-Host "EF Command: $Command" -ForegroundColor Yellow
 $script:Module = $Module
 $script:DbContext = $DbContext
 
-# region: Dynamic discovery & selection
-function Get-Modules() {
-  # Determine modules root relative to repo root (parent of .vscode)
-  $repoRoot = Split-Path $PSScriptRoot -Parent
-  $modulesRoot = Join-Path $repoRoot 'src/Modules'
-  Write-Host "Modules root: $modulesRoot" -ForegroundColor DarkGray
-  if (-not (Test-Path $modulesRoot)) { Write-Host 'Modules root not found.' -ForegroundColor Red; return @() }
-  $dirs = Get-ChildItem -Path $modulesRoot -Directory | Select-Object -ExpandProperty Name
-  $filtered = $dirs | Where-Object { $_ -notmatch '^(?:Common|Shared)$' }
-  Write-Host "Discovered modules: $($filtered -join ', ')" -ForegroundColor DarkGray
-  return $filtered
-}
+# Define Fail early (used inside resolution functions)
+function Fail([string] $Msg, [int] $Code=1){ Write-Error $Msg; exit $Code }
+
+# region: Dot-source shared helpers & dynamic selection
+$helpersPath = Join-Path $PSScriptRoot 'tasks-helpers.ps1'
+if (Test-Path $helpersPath) { . $helpersPath } else { Write-Host "Helper script not found: $helpersPath" -ForegroundColor Red }
 
 function Get-DbContexts([string] $ModuleName) {
   if (-not $ModuleName) { return @() }
   $infraDir = "src/Modules/$ModuleName/$ModuleName.Infrastructure"
   if (-not (Test-Path $infraDir)) { return @() }
-  Get-ChildItem -Path $infraDir -Recurse -Filter '*DbContext.cs' -File |
-    ForEach-Object {
-      $content = Get-Content -Path $_.FullName -Raw
-      $matches = [regex]::Matches($content, 'class\s+([A-Za-z0-9_]+DbContext)')
-      foreach ($m in $matches) { $m.Groups[1].Value }
-    } | Sort-Object -Unique
-}
-
-function Prompt-Select([string] $Title, [string[]] $Items) {
-  if (-not $Items -or $Items.Count -eq 0) { return $null }
-  Write-Host "" -ForegroundColor DarkGray
-  Write-Host "$Title" -ForegroundColor Cyan
-  for ($i=0; $i -lt $Items.Count; $i++) { Write-Host "  [$i] $($Items[$i])" }
-  $selection = Read-Host 'Enter index'
-  if ($selection -match '^[0-9]+$' -and [int]$selection -ge 0 -and [int]$selection -lt $Items.Count) { return $Items[[int]$selection] }
-  Write-Host 'Invalid selection; using first item.' -ForegroundColor DarkYellow
-  return $Items[0]
+  $contexts = @(Get-ChildItem -Path $infraDir -Recurse -Filter '*DbContext.cs' -File | ForEach-Object { $_.BaseName } | Sort-Object -Unique)
+  return $contexts
 }
 
 function Resolve-ModuleAndContext() {
-  # 1) Environment overrides (non-interactive tasks)
-  if (-not $script:Module) { $script:Module = $env:EF_MODULE }
-  if (-not $script:DbContext) { $script:DbContext = $env:EF_DBCONTEXT }
-
-  $availableModules = Get-Modules
+  # Resolve module using shared helper (env variable EF_MODULE honored via -EnvVarName)
+  [string[]]$availableModules = Get-DevKitModules -Root (Split-Path $PSScriptRoot -Parent)
   if (-not $availableModules -or $availableModules.Count -eq 0) { Fail 'No modules discovered under src/Modules.' 101 }
+  Write-Host "Discovered Modules: $($availableModules -join ', ')" -ForegroundColor DarkGray
+  # Allow interactive selection again unless -NonInteractive specified. (VS Code tasks should pass -NonInteractive if hanging occurs.)
+  $script:Module = Select-DevKitModule -Available $availableModules -Requested $Module -EnvVarName 'EF_MODULE' -NonInteractive:$NonInteractive
+  if (-not $script:Module) { Fail 'Module resolution failed (empty result).' 105 }
+  if ($script:Module -eq 'All') { Fail "'All' selection not supported for EF operations." 106 }
 
-  if (-not $script:Module) {
-    # Interactive only if running directly (VS Code tasks won't prompt unless set to interactive). Provide fallback.
-    if ($Host.Name -ne 'Visual Studio Code Host') {
-      $script:Module = Prompt-Select 'Select Module:' $availableModules
-    }
-    if (-not $script:Module) { $script:Module = $availableModules[0] }
-  } elseif ($availableModules -notcontains $script:Module) {
-    Fail "Specified module '$script:Module' not found. Available: $($availableModules -join ', ')" 102
+  # Deterministic DbContext selection (always first discovered unless explicitly provided)
+  $infraDir = "src/Modules/$script:Module/$script:Module.Infrastructure"
+  $ctxFiles = @(Get-ChildItem -Path $infraDir -Recurse -Filter '*DbContext.cs' -File -ErrorAction SilentlyContinue)
+  if (-not $ctxFiles -or $ctxFiles.Count -eq 0) { Fail "No DbContext files found under $infraDir" 107 }
+  $discoveredContexts = @($ctxFiles | ForEach-Object { $_.BaseName } | Sort-Object -Unique)
+  if (-not $script:DbContext -and $DbContext) { $script:DbContext = $DbContext }
+  if (-not $script:DbContext -and $env:EF_DBCONTEXT) { $script:DbContext = $env:EF_DBCONTEXT }
+  if (-not $script:DbContext) { $script:DbContext = $discoveredContexts[0] }
+  elseif ($discoveredContexts -notcontains $script:DbContext) {
+  Write-Host "WARN Provided DbContext '$script:DbContext' not in discovered set. Using first." -ForegroundColor DarkYellow
+    $script:DbContext = $discoveredContexts[0]
   }
-
-  $availableContexts = Get-DbContexts $script:Module
-  if (-not $availableContexts -or $availableContexts.Count -eq 0) { Fail "No DbContext classes discovered for module '$script:Module'." 103 }
-
-  if (-not $script:DbContext) {
-    if ($Host.Name -ne 'Visual Studio Code Host') {
-      $script:DbContext = Prompt-Select "Select DbContext for module '$script:Module':" $availableContexts
-    }
-    if (-not $script:DbContext) { $script:DbContext = $availableContexts[0] }
-  } elseif ($availableContexts -notcontains $script:DbContext) {
-    Fail "Specified DbContext '$script:DbContext' not found in module '$script:Module'. Available: $($availableContexts -join ', ')" 104
+  if ($script:DbContext.Length -eq 1 -and $discoveredContexts[0].Length -gt 1) {
+  Write-Host "WARN Truncated DbContext '$script:DbContext' corrected to '$($discoveredContexts[0])'" -ForegroundColor DarkYellow
+    $script:DbContext = $discoveredContexts[0]
   }
-
-  if (-not $script:Module) { Fail 'Module resolution failed (empty after fallback).' 105 }
-  if (-not $script:DbContext) { Fail 'DbContext resolution failed (empty after fallback).' 106 }
-  Write-Host "Resolved Module: $script:Module" -ForegroundColor Green
-  Write-Host "Resolved DbContext: $script:DbContext" -ForegroundColor Green
-  # sync back to param vars for any external consumption
   $Module = $script:Module
   $DbContext = $script:DbContext
+  Write-Host "Resolved Module: $Module" -ForegroundColor Green
+  Write-Host "Resolved DbContext: $DbContext" -ForegroundColor Green
+  if (-not $Module -or -not $DbContext) { Write-Host 'WARN Module/DbContext resolution produced empty values.' -ForegroundColor DarkYellow }
+  return
 }
 # endregion
 
 Resolve-ModuleAndContext
+if (-not $Module) { exit 0 }
 Write-Host "Post-Resolve Values: Module='$Module' DbContext='$DbContext'" -ForegroundColor DarkGray
 
 function Fail([string] $Msg, [int] $Code=1){ Write-Error $Msg; exit $Code }
@@ -233,16 +209,7 @@ function Show-MigrationStatus() {
 function Reset-Migrations() {
   Section "Reset (Squash) Migrations ($script:DbContext)"
   Ensure-DotNetTools
-  if (-not $Force){
-    $confirmEnv = $env:EF_RESET_CONFIRM
-    if ($confirmEnv -and $confirmEnv.ToLower() -eq 'y') {
-      Write-Host 'Confirmation provided via EF_RESET_CONFIRM environment variable.' -ForegroundColor DarkYellow
-    }
-    else {
-      Write-Host 'Force flag not supplied and EF_RESET_CONFIRM!=y. Aborting reset to remain non-interactive in task context.' -ForegroundColor Red
-      Fail 'Reset cancelled (no confirmation).' 10
-    }
-  }
+  Write-Host 'Proceeding with migration reset (no confirmation).' -ForegroundColor DarkYellow
   $infraProj = Resolve-InfrastructureProject $script:Module
   $migDir = Join-Path (Split-Path $infraProj -Parent) 'EntityFramework/Migrations'
   if (Test-Path $migDir){ Step "Removing migration files in $migDir"; Get-ChildItem -Path $migDir -File -Force | Remove-Item -Force }
@@ -265,15 +232,7 @@ function Export-DbContextScript() {
 function RemoveAll-Migrations() {
   Section "Remove ALL Migration Files ($script:DbContext)"
   Ensure-DotNetTools
-  if (-not $Force) {
-    $removeAllConfirm = $env:EF_REMOVEALL_CONFIRM
-    if ($removeAllConfirm -and $removeAllConfirm.ToLower() -eq 'y') {
-      Write-Host 'Confirmation provided via EF_REMOVEALL_CONFIRM environment variable.' -ForegroundColor DarkYellow
-    } else {
-      Write-Host 'Force flag not supplied and EF_REMOVEALL_CONFIRM!=y. Aborting remove all (safety).' -ForegroundColor Red
-      Fail 'Remove ALL cancelled (no confirmation).' 11
-    }
-  }
+  Write-Host 'Proceeding with complete migration file removal (no confirmation).' -ForegroundColor DarkYellow
   $infraProj = Resolve-InfrastructureProject $script:Module
   $migDir = Join-Path (Split-Path $infraProj -Parent) 'EntityFramework/Migrations'
   if (Test-Path $migDir) {
@@ -294,11 +253,11 @@ Commands:
   list                 List migrations
   add                  Add new migration (prompts if -MigrationName omitted)
   remove               Remove last migration (not applied)
-  removeall            Delete ALL migration source files (safety requires EF_REMOVEALL_CONFIRM=y or -Force)
+  removeall            Delete ALL migration source files (NO confirmation)
   apply                Update database (apply all pending)
   undo                 Revert database to previous migration
   status               Show applied vs filesystem migrations
-  reset                Squash migrations into new baseline (Initial)
+  reset                Squash migrations into new baseline (Initial) (NO confirmation)
   script               Export schema as SQL script
   help                 Show this help
 
@@ -309,7 +268,7 @@ Common Parameters:
   -InfrastructureProject <path> override inferred module infrastructure project
   -MigrationName <name>      Name for new migration (add)
   -OutputDirectory <path>    (for script export, default: ./.tmp/ef)
-  -Force                     Skip confirmation (reset)
+  (Reset/removeall have no confirmation safeguards; ensure you target the correct module.)
   -Verbose                   Extra logging
 
 Examples:
@@ -322,7 +281,7 @@ Examples:
 Notes:
   Modules & DbContexts discovered dynamically. Provide EF_MODULE / EF_DBCONTEXT env variables for non-interactive tasks.
   Uses dotnet-ef from the tool manifest; tool restore executed automatically.
-  Undo chooses second latest migration ID. Reset deletes migration source files (not database) then creates Initial.
+  Undo chooses second latest migration ID. Reset deletes migration source files (not database) then creates Initial WITHOUT confirmation.
   Status parses migrations folder and dotnet ef list output to display pending migrations.
   For complex squashing (including database consolidation), additional manual steps may be required.
 '@ | Write-Host

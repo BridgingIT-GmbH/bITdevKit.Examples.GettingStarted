@@ -7,20 +7,7 @@
       "description": "EF Core migration name (leave blank to auto-generate Migration_<timestamp>)",
       "default": ""
     },
-    {
-      "id": "efResetConfirm",
-      "type": "pickString",
-      "description": "Confirm EF migrations reset (squash). Choose 'y' to proceed.",
-      "options": ["n","y"],
-      "default": "n"
-    },
-    {
-      "id": "efRemoveAllConfirm",
-      "type": "pickString",
-      "description": "Confirm removal of ALL migration files (irreversible). Choose 'y' to proceed.",
-      "options": ["n","y"],
-      "default": "n"
-    }
+
   ],
   "tasks": [
     {
@@ -205,7 +192,7 @@
       "problemMatcher": []
     },
     {
-      "label": "Infra [docker compose up]",
+      "label": "Container [docker compose up]",
       "type": "shell",
       "command": "pwsh",
       "args": [
@@ -217,7 +204,7 @@
       "problemMatcher": []
     },
     {
-      "label": "Infra [docker compose up & pull]",
+      "label": "Container [docker compose up & pull]",
       "type": "shell",
       "command": "pwsh",
       "args": [
@@ -230,7 +217,7 @@
       "problemMatcher": []
     },
     {
-      "label": "Infra [docker compose down & clean]",
+      "label": "Container [docker compose down & clean]",
       "type": "shell",
       "command": "pwsh",
       "args": [
@@ -242,7 +229,7 @@
       "problemMatcher": []
     },
     {
-      "label": "Infra [docker compose down]",
+      "label": "Container [docker compose down]",
       "type": "shell",
       "command": "pwsh",
       "args": [
@@ -347,7 +334,6 @@
       "type": "shell",
       "command": "pwsh",
       "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","reset"],
-      "options": {"env": {"EF_RESET_CONFIRM": "${input:efResetConfirm}"}},
       "problemMatcher": []
     },
     {
@@ -362,7 +348,6 @@
       "type": "shell",
       "command": "pwsh",
       "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","removeall"],
-      "options": {"env": {"EF_REMOVEALL_CONFIRM": "${input:efRemoveAllConfirm}"}},
       "problemMatcher": []
     },
     {
