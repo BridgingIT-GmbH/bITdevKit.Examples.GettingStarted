@@ -6,6 +6,7 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.IntegrationTests.Presentation.Web;
 
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
+using Microsoft.Data.SqlClient;
 using System.Text;
 using System.Text.Json;
 

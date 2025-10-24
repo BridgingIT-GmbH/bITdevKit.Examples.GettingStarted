@@ -301,7 +301,7 @@
       "problemMatcher": []
     },
     {
-      "label": "CoreModule [ef add migration]",
+      "label": "CoreModule [ef migration add]",
       "type": "shell",
       "command": "pwsh",
       "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","add","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
@@ -313,21 +313,21 @@
       "problemMatcher": []
     },
     {
-      "label": "CoreModule [ef remove migration]",
+      "label": "CoreModule [ef migration remove ]",
       "type": "shell",
       "command": "pwsh",
       "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","remove","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
       "problemMatcher": []
     },
     {
-      "label": "CoreModule [ef apply migrations]",
+      "label": "CoreModule [ef migration apply]",
       "type": "shell",
       "command": "pwsh",
       "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","apply","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
       "problemMatcher": []
     },
     {
-      "label": "CoreModule [ef undo migration]",
+      "label": "CoreModule [ef migration undo]",
       "type": "shell",
       "command": "pwsh",
       "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","undo","-Module","CoreModule","-DbContext","CoreModuleDbContext"],

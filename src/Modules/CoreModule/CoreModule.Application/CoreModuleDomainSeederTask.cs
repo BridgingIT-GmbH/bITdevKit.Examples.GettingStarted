@@ -26,7 +26,7 @@ public class CoreModuleDomainSeederTask(
     ILoggerFactory loggerFactory,
     IGenericRepository<Customer> customerRepository,
     //IServiceScopeFactory scopeFactory,
-    IDatabaseReadyService databaseReadyService) : IStartupTask
+    IDatabaseReadyService databaseReadyService = null) : IStartupTask
     {
     private readonly ILogger<CoreModuleDomainSeederTask> logger =
         loggerFactory?.CreateLogger<CoreModuleDomainSeederTask>() ??
@@ -39,7 +39,7 @@ public class CoreModuleDomainSeederTask(
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        await databaseReadyService.WaitForReadyAsync(cancellationToken: cancellationToken);
+        await databaseReadyService?.WaitForReadyAsync(cancellationToken: cancellationToken);
 
         this.logger.LogInformation("{LogKey} seed core (task={StartupTaskType})", "IFR", this.GetType().PrettyName());
 
