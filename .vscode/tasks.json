@@ -287,92 +287,78 @@
     }
     ,
     {
-      "label": "CoreModule [ef info]",
+      "label": "Solution [ef migration info]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","info","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","info"],
       "problemMatcher": []
     },
     {
-      "label": "CoreModule [ef list migrations]",
+      "label": "Solution [ef migration list]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","list","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","list"],
       "problemMatcher": []
     },
     {
-      "label": "CoreModule [ef migration add]",
+      "label": "Solution [ef migration add]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","add","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
-      "options": {
-        "env": {
-          "EF_MIGRATION_NAME": "${input:efMigrationName}"
-        }
-      },
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","add"],
+      "options": {"env": {"EF_MIGRATION_NAME": "${input:efMigrationName}"}},
       "problemMatcher": []
     },
     {
-      "label": "CoreModule [ef migration remove ]",
+      "label": "Solution [ef migration remove]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","remove","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","remove"],
       "problemMatcher": []
     },
     {
-      "label": "CoreModule [ef migration apply]",
+      "label": "Solution [ef migration apply]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","apply","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","apply"],
       "problemMatcher": []
     },
     {
-      "label": "CoreModule [ef migration undo]",
+      "label": "Solution [ef migration undo]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","undo","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","undo"],
       "problemMatcher": []
     },
     {
-      "label": "CoreModule [ef migration status]",
+      "label": "Solution [ef migration status]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","status","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","status"],
       "problemMatcher": []
     },
     {
-      "label": "CoreModule [ef reset migrations]",
+      "label": "Solution [ef migration reset]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","reset","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
-      "options": {
-        "env": {
-          "EF_RESET_CONFIRM": "${input:efResetConfirm}"
-        }
-      },
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","reset"],
+      "options": {"env": {"EF_RESET_CONFIRM": "${input:efResetConfirm}"}},
       "problemMatcher": []
     },
     {
-      "label": "CoreModule [ef export script]",
+      "label": "Solution [ef migration script]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","script","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","script"],
       "problemMatcher": []
-    }
-    ,
+    },
     {
-      "label": "CoreModule [ef remove all migrations]",
+      "label": "Solution [ef migration removeall]",
       "type": "shell",
       "command": "pwsh",
-      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","removeall","-Module","CoreModule","-DbContext","CoreModuleDbContext"],
-      "options": {
-        "env": {
-          "EF_REMOVEALL_CONFIRM": "${input:efRemoveAllConfirm}"
-        }
-      },
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-ef.ps1","removeall"],
+      "options": {"env": {"EF_REMOVEALL_CONFIRM": "${input:efRemoveAllConfirm}"}},
       "problemMatcher": []
-    }
-    ,
+    },
     {
       "label": "Misc [csharp repl]",
       "type": "shell",
