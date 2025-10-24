@@ -111,32 +111,38 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "CoreModule [dotnet test unit]",
-      "command": "dotnet",
+      "label": "Solution [tests unit]",
       "type": "shell",
-      "args": [
-        "test",
-        "${workspaceFolder}/tests/Modules/CoreModule/CoreModule.UnitTests/CoreModule.UnitTests.csproj",
-        "--collect:XPlat Code Coverage",
-        "--results-directory",
-        "${workspaceFolder}/.tmp/tests/coverage"
-      ],
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-tests.ps1","unit"],
       "group": "test",
-      "problemMatcher": "$msCompile"
+      "problemMatcher": []
     },
     {
-      "label": "CoreModule [dotnet test integration]",
-      "command": "dotnet",
+      "label": "Solution [tests integration]",
       "type": "shell",
-      "args": [
-        "test",
-        "${workspaceFolder}/tests/Modules/CoreModule/CoreModule.IntegrationTests/CoreModule.IntegrationTests.csproj",
-        "--collect:XPlat Code Coverage",
-        "--results-directory",
-        "${workspaceFolder}/.tmp/tests/coverage"
-      ],
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-tests.ps1","integration"],
       "group": "test",
-      "problemMatcher": "$msCompile"
+      "problemMatcher": []
+    },
+    {
+      "label": "Solution [tests unit all]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-tests.ps1","unit"],
+      "options": { "env": { "TEST_MODULE": "All" }},
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Solution [tests integration all]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/.vscode/tasks-tests.ps1","integration"],
+      "options": { "env": { "TEST_MODULE": "All" }},
+      "group": "test",
+      "problemMatcher": []
     },
     {
       "label": "Presentation.Web.Server [docker build & run]",
