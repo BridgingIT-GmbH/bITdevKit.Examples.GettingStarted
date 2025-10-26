@@ -100,136 +100,91 @@ switch($Command.ToLowerInvariant()){
   'trace-flame' {
     Ensure-Tool 'dotnet-counters' 'dotnet-counters'
     Ensure-Tool 'dotnet-trace' 'dotnet-trace'
-  $script:DotNetOnly = $true
-  # Duration selection (interactive)
-  $durationsMap = [ordered]@{ '10 sec'='00:00:10'; '30 sec'='00:00:30'; '1 min'='00:01:00'; '5 min'='00:05:00' }
-  $duration = $durationsMap['10 sec']
-  try {
-    Import-Module PwshSpectreConsole -ErrorAction Stop
-    $choice = Read-SpectreSelection -Title 'Select flame trace duration' -Choices ($durationsMap.Keys + 'Cancel') -EnableSearch -PageSize 10
-    if($choice -and $choice -ne 'Cancel'){ $duration = $durationsMap[$choice] }
-    if($choice -eq 'Cancel'){ Write-Host 'Flame trace cancelled.' -ForegroundColor Yellow; break }
-  } catch { Write-Host 'Spectre selection unavailable; using default 10 sec.' -ForegroundColor Yellow }
-  $procId = Select-Pid 'Select process to trace (flame)'
-  if(-not $procId){ Write-Host 'No PID selected.' -ForegroundColor Yellow; break }
+    $script:DotNetOnly = $true
+    $durationsMap = [ordered]@{ '10 sec'='00:00:10'; '30 sec'='00:00:30'; '1 min'='00:01:00'; '5 min'='00:05:00' }
+    $duration = $durationsMap['10 sec']
+    try { Import-Module PwshSpectreConsole -ErrorAction Stop; $choice = Read-SpectreSelection -Title 'Select flame trace duration' -Choices ($durationsMap.Keys + 'Cancel') -EnableSearch -PageSize 10; if($choice -and $choice -ne 'Cancel'){ $duration = $durationsMap[$choice] }; if($choice -eq 'Cancel'){ Write-Host 'Flame trace cancelled.' -ForegroundColor Yellow; break } } catch { Write-Host 'Spectre selection unavailable; using default 10 sec.' -ForegroundColor Yellow }
+    $procId = Select-Pid 'Select process to trace (flame)'
+    if(-not $procId){ Write-Host 'No PID selected.' -ForegroundColor Yellow; break }
     $outDir = Join-Path $PSScriptRoot '..' '.tmp' 'diagnostics'
     New-Item -ItemType Directory -Force -Path $outDir | Out-Null
-  $fileBase = "trace_${procId}_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
-  $traceFile = Join-Path $outDir "$fileBase.nettrace"
-  $speedFile = Join-Path $outDir "$fileBase"
-  Write-Host "Collecting flame trace (SampleProfiler, $duration) for PID $procId ..." -ForegroundColor Cyan
-  & dotnet-trace collect --process-id $procId --providers Microsoft-DotNETCore-SampleProfiler:1 --duration $duration -o $traceFile
-    if($LASTEXITCODE -ne 0){
-      Write-Host 'SampleProfiler provider failed, retrying with default trace config (cpu+gc)...' -ForegroundColor Yellow
-  & dotnet-trace collect --process-id $procId --duration $duration -o $traceFile
-      if($LASTEXITCODE -ne 0){ throw 'Trace collection failed (fallback also failed)' }
-    }
+    $fileBase = "trace_${procId}_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+    $traceFile = Join-Path $outDir "$fileBase.nettrace"
+    $speedBase = Join-Path $outDir $fileBase
+    try { Import-Module PwshSpectreConsole -ErrorAction Stop; @( 'Flame Trace','PID: ' + $procId,'Duration: ' + $duration,'Providers: SampleProfiler','Artifacts Base: ' + $fileBase ) | Format-SpectreRows | Format-SpectrePanel -Expand } catch {}
+    Write-Host "Collecting flame trace (SampleProfiler, $duration) for PID $procId ..." -ForegroundColor Cyan
+    & dotnet-trace collect --process-id $procId --providers Microsoft-DotNETCore-SampleProfiler:1 --duration $duration -o $traceFile
+    if($LASTEXITCODE -ne 0){ Write-Host 'SampleProfiler provider failed, retrying with default trace config (cpu+gc)...' -ForegroundColor Yellow; & dotnet-trace collect --process-id $procId --duration $duration -o $traceFile; if($LASTEXITCODE -ne 0){ throw 'Trace collection failed (fallback also failed)' } }
     Write-Host 'Converting to speedscope...' -ForegroundColor Cyan
-    & dotnet-trace convert --format SpeedScope $traceFile -o $speedFile
+    & dotnet-trace convert --format SpeedScope $traceFile -o $speedBase
     if($LASTEXITCODE -ne 0){ throw 'Trace conversion failed' }
-  Write-Host "Trace complete: $traceFile" -ForegroundColor Green
-  Write-Host "Speedscope file: $speedFile" -ForegroundColor Green
-  # Auto-open speedscope view
-  try {
-    $speedFile = $speedFile + '.speedscope.json'
-    $resolvedSpeed = (Resolve-Path $speedFile).Path
-    if(-not (Test-Path $resolvedSpeed)) { throw "Speedscope file not found: $resolvedSpeed" }
-    if(Get-Command npx -ErrorAction SilentlyContinue){
-      Write-Host "Opening speedscope (npx) -> $resolvedSpeed" -ForegroundColor Cyan
-      & npx speedscope "$resolvedSpeed"
-      if($LASTEXITCODE -ne 0){ Write-Host 'npx speedscope returned non-zero; fallback to browser.' -ForegroundColor Yellow; Start-Process 'https://www.speedscope.app'; Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent) }
-    } else {
-      Write-Host 'npx not available; opening speedscope.app and folder.' -ForegroundColor Yellow
-      Start-Process 'https://www.speedscope.app'
-      Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent)
-    }
-  } catch { Write-Host "Speedscope auto-open failed: $($_.Exception.Message)" -ForegroundColor Yellow }
+    Write-Host "Trace complete: $traceFile" -ForegroundColor Green
+    $speedFile = $speedBase + '.speedscope.json'
+    if(Test-Path "$speedFile.speedscope.json"){ Move-Item -Force "$speedFile.speedscope.json" $speedFile }
+    Write-Host "Speedscope file: $speedFile" -ForegroundColor Green
+    if(-not $env:TRACE_NO_VIEW){
+      try { $resolvedSpeed = (Resolve-Path $speedFile).Path; if(-not (Test-Path $resolvedSpeed)){ throw "Speedscope file not found: $resolvedSpeed" }; if(Get-Command npx -ErrorAction SilentlyContinue){ Write-Host "Opening speedscope (npx) -> $resolvedSpeed" -ForegroundColor Cyan; & npx speedscope "$resolvedSpeed"; if($LASTEXITCODE -ne 0){ Write-Host 'npx speedscope returned non-zero; fallback to browser.' -ForegroundColor Yellow; Start-Process 'https://www.speedscope.app'; Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent) } } else { Write-Host 'npx not available; opening speedscope.app and folder.' -ForegroundColor Yellow; Start-Process 'https://www.speedscope.app'; Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent) } } catch { Write-Host "Speedscope auto-open failed: $($_.Exception.Message)" -ForegroundColor Yellow }
+    } else { Write-Host 'TRACE_NO_VIEW set; skipping auto-open.' -ForegroundColor DarkYellow }
   }
   'trace-cpu' {
     Ensure-Tool 'dotnet-trace' 'dotnet-trace'
     $script:DotNetOnly = $true
-    # Duration selection (interactive)
     $durationsMap = [ordered]@{ '10 sec'='00:00:10'; '30 sec'='00:00:30'; '1 min'='00:01:00'; '5 min'='00:05:00' }
     $duration = $durationsMap['10 sec']
-    try {
-      Import-Module PwshSpectreConsole -ErrorAction Stop
-      $choice = Read-SpectreSelection -Title 'Select trace duration' -Choices ($durationsMap.Keys + 'Cancel') -EnableSearch -PageSize 10
-      if($choice -and $choice -ne 'Cancel'){ $duration = $durationsMap[$choice] }
-      if($choice -eq 'Cancel'){ Write-Host 'CPU trace cancelled.' -ForegroundColor Yellow; break }
-    } catch { Write-Host 'Spectre selection unavailable; using default 10 sec.' -ForegroundColor Yellow }
+    try { Import-Module PwshSpectreConsole -ErrorAction Stop; $choice = Read-SpectreSelection -Title 'Select trace duration' -Choices ($durationsMap.Keys + 'Cancel') -EnableSearch -PageSize 10; if($choice -and $choice -ne 'Cancel'){ $duration = $durationsMap[$choice] }; if($choice -eq 'Cancel'){ Write-Host 'CPU trace cancelled.' -ForegroundColor Yellow; break } } catch { Write-Host 'Spectre selection unavailable; using default 10 sec.' -ForegroundColor Yellow }
     $procId = Select-Pid 'Select process for CPU trace'
     if(-not $procId){ Write-Host 'No PID selected.' -ForegroundColor Yellow; break }
     $outDir = Join-Path $PSScriptRoot '..' '.tmp' 'diagnostics'
     New-Item -ItemType Directory -Force -Path $outDir | Out-Null
     $fileBase = "cpu_${procId}_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
     $traceFile = Join-Path $outDir "$fileBase.nettrace"
-    $speedFile = Join-Path $outDir "$fileBase"
-    Write-Host "Collecting CPU trace (SampleProfiler, $duration) for PID $procId ..." -ForegroundColor Cyan
-    & dotnet-trace collect --process-id $procId --providers Microsoft-DotNETCore-SampleProfiler:1 --duration $duration -o $traceFile
+    $speedBase = Join-Path $outDir $fileBase
+    $extended = $false
+    try { Import-Module PwshSpectreConsole -ErrorAction Stop; $provChoice = Read-SpectreSelection -Title 'Include extended runtime providers?' -Choices @('No','Yes','Cancel') -EnableSearch -PageSize 5; if($provChoice -eq 'Cancel'){ Write-Host 'CPU trace cancelled.' -ForegroundColor Yellow; break }; if($provChoice -eq 'Yes'){ $extended = $true } } catch { Write-Host 'Provider selection skipped (Spectre unavailable).' -ForegroundColor Yellow }
+    $providers = 'Microsoft-DotNETCore-SampleProfiler:1,System.Runtime:4'
+    if($extended){ $providers += ',Microsoft-DotNETCore-EventSource:5' }
+    try { Import-Module PwshSpectreConsole -ErrorAction Stop; @( 'CPU Trace','PID: ' + $procId,'Duration: ' + $duration,'Providers: ' + $providers,'Extended: ' + $extended,'Artifacts Base: ' + $fileBase ) | Format-SpectreRows | Format-SpectrePanel -Expand } catch {}
+    Write-Host "Collecting CPU trace ($providers, $duration) for PID $procId ..." -ForegroundColor Cyan
+    & dotnet-trace collect --process-id $procId --providers $providers --duration $duration -o $traceFile
     if($LASTEXITCODE -ne 0){ throw 'CPU trace collection failed' }
     Write-Host 'Converting to speedscope...' -ForegroundColor Cyan
-    & dotnet-trace convert --format SpeedScope $traceFile -o $speedFile
+    & dotnet-trace convert --format SpeedScope $traceFile -o $speedBase
     if($LASTEXITCODE -ne 0){ throw 'CPU trace conversion failed' }
     Write-Host "CPU trace complete: $traceFile" -ForegroundColor Green
+    $speedFile = $speedBase + '.speedscope.json'
+    if(Test-Path "$speedFile.speedscope.json"){ Move-Item -Force "$speedFile.speedscope.json" $speedFile }
     Write-Host "Speedscope file: $speedFile" -ForegroundColor Green
-    # Auto-open speedscope view
-    try {
-      $speedFile = $speedFile + '.speedscope.json'
-      $resolvedSpeed = (Resolve-Path $speedFile).Path
-      if(-not (Test-Path $resolvedSpeed)) { throw "Speedscope file not found: $resolvedSpeed" }
-      if(Get-Command npx -ErrorAction SilentlyContinue){
-        Write-Host "Opening speedscope (npx) -> $resolvedSpeed" -ForegroundColor Cyan
-        & npx speedscope "$resolvedSpeed"
-        if($LASTEXITCODE -ne 0){ Write-Host 'npx speedscope returned non-zero; fallback to browser.' -ForegroundColor Yellow; Start-Process 'https://www.speedscope.app'; Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent) }
-      } else {
-        Write-Host 'npx not available; opening speedscope.app and folder.' -ForegroundColor Yellow
-        Start-Process 'https://www.speedscope.app'
-        Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent)
-      }
-    } catch { Write-Host "Speedscope auto-open failed: $($_.Exception.Message)" -ForegroundColor Yellow }
+    if(-not $env:TRACE_NO_VIEW){
+      try { $resolvedSpeed = (Resolve-Path $speedFile).Path; if(-not (Test-Path $resolvedSpeed)){ throw "Speedscope file not found: $resolvedSpeed" }; if(Get-Command npx -ErrorAction SilentlyContinue){ Write-Host "Opening speedscope (npx) -> $resolvedSpeed" -ForegroundColor Cyan; & npx speedscope "$resolvedSpeed"; if($LASTEXITCODE -ne 0){ Write-Host 'npx speedscope returned non-zero; fallback to browser.' -ForegroundColor Yellow; Start-Process 'https://www.speedscope.app'; Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent) } } else { Write-Host 'npx not available; opening speedscope.app and folder.' -ForegroundColor Yellow; Start-Process 'https://www.speedscope.app'; Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent) } } catch { Write-Host "Speedscope auto-open failed: $($_.Exception.Message)" -ForegroundColor Yellow }
+    } else { Write-Host 'TRACE_NO_VIEW set; skipping auto-open.' -ForegroundColor DarkYellow }
   }
   'trace-gc' {
     Ensure-Tool 'dotnet-trace' 'dotnet-trace'
     $script:DotNetOnly = $true
-    # Duration selection (interactive)
     $durationsMap = [ordered]@{ '10 sec'='00:00:10'; '30 sec'='00:00:30'; '1 min'='00:01:00'; '5 min'='00:05:00' }
     $duration = $durationsMap['10 sec']
-    try {
-      Import-Module PwshSpectreConsole -ErrorAction Stop
-      $choice = Read-SpectreSelection -Title 'Select GC trace duration' -Choices ($durationsMap.Keys + 'Cancel') -EnableSearch -PageSize 10
-      if($choice -and $choice -ne 'Cancel'){ $duration = $durationsMap[$choice] }
-      if($choice -eq 'Cancel'){ Write-Host 'GC trace cancelled.' -ForegroundColor Yellow; break }
-    } catch { Write-Host 'Spectre selection unavailable; using default 10 sec.' -ForegroundColor Yellow }
+    try { Import-Module PwshSpectreConsole -ErrorAction Stop; $choice = Read-SpectreSelection -Title 'Select GC trace duration' -Choices ($durationsMap.Keys + 'Cancel') -EnableSearch -PageSize 10; if($choice -and $choice -ne 'Cancel'){ $duration = $durationsMap[$choice] }; if($choice -eq 'Cancel'){ Write-Host 'GC trace cancelled.' -ForegroundColor Yellow; break } } catch { Write-Host 'Spectre selection unavailable; using default 10 sec.' -ForegroundColor Yellow }
     $procId = Select-Pid 'Select process for GC-focused trace'
     if(-not $procId){ Write-Host 'No PID selected.' -ForegroundColor Yellow; break }
     $outDir = Join-Path $PSScriptRoot '..' '.tmp' 'diagnostics'
     New-Item -ItemType Directory -Force -Path $outDir | Out-Null
     $fileBase = "gc_${procId}_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
     $traceFile = Join-Path $outDir "$fileBase.nettrace"
-    $speedFile = Join-Path $outDir "$fileBase"
+    $speedBase = Join-Path $outDir $fileBase
+    try { Import-Module PwshSpectreConsole -ErrorAction Stop; @( 'GC Trace','PID: ' + $procId,'Duration: ' + $duration,'Providers: SampleProfiler + System.Runtime','Artifacts Base: ' + $fileBase ) | Format-SpectreRows | Format-SpectrePanel -Expand } catch {}
     Write-Host "Collecting GC-focused trace (SampleProfiler + System.Runtime, $duration) for PID $procId ..." -ForegroundColor Cyan
     & dotnet-trace collect --process-id $procId --providers Microsoft-DotNETCore-SampleProfiler:1,System.Runtime:4 --duration $duration -o $traceFile
     if($LASTEXITCODE -ne 0){ throw 'GC trace collection failed' }
     Write-Host 'Converting to speedscope...' -ForegroundColor Cyan
-    & dotnet-trace convert --format SpeedScope $traceFile -o $speedFile
+    & dotnet-trace convert --format SpeedScope $traceFile -o $speedBase
     if($LASTEXITCODE -ne 0){ throw 'GC trace conversion failed' }
     Write-Host "GC trace complete: $traceFile" -ForegroundColor Green
+    $speedFile = $speedBase + '.speedscope.json'
+    if(Test-Path "$speedFile.speedscope.json"){ Move-Item -Force "$speedFile.speedscope.json" $speedFile }
     Write-Host "Speedscope file: $speedFile" -ForegroundColor Green
-    # Auto-open speedscope view
-    try {
-      $speedFile = $speedFile + '.speedscope.json'
-      $resolvedSpeed = (Resolve-Path $speedFile).Path
-      if(-not (Test-Path $resolvedSpeed)) { throw "Speedscope file not found: $resolvedSpeed" }
-      if(Get-Command npx -ErrorAction SilentlyContinue){
-        Write-Host "Opening speedscope (npx) -> $resolvedSpeed" -ForegroundColor Cyan
-        & npx speedscope "$resolvedSpeed"
-        if($LASTEXITCODE -ne 0){ Write-Host 'npx speedscope returned non-zero; fallback to browser.' -ForegroundColor Yellow; Start-Process 'https://www.speedscope.app'; Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent) }
-      } else {
-        Write-Host 'npx not available; opening speedscope.app and folder.' -ForegroundColor Yellow
-        Start-Process 'https://www.speedscope.app'
-        Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent)
-      }
-    } catch { Write-Host "Speedscope auto-open failed: $($_.Exception.Message)" -ForegroundColor Yellow }
+    if(-not $env:TRACE_NO_VIEW){
+      try { $resolvedSpeed = (Resolve-Path $speedFile).Path; if(-not (Test-Path $resolvedSpeed)){ throw "Speedscope file not found: $resolvedSpeed" }; if(Get-Command npx -ErrorAction SilentlyContinue){ Write-Host "Opening speedscope (npx) -> $resolvedSpeed" -ForegroundColor Cyan; & npx speedscope "$resolvedSpeed"; if($LASTEXITCODE -ne 0){ Write-Host 'npx speedscope returned non-zero; fallback to browser.' -ForegroundColor Yellow; Start-Process 'https://www.speedscope.app'; Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent) } } else { Write-Host 'npx not available; opening speedscope.app and folder.' -ForegroundColor Yellow; Start-Process 'https://www.speedscope.app'; Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent) } } catch { Write-Host "Speedscope auto-open failed: $($_.Exception.Message)" -ForegroundColor Yellow }
+    } else { Write-Host 'TRACE_NO_VIEW set; skipping auto-open.' -ForegroundColor DarkYellow }
   }
   'speedscope-view' {
     # Select a speedscope json file and open visualization
