@@ -107,7 +107,7 @@ switch($Command.ToLowerInvariant()){
     New-Item -ItemType Directory -Force -Path $outDir | Out-Null
   $fileBase = "trace_${procId}_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
   $traceFile = Join-Path $outDir "$fileBase.nettrace"
-  $speedFile = Join-Path $outDir "$fileBase.speedscope.json"
+  $speedFile = Join-Path $outDir "$fileBase"
   Write-Host "Collecting trace for PID $procId ..." -ForegroundColor Cyan
   & dotnet-trace collect --process-id $procId --providers Microsoft-DotNETCore-SampleProfiler:1 --duration 00:00:10 -o $traceFile
     if($LASTEXITCODE -ne 0){
@@ -122,13 +122,17 @@ switch($Command.ToLowerInvariant()){
   Write-Host "Speedscope file: $speedFile" -ForegroundColor Green
   # Auto-open speedscope view
   try {
+    $speedFile = $speedFile + '.speedscope.json'
+    $resolvedSpeed = (Resolve-Path $speedFile).Path
+    if(-not (Test-Path $resolvedSpeed)) { throw "Speedscope file not found: $resolvedSpeed" }
     if(Get-Command npx -ErrorAction SilentlyContinue){
-      Write-Host 'Opening speedscope (npx)...' -ForegroundColor Cyan
-      & npx speedscope $speedFile
+      Write-Host "Opening speedscope (npx) -> $resolvedSpeed" -ForegroundColor Cyan
+      & npx speedscope "$resolvedSpeed"
+      if($LASTEXITCODE -ne 0){ Write-Host 'npx speedscope returned non-zero; fallback to browser.' -ForegroundColor Yellow; Start-Process 'https://www.speedscope.app'; Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent) }
     } else {
       Write-Host 'npx not available; opening speedscope.app and folder.' -ForegroundColor Yellow
       Start-Process 'https://www.speedscope.app'
-      Start-Process explorer.exe (Split-Path $speedFile -Parent)
+      Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent)
     }
   } catch { Write-Host "Speedscope auto-open failed: $($_.Exception.Message)" -ForegroundColor Yellow }
   }
@@ -150,7 +154,7 @@ switch($Command.ToLowerInvariant()){
     New-Item -ItemType Directory -Force -Path $outDir | Out-Null
     $fileBase = "cpu_${procId}_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
     $traceFile = Join-Path $outDir "$fileBase.nettrace"
-    $speedFile = Join-Path $outDir "$fileBase.speedscope.json"
+    $speedFile = Join-Path $outDir "$fileBase"
     Write-Host "Collecting CPU trace (SampleProfiler, $duration) for PID $procId ..." -ForegroundColor Cyan
     & dotnet-trace collect --process-id $procId --providers Microsoft-DotNETCore-SampleProfiler:1 --duration $duration -o $traceFile
     if($LASTEXITCODE -ne 0){ throw 'CPU trace collection failed' }
@@ -159,14 +163,19 @@ switch($Command.ToLowerInvariant()){
     if($LASTEXITCODE -ne 0){ throw 'CPU trace conversion failed' }
     Write-Host "CPU trace complete: $traceFile" -ForegroundColor Green
     Write-Host "Speedscope file: $speedFile" -ForegroundColor Green
+    # Auto-open speedscope view
     try {
+      $speedFile = $speedFile + '.speedscope.json'
+      $resolvedSpeed = (Resolve-Path $speedFile).Path
+      if(-not (Test-Path $resolvedSpeed)) { throw "Speedscope file not found: $resolvedSpeed" }
       if(Get-Command npx -ErrorAction SilentlyContinue){
-        Write-Host 'Opening speedscope (npx)...' -ForegroundColor Cyan
-        & npx speedscope $speedFile
+        Write-Host "Opening speedscope (npx) -> $resolvedSpeed" -ForegroundColor Cyan
+        & npx speedscope "$resolvedSpeed"
+        if($LASTEXITCODE -ne 0){ Write-Host 'npx speedscope returned non-zero; fallback to browser.' -ForegroundColor Yellow; Start-Process 'https://www.speedscope.app'; Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent) }
       } else {
         Write-Host 'npx not available; opening speedscope.app and folder.' -ForegroundColor Yellow
         Start-Process 'https://www.speedscope.app'
-        Start-Process explorer.exe (Split-Path $speedFile -Parent)
+        Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent)
       }
     } catch { Write-Host "Speedscope auto-open failed: $($_.Exception.Message)" -ForegroundColor Yellow }
   }
@@ -188,7 +197,7 @@ switch($Command.ToLowerInvariant()){
     New-Item -ItemType Directory -Force -Path $outDir | Out-Null
     $fileBase = "gc_${procId}_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
     $traceFile = Join-Path $outDir "$fileBase.nettrace"
-    $speedFile = Join-Path $outDir "$fileBase.speedscope.json"
+    $speedFile = Join-Path $outDir "$fileBase"
     Write-Host "Collecting GC-focused trace (SampleProfiler + System.Runtime, $duration) for PID $procId ..." -ForegroundColor Cyan
     & dotnet-trace collect --process-id $procId --providers Microsoft-DotNETCore-SampleProfiler:1,System.Runtime:4 --duration $duration -o $traceFile
     if($LASTEXITCODE -ne 0){ throw 'GC trace collection failed' }
@@ -197,14 +206,19 @@ switch($Command.ToLowerInvariant()){
     if($LASTEXITCODE -ne 0){ throw 'GC trace conversion failed' }
     Write-Host "GC trace complete: $traceFile" -ForegroundColor Green
     Write-Host "Speedscope file: $speedFile" -ForegroundColor Green
+    # Auto-open speedscope view
     try {
+      $speedFile = $speedFile + '.speedscope.json'
+      $resolvedSpeed = (Resolve-Path $speedFile).Path
+      if(-not (Test-Path $resolvedSpeed)) { throw "Speedscope file not found: $resolvedSpeed" }
       if(Get-Command npx -ErrorAction SilentlyContinue){
-        Write-Host 'Opening speedscope (npx)...' -ForegroundColor Cyan
-        & npx speedscope $speedFile
+        Write-Host "Opening speedscope (npx) -> $resolvedSpeed" -ForegroundColor Cyan
+        & npx speedscope "$resolvedSpeed"
+        if($LASTEXITCODE -ne 0){ Write-Host 'npx speedscope returned non-zero; fallback to browser.' -ForegroundColor Yellow; Start-Process 'https://www.speedscope.app'; Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent) }
       } else {
         Write-Host 'npx not available; opening speedscope.app and folder.' -ForegroundColor Yellow
         Start-Process 'https://www.speedscope.app'
-        Start-Process explorer.exe (Split-Path $speedFile -Parent)
+        Start-Process explorer.exe (Split-Path $resolvedSpeed -Parent)
       }
     } catch { Write-Host "Speedscope auto-open failed: $($_.Exception.Message)" -ForegroundColor Yellow }
   }
