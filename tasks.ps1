@@ -70,6 +70,10 @@ function Invoke-Test([string]$kind,[switch]$All){
 
 $tasks = [ordered]@{
   'build' = @{ Label='Build Solution'; Script={ Invoke-DotnetScript 'build' } }
+  'build-release' = @{ Label='Build Solution (Release)'; Script={ Invoke-DotnetScript 'build-release' } }
+  'build-nr' = @{ Label='Build Solution (No Restore)'; Script={ Invoke-DotnetScript 'build-nr' } }
+  'pack' = @{ Label='Pack Solution (Release)'; Script={ Invoke-DotnetScript 'pack' } }
+  'restore' = @{ Label='Restore Solution Packages'; Script={ Invoke-DotnetScript 'restore' } }
   'clean' = @{ Label='Clean Solution'; Script={ Invoke-DotnetScript 'clean' } }
   'tool-restore' = @{ Label='Restore Dotnet Tools'; Script={ Invoke-DotnetScript 'tool-restore' } }
   'test-unit' = @{ Label='Tests Unit (select)'; Script={ Invoke-Test 'unit' } }
@@ -112,7 +116,7 @@ $tasks = [ordered]@{
 }
 
 $categories = [ordered]@{
-  'Solution' = @('build','clean','tool-restore','format-check','format-apply','analyzers','server-build','server-publish','server-watch')
+  'Solution' = @('restore','build','build-release','build-nr','pack','clean','tool-restore','format-check','format-apply','analyzers','server-build','server-publish','server-watch')
   'Tests'    = @('test-unit','test-int','test-unit-all','test-int-all','coverage','coverage-html')
   'Entity Framework' = @('ef-info','ef-list','ef-add','ef-remove','ef-removeall','ef-apply','ef-undo','ef-status','ef-reset','ef-script')
   'Docker'   = @('docker-build-run','docker-build','docker-run','docker-stop','docker-remove','compose-up','compose-up-pull','compose-down','compose-down-clean')

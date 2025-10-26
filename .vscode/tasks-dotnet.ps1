@@ -16,7 +16,11 @@ function Invoke-Dotnet([string[]]$Arguments){
 $logArgs = @('--nologo','/property:GenerateFullPaths=true','/consoleloggerparameters:NoSummary')
 
 switch ($Command.ToLowerInvariant()) {
+  'restore'      { if (-not (Test-Path $SolutionPath)) { throw "Solution not found: $SolutionPath" }; Invoke-Dotnet (@('restore',$SolutionPath) + $logArgs) }
   'build'        { $SolutionPath = (Resolve-Path $SolutionPath).Path; if (-not (Test-Path $SolutionPath)) { throw "Solution not found: $SolutionPath" }; Invoke-Dotnet (@('build',$SolutionPath) + $logArgs) }
+  'build-release'{ $SolutionPath = (Resolve-Path $SolutionPath).Path; if (-not (Test-Path $SolutionPath)) { throw "Solution not found: $SolutionPath" }; Invoke-Dotnet (@('build',$SolutionPath,'-c','Release') + $logArgs) }
+  'build-nr'    { $SolutionPath = (Resolve-Path $SolutionPath).Path; if (-not (Test-Path $SolutionPath)) { throw "Solution not found: $SolutionPath" }; Invoke-Dotnet (@('build',$SolutionPath,'--no-restore') + $logArgs) }
+  'pack'        { $SolutionPath = (Resolve-Path $SolutionPath).Path; if (-not (Test-Path $SolutionPath)) { throw "Solution not found: $SolutionPath" }; Invoke-Dotnet (@('pack',$SolutionPath,'-c','Release') + $logArgs) }
   'clean'        { if (-not (Test-Path $SolutionPath)) { throw "Solution not found: $SolutionPath" }; Invoke-Dotnet (@('clean',$SolutionPath) + $logArgs) }
   'tool-restore' { Invoke-Dotnet @('tool','restore') }
   'format-check' { Invoke-Dotnet @('format',$SolutionPath,'--verify-no-changes') }
