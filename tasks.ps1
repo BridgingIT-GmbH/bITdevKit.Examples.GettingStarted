@@ -91,6 +91,8 @@ $tasks = [ordered]@{
   'ef-remove' = @{ Label='EF Migration Remove'; Script={ Invoke-Ef 'remove' } }
   'ef-removeall' = @{ Label='EF Migrations Remove All'; Script={ Invoke-Ef 'removeall' } }
   'ef-apply' = @{ Label='EF Apply Migrations'; Script={ Invoke-Ef 'apply' } }
+  'ef-update' = @{ Label='EF Update Database'; Script={ Invoke-Ef 'update' } }
+  'ef-recreate' = @{ Label='EF Recreate Database'; Script={ Invoke-Ef 'recreate' } }
   'ef-undo' = @{ Label='EF Undo Migration'; Script={ Invoke-Ef 'undo' } }
   'ef-status' = @{ Label='EF Migration Status'; Script={ Invoke-Ef 'status' } }
   'ef-reset' = @{ Label='EF Reset (Squash)'; Script={ Invoke-Ef 'reset' } }
@@ -111,33 +113,44 @@ $tasks = [ordered]@{
   'format-check' = @{ Label='Format Check'; Script={ Invoke-DotnetScript 'format-check' } }
   'format-apply' = @{ Label='Format Apply'; Script={ Invoke-DotnetScript 'format-apply' } }
   'analyzers' = @{ Label='Analyzers Report'; Script={  Invoke-DotnetScript 'analyzers' } }
+  'analyzers-export' = @{ Label='Analyzers Export (SARIF + Summary)'; Script={ Invoke-DotnetScript 'analyzers-export' } }
   'server-build' = @{ Label='Server Project Build'; Script={ Invoke-DotnetScript 'project-build' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'server-publish' = @{ Label='Server Project Publish'; Script={ Invoke-DotnetScript 'project-publish' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-publish-release' = @{ Label='Server Project Publish (Release)'; Script={ Invoke-DotnetScript 'project-publish-release' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-publish-sc' = @{ Label='Server Project Publish (Self-Contained Single-File)'; Script={ Invoke-DotnetScript 'project-publish-sc' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'server-watch' = @{ Label='Server Project Watch Run'; Script={ Invoke-DotnetScript 'project-watch' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'server-run-dev' = @{ Label='Server Project Run Dev'; Script={ Invoke-DotnetScript 'project-run' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'server-watch-fast' = @{ Label='Server Project Watch Fast'; Script={ Invoke-DotnetScript 'project-watch-fast' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'pack-modules' = @{ Label='Pack Modules (Release)'; Script={ Invoke-DotnetScript 'pack-modules' } }
   'openapi-lint' = @{ Label='OpenAPI Lint'; Script={ Invoke-OpenApiLint } }
   'misc-clean' = @{ Label='Misc Clean Workspace'; Script={ Invoke-Misc 'clean' } }
   'misc-digest' = @{ Label='Misc Digest Sources'; Script={ Invoke-Misc 'digest' } }
   'misc-repl' = @{ Label='Misc C# REPL'; Script={ Invoke-Misc 'repl' } }
   'bench' = @{ Label='Diagnostics Benchmarks'; Script={ Invoke-Diagnostics 'bench' } }
+  'bench-select' = @{ Label='Diagnostics Benchmarks (Select Project)'; Script={ Invoke-Diagnostics 'bench-select' } }
   'trace-flame' = @{ Label='Diagnostics Trace (Flame)'; Script={ Invoke-Diagnostics 'trace-flame' } }
+  'trace-cpu' = @{ Label='Diagnostics Trace (CPU SampleProfiler)'; Script={ Invoke-Diagnostics 'trace-cpu' } }
+  'trace-gc' = @{ Label='Diagnostics Trace (GC Focus)'; Script={ Invoke-Diagnostics 'trace-gc' } }
   'dump-heap' = @{ Label='Diagnostics Heap Dump'; Script={ Invoke-Diagnostics 'dump-heap' } }
   'gc-stats' = @{ Label='Diagnostics GC Stats'; Script={ Invoke-Diagnostics 'gc-stats' } }
   'aspnet-metrics' = @{ Label='Diagnostics ASP.NET Core Metrics'; Script={ Invoke-Diagnostics 'aspnet-metrics' } }
+  'diag-quick' = @{ Label='Diagnostics Quick Set (CPU + GC + ASP.NET)'; Script={ Invoke-Diagnostics 'quick' } }
+  'coverage-open' = @{ Label='Coverage Report (HTML + Open)'; Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.vscode/tasks-coverage.ps1') -Html -Open } }
+  'docker-build-debug' = @{ Label='Docker Build (Debug)'; Script={ Invoke-Docker 'docker-build-debug' } }
+  'docker-build-release' = @{ Label='Docker Build (Release)'; Script={ Invoke-Docker 'docker-build-release' } }
   'licenses' = @{ Label='Generate License Reports'; Script={ Invoke-Compliance 'licenses' } }
 }
 
 $categories = [ordered]@{
-  'Build & Maintenance' = @('restore','build','build-release','build-nr','pack','clean','tool-restore','format-check','format-apply','analyzers','server-build','server-publish','server-watch','server-run-dev','server-watch-fast')
-  'Testing & Quality'   = @('test-unit','test-int','test-unit-all','test-int-all','coverage','coverage-html','coverage-all-html')
-  'EF & Persistence'    = @('ef-info','ef-list','ef-add','ef-remove','ef-removeall','ef-apply','ef-undo','ef-status','ef-reset','ef-script')
-  'Publishing & Packaging' = @('server-publish','pack')
-  'Docker & Containers' = @('docker-build-run','docker-build','docker-run','docker-stop','docker-remove','compose-up','compose-up-pull','compose-down','compose-down-clean')
+  'Build & Maintenance' = @('restore','build','build-release','build-nr','pack','pack-modules','clean','tool-restore','format-check','format-apply','analyzers','analyzers-export','server-build','server-publish','server-publish-release','server-publish-sc','server-watch','server-run-dev','server-watch-fast')
+  'Testing & Quality'   = @('test-unit','test-int','test-unit-all','test-int-all','coverage','coverage-html','coverage-open','coverage-all-html')
+  'EF & Persistence'    = @('ef-info','ef-list','ef-add','ef-remove','ef-removeall','ef-apply','ef-update','ef-recreate','ef-undo','ef-status','ef-reset','ef-script')
+  'Publishing & Packaging' = @('server-publish','server-publish-release','server-publish-sc','pack','pack-modules')
+  'Docker & Containers' = @('docker-build-run','docker-build','docker-build-debug','docker-build-release','docker-run','docker-stop','docker-remove','compose-up','compose-up-pull','compose-down','compose-down-clean')
   'Security & Compliance' = @('vulnerabilities','vulnerabilities-deep','outdated','outdated-json','licenses')
   'API & Spec' = @('openapi-lint')
   'Utilities'  = @('misc-clean','misc-digest','misc-repl')
-  'Performance & Diagnostics' = @('bench','trace-flame','dump-heap','gc-stats','aspnet-metrics')
+  'Performance & Diagnostics' = @('bench','bench-select','trace-flame','trace-cpu','trace-gc','dump-heap','gc-stats','aspnet-metrics','diag-quick')
 }
 
 function Run-Task([string]$key){

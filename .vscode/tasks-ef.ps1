@@ -186,6 +186,24 @@ function Apply-Migrations() {
   Write-Host 'Database updated.' -ForegroundColor Green
 }
 
+function Update-DatabaseAlias() {
+  Section "Update Database (Alias) ($script:DbContext)"
+  Apply-Migrations
+}
+
+function Recreate-Database() {
+  Section "Recreate Database (Drop + Migrate) ($script:DbContext)"
+  Ensure-DotNetTools
+  # Drop database
+  $dropArgs = Build-EfArgs @('database','drop','--context', $script:DbContext,'--force')
+  Run-Ef $dropArgs
+  Write-Host 'Database dropped.' -ForegroundColor DarkYellow
+  # Apply migrations
+  $updateArgs = Build-EfArgs @('database','update','--context', $script:DbContext)
+  Run-Ef $updateArgs
+  Write-Host 'Database recreated with latest migrations.' -ForegroundColor Green
+}
+
 function Undo-Migration() {
   Section "Undo (Revert to Previous) ($script:DbContext)"
   Ensure-DotNetTools
@@ -272,6 +290,8 @@ Commands:
   remove               Remove last migration (not applied)
   removeall            Delete ALL migration source files (NO confirmation)
   apply                Update database (apply all pending)
+  update               Alias for apply (update database)
+  recreate             Drop and recreate database (applies all migrations)
   undo                 Revert database to previous migration
   status               Show applied vs filesystem migrations
   reset                Squash migrations into new baseline (Initial) (NO confirmation)
@@ -311,6 +331,8 @@ switch ($Command.ToLower()) {
   'remove' { Remove-Migration }
   'removeall' { RemoveAll-Migrations }
   'apply' { Apply-Migrations }
+  'update' { Update-DatabaseAlias }
+  'recreate' { Recreate-Database }
   'undo' { Undo-Migration }
   'status' { Show-MigrationStatus }
   'reset' { Reset-Migrations }

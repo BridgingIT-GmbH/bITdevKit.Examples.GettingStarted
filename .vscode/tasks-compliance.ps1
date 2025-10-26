@@ -15,7 +15,7 @@ function Ensure-LicenseTool {
 }
 
 switch($Command.ToLowerInvariant()){
-  'licenses' {
+  'licenses' { # https://github.com/sensslen/nuget-license
     Ensure-LicenseTool
     $outDir = Join-Path (Join-Path $PSScriptRoot '..') '.tmp/compliance'
     if(-not (Test-Path $outDir)){ New-Item -ItemType Directory -Force -Path $outDir | Out-Null }

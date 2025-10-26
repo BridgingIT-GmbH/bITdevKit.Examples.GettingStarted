@@ -13,8 +13,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
+[ExcludeFromCodeCoverage]
 public class CustomerEndpoints : EndpointsBase
 {
     public override void Map(IEndpointRouteBuilder app)

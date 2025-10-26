@@ -1,7 +1,8 @@
 param(
   [string]$Solution = 'BridgingIT.DevKit.Examples.GettingStarted.sln',
   [string]$ResultsDir = './.tmp/tests/coverage',
-  [switch]$Html
+  [switch]$Html,
+  [switch]$Open
 )
 $ErrorActionPreference = 'Stop'
 function Write-Section($t){ Write-Host "`n=== $t ===" -ForegroundColor Cyan }
@@ -34,6 +35,13 @@ if($Html){
   $rgCmd = @('tool','run','reportgenerator','--',"-reports:$reportPaths","-targetdir:$reportRoot","-reporttypes:$reportTypes")
   & dotnet $rgCmd
   if($LASTEXITCODE -ne 0){ Write-Host 'Report generation failed' -ForegroundColor Red; exit 3 }
-  Write-Host "Report generated at: $reportRoot/index.html" -ForegroundColor Green
+  $indexFile = Join-Path $reportRoot 'index.html'
+  Write-Host "Report generated at: $indexFile" -ForegroundColor Green
+  if($Open -and (Test-Path $indexFile)){
+    Write-Section 'Opening HTML report'
+    try {
+      if($IsWindows){ Start-Process $indexFile } else { & xdg-open $indexFile }
+    } catch { Write-Host "Failed to open report: $($_.Exception.Message)" -ForegroundColor Yellow }
+  }
 }
 Write-Host 'Coverage processing complete.' -ForegroundColor Green

@@ -51,13 +51,6 @@
       ],
       "rollForward": false
     },
-    "dotnet-project-licenses": {
-      "version": "2.7.1",
-      "commands": [
-        "dotnet-project-licenses"
-      ],
-      "rollForward": false
-    },
     "nuget-license": {
       "version": "4.0.0",
       "commands": [

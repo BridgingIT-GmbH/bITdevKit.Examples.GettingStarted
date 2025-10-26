@@ -148,6 +148,8 @@ Usage: pwsh -File .vscode/task.ps1 <command> [options]
 Commands:
   docker-build-run   Build image (optionally --NoCache) & run container
   docker-build       Build image only
+  docker-build-debug Build image (DEBUG tag) using build arg CONFIG=Debug
+  docker-build-release Build image (RELEASE tag) using build arg CONFIG=Release
   docker-run         Run container (assumes image built)
   docker-stop        Stop container
   docker-remove      Remove (force) container
@@ -178,6 +180,26 @@ switch ($Command.ToLower()) {
   }
   'docker-build' {
     Docker-Build -Tag $ImageTag -File $Dockerfile -Context $ProjectDockerContext -NoCache:$NoCache
+  }
+  'docker-build-debug' {
+    $tag = "$ImageTag-debug"
+    Write-Step "Using debug tag: $tag"
+    $args = @('build','-t',$tag,'-f',$Dockerfile,'--build-arg','CONFIG=Debug')
+    if($NoCache){ $args += '--no-cache' }
+    $args += $ProjectDockerContext
+    Write-Step "docker $($args -join ' ')"
+    docker @args
+    if($LASTEXITCODE -ne 0){ Fail 'Docker debug build failed.' $LASTEXITCODE }
+  }
+  'docker-build-release' {
+    $tag = "$ImageTag-release"
+    Write-Step "Using release tag: $tag"
+    $args = @('build','-t',$tag,'-f',$Dockerfile,'--build-arg','CONFIG=Release')
+    if($NoCache){ $args += '--no-cache' }
+    $args += $ProjectDockerContext
+    Write-Step "docker $($args -join ' ')"
+    docker @args
+    if($LASTEXITCODE -ne 0){ Fail 'Docker release build failed.' $LASTEXITCODE }
   }
   'docker-run' {
     Ensure-Network -Name $Network

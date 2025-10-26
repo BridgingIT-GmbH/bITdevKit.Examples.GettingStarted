@@ -6,6 +6,7 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
 using FluentValidation;
+using System.Diagnostics.CodeAnalysis;
 
 /// <summary>
 /// Strongly typed configuration model for the CoreModule.
@@ -36,6 +37,7 @@ using FluentValidation;
 /// }
 /// </code>
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public class CoreModuleConfiguration
 {
     /// <summary>

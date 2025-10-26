@@ -3,6 +3,48 @@ param(
 )
 $ErrorActionPreference='Stop'
 
+function Export-BenchmarkSummary {
+  param(
+    [string]$BenchmarkProjectPath
+  )
+  try {
+    if(-not $BenchmarkProjectPath){ return }
+    $projectDir = Split-Path $BenchmarkProjectPath -Parent
+    $artifactRoot = Join-Path $projectDir 'BenchmarkDotNet.Artifacts' 'results'
+    if(-not (Test-Path $artifactRoot)) {
+      # Fallback to solution root artifacts
+      $solutionRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+      $artifactRoot = Join-Path $solutionRoot 'BenchmarkDotNet.Artifacts' 'results'
+    }
+    if(-not (Test-Path $artifactRoot)) { Write-Host "No BenchmarkDotNet results directory found (checked project + solution): $artifactRoot" -ForegroundColor Yellow; return }
+    $outDir = Join-Path $PSScriptRoot '..' '.tmp' 'benchmarks'
+    New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+    $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+    $sessionDir = Join-Path $outDir $timestamp
+    New-Item -ItemType Directory -Force -Path $sessionDir | Out-Null
+    $copied = @()
+    Get-ChildItem $artifactRoot -File | ForEach-Object {
+      Copy-Item $_.FullName -Destination (Join-Path $sessionDir $_.Name) -Force
+      $copied += $_.Name
+    }
+    # Build JSON summary from github md report if present
+    $githubMd = Get-ChildItem $sessionDir -Filter '*-report-github.md' | Select-Object -First 1
+    $csv = Get-ChildItem $sessionDir -Filter '*-report.csv' | Select-Object -First 1
+    $summary = [ordered]@{
+      project = $BenchmarkProjectPath
+      timestamp = $timestamp
+      artifacts = $copied
+      csvPath = $csv?.FullName
+      markdownGithubPath = $githubMd?.FullName
+    }
+    $summaryFile = Join-Path $sessionDir 'summary.json'
+    $summary | ConvertTo-Json -Depth 5 | Out-File -FilePath $summaryFile -Encoding UTF8
+    Write-Host "Benchmark summary exported: $summaryFile" -ForegroundColor Green
+  } catch {
+    Write-Host "Failed exporting benchmark summary: $($_.Exception.Message)" -ForegroundColor Yellow
+  }
+}
+
 function Ensure-Tool($tool,$install){
   if(-not (Get-Command $tool -ErrorAction SilentlyContinue)){
     Write-Host "Installing missing tool: $tool" -ForegroundColor Yellow
@@ -44,6 +86,7 @@ switch($Command.ToLowerInvariant()){
       Remove-Item Env:DOTNET_EnableDiagnostics -ErrorAction SilentlyContinue
       if($LASTEXITCODE -ne 0){ throw 'BenchmarkDotNet failed' }
       Write-Host 'Benchmarks completed.' -ForegroundColor Green
+      Export-BenchmarkSummary -BenchmarkProjectPath $benchProj.FullName
     }
     catch {
       Write-Host "Benchmark run failed: $($_.Exception.Message). Falling back to simple performance smoke (build + run)." -ForegroundColor Yellow
@@ -102,25 +145,94 @@ switch($Command.ToLowerInvariant()){
     if($LASTEXITCODE -ne 0){ throw 'GC stats collection failed' }
     Write-Host 'GC sampling complete.' -ForegroundColor Green
   }
-    'aspnet-metrics' {
+  'aspnet-metrics' {
+    Ensure-Tool 'dotnet-counters' 'dotnet-counters'
+    $script:DotNetOnly = $true
+    $procId = Select-Pid 'Select ASP.NET Core process for metrics'
+    if(-not $procId){ Write-Host 'No PID selected.' -ForegroundColor Yellow; break }
+    Write-Host "Monitoring ASP.NET Core counters for PID $procId (10s) ..." -ForegroundColor Cyan
+    $counterGroups = @('Microsoft.AspNetCore.Hosting')
+    $countersArg = $counterGroups -join ' '
+    & dotnet-counters monitor --process-id $procId --counters $countersArg --refresh-interval 1 --duration 10
+    if($LASTEXITCODE -ne 0){ throw 'ASP.NET metrics collection failed' }
+    Write-Host 'ASP.NET metrics sampling complete.' -ForegroundColor Green
+  }
+    'quick' {
+      # Combined diagnostics: CPU trace + GC trace + ASP.NET metrics (best effort)
+      Ensure-Tool 'dotnet-trace' 'dotnet-trace'
       Ensure-Tool 'dotnet-counters' 'dotnet-counters'
       $script:DotNetOnly = $true
-      $procId = Select-Pid 'Select ASP.NET Core process for metrics'
+      $procId = Select-Pid 'Select process for QUICK diagnostics'
       if(-not $procId){ Write-Host 'No PID selected.' -ForegroundColor Yellow; break }
-      Write-Host "Monitoring ASP.NET Core + runtime counters for PID $procId (10s) ..." -ForegroundColor Cyan
-      # $counterGroups = @(
-      #   'Microsoft.AspNetCore.Hosting[requests-started;requests-completed;current-requests]',
-      #   'Microsoft.AspNetCore.Server.Kestrel[connection-queue-length;connections-active;connections-opened;connections-closed]',
-      #   'System.Net.Http[requests-started;requests-failed]',
-      #   'System.Runtime[cpu-usage;working-set;gc-heap-size;gen-0-gc-count;gen-1-gc-count;gen-2-gc-count;time-in-gc]'
-      # )
-      $counterGroups = @(
-        'Microsoft.AspNetCore.Hosting'
-      )
-      $countersArg = $counterGroups -join ' '
-      & dotnet-counters monitor --process-id $procId --counters $countersArg --refresh-interval 1 --duration 10
-      if($LASTEXITCODE -ne 0){ throw 'ASP.NET metrics collection failed' }
-      Write-Host 'ASP.NET metrics sampling complete.' -ForegroundColor Green
+      $outDir = Join-Path $PSScriptRoot '..' '.tmp' 'diagnostics'
+      New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+      $errors = @()
+      # CPU trace (5s)
+      try {
+        $cpuFile = Join-Path $outDir "cpuQuick_${procId}_$(Get-Date -Format 'yyyyMMdd_HHmmss').nettrace"
+        Write-Host "[Quick] CPU trace (5s) for PID $procId" -ForegroundColor Cyan
+        & dotnet-trace collect --process-id $procId --providers Microsoft-DotNETCore-SampleProfiler:1 --duration 00:00:05 -o $cpuFile
+        if($LASTEXITCODE -ne 0){ throw 'CPU trace failed' }
+        Write-Host "[Quick] CPU trace saved: $cpuFile" -ForegroundColor Green
+      } catch { $errors += $_.Exception.Message; Write-Host "[Quick] CPU trace error: $($_.Exception.Message)" -ForegroundColor Yellow }
+      # GC trace (5s)
+      try {
+        $gcFile = Join-Path $outDir "gcQuick_${procId}_$(Get-Date -Format 'yyyyMMdd_HHmmss').nettrace"
+        Write-Host "[Quick] GC trace (5s) for PID $procId" -ForegroundColor Cyan
+        & dotnet-trace collect --process-id $procId --providers Microsoft-DotNETCore-SampleProfiler:1,System.Runtime:4 --duration 00:00:05 -o $gcFile
+        if($LASTEXITCODE -ne 0){ throw 'GC trace failed' }
+        Write-Host "[Quick] GC trace saved: $gcFile" -ForegroundColor Green
+      } catch { $errors += $_.Exception.Message; Write-Host "[Quick] GC trace error: $($_.Exception.Message)" -ForegroundColor Yellow }
+      # ASP.NET metrics (6s) limited group
+      try {
+        Write-Host "[Quick] ASP.NET metrics (6s) for PID $procId" -ForegroundColor Cyan
+        & dotnet-counters monitor --process-id $procId --counters "Microsoft.AspNetCore.Hosting" --refresh-interval 1 --duration 6
+        if($LASTEXITCODE -ne 0){ throw 'ASP.NET metrics failed' }
+        Write-Host '[Quick] ASP.NET metrics sampling complete.' -ForegroundColor Green
+      } catch { $errors += $_.Exception.Message; Write-Host "[Quick] ASP.NET metrics error: $($_.Exception.Message)" -ForegroundColor Yellow }
+      if($errors.Count -gt 0){
+        Write-Host "Quick diagnostics finished with $($errors.Count) error(s)." -ForegroundColor Yellow
+        foreach($e in $errors){ Write-Host " - $e" -ForegroundColor DarkYellow }
+      } else {
+        Write-Host 'Quick diagnostics completed successfully.' -ForegroundColor Green
+      }
     }
+    'bench-select' {
+        # Enumerate benchmark projects and allow Spectre selection (force user selection even if single project)
+        $benchProjects = Get-ChildItem -Recurse -Filter '*Benchmarks.csproj' -File 2>$null
+        if(-not $benchProjects){ Write-Host 'No benchmark projects (*.Benchmarks.csproj) found.' -ForegroundColor Yellow; break }
+        Import-Module PwshSpectreConsole -ErrorAction Stop
+        $solutionRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+        $projectMap = [ordered]@{}
+        $labels = @()
+        $i = 0
+        foreach($p in ($benchProjects | Sort-Object FullName)){
+          $full = (Resolve-Path $p.FullName).Path
+          if($full.StartsWith($solutionRoot)) { $rel = $full.Substring($solutionRoot.Length).TrimStart('\\') } else { $rel = Split-Path $full -Leaf }
+          # Avoid Spectre markup brackets by using parentheses for index
+          $label = "$rel"
+          $projectMap[$label] = $full
+          $labels += $label
+          $i++
+        }
+        $selected = Read-SpectreSelection -Title 'Select Benchmark Project' -Choices ($labels + 'Cancel') -EnableSearch -PageSize 15
+        if(-not $selected -or $selected -eq 'Cancel'){ Write-Host 'Benchmark selection cancelled.' -ForegroundColor Yellow; $LASTEXITCODE = 0; break }
+        if(-not $projectMap.Contains($selected)){ Write-Host 'Invalid selection mapping.' -ForegroundColor Red; $LASTEXITCODE = 1; break }
+        $projPath = $projectMap[$selected]
+        Write-Host "Running selected benchmarks: $projPath" -ForegroundColor Cyan
+        try {
+          $env:DOTNET_EnableDiagnostics=0
+          & dotnet run --project "$projPath" -c Release -- --filter '*' --anyCategories '*'
+          $runExit = $LASTEXITCODE
+          Remove-Item Env:DOTNET_EnableDiagnostics -ErrorAction SilentlyContinue
+          if($runExit -ne 0){ throw "Benchmark run failed (exit $runExit)" }
+          Write-Host 'Selected benchmarks completed.' -ForegroundColor Green
+          Export-BenchmarkSummary -BenchmarkProjectPath $projPath
+        } catch {
+          Write-Host "Benchmark run failed: $($_.Exception.Message)" -ForegroundColor Red
+          Remove-Item Env:DOTNET_EnableDiagnostics -ErrorAction SilentlyContinue
+          $LASTEXITCODE = 1
+        }
+      }
   default { throw "Unknown diagnostics command: $Command" }
 }

@@ -8,16 +8,16 @@ namespace Microsoft.Extensions.DependencyInjection;
 using BridgingIT.DevKit.Common;
 using BridgingIT.DevKit.Presentation.Web;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Scalar.AspNetCore;
 using Microsoft.AspNetCore.Builder;
-using System;
-using System.Linq;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Scalar.AspNetCore;
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
+[ExcludeFromCodeCoverage]
 public static class ProgramExtensions
 {
     //public static IServiceCollection AddAppAuthentication(this IServiceCollection services, bool enabled, IConfiguration configuration)
