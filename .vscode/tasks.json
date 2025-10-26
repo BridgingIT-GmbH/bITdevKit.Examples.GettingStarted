@@ -241,6 +241,14 @@
       "problemMatcher": []
     },
     {
+      "label": "Misc [kill dotnet process]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","misc-kill-dotnet"],
+      "presentation": {"echo": true,"reveal": "always","focus": true,"panel": "shared"},
+      "problemMatcher": []
+    },
+    {
       "label": "Security [vulnerable packages]",
       "type": "shell",
       "command": "pwsh",

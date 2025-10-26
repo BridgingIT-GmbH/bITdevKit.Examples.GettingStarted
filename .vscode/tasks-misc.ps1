@@ -12,6 +12,9 @@
 param(
   # Command routing (added wrapper around original script logic)
   [Parameter(Position=0)] [string] $Command = 'help',
+  # Optional process id for non-interactive kill-dotnet
+  [int] $ProcessId,
+  [switch] $ForceKill,
 
   # === Original CombineSources.ps1 parameters (kept defaults) ===
   [string]$OutputDirectory = './.tmp',
@@ -41,6 +44,43 @@ $ErrorActionPreference = 'Stop'
 
 function Write-Section([string] $Text){ Write-Host "`n=== $Text ===" -ForegroundColor Magenta }
 function Fail([string] $Msg, [int] $Code=1){ Write-Error $Msg; exit $Code }
+
+# Reused from diagnostics script (with minor fallback enhancements):
+${script:DotNetOnly} = $false
+function Select-Pid($title){
+  try {
+    Import-Module PwshSpectreConsole -ErrorAction Stop
+    $procs = Get-Process | Where-Object { $_.Id -gt 0 }
+    if($script:DotNetOnly){ $procs = $procs | Where-Object { $_.ProcessName -match 'dotnet|Presentation.Web.Server' } }
+    $procs = $procs | Sort-Object ProcessName,Id
+    $rows = @()
+    foreach($p in $procs){
+      $label = "$($p.ProcessName) (#$($p.Id))"
+      if($rows -notcontains $label){ $rows += $label }
+    }
+    if(-not $rows){ Write-Host 'No matching processes found.' -ForegroundColor Yellow; return $null }
+    $choices = $rows + 'Cancel'
+    $sel = Read-SpectreSelection -Title $title -Choices $choices -EnableSearch -PageSize 25
+    Write-Host "Raw selection: '$sel'" -ForegroundColor DarkGray
+    if([string]::IsNullOrWhiteSpace($sel) -or $sel -eq 'Cancel'){ return $null }
+    if($sel -match '\(#(\d+)\)$'){ Write-Host "Selected PID: $($Matches[1])" -ForegroundColor DarkGray; return [int]$Matches[1] }
+    Write-Host "Could not parse PID from selection: $sel" -ForegroundColor Yellow
+    return $null
+  } catch {
+    # Fallback to manual numeric selection if Spectre unavailable
+    Write-Host ('Spectre selection unavailable; falling back to manual input. Reason: {0}' -f $_.Exception.Message) -ForegroundColor Yellow
+    $procs = Get-Process | Where-Object { $_.Id -gt 0 }
+    if($script:DotNetOnly){ $procs = $procs | Where-Object { $_.ProcessName -match 'dotnet|Presentation.Web.Server' } }
+    $procs = $procs | Sort-Object ProcessName,Id
+    if(-not $procs){ Write-Host 'No matching processes found.' -ForegroundColor Yellow; return $null }
+    Write-Host 'Index | ProcessName | PID' -ForegroundColor Cyan
+    for($i=0;$i -lt $procs.Count;$i++){ Write-Host ("{0,5} | {1,-25} | {2}" -f $i,$procs[$i].ProcessName,$procs[$i].Id) -ForegroundColor DarkGray }
+    $raw = Read-Host 'Enter index to select (or blank to cancel)'
+    if([string]::IsNullOrWhiteSpace($raw)){ return $null }
+    if(-not ([int]::TryParse($raw,[ref]$idx)) -or $idx -lt 0 -or $idx -ge $procs.Count){ Write-Host 'Invalid index.' -ForegroundColor Red; return $null }
+    return $procs[$idx].Id
+  }
+}
 
 function Run-CSharpRepl() {
   Write-Section 'Starting C# REPL'
@@ -246,6 +286,7 @@ Commands:
   digest|combine-sources|combine|docs   Generate consolidated markdown documentation per project (.g.md).
   clean|cleanup                        Remove build/output artifact directories (bin/obj/node_modules/etc.).
   repl|shell                           Run C# REPL (dotnet tool csharprepl) after tool restore.
+  kill-dotnet                          Interactive (or non-interactive with -ProcessId) termination of a dotnet process.
   help|?                               Show this help.
 
 combine-sources Parameters (defaults shown):
@@ -271,6 +312,8 @@ Examples:
   pwsh -File .vscode/tasks-misc.ps1 digest -OutputDirectory ./.tmp/docs -StripComments true -StripEmptyLines true
   pwsh -File .vscode/tasks-misc.ps1 clean
   pwsh -File .vscode/tasks-misc.ps1 repl
+  pwsh -File .vscode/tasks-misc.ps1 kill-dotnet               # interactive selection
+  pwsh -File .vscode/tasks-misc.ps1 kill-dotnet -ProcessId 1234 -ForceKill  # non-interactive
 
 Exit Codes:
   0 success, non-zero on failure.
@@ -326,9 +369,54 @@ function Handle-MiscCommand([string]$cmd){
     'cleanup' { Clean-Workspace; return }
     'repl' { Run-CSharpRepl; return }
     'shell' { Run-CSharpRepl; return }
+    'kill-dotnet' { Kill-DotNetProcess; return }
     'help' { Help; return }
     '?' { Help; return }
     default { Write-Host "Unknown misc command '$cmd'" -ForegroundColor Red; Help; exit 10 }
+  }
+}
+
+function Kill-DotNetProcess() {
+  Write-Section 'Kill .NET Process'
+  # Non-interactive direct path if provided
+  # If ProcessId provided non-interactively, skip selection & confirmation when -ForceKill used.
+  $selectedPid = $null
+  if($ProcessId -gt 0){
+    Write-Host ("Non-interactive target PID specified: {0}" -f $ProcessId) -ForegroundColor Cyan
+    $selectedPid = $ProcessId
+  }
+  if(-not $selectedPid){
+    # Use shared Select-Pid logic scoped to dotnet processes
+    $script:DotNetOnly = $true
+    $selectedPid = Select-Pid 'Select .NET process to KILL'
+    if(-not $selectedPid){ Write-Host 'Kill operation cancelled or no process selected.' -ForegroundColor Yellow; $global:LASTEXITCODE=0; return }
+  }
+  $proc = Get-Process -Id $selectedPid -ErrorAction SilentlyContinue
+  if(-not $proc){ Write-Host ("Process with PID {0} no longer exists." -f $selectedPid) -ForegroundColor Yellow; $global:LASTEXITCODE=0; return }
+  Write-Host ("Target: {0} (PID {1})" -f $proc.ProcessName,$selectedPid) -ForegroundColor Cyan
+  if(-not $ForceKill){
+    if($ProcessId -gt 0){
+      $confirmRaw = Read-Host ("Type YES to confirm kill of PID {0} ({1}) or press Enter to cancel" -f $selectedPid,$proc.ProcessName)
+      if($confirmRaw -ne 'YES'){ Write-Host 'Kill aborted.' -ForegroundColor Yellow; $global:LASTEXITCODE=0; return }
+    }
+    elseif(-not $spectreUnavailable){
+      $confirm = Read-SpectreSelection -Title ("Confirm kill of PID {0} ({1})" -f $selectedPid,$proc.ProcessName) -Choices @('No','Yes') -PageSize 5
+      if($confirm -ne 'Yes'){ Write-Host 'Kill aborted.' -ForegroundColor Yellow; $global:LASTEXITCODE=0; return }
+    } else {
+      $confirmRaw2 = Read-Host ("Type YES to confirm kill of PID {0} ({1})" -f $selectedPid,$proc.ProcessName)
+      if($confirmRaw2 -ne 'YES'){ Write-Host 'Kill aborted.' -ForegroundColor Yellow; $global:LASTEXITCODE=0; return }
+    }
+  } else {
+    Write-Host 'ForceKill specified; skipping confirmation.' -ForegroundColor DarkYellow
+  }
+  try {
+  Stop-Process -Id $selectedPid -Force -ErrorAction Stop
+  Write-Host ("Process {0} terminated." -f $selectedPid) -ForegroundColor Green
+    $global:LASTEXITCODE=0
+  } catch {
+    $errMsg = $_.Exception.Message
+  Write-Host ("Failed to terminate PID {0}: {1}" -f $selectedPid, $errMsg) -ForegroundColor Red
+    $global:LASTEXITCODE=5
   }
 }
 

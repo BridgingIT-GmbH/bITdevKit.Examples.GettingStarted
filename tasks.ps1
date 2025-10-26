@@ -126,6 +126,7 @@ $tasks = [ordered]@{
   'misc-clean' = @{ Label='Misc Clean Workspace'; Script={ Invoke-Misc 'clean' } }
   'misc-digest' = @{ Label='Misc Digest Sources'; Script={ Invoke-Misc 'digest' } }
   'misc-repl' = @{ Label='Misc C# REPL'; Script={ Invoke-Misc 'repl' } }
+  'misc-kill-dotnet' = @{ Label='Misc Kill .NET Process'; Script={ Invoke-Misc 'kill-dotnet' } }
   'bench' = @{ Label='Diagnostics Benchmarks'; Script={ Invoke-Diagnostics 'bench' } }
   'bench-select' = @{ Label='Diagnostics Benchmarks (Project)'; Script={ Invoke-Diagnostics 'bench-select' } }
   'trace-flame' = @{ Label='Diagnostics Trace (Flame)'; Script={ Invoke-Diagnostics 'trace-flame' } }
@@ -148,7 +149,7 @@ $categories = [ordered]@{
   'Docker & Containers' = @('docker-build-run','docker-build-debug','docker-build-release','docker-run','docker-stop','docker-remove','compose-up','compose-up-pull','compose-down','compose-down-clean')
   'Security & Compliance' = @('vulnerabilities','vulnerabilities-deep','outdated','outdated-json','licenses')
   'API & Spec' = @('openapi-lint')
-  'Utilities'  = @('misc-clean','misc-digest','misc-repl')
+  'Utilities'  = @('misc-clean','misc-digest','misc-repl','misc-kill-dotnet')
   'Performance & Diagnostics' = @('bench','bench-select','trace-flame','trace-cpu','trace-gc','dump-heap','gc-stats','aspnet-metrics','diag-quick','speedscope-view')
 }
 
