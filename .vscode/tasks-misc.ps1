@@ -286,7 +286,7 @@ Commands:
   digest|combine-sources|combine|docs   Generate consolidated markdown documentation per project (.g.md).
   clean|cleanup                        Remove build/output artifact directories (bin/obj/node_modules/etc.).
   repl|shell                           Run C# REPL (dotnet tool csharprepl) after tool restore.
-  kill-dotnet                          Interactive (or non-interactive with -ProcessId) termination of a dotnet process.
+  kill-dotnet                          Terminate a dotnet process (interactive selection or direct -ProcessId). No confirmation.
   help|?                               Show this help.
 
 combine-sources Parameters (defaults shown):
@@ -312,8 +312,8 @@ Examples:
   pwsh -File .vscode/tasks-misc.ps1 digest -OutputDirectory ./.tmp/docs -StripComments true -StripEmptyLines true
   pwsh -File .vscode/tasks-misc.ps1 clean
   pwsh -File .vscode/tasks-misc.ps1 repl
-  pwsh -File .vscode/tasks-misc.ps1 kill-dotnet               # interactive selection
-  pwsh -File .vscode/tasks-misc.ps1 kill-dotnet -ProcessId 1234 -ForceKill  # non-interactive
+  pwsh -File .vscode/tasks-misc.ps1 kill-dotnet               # interactive selection (no confirmation)
+  pwsh -File .vscode/tasks-misc.ps1 kill-dotnet -ProcessId 1234  # direct kill (no confirmation)
 
 Exit Codes:
   0 success, non-zero on failure.
@@ -394,21 +394,7 @@ function Kill-DotNetProcess() {
   $proc = Get-Process -Id $selectedPid -ErrorAction SilentlyContinue
   if(-not $proc){ Write-Host ("Process with PID {0} no longer exists." -f $selectedPid) -ForegroundColor Yellow; $global:LASTEXITCODE=0; return }
   Write-Host ("Target: {0} (PID {1})" -f $proc.ProcessName,$selectedPid) -ForegroundColor Cyan
-  if(-not $ForceKill){
-    if($ProcessId -gt 0){
-      $confirmRaw = Read-Host ("Type YES to confirm kill of PID {0} ({1}) or press Enter to cancel" -f $selectedPid,$proc.ProcessName)
-      if($confirmRaw -ne 'YES'){ Write-Host 'Kill aborted.' -ForegroundColor Yellow; $global:LASTEXITCODE=0; return }
-    }
-    elseif(-not $spectreUnavailable){
-      $confirm = Read-SpectreSelection -Title ("Confirm kill of PID {0} ({1})" -f $selectedPid,$proc.ProcessName) -Choices @('No','Yes') -PageSize 5
-      if($confirm -ne 'Yes'){ Write-Host 'Kill aborted.' -ForegroundColor Yellow; $global:LASTEXITCODE=0; return }
-    } else {
-      $confirmRaw2 = Read-Host ("Type YES to confirm kill of PID {0} ({1})" -f $selectedPid,$proc.ProcessName)
-      if($confirmRaw2 -ne 'YES'){ Write-Host 'Kill aborted.' -ForegroundColor Yellow; $global:LASTEXITCODE=0; return }
-    }
-  } else {
-    Write-Host 'ForceKill specified; skipping confirmation.' -ForegroundColor DarkYellow
-  }
+  # Confirmation omitted per user request; proceed immediately.
   try {
   Stop-Process -Id $selectedPid -Force -ErrorAction Stop
   Write-Host ("Process {0} terminated." -f $selectedPid) -ForegroundColor Green

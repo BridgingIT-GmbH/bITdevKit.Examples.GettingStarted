@@ -57,7 +57,7 @@ ${script:DotNetOnly} = $false
 function Select-Pid($title){
   Import-Module PwshSpectreConsole -ErrorAction Stop
   $procs = Get-Process | Where-Object { $_.Id -gt 0 }
-  if($script:DotNetOnly){ $procs = $procs | Where-Object { $_.ProcessName -match 'dotnet|Presentation.Web.Server' } }
+  if($script:DotNetOnly){ $procs = $procs | Where-Object { $_.ProcessName -match 'dotnet|' } }
   $procs = $procs | Sort-Object ProcessName,Id
   $rows = @()
   foreach($p in $procs){
