@@ -57,9 +57,7 @@ function Invoke-Coverage { & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.vs
 function Invoke-CoverageHtml { & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.vscode/tasks-coverage.ps1') -Html }
 function Invoke-OpenApiLint { & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.vscode/tasks-openapi.ps1') lint }
 function Invoke-Misc([string]$cmd){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.vscode/tasks-misc.ps1') $cmd }
-
 function Invoke-Docker([string]$mode){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.vscode/tasks-docker.ps1') $mode }
-
 function Invoke-Ef([string]$efCmd){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.vscode/tasks-ef.ps1') $efCmd }
 function Invoke-Diagnostics([string]$diagCmd){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.vscode/tasks-diagnostics.ps1') -Command $diagCmd }
 function Invoke-Compliance([string]$compCmd){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.vscode/tasks-compliance.ps1') -Command $compCmd }
@@ -98,7 +96,9 @@ $tasks = [ordered]@{
   'ef-reset' = @{ Label='EF Reset (Squash)'; Script={ Invoke-Ef 'reset' } }
   'ef-script' = @{ Label='EF Export SQL Script'; Script={ Invoke-Ef 'script' } }
   'docker-build-run' = @{ Label='Docker Build & Run'; Script={ Invoke-Docker 'docker-build-run' } }
-  'docker-build' = @{ Label='Docker Build'; Script={ Invoke-Docker 'docker-build' } }
+  # 'docker-build' = @{ Label='Docker Build'; Script={ Invoke-Docker 'docker-build' } }
+  'docker-build-debug' = @{ Label='Docker Build'; Script={ Invoke-Docker 'docker-build-debug' } }
+  'docker-build-release' = @{ Label='Docker Build (Release)'; Script={ Invoke-Docker 'docker-build-release' } }
   'docker-run' = @{ Label='Docker Run'; Script={ Invoke-Docker 'docker-run' } }
   'docker-stop' = @{ Label='Docker Stop'; Script={ Invoke-Docker 'docker-stop' } }
   'docker-remove' = @{ Label='Docker Remove'; Script={ Invoke-Docker 'docker-remove' } }
@@ -117,7 +117,7 @@ $tasks = [ordered]@{
   'server-build' = @{ Label='Server Project Build'; Script={ Invoke-DotnetScript 'project-build' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'server-publish' = @{ Label='Server Project Publish'; Script={ Invoke-DotnetScript 'project-publish' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'server-publish-release' = @{ Label='Server Project Publish (Release)'; Script={ Invoke-DotnetScript 'project-publish-release' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'server-publish-sc' = @{ Label='Server Project Publish (Self-Contained Single-File)'; Script={ Invoke-DotnetScript 'project-publish-sc' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-publish-sc' = @{ Label='Server Project Publish (Release, Single-File)'; Script={ Invoke-DotnetScript 'project-publish-sc' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'server-watch' = @{ Label='Server Project Watch Run'; Script={ Invoke-DotnetScript 'project-watch' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'server-run-dev' = @{ Label='Server Project Run Dev'; Script={ Invoke-DotnetScript 'project-run' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'server-watch-fast' = @{ Label='Server Project Watch Fast'; Script={ Invoke-DotnetScript 'project-watch-fast' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
@@ -127,7 +127,7 @@ $tasks = [ordered]@{
   'misc-digest' = @{ Label='Misc Digest Sources'; Script={ Invoke-Misc 'digest' } }
   'misc-repl' = @{ Label='Misc C# REPL'; Script={ Invoke-Misc 'repl' } }
   'bench' = @{ Label='Diagnostics Benchmarks'; Script={ Invoke-Diagnostics 'bench' } }
-  'bench-select' = @{ Label='Diagnostics Benchmarks (Select Project)'; Script={ Invoke-Diagnostics 'bench-select' } }
+  'bench-select' = @{ Label='Diagnostics Benchmarks (Project)'; Script={ Invoke-Diagnostics 'bench-select' } }
   'trace-flame' = @{ Label='Diagnostics Trace (Flame)'; Script={ Invoke-Diagnostics 'trace-flame' } }
   'trace-cpu' = @{ Label='Diagnostics Trace (CPU SampleProfiler)'; Script={ Invoke-Diagnostics 'trace-cpu' } }
   'trace-gc' = @{ Label='Diagnostics Trace (GC Focus)'; Script={ Invoke-Diagnostics 'trace-gc' } }
@@ -135,9 +135,7 @@ $tasks = [ordered]@{
   'gc-stats' = @{ Label='Diagnostics GC Stats'; Script={ Invoke-Diagnostics 'gc-stats' } }
   'aspnet-metrics' = @{ Label='Diagnostics ASP.NET Core Metrics'; Script={ Invoke-Diagnostics 'aspnet-metrics' } }
   'diag-quick' = @{ Label='Diagnostics Quick Set (CPU + GC + ASP.NET)'; Script={ Invoke-Diagnostics 'quick' } }
-  'coverage-open' = @{ Label='Coverage Report (HTML + Open)'; Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.vscode/tasks-coverage.ps1') -Html -Open } }
-  'docker-build-debug' = @{ Label='Docker Build (Debug)'; Script={ Invoke-Docker 'docker-build-debug' } }
-  'docker-build-release' = @{ Label='Docker Build (Release)'; Script={ Invoke-Docker 'docker-build-release' } }
+  'coverage-open' = @{ Label='Coverage Report (HTML)'; Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.vscode/tasks-coverage.ps1') -Html -Open } }
   'licenses' = @{ Label='Generate License Reports'; Script={ Invoke-Compliance 'licenses' } }
 }
 
@@ -146,7 +144,7 @@ $categories = [ordered]@{
   'Testing & Quality'   = @('test-unit','test-int','test-unit-all','test-int-all','coverage','coverage-html','coverage-open','coverage-all-html')
   'EF & Persistence'    = @('ef-info','ef-list','ef-add','ef-remove','ef-removeall','ef-apply','ef-update','ef-recreate','ef-undo','ef-status','ef-reset','ef-script')
   'Publishing & Packaging' = @('server-publish','server-publish-release','server-publish-sc','pack','pack-modules')
-  'Docker & Containers' = @('docker-build-run','docker-build','docker-build-debug','docker-build-release','docker-run','docker-stop','docker-remove','compose-up','compose-up-pull','compose-down','compose-down-clean')
+  'Docker & Containers' = @('docker-build-run','docker-build-debug','docker-build-release','docker-run','docker-stop','docker-remove','compose-up','compose-up-pull','compose-down','compose-down-clean')
   'Security & Compliance' = @('vulnerabilities','vulnerabilities-deep','outdated','outdated-json','licenses')
   'API & Spec' = @('openapi-lint')
   'Utilities'  = @('misc-clean','misc-digest','misc-repl')

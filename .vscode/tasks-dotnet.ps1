@@ -12,6 +12,50 @@ function Invoke-Dotnet([string[]]$Arguments){
   if ($LASTEXITCODE -ne 0){ throw "dotnet command failed ($LASTEXITCODE)" }
 }
 
+function Select-Rid {
+  param([string[]]$Rids)
+  if(-not $Rids){ return $null }
+  try {
+    Import-Module PwshSpectreConsole -ErrorAction Stop
+    $selection = Read-SpectreSelection -Title 'Select RID (blank for framework-dependent)' -Choices ($Rids + 'Framework-Dependent' + 'Cancel') -EnableSearch -PageSize 15
+    if(-not $selection -or $selection -eq 'Cancel'){ return $null }
+    if($selection -eq 'Framework-Dependent'){ return $null }
+    return $selection
+  } catch {
+    Write-Host 'Spectre selection unavailable; proceeding framework-dependent.' -ForegroundColor Yellow
+    return $null
+  }
+}
+
+function Copy-PublishOutput {
+  param(
+    [string]$ProjectPath,
+    [string]$Rid # optional for RID-specific publish
+  )
+  try {
+    if(-not $ProjectPath){ return }
+    $projDir = Split-Path $ProjectPath -Parent
+    # Determine publish folder (RID-specific or generic)
+    $publishDir = if($Rid){ Join-Path $projDir "bin/Release/net9.0/$Rid/publish" } else { Join-Path $projDir "bin/Release/net9.0/publish" }
+    if(-not (Test-Path $publishDir)){ Write-Host "Publish output not found: $publishDir" -ForegroundColor Yellow; return }
+    $root = Split-Path $PSScriptRoot -Parent
+    $destRoot = Join-Path $root '.tmp/publish'
+    New-Item -ItemType Directory -Force -Path $destRoot | Out-Null
+    $stamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+    $dest = Join-Path $destRoot $stamp
+    New-Item -ItemType Directory -Force -Path $dest | Out-Null
+    Write-Host "Copying publish output -> $dest" -ForegroundColor Cyan
+    Copy-Item (Join-Path $publishDir '*') -Destination $dest -Recurse -Force
+    # Write summary JSON
+    $files = Get-ChildItem -Path $dest -Recurse -File | Select-Object -ExpandProperty FullName
+    $summary = [ordered]@{ project=$ProjectPath; rid=$Rid; source=$publishDir; destination=$dest; fileCount=$files.Count; timestamp=$stamp }
+    $summary | ConvertTo-Json -Depth 5 | Out-File (Join-Path $dest 'publish_summary.json') -Encoding UTF8
+    Write-Host "Publish output copied ($($files.Count) files)." -ForegroundColor Green
+  } catch {
+    Write-Host "Failed to copy publish output: $($_.Exception.Message)" -ForegroundColor Yellow
+  }
+}
+
 # Common logger args as array
 $logArgs = @('--nologo','/property:GenerateFullPaths=true','/consoleloggerparameters:NoSummary')
 
@@ -46,14 +90,35 @@ switch ($Command.ToLowerInvariant()) {
   }
   'analyzers'    { Invoke-Dotnet @('build',$SolutionPath,'-warnaserror','/p:RunAnalyzers=true','/p:EnableNETAnalyzers=true','/p:AnalysisLevel=latest') }
   'project-build'   { if (-not $ProjectPath) { throw 'ProjectPath required for project-build' }; Invoke-Dotnet (@('build',$ProjectPath) + $logArgs) }
-  'project-publish' { if (-not $ProjectPath) { throw 'ProjectPath required for project-publish' }; Invoke-Dotnet (@('publish',$ProjectPath) + $logArgs) }
-  'project-publish-release' { if (-not $ProjectPath) { throw 'ProjectPath required for project-publish-release' }; Invoke-Dotnet (@('publish',$ProjectPath,'-c','Release') + $logArgs) }
+  'project-publish' {
+    if (-not $ProjectPath) { throw 'ProjectPath required for project-publish' }
+    $rids = @('win-x64','win-x86','win-arm64','linux-x64','linux-musl-x64','linux-musl-arm64','linux-arm','linux-arm64')
+    $rid = Select-Rid -Rids $rids
+    $args = @('publish',$ProjectPath) + $logArgs
+    if($rid){ $args += @('-r',$rid,'--self-contained','true') }
+    Invoke-Dotnet $args
+    Copy-PublishOutput -ProjectPath $ProjectPath -Rid $rid
+  }
+  'project-publish-release' {
+    if (-not $ProjectPath) { throw 'ProjectPath required for project-publish-release' }
+    $rids = @('win-x64','win-x86','win-arm64','linux-x64','linux-musl-x64','linux-musl-arm64','linux-arm','linux-arm64')
+    $rid = Select-Rid -Rids $rids
+    $args = @('publish',$ProjectPath,'-c','Release') + $logArgs
+    if($rid){ $args += @('-r',$rid,'--self-contained','true') }
+    Invoke-Dotnet $args
+    Copy-PublishOutput -ProjectPath $ProjectPath -Rid $rid
+  }
   'project-publish-sc' {
     if (-not $ProjectPath) { throw 'ProjectPath required for project-publish-sc' }
-    # Self-contained single-file trimmed publish (win-x64 default runtime identifier)
-    $rid = 'win-x64'
+    # Self-contained single-file publish reusing Select-Rid helper
+    $rids = @('win-x64','win-x86','win-arm64','linux-x64','linux-musl-x64','linux-musl-arm64','linux-arm','linux-arm64')
+    $rid = Select-Rid -Rids $rids
+    if(-not $rid){ Write-Host 'Self-contained publish requires a RID; cancelled.' -ForegroundColor Yellow; break }
+    Write-Host "Publishing self-contained single-file for RID: $rid" -ForegroundColor Cyan
     $publishArgs = @('publish',$ProjectPath,'-c','Release','-r',$rid,'--self-contained','true','/p:PublishSingleFile=true','/p:PublishTrimmed=false') + $logArgs
     Invoke-Dotnet $publishArgs
+    Write-Host "Self-contained publish complete for RID $rid" -ForegroundColor Green
+    Copy-PublishOutput -ProjectPath $ProjectPath -Rid $rid
   }
   'pack-modules' {
     # Packs each module project (Domain/Application/Infrastructure/Presentation) into .tmp/packages

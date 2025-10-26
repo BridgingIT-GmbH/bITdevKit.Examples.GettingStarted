@@ -178,9 +178,9 @@ switch ($Command.ToLower()) {
     Docker-Build -Tag $ImageTag -File $Dockerfile -Context $ProjectDockerContext -NoCache:$NoCache
     Docker-Run -Tag $ImageTag -Name $ContainerName -Network $Network -HostPort $HostPort -ContainerPort $ContainerPort
   }
-  'docker-build' {
-    Docker-Build -Tag $ImageTag -File $Dockerfile -Context $ProjectDockerContext -NoCache:$NoCache
-  }
+  # 'docker-build' {
+  #   Docker-Build -Tag $ImageTag -File $Dockerfile -Context $ProjectDockerContext -NoCache:$NoCache
+  # }
   'docker-build-debug' {
     $tag = "$ImageTag-debug"
     Write-Step "Using debug tag: $tag"
