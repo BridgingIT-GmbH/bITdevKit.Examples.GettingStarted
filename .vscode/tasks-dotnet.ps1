@@ -31,5 +31,7 @@ switch ($Command.ToLowerInvariant()) {
   'project-build'   { if (-not $ProjectPath) { throw 'ProjectPath required for project-build' }; Invoke-Dotnet (@('build',$ProjectPath) + $logArgs) }
   'project-publish' { if (-not $ProjectPath) { throw 'ProjectPath required for project-publish' }; Invoke-Dotnet (@('publish',$ProjectPath) + $logArgs) }
   'project-watch'   { if (-not $ProjectPath) { throw 'ProjectPath required for project-watch' }; Invoke-Dotnet @('watch','run','--project',$ProjectPath,'--nologo') }
+  'project-run'     { if (-not $ProjectPath) { throw 'ProjectPath required for project-run' }; Invoke-Dotnet (@('run','--project',$ProjectPath) + $logArgs) }
+  'project-watch-fast' { if (-not $ProjectPath) { throw 'ProjectPath required for project-watch-fast' }; Invoke-Dotnet @('watch','run','--project',$ProjectPath,'--nologo','--no-restore') }
   default { throw "Unknown dotnet command: $Command" }
 }

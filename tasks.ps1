@@ -82,6 +82,7 @@ $tasks = [ordered]@{
   'test-int-all' = @{ Label='Tests Integration All'; Script={ Invoke-Test 'integration' -All } }
   'coverage' = @{ Label='Coverage (all)'; Script={ Invoke-Coverage } }
   'coverage-html' = @{ Label='Coverage Report (HTML)'; Script={ Invoke-CoverageHtml } }
+  'coverage-all-html' = @{ Label='Coverage (Tests All -> HTML Report)'; Script={ Invoke-Test 'unit' -All; Invoke-Test 'integration' -All; Invoke-CoverageHtml } }
   'ef-info' = @{ Label='EF DbContext Info'; Script={ Invoke-Ef 'info' } }
   'ef-list' = @{ Label='EF Migrations List'; Script={ Invoke-Ef 'list' } }
   'ef-add' = @{ Label='EF Migration Add'; Script={ Invoke-Ef 'add' } }
@@ -109,6 +110,8 @@ $tasks = [ordered]@{
   'server-build' = @{ Label='Server Project Build'; Script={ Invoke-DotnetScript 'project-build' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'server-publish' = @{ Label='Server Project Publish'; Script={ Invoke-DotnetScript 'project-publish' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'server-watch' = @{ Label='Server Project Watch Run'; Script={ Invoke-DotnetScript 'project-watch' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-run-dev' = @{ Label='Server Project Run Dev'; Script={ Invoke-DotnetScript 'project-run' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-watch-fast' = @{ Label='Server Project Watch Fast'; Script={ Invoke-DotnetScript 'project-watch-fast' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'openapi-lint' = @{ Label='OpenAPI Lint'; Script={ Invoke-OpenApiLint } }
   'misc-clean' = @{ Label='Misc Clean Workspace'; Script={ Invoke-Misc 'clean' } }
   'misc-digest' = @{ Label='Misc Digest Sources'; Script={ Invoke-Misc 'digest' } }
@@ -116,8 +119,8 @@ $tasks = [ordered]@{
 }
 
 $categories = [ordered]@{
-  'Solution' = @('restore','build','build-release','build-nr','pack','clean','tool-restore','format-check','format-apply','analyzers','server-build','server-publish','server-watch')
-  'Tests'    = @('test-unit','test-int','test-unit-all','test-int-all','coverage','coverage-html')
+  'Solution' = @('restore','build','build-release','build-nr','pack','clean','tool-restore','format-check','format-apply','analyzers','server-build','server-publish','server-watch','server-run-dev','server-watch-fast')
+  'Tests'    = @('test-unit','test-int','test-unit-all','test-int-all','coverage','coverage-html','coverage-all-html')
   'Entity Framework' = @('ef-info','ef-list','ef-add','ef-remove','ef-removeall','ef-apply','ef-undo','ef-status','ef-reset','ef-script')
   'Docker'   = @('docker-build-run','docker-build','docker-run','docker-stop','docker-remove','compose-up','compose-up-pull','compose-down','compose-down-clean')
   'Security' = @('vulnerabilities','outdated')
