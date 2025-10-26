@@ -15,8 +15,7 @@ param(
   [Parameter(Position=0)] [ValidateSet('unit','integration','help')] [string] $Kind = 'help',
   [Parameter()] [string] $Module,
   [Parameter()] [switch] $Coverage,
-  [Parameter()] [switch] $FailFast,
-  [Parameter()] [switch] $NonInteractive
+  [Parameter()] [switch] $FailFast
 )
 
 $ErrorActionPreference = 'Stop'
@@ -47,12 +46,11 @@ function Run-TestsForModule([string] $ModuleName){
 }
 
 function Help(){ @'
-Usage: pwsh -File .vscode/tasks-tests.ps1 <unit|integration|help> [-Module <Name>|All] [-Coverage] [-FailFast] [-NonInteractive]
+Usage: pwsh -File .vscode/tasks-tests.ps1 <unit|integration|help> [-Module <Name>|All] [-Coverage] [-FailFast]
 Env Vars: TEST_MODULE=CoreModule | TEST_MODULE=All
 Examples:
   pwsh -File .vscode/tasks-tests.ps1 unit -Module CoreModule
   TEST_MODULE=All pwsh -File .vscode/tasks-tests.ps1 integration -Coverage
-  pwsh -File .vscode/tasks-tests.ps1 unit -NonInteractive
 '@ | Write-Host }
 
 if ($Kind -eq 'help'){ Help; exit 0 }
@@ -60,9 +58,7 @@ if ($Kind -eq 'help'){ Help; exit 0 }
 [string[]]$available = Get-DevKitModules -Root (Split-Path $PSScriptRoot -Parent)
 if (-not $available -or $available.Count -eq 0){ Fail 'No modules discovered.' 50 }
 
-$isVsCodeHost = ($Host.Name -eq 'Visual Studio Code Host')
-$effectiveNonInteractive = $NonInteractive -or $isVsCodeHost
-$selection = Select-DevKitModule -Available $available -Requested $Module -EnvVarName 'TEST_MODULE' -AllowAll -NonInteractive:$effectiveNonInteractive
+$selection = Select-DevKitModule -Available $available -Requested $Module -EnvVarName 'TEST_MODULE' -AllowAll
 Write-Host "Resolved Test Module: $selection" -ForegroundColor Green
 
 if ($selection -eq 'All') {
