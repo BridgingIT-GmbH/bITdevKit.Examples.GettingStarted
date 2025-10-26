@@ -18,13 +18,11 @@ param(
   [Parameter()] [string] $StartupProject = 'src/Presentation.Web.Server/Presentation.Web.Server.csproj',
   [Parameter()] [string] $InfrastructureProject = '', # override inferred infrastructure project
   [Parameter()] [string] $MigrationName,
-  [Parameter()] [string] $OutputDirectory = './.tmp/ef',
-  # (Force parameter removed: destructive actions run without extra confirmation)
-  [Parameter()] [switch] $NonInteractive         # force non-interactive selection behavior
+  [Parameter()] [string] $OutputDirectory = './.tmp/ef'
 )
 
 $ErrorActionPreference = 'Stop'
-Write-Host "EF Command: $Command" -ForegroundColor Yellow
+# Write-Host "EF Command: $Command" -ForegroundColor Yellow
 
 # maintain script-scoped copies of mutable selection variables so function-local assignment doesn't lose them
 $script:Module = $Module
@@ -49,9 +47,9 @@ function Resolve-ModuleAndContext() {
   # Resolve module using shared helper (env variable EF_MODULE honored via -EnvVarName)
   [string[]]$availableModules = Get-DevKitModules -Root (Split-Path $PSScriptRoot -Parent)
   if (-not $availableModules -or $availableModules.Count -eq 0) { Fail 'No modules discovered under src/Modules.' 101 }
-  Write-Host "Discovered Modules: $($availableModules -join ', ')" -ForegroundColor DarkGray
-  # Allow interactive selection again unless -NonInteractive specified. (VS Code tasks should pass -NonInteractive if hanging occurs.)
-  $script:Module = Select-DevKitModule -Available $availableModules -Requested $Module -EnvVarName 'EF_MODULE' -NonInteractive:$NonInteractive
+  # Write-Host "Discovered Modules: $($availableModules -join ', ')" -ForegroundColor DarkGray
+  # Interactive selection via helper unless only one module (then auto-select for speed).
+  $script:Module = Select-DevKitModule -Available $availableModules -Requested $Module -EnvVarName 'EF_MODULE'
   if (-not $script:Module) { Fail 'Module resolution failed (empty result).' 105 }
   if ($script:Module -eq 'All') { Fail "'All' selection not supported for EF operations." 106 }
 
@@ -60,8 +58,8 @@ function Resolve-ModuleAndContext() {
   $ctxFiles = @(Get-ChildItem -Path $infraDir -Recurse -Filter '*DbContext.cs' -File -ErrorAction SilentlyContinue)
   if (-not $ctxFiles -or $ctxFiles.Count -eq 0) { Fail "No DbContext files found under $infraDir" 107 }
   $discoveredContexts = @($ctxFiles | ForEach-Object { $_.BaseName } | Sort-Object -Unique)
-  # If multiple contexts, optionally allow interactive selection (Spectre) with Cancel
-  if (-not $NonInteractive -and $discoveredContexts.Count -gt 1) {
+  # If multiple contexts, allow interactive selection (Spectre) with Cancel
+  if ($discoveredContexts.Count -gt 1) {
     if (Get-Command Read-SpectreSelection -ErrorAction SilentlyContinue) {
       try {
         $ctxChoices = $discoveredContexts + 'Cancel'
@@ -154,7 +152,7 @@ function Add-Migration() {
     $envName = $env:EF_MIGRATION_NAME
     if ($envName) { $MigrationName = $envName }
   }
-  if (-not $MigrationName -and -not $NonInteractive) {
+  if (-not $MigrationName) {
     # Attempt interactive Spectre prompt for migration name; fallback to generated timestamp if cancelled/blank
     if (Get-Command Read-SpectreText -ErrorAction SilentlyContinue) {
       try {

@@ -56,9 +56,10 @@ function Select-DevKitModule {
     [string] $EnvVarName = 'TEST_MODULE',
     [switch] $AllowAll
   )
-  Write-Host "------------------------------"
+  # Write-Host "------------------------------"
   if (-not $Available -or $Available.Count -eq 0) { throw [System.Exception] 'No modules discovered.' }
-  if ($Available.Count -eq 1 -and -not $AllowAll) { return $Available[0] }
+  # Always require explicit selection, even if only one module.
+  # (Removed auto-return of single module to enforce user confirmation.)
 
   # Resolve requested precedence: explicit param > env var > interactive
   $envValue = if ($EnvVarName) { (Get-Item -Path Env:$EnvVarName -ErrorAction SilentlyContinue).Value } else { $null }
@@ -69,11 +70,13 @@ function Select-DevKitModule {
 
   # Require SpectreConsole (no fallback)
   if (-not (Ensure-SpectreConsoleAvailable -Quiet)) { throw [System.Exception] 'SpectreConsole module required but not available.' }
+  $single = $Available.Count -eq 1
+  $title = 'Select Module'
   $choices = @()
   if ($AllowAll) { $choices += 'All' }
   $choices += $Available
   $choices += 'Cancel'
-  $selected = Read-SpectreSelection -Title 'Select Module' -Choices $choices -EnableSearch
+  $selected = Read-SpectreSelection -Title $title -Choices $choices -EnableSearch
   if (-not $selected -or $selected -eq 'Cancel') { throw [System.OperationCanceledException] 'Module selection cancelled.' }
   if ($AllowAll -and $selected -eq 'All') { return 'All' }
   if ($selected -in $Available) { return $selected }
