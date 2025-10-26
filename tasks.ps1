@@ -131,6 +131,7 @@ $tasks = [ordered]@{
   'trace-flame' = @{ Label='Diagnostics Trace (Flame)'; Script={ Invoke-Diagnostics 'trace-flame' } }
   'trace-cpu' = @{ Label='Diagnostics Trace (CPU SampleProfiler)'; Script={ Invoke-Diagnostics 'trace-cpu' } }
   'trace-gc' = @{ Label='Diagnostics Trace (GC Focus)'; Script={ Invoke-Diagnostics 'trace-gc' } }
+  'speedscope-view' = @{ Label='Diagnostics Speedscope View'; Script={ Invoke-Diagnostics 'speedscope-view' } }
   'dump-heap' = @{ Label='Diagnostics Heap Dump'; Script={ Invoke-Diagnostics 'dump-heap' } }
   'gc-stats' = @{ Label='Diagnostics GC Stats'; Script={ Invoke-Diagnostics 'gc-stats' } }
   'aspnet-metrics' = @{ Label='Diagnostics ASP.NET Core Metrics'; Script={ Invoke-Diagnostics 'aspnet-metrics' } }
@@ -148,7 +149,7 @@ $categories = [ordered]@{
   'Security & Compliance' = @('vulnerabilities','vulnerabilities-deep','outdated','outdated-json','licenses')
   'API & Spec' = @('openapi-lint')
   'Utilities'  = @('misc-clean','misc-digest','misc-repl')
-  'Performance & Diagnostics' = @('bench','bench-select','trace-flame','trace-cpu','trace-gc','dump-heap','gc-stats','aspnet-metrics','diag-quick')
+  'Performance & Diagnostics' = @('bench','bench-select','trace-flame','trace-cpu','trace-gc','dump-heap','gc-stats','aspnet-metrics','diag-quick','speedscope-view')
 }
 
 function Run-Task([string]$key){
