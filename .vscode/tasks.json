@@ -3,99 +3,54 @@
   "inputs": [],
   "tasks": [
     {
-      "label": "Solution [dotnet build]",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "build",
-        "${workspaceFolder}/BridgingIT.DevKit.Examples.GettingStarted.sln",
-        "--nologo",
-        "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary"
-      ],
-      "problemMatcher": "$msCompile",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
-    },
-    {
-      "label": "Solution [dotnet clean]",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "clean",
-        "${workspaceFolder}/BridgingIT.DevKit.Examples.GettingStarted.sln",
-        "--nologo",
-        "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary"
-      ],
-      "problemMatcher": "$msCompile",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
-    },
-    {
-      "label": "Solution [dotnet tool restore]",
-      "command": "dotnet",
-      "type": "process",
-      "args": ["tool", "restore"],
+      "label": "Solution [build]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","build"],
+      "group": {"kind":"build","isDefault": true},
       "problemMatcher": []
     },
     {
-      "label": "Presentation.Web.Server [dotnet build]",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "build",
-        "${workspaceFolder}/src/Presentation.Web.Server/Presentation.Web.Server.csproj",
-        "--nologo",
-        "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary"
-      ],
-      "problemMatcher": "$msCompile",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
+      "label": "Solution [clean]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","clean"],
+      "group": {"kind":"build"},
+      "problemMatcher": []
     },
     {
-      "label": "Presentation.Web.Server [dotnet publish]",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "publish",
-        "${workspaceFolder}/src/Presentation.Web.Server/Presentation.Web.Server.csproj",
-        "--nologo",
-        "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary"
-      ],
-      "problemMatcher": "$msCompile"
+      "label": "Solution [tool restore]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","tool-restore"],
+      "problemMatcher": []
     },
     {
-      "label": "Presentation.Web.Server [dotnet watch]",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "watch",
-        "run",
-        "--project",
-        "${workspaceFolder}/src/Presentation.Web.Server/Presentation.Web.Server.csproj",
-        "--nologo"
-      ],
-      "problemMatcher": "$msCompile"
+      "label": "Presentation.Web.Server [build]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","build"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Presentation.Web.Server [publish]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","build"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Presentation.Web.Server [watch run]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","build"],
+      "problemMatcher": []
     },
     {
       "label": "Solution [tests unit]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-tests.ps1",
-        "unit"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","test-unit"],
       "group": "test",
       "problemMatcher": []
     },
@@ -103,12 +58,7 @@
       "label": "Solution [tests integration]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-tests.ps1",
-        "integration"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","test-int"],
       "group": "test",
       "problemMatcher": []
     },
@@ -116,13 +66,7 @@
       "label": "Solution [tests unit all]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-tests.ps1",
-        "unit"
-      ],
-      "options": { "env": { "TEST_MODULE": "All" } },
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","test-unit-all"],
       "group": "test",
       "problemMatcher": []
     },
@@ -130,369 +74,212 @@
       "label": "Solution [tests integration all]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-tests.ps1",
-        "integration"
-      ],
-      "options": { "env": { "TEST_MODULE": "All" } },
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","test-int-all"],
       "group": "test",
       "problemMatcher": []
     },
     {
-      "label": "Presentation.Web.Server [docker build & run]",
+      "label": "Docker [build & run]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-docker.ps1",
-        "docker-build-run"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","docker-build-run"],
       "problemMatcher": []
     },
     {
-      "label": "Presentation.Web.Server [docker build]",
+      "label": "Docker [build]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-docker.ps1",
-        "docker-build"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","docker-build"],
       "problemMatcher": []
     },
     {
-      "label": "Presentation.Web.Server [docker run]",
+      "label": "Docker [run]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-docker.ps1",
-        "docker-run"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","docker-run"],
       "problemMatcher": []
     },
     {
-      "label": "Presentation.Web.Server [docker stop]",
+      "label": "Docker [stop]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-docker.ps1",
-        "docker-stop"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","docker-stop"],
       "problemMatcher": []
     },
     {
-      "label": "Presentation.Web.Server [docker remove]",
+      "label": "Docker [remove]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-docker.ps1",
-        "docker-remove"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","docker-remove"],
       "problemMatcher": []
     },
     {
-      "label": "Container [docker compose up]",
+      "label": "Docker [compose up]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-docker.ps1",
-        "compose-up"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","compose-up"],
       "problemMatcher": []
     },
     {
-      "label": "Container [docker compose up & pull]",
+      "label": "Docker [compose up & pull]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-docker.ps1",
-        "compose-up",
-        "-Pull"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","compose-up-pull"],
       "problemMatcher": []
     },
     {
-      "label": "Container [docker compose down & clean]",
+      "label": "Docker [compose down & clean]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-docker.ps1",
-        "compose-down-clean"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","compose-down-clean"],
       "problemMatcher": []
     },
     {
-      "label": "Container [docker compose down]",
+      "label": "Docker [compose down]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-docker.ps1",
-        "compose-down"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","compose-down"],
       "problemMatcher": []
     },
     {
-      "label": "Misc [combine sources]",
+      "label": "Misc [digest sources]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-misc.ps1",
-        "combine-sources"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","misc-digest"],
       "problemMatcher": []
     },
     {
       "label": "Misc [clean workspace]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-misc.ps1",
-        "clean"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","misc-clean"],
       "problemMatcher": []
     },
     {
       "label": "OpenAPI [lint]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-openapi.ps1",
-        "lint"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","openapi-lint"],
       "problemMatcher": []
     },
     {
-      "label": "Solution [ef migration info]",
+      "label": "EF [info]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-ef.ps1",
-        "info"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","ef-info"],
       "problemMatcher": []
     },
     {
-      "label": "Solution [ef migration list]",
+      "label": "EF [list]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-ef.ps1",
-        "list"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","ef-list"],
       "problemMatcher": []
     },
     {
-      "label": "Solution [ef migration add]",
+      "label": "EF [add]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-ef.ps1",
-        "add"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","ef-add"],
       "problemMatcher": []
     },
     {
-      "label": "Solution [ef migration remove]",
+      "label": "EF [remove]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-ef.ps1",
-        "remove"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","ef-remove"],
       "problemMatcher": []
     },
     {
-      "label": "Solution [ef migration apply]",
+      "label": "EF [apply]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-ef.ps1",
-        "apply"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","ef-apply"],
       "problemMatcher": []
     },
     {
-      "label": "Solution [ef migration undo]",
+      "label": "EF [undo]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-ef.ps1",
-        "undo"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","ef-undo"],
       "problemMatcher": []
     },
     {
-      "label": "Solution [ef migration status]",
+      "label": "EF [status]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-ef.ps1",
-        "status"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","ef-status"],
       "problemMatcher": []
     },
     {
-      "label": "Solution [ef migration reset]",
+      "label": "EF [reset]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-ef.ps1",
-        "reset"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","ef-reset"],
       "problemMatcher": []
     },
     {
-      "label": "Solution [ef migration script]",
+      "label": "EF [script]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-ef.ps1",
-        "script"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","ef-script"],
       "problemMatcher": []
     },
     {
-      "label": "Solution [ef migration removeall]",
+      "label": "EF [removeall]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-ef.ps1",
-        "removeall"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","ef-removeall"],
       "problemMatcher": []
     },
     {
       "label": "Misc [csharp repl]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-misc.ps1",
-        "repl"
-      ],
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": true,
-        "panel": "dedicated"
-      },
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","misc-repl"],
+      "presentation": {"echo": true,"reveal": "always","focus": true,"panel": "dedicated"},
       "problemMatcher": []
     },
     {
-      "label": "Solution [security vulnerabilities]",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "list",
-        "${workspaceFolder}/BridgingIT.DevKit.Examples.GettingStarted.sln",
-        "package",
-        "--vulnerable"
-      ],
+      "label": "Security [vulnerable packages]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","vulnerabilities"],
       "problemMatcher": []
     },
     {
-      "label": "Solution [security outdated packages]",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "list",
-        "${workspaceFolder}/BridgingIT.DevKit.Examples.GettingStarted.sln",
-        "package",
-        "--outdated"
-      ],
+      "label": "Security [outdated packages]",
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","outdated"],
       "problemMatcher": []
     },
     {
       "label": "Solution [format check]",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "format",
-        "${workspaceFolder}/BridgingIT.DevKit.Examples.GettingStarted.sln",
-        "--verify-no-changes"
-      ],
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","format-check"],
       "problemMatcher": []
     },
     {
       "label": "Solution [format apply]",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "format",
-        "${workspaceFolder}/BridgingIT.DevKit.Examples.GettingStarted.sln"
-      ],
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","format-apply"],
       "problemMatcher": []
     },
     {
       "label": "Solution [analyzers report]",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "build",
-        "${workspaceFolder}/BridgingIT.DevKit.Examples.GettingStarted.sln",
-        "-warnaserror",
-        "/p:RunAnalyzers=true",
-        "/p:EnableNETAnalyzers=true",
-        "/p:AnalysisLevel=latest",
-        "/p:ErrorLog=${workspaceFolder}/.tmp/analyzers/analyzers.sarif"
-      ],
-      "problemMatcher": "$msCompile"
+      "type": "shell",
+      "command": "pwsh",
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","analyzers"],
+      "problemMatcher": []
     },
     {
       "label": "Solution [coverage report html]",
       "type": "shell",
       "command": "pwsh",
-      "args": [
-        "-NoProfile",
-        "-File",
-        "${workspaceFolder}/.vscode/tasks-coverage.ps1",
-        "-Html"
-      ],
+      "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","coverage-html"],
       "problemMatcher": []
     }
   ]

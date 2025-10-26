@@ -243,10 +243,10 @@ function Help() {
 Usage: pwsh -File .vscode/tasks-misc.ps1 <command> [options]
 
 Commands:
-  combine-sources      Generate consolidated markdown documentation per project (.g.md).
-  clean                Remove build/output artifact directories (bin/obj/node_modules/etc.).
-  repl                 Run C# REPL (dotnet tool csharprepl) after tool restore.
-  help                 Show this help.
+  digest|combine-sources|combine|docs   Generate consolidated markdown documentation per project (.g.md).
+  clean|cleanup                        Remove build/output artifact directories (bin/obj/node_modules/etc.).
+  repl|shell                           Run C# REPL (dotnet tool csharprepl) after tool restore.
+  help|?                               Show this help.
 
 combine-sources Parameters (defaults shown):
   -OutputDirectory <path>        (default: ./.tmp)
@@ -267,8 +267,8 @@ clean Operation:
   Removes them deepest-first (single pass) and skips .git.
 
 Examples:
-  pwsh -File .vscode/tasks-misc.ps1 combine-sources
-  pwsh -File .vscode/tasks-misc.ps1 combine-sources -OutputDirectory ./.tmp/docs -StripComments true -StripEmptyLines true
+  pwsh -File .vscode/tasks-misc.ps1 digest
+  pwsh -File .vscode/tasks-misc.ps1 digest -OutputDirectory ./.tmp/docs -StripComments true -StripEmptyLines true
   pwsh -File .vscode/tasks-misc.ps1 clean
   pwsh -File .vscode/tasks-misc.ps1 repl
 
@@ -283,7 +283,6 @@ Notes:
 '@ | Write-Host
 }
 
-# Command routing (missing earlier)
 function Clean-Workspace() {
   Write-Section 'Cleaning workspace build artifacts'
   $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
@@ -316,10 +315,21 @@ function Clean-Workspace() {
   Write-Host 'Workspace clean complete.' -ForegroundColor Green
 }
 
-switch ($Command.ToLower()) {
-  'combine-sources' { Combine-Sources }
-  'clean' { Clean-Workspace }
-  'repl' { Run-CSharpRepl }
-  'help' { Help }
-  default { Write-Host "Unknown command '$Command'" -ForegroundColor Red; Help }
+function Handle-MiscCommand([string]$cmd){
+  $key = ($cmd ?? '').ToLowerInvariant()
+  switch ($key) {
+    'digest' { Combine-Sources; return }
+    'combine-sources' { Combine-Sources; return }
+    'combine' { Combine-Sources; return }
+    'docs' { Combine-Sources; return }
+    'clean' { Clean-Workspace; return }
+    'cleanup' { Clean-Workspace; return }
+    'repl' { Run-CSharpRepl; return }
+    'shell' { Run-CSharpRepl; return }
+    'help' { Help; return }
+    '?' { Help; return }
+    default { Write-Host "Unknown misc command '$cmd'" -ForegroundColor Red; Help; exit 10 }
+  }
 }
+
+Handle-MiscCommand $Command
