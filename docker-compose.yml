@@ -54,6 +54,18 @@ services:
     networks:
       - bdk_gettingstarted
 
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
+    container_name: aspire-dashboard
+    restart: unless-stopped
+    ports:
+      - 18889:18888
+      - 43179:18889
+    environment:
+      - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true
+    networks:
+      - bdk_gettingstarted
+
 volumes:
   mssql:
     name: bdk_gettingstarted_mssql

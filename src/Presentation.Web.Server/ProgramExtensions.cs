@@ -12,6 +12,11 @@ using Scalar.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using System;
 using System.Linq;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 public static class ProgramExtensions
 {
@@ -87,6 +92,49 @@ public static class ProgramExtensions
     }
 
     /// <summary>
+    /// Configure health checks, including liveness and commented-out SQL/Redis checks for future use.
+    /// </summary>
+    public static IServiceCollection AddHealthChecks(this IServiceCollection services, IConfiguration configuration)
+    {
+        // readiness checks
+        services.AddHealthChecks()
+         .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy()); // liveness
+        // .AddSqlServer(configuration.GetConnectionString("Default"),
+        // name: "sql", failureStatus: HealthStatus.Unhealthy, timeout: TimeSpan.FromSeconds(2))
+        // .AddRedis(configuration.GetConnectionString("Redis"), "redis")
+
+        return services;
+    }
+
+    /// <summary>
+    /// Configure OpenTelemetry metrics, tracing, and OTLP exporter using IConfiguration.
+    /// </summary>
+    public static IServiceCollection AddOpenTelemetry(this IServiceCollection services, IConfiguration configuration)
+    {
+        // https://learn.microsoft.com/en-us/dotnet/core/diagnostics/observability-otlp-example
+        var otel = services.AddOpenTelemetry()
+         .WithMetrics(metrics =>
+         {
+             metrics.AddAspNetCoreInstrumentation();
+             metrics.AddMeter("Microsoft.AspNetCore.Hosting");
+             metrics.AddMeter("Microsoft.AspNetCore.Server.Kestrel");
+         })
+         .WithTracing(tracing =>
+         {
+             tracing.AddAspNetCoreInstrumentation();
+             tracing.AddHttpClientInstrumentation();
+         });
+
+        var otlpEndpoint = configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
+        if (otlpEndpoint != null)
+        {
+            otel.UseOtlpExporter();
+        }
+
+        return services;
+    }
+
+    /// <summary>
     /// Map Scalar OpenAPI endpoint (UI)
     /// </summary>
     public static WebApplication MapScalar(this WebApplication app)
@@ -107,6 +155,30 @@ public static class ProgramExtensions
                  flow.RedirectUri = idpClient?.RedirectUris?.FirstOrDefault();
              });
         });
+
+        return app;
+    }
+
+    /// <summary>
+    /// Map health check endpoints for liveness, readiness, and general health.
+    /// </summary>
+    public static WebApplication MapHealthChecks(this WebApplication app)
+    {
+        // Liveness: only confirms the app is running
+        app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+        {
+            Predicate = r => r.Name == "self",
+            //ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+        });
+
+        // Readiness: checks all except "self" or vice-versa depending on your naming
+        app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+        {
+            Predicate = r => r.Name != "self",
+            //ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+        });
+
+        app.MapHealthChecks("/health");
 
         return app;
     }

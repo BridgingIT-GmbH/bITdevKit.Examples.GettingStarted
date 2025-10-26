@@ -61,6 +61,8 @@ function Invoke-Misc([string]$cmd){ & pwsh -NoProfile -File (Join-Path $PSScript
 function Invoke-Docker([string]$mode){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.vscode/tasks-docker.ps1') $mode }
 
 function Invoke-Ef([string]$efCmd){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.vscode/tasks-ef.ps1') $efCmd }
+function Invoke-Diagnostics([string]$diagCmd){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.vscode/tasks-diagnostics.ps1') -Command $diagCmd }
+function Invoke-Compliance([string]$compCmd){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.vscode/tasks-compliance.ps1') -Command $compCmd }
 
 function Invoke-Test([string]$kind,[switch]$All){
   if ($All) { $env:TEST_MODULE='All' }
@@ -103,7 +105,9 @@ $tasks = [ordered]@{
   'compose-down' = @{ Label='Docker Compose Down'; Script={ Invoke-Docker 'compose-down' } }
   'compose-down-clean' = @{ Label='Docker Compose Down & Clean'; Script={ Invoke-Docker 'compose-down-clean' } }
   'vulnerabilities' = @{ Label='List Vulnerable Packages'; Script={ Invoke-DotnetScript 'vulnerabilities' } }
+  'vulnerabilities-deep' = @{ Label='List Vulnerable Packages (Transitive)'; Script={ Invoke-DotnetScript 'vulnerabilities-deep' } }
   'outdated' = @{ Label='List Outdated Packages'; Script={ Invoke-DotnetScript 'outdated' } }
+  'outdated-json' = @{ Label='Outdated Packages (JSON Export)'; Script={ Invoke-DotnetScript 'outdated-json' } }
   'format-check' = @{ Label='Format Check'; Script={ Invoke-DotnetScript 'format-check' } }
   'format-apply' = @{ Label='Format Apply'; Script={ Invoke-DotnetScript 'format-apply' } }
   'analyzers' = @{ Label='Analyzers Report'; Script={  Invoke-DotnetScript 'analyzers' } }
@@ -116,16 +120,24 @@ $tasks = [ordered]@{
   'misc-clean' = @{ Label='Misc Clean Workspace'; Script={ Invoke-Misc 'clean' } }
   'misc-digest' = @{ Label='Misc Digest Sources'; Script={ Invoke-Misc 'digest' } }
   'misc-repl' = @{ Label='Misc C# REPL'; Script={ Invoke-Misc 'repl' } }
+  'bench' = @{ Label='Diagnostics Benchmarks'; Script={ Invoke-Diagnostics 'bench' } }
+  'trace-flame' = @{ Label='Diagnostics Trace (Flame)'; Script={ Invoke-Diagnostics 'trace-flame' } }
+  'dump-heap' = @{ Label='Diagnostics Heap Dump'; Script={ Invoke-Diagnostics 'dump-heap' } }
+  'gc-stats' = @{ Label='Diagnostics GC Stats'; Script={ Invoke-Diagnostics 'gc-stats' } }
+  'aspnet-metrics' = @{ Label='Diagnostics ASP.NET Core Metrics'; Script={ Invoke-Diagnostics 'aspnet-metrics' } }
+  'licenses' = @{ Label='Generate License Reports'; Script={ Invoke-Compliance 'licenses' } }
 }
 
 $categories = [ordered]@{
-  'Solution' = @('restore','build','build-release','build-nr','pack','clean','tool-restore','format-check','format-apply','analyzers','server-build','server-publish','server-watch','server-run-dev','server-watch-fast')
-  'Tests'    = @('test-unit','test-int','test-unit-all','test-int-all','coverage','coverage-html','coverage-all-html')
-  'Entity Framework' = @('ef-info','ef-list','ef-add','ef-remove','ef-removeall','ef-apply','ef-undo','ef-status','ef-reset','ef-script')
-  'Docker'   = @('docker-build-run','docker-build','docker-run','docker-stop','docker-remove','compose-up','compose-up-pull','compose-down','compose-down-clean')
-  'Security' = @('vulnerabilities','outdated')
-  'OpenAPI'  = @('openapi-lint')
-  'Misc'     = @('misc-clean','misc-digest','misc-repl')
+  'Build & Maintenance' = @('restore','build','build-release','build-nr','pack','clean','tool-restore','format-check','format-apply','analyzers','server-build','server-publish','server-watch','server-run-dev','server-watch-fast')
+  'Testing & Quality'   = @('test-unit','test-int','test-unit-all','test-int-all','coverage','coverage-html','coverage-all-html')
+  'EF & Persistence'    = @('ef-info','ef-list','ef-add','ef-remove','ef-removeall','ef-apply','ef-undo','ef-status','ef-reset','ef-script')
+  'Publishing & Packaging' = @('server-publish','pack')
+  'Docker & Containers' = @('docker-build-run','docker-build','docker-run','docker-stop','docker-remove','compose-up','compose-up-pull','compose-down','compose-down-clean')
+  'Security & Compliance' = @('vulnerabilities','vulnerabilities-deep','outdated','outdated-json','licenses')
+  'API & Spec' = @('openapi-lint')
+  'Utilities'  = @('misc-clean','misc-digest','misc-repl')
+  'Performance & Diagnostics' = @('bench','trace-flame','dump-heap','gc-stats','aspnet-metrics')
 }
 
 function Run-Task([string]$key){
