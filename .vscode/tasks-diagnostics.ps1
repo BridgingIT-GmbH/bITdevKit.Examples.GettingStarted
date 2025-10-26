@@ -101,6 +101,15 @@ switch($Command.ToLowerInvariant()){
     Ensure-Tool 'dotnet-counters' 'dotnet-counters'
     Ensure-Tool 'dotnet-trace' 'dotnet-trace'
   $script:DotNetOnly = $true
+  # Duration selection (interactive)
+  $durationsMap = [ordered]@{ '10 sec'='00:00:10'; '30 sec'='00:00:30'; '1 min'='00:01:00'; '5 min'='00:05:00' }
+  $duration = $durationsMap['10 sec']
+  try {
+    Import-Module PwshSpectreConsole -ErrorAction Stop
+    $choice = Read-SpectreSelection -Title 'Select flame trace duration' -Choices ($durationsMap.Keys + 'Cancel') -EnableSearch -PageSize 10
+    if($choice -and $choice -ne 'Cancel'){ $duration = $durationsMap[$choice] }
+    if($choice -eq 'Cancel'){ Write-Host 'Flame trace cancelled.' -ForegroundColor Yellow; break }
+  } catch { Write-Host 'Spectre selection unavailable; using default 10 sec.' -ForegroundColor Yellow }
   $procId = Select-Pid 'Select process to trace (flame)'
   if(-not $procId){ Write-Host 'No PID selected.' -ForegroundColor Yellow; break }
     $outDir = Join-Path $PSScriptRoot '..' '.tmp' 'diagnostics'
@@ -108,11 +117,11 @@ switch($Command.ToLowerInvariant()){
   $fileBase = "trace_${procId}_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
   $traceFile = Join-Path $outDir "$fileBase.nettrace"
   $speedFile = Join-Path $outDir "$fileBase"
-  Write-Host "Collecting trace for PID $procId ..." -ForegroundColor Cyan
-  & dotnet-trace collect --process-id $procId --providers Microsoft-DotNETCore-SampleProfiler:1 --duration 00:00:10 -o $traceFile
+  Write-Host "Collecting flame trace (SampleProfiler, $duration) for PID $procId ..." -ForegroundColor Cyan
+  & dotnet-trace collect --process-id $procId --providers Microsoft-DotNETCore-SampleProfiler:1 --duration $duration -o $traceFile
     if($LASTEXITCODE -ne 0){
       Write-Host 'SampleProfiler provider failed, retrying with default trace config (cpu+gc)...' -ForegroundColor Yellow
-  & dotnet-trace collect --process-id $procId --duration 00:00:10 -o $traceFile
+  & dotnet-trace collect --process-id $procId --duration $duration -o $traceFile
       if($LASTEXITCODE -ne 0){ throw 'Trace collection failed (fallback also failed)' }
     }
     Write-Host 'Converting to speedscope...' -ForegroundColor Cyan
