@@ -4,19 +4,10 @@ param(
 )
 $ErrorActionPreference='Stop'
 
-function Ensure-LicenseTool {
-  Write-Host 'Restoring local dotnet tools (manifest)...' -ForegroundColor DarkCyan
-  & dotnet tool restore | Out-Null
-  $toolList = & dotnet tool list --local 2>&1
-  if($LASTEXITCODE -ne 0){ throw 'Local tool manifest not found or restore failed.' }
-  if(-not ($toolList -match 'nuget-license')){
-    throw 'nuget-license missing from local manifest. Add with: dotnet tool install nuget-license --local'
-  }
-}
-
 switch($Command.ToLowerInvariant()){
   'licenses' { # https://github.com/sensslen/nuget-license
-    Ensure-LicenseTool
+    dotnet tool restore | Out-Null
+    if ($LASTEXITCODE -ne 0) { Fail 'dotnet tool restore failed.' 91 }
     $outDir = Join-Path (Join-Path $PSScriptRoot '..') '.tmp/compliance'
     if(-not (Test-Path $outDir)){ New-Item -ItemType Directory -Force -Path $outDir | Out-Null }
     $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'

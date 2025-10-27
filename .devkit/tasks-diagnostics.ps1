@@ -111,7 +111,7 @@ switch($Command.ToLowerInvariant()){
     $fileBase = "trace_${procId}_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
     $traceFile = Join-Path $outDir "$fileBase.nettrace"
     $speedBase = Join-Path $outDir $fileBase
-    try { Import-Module PwshSpectreConsole -ErrorAction Stop; @( 'Flame Trace','PID: ' + $procId,'Duration: ' + $duration,'Providers: SampleProfiler','Artifacts Base: ' + $fileBase ) | Format-SpectreRows | Format-SpectrePanel -Expand } catch {}
+    try { Import-Module PwshSpectreConsole -ErrorAction Stop; @( 'Flame Trace','PID: ' + $procId,'Duration: ' + $duration,'Providers: SampleProfiler','Artifacts Base: ' + $fileBase ) | Format-SpectreRows | Format-SpectrePanel -Expand -Color "DeepSkyBlue3" } catch {}
     Write-Host "Collecting flame trace (SampleProfiler, $duration) for PID $procId ..." -ForegroundColor Cyan
     & dotnet-trace collect --process-id $procId --providers Microsoft-DotNETCore-SampleProfiler:1 --duration $duration -o $traceFile
     if($LASTEXITCODE -ne 0){ Write-Host 'SampleProfiler provider failed, retrying with default trace config (cpu+gc)...' -ForegroundColor Yellow; & dotnet-trace collect --process-id $procId --duration $duration -o $traceFile; if($LASTEXITCODE -ne 0){ throw 'Trace collection failed (fallback also failed)' } }
@@ -143,7 +143,7 @@ switch($Command.ToLowerInvariant()){
     try { Import-Module PwshSpectreConsole -ErrorAction Stop; $provChoice = Read-SpectreSelection -Title 'Include extended runtime providers?' -Choices @('No','Yes','Cancel') -EnableSearch -PageSize 5; if($provChoice -eq 'Cancel'){ Write-Host 'CPU trace cancelled.' -ForegroundColor Yellow; break }; if($provChoice -eq 'Yes'){ $extended = $true } } catch { Write-Host 'Provider selection skipped (Spectre unavailable).' -ForegroundColor Yellow }
     $providers = 'Microsoft-DotNETCore-SampleProfiler:1,System.Runtime:4'
     if($extended){ $providers += ',Microsoft-DotNETCore-EventSource:5' }
-    try { Import-Module PwshSpectreConsole -ErrorAction Stop; @( 'CPU Trace','PID: ' + $procId,'Duration: ' + $duration,'Providers: ' + $providers,'Extended: ' + $extended,'Artifacts Base: ' + $fileBase ) | Format-SpectreRows | Format-SpectrePanel -Expand } catch {}
+    try { Import-Module PwshSpectreConsole -ErrorAction Stop; @( 'CPU Trace','PID: ' + $procId,'Duration: ' + $duration,'Providers: ' + $providers,'Extended: ' + $extended,'Artifacts Base: ' + $fileBase ) | Format-SpectreRows | Format-SpectrePanel -Expand -Color "DeepSkyBlue3" } catch {}
     Write-Host "Collecting CPU trace ($providers, $duration) for PID $procId ..." -ForegroundColor Cyan
     & dotnet-trace collect --process-id $procId --providers $providers --duration $duration -o $traceFile
     if($LASTEXITCODE -ne 0){ throw 'CPU trace collection failed' }
@@ -171,7 +171,7 @@ switch($Command.ToLowerInvariant()){
     $fileBase = "gc_${procId}_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
     $traceFile = Join-Path $outDir "$fileBase.nettrace"
     $speedBase = Join-Path $outDir $fileBase
-    try { Import-Module PwshSpectreConsole -ErrorAction Stop; @( 'GC Trace','PID: ' + $procId,'Duration: ' + $duration,'Providers: SampleProfiler + System.Runtime','Artifacts Base: ' + $fileBase ) | Format-SpectreRows | Format-SpectrePanel -Expand } catch {}
+    try { Import-Module PwshSpectreConsole -ErrorAction Stop; @( 'GC Trace','PID: ' + $procId,'Duration: ' + $duration,'Providers: SampleProfiler + System.Runtime','Artifacts Base: ' + $fileBase ) | Format-SpectreRows | Format-SpectrePanel -Expand -Color "DeepSkyBlue3" } catch {}
     Write-Host "Collecting GC-focused trace (SampleProfiler + System.Runtime, $duration) for PID $procId ..." -ForegroundColor Cyan
     & dotnet-trace collect --process-id $procId --providers Microsoft-DotNETCore-SampleProfiler:1,System.Runtime:4 --duration $duration -o $traceFile
     if($LASTEXITCODE -ne 0){ throw 'GC trace collection failed' }

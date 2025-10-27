@@ -19,9 +19,10 @@ param(
   [Parameter(Position=0)] [string] $Command = 'help',
   [Parameter()] [string] $SpecificationPath = 'src/Presentation.Web.Server/wwwroot/openapi.json',
   [Parameter()] [string] $RulesetPath = '.spectral.yaml',
-  [Parameter()] [string] $FailSeverity = 'error', # one of: error|warn|info|hint|off
-  [Parameter()] [string] $Format = 'stylish',     # stylish|json|text
-  [Parameter()] [string] $DockerImage = 'stoplight/spectral:latest'
+  [Parameter()] [string] $FailSeverity = 'error',
+  [Parameter()] [string] $Format = 'stylish',
+  [Parameter()] [string] $DockerImage = 'stoplight/spectral:latest',
+  [Parameter()] [string] $OutputRoot = '.tmp/openapi'
 )
 
 Write-Host "Executing OpenAPI command: $Command" -ForegroundColor Yellow
@@ -78,38 +79,104 @@ function Lint-OpenApi() {
   Write-Host 'OpenAPI lint succeeded with no violations above threshold.' -ForegroundColor Green
 }
 
+function Resolve-Spec() {
+  $specFull = Resolve-Path-Safely $SpecificationPath
+  if (-not (Test-Path -LiteralPath $specFull)) {
+    Fail "Specification not found: $SpecificationPath (expected build to generate it)" 21
+  }
+  return $specFull
+}
+
+function Generate-KiotaClient {
+  param(
+    [Parameter(Mandatory)][ValidateSet('CSharp','TypeScript')] [string]$Language,
+    [string]$ClientClassName = 'ApiClient',
+    [string]$Namespace = 'OpenApi.Client'
+  )
+  Write-Section "Kiota Generate ($Language)"
+  dotnet tool restore | Out-Null
+  if ($LASTEXITCODE -ne 0) { Fail 'dotnet tool restore failed.' 91 }
+  $specFull = Resolve-Spec
+
+  # Output directory selection
+  $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+  $baseOut = Join-Path $root $OutputRoot
+  $outDir = if ($Language -eq 'CSharp') { Join-Path $baseOut 'dotnet' }
+            else { Join-Path $baseOut 'typescript' }
+  New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+
+  # Build Kiota args
+  if ($Language -eq 'CSharp') {
+    $args = @('kiota','generate',
+      '-d', $specFull,
+      '-l', 'CSharp',
+      '-o', $outDir,
+      '--clean-output',
+      '-c', $ClientClassName,
+      '-n', $Namespace)
+  } else {
+    $args = @('kiota','generate',
+      '-d', $specFull,
+      '-l', 'TypeScript',
+      '-o', $outDir,
+      '--clean-output',
+      '-c', $ClientClassName)
+  }
+
+  try {
+    Import-Module PwshSpectreConsole -ErrorAction Stop
+    @( "Kiota Generation",
+       "Spec: $specFull",
+       "Language: $Language",
+       "Output: $outDir",
+       "ClientClass: $ClientClassName",
+       "Namespace: $Namespace"
+     ) | Format-SpectreRows | Format-SpectrePanel -Expand -Color "DeepSkyBlue3" | Out-Null
+  } catch { }
+
+  Write-Step "dotnet $($args -join ' ')"
+  & dotnet @args
+  if ($LASTEXITCODE -ne 0) { Fail "Kiota generation failed ($LASTEXITCODE)" $LASTEXITCODE }
+
+  # Post-generation brief summary
+  $fileCount = (Get-ChildItem -Path $outDir -Recurse -File | Measure-Object).Count
+  Write-Host "Kiota $Language client generated ($fileCount files)." -ForegroundColor Green
+}
+
 function Help() {
 @'
 Usage: pwsh -File .vscode/tasks-openapi.ps1 <command> [options]
 
 Commands:
-  lint    Run Spectral lint against the OpenAPI specification
-  help    Show this help text
+  lint                Run Spectral lint against the OpenAPI specification
+  client-dotnet       Generate C# typed client via Kiota
+  client-typescript   Generate TypeScript typed client via Kiota
+  help                Show this help text
+
+Kiota Generation Notes:
+  - Requires kiota tool in local manifest (dotnet tool install kiota)
+  - Uses flags: -d (spec), -l (language), -o (output), -c (client class),
+    -n (namespace, C# only), -m (module name, TS only), --clear-output
+  - Output folders: .tmp/openapi/dotnet and .tmp/openapi/typescript
 
 Parameters:
-  -SpecificationPath <path>  Path to OpenAPI spec (default: src/Presentation.Web.Server/wwwroot/openapi.json)
-  -RulesetPath <path>        Optional Spectral ruleset (.spectral.yaml) (default: .spectral.yaml if exists)
-  -FailSeverity <severity>   error|warn|info|hint|off (default: error). Minimum level that causes non-zero exit.
-  -Format <format>           stylish|json|text (default: stylish)
-  -DockerImage <image>       Docker image to use (default: stoplight/spectral:latest)
+  -SpecificationPath <path>  Spec file (default: src/Presentation.Web.Server/wwwroot/openapi.json)
+  -OutputRoot <path>         Base output (default: .tmp/openapi)
+  (Lint-only parameters preserved: -RulesetPath -FailSeverity -Format -DockerImage)
 
 Examples:
   pwsh -File .vscode/tasks-openapi.ps1 lint
-  pwsh -File .vscode/tasks-openapi.ps1 lint -FailSeverity warn -Format json
-  pwsh -File .vscode/tasks-openapi.ps1 lint -RulesetPath rules/.spectral.yaml
-
-Notes:
-  The specification is generated during build. Run the build task first if the spec is missing.
-  Customize rules by adding a .spectral.yaml in repository root or provide -RulesetPath.
-  Non-zero exit code indicates lint violations at or above FailSeverity or operational failure.
-  Add future commands (e.g., bundle, diff) by creating new functions and switch entries.
+  pwsh -File .vscode/tasks-openapi.ps1 client-dotnet
+  pwsh -File .vscode/tasks-openapi.ps1 client-typescript -SpecificationPath api/openapi.json
 '@ | Write-Host
 }
 
 switch ($Command.ToLower()) {
-  'lint' { Lint-OpenApi }
-  'help' { Help }
-  default { Write-Host "Unknown command '$Command'" -ForegroundColor Red; Help; exit 1 }
+  'lint'               { Lint-OpenApi }
+  'client-dotnet'      { Generate-KiotaClient -Language CSharp }
+  'client-typescript'  { Generate-KiotaClient -Language TypeScript }
+  'help'               { Help }
+  default              { Write-Host "Unknown command '$Command'" -ForegroundColor Red; Help; exit 1 }
 }
 
 exit 0

@@ -278,15 +278,32 @@ Output Location:     $OutputDirectory
   Write-Progress-Success 'Documentation generation complete!'
 }
 
+function Open-BrowserUrl() {
+  param(
+    [string]$title,
+    [string]$url
+  )
+  Write-Section $title
+  try {
+    Write-Host "Launching browser: $url" -ForegroundColor Cyan
+    Start-Process $url
+    Write-Host "$title opened." -ForegroundColor Green
+  } catch {
+    Write-Host "Failed to open $title ($url): $($_.Exception.Message)" -ForegroundColor Yellow
+  }
+}
+
 function Help() {
 @'
 Usage: pwsh -File .vscode/tasks-misc.ps1 <command> [options]
 
 Commands:
-  digest|combine-sources|combine|docs   Generate consolidated markdown documentation per project (.g.md).
+  digest                               Generate consolidated markdown documentation per project (.g.md).
   clean|cleanup                        Remove build/output artifact directories (bin/obj/node_modules/etc.).
   repl|shell                           Run C# REPL (dotnet tool csharprepl) after tool restore.
   kill-dotnet                          Terminate a dotnet process (interactive selection or direct -ProcessId). No confirmation.
+  browser-seq                          Open SEQ logging dashboard (http://localhost:15349) in default browser.
+  browser-server-docker                Open Server (Docker container) http://localhost:8080 in default browser.
   help|?                               Show this help.
 
 combine-sources Parameters (defaults shown):
@@ -362,14 +379,15 @@ function Handle-MiscCommand([string]$cmd){
   $key = ($cmd ?? '').ToLowerInvariant()
   switch ($key) {
     'digest' { Combine-Sources; return }
-    'combine-sources' { Combine-Sources; return }
-    'combine' { Combine-Sources; return }
-    'docs' { Combine-Sources; return }
     'clean' { Clean-Workspace; return }
     'cleanup' { Clean-Workspace; return }
     'repl' { Run-CSharpRepl; return }
     'shell' { Run-CSharpRepl; return }
     'kill-dotnet' { Kill-DotNetProcess; return }
+    'browser-devkit-docs' { Open-BrowserUrl 'Opening DevKit Docs' 'https://github.com/BridgingIT-GmbH/bITdevKit/tree/main/docs'; return }
+    'browser-seq' { Open-BrowserUrl 'Opening SEQ Dashboard' 'http://localhost:15349'; return }
+    'browser-server-kestrel' { Open-BrowserUrl 'Opening Server (Kestrel HTTPS)' 'https://localhost:5001/scalar'; return }
+    'browser-server-docker' { Open-BrowserUrl 'Opening Server (Docker HTTP)' 'http://localhost:8080/scalar'; return }
     'help' { Help; return }
     '?' { Help; return }
     default { Write-Host "Unknown misc command '$cmd'" -ForegroundColor Red; Help; exit 10 }

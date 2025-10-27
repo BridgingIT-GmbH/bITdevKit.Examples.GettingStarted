@@ -26,7 +26,6 @@ $reportRoot = Join-Path $runDir 'report'
 if($Html){
   Write-Section 'Generating HTML report'
   dotnet tool restore | Out-Null
-  if ($LASTEXITCODE -ne 0) { Fail 'dotnet tool restore failed.' 91 }
   $reportPaths = ($coverageFiles | Select-Object -ExpandProperty FullName) -join ';'
   # Ensure target directory exists
   if(-not (Test-Path $reportRoot)){ New-Item -ItemType Directory -Force -Path $reportRoot | Out-Null }

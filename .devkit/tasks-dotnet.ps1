@@ -1,6 +1,6 @@
 param(
   [Parameter(Mandatory=$true)][string]$Command,
-  [string]$SolutionPath = (Join-Path $PSScriptRoot '..' 'BridgingIT.DevKit.Examples.GettingStarted.sln'),
+  [string]$SolutionPath, # auto-resolved if omitted
   [string]$ProjectPath
 )
 
@@ -56,21 +56,60 @@ function Copy-PublishOutput {
   }
 }
 
+function Resolve-Solution([string]$explicit){
+  $root = Split-Path $PSScriptRoot -Parent
+  $solutions = Get-ChildItem -Path $root -Filter '*.sln' -File
+  if(-not $solutions -or $solutions.Count -eq 0){
+    throw "No .sln files found under $root"
+  }
+
+  # Single solution: return directly (explicit ignored if different)
+  if($solutions.Count -eq 1){
+    if($explicit -and (Test-Path $explicit) -and ((Resolve-Path $explicit).Path -ne $solutions[0].FullName)){
+      Write-Host "Explicit solution differs; using discovered single solution." -ForegroundColor DarkYellow
+    }
+    return $solutions[0].FullName
+  }
+
+  # Multiple solutions: always prompt (ignore explicit)
+  # Write-Host "Multiple solutions detected (${($solutions.Count)})." -ForegroundColor Cyan
+  $choices = $solutions | ForEach-Object { $_.FullName }
+  $selected = Read-SpectreSelection -Title 'Select Solution (.sln)' -Choices ($choices + 'Cancel') -EnableSearch -PageSize 15
+  if(-not $selected -or $selected -eq 'Cancel'){ throw 'Solution selection cancelled.' }
+  Write-Host "Selected solution: $selected" -ForegroundColor Green
+  return $selected
+}
+
+# Resolve once for commands needing a solution
+$needsSolutionCommands = @(
+  'restore','build','build-release','build-nr','pack','clean',
+  'format-check','format-apply','vulnerabilities','vulnerabilities-deep',
+  'outdated','outdated-json','update-packages','analyzers','analyzers-export'
+)
+if($needsSolutionCommands -contains $Command.ToLowerInvariant()){
+  try {
+    $SolutionPath = Resolve-Solution $SolutionPath
+  } catch {
+    Write-Host "Solution resolution failed: $($_.Exception.Message)" -ForegroundColor Red
+    exit 10
+  }
+  Write-Host "Using solution: $SolutionPath" -ForegroundColor DarkGray
+}
+
 # Common logger args as array
 $logArgs = @('--nologo','/property:GenerateFullPaths=true','/consoleloggerparameters:NoSummary')
 
 switch ($Command.ToLowerInvariant()) {
-  'restore'      { if (-not (Test-Path $SolutionPath)) { throw "Solution not found: $SolutionPath" }; Invoke-Dotnet (@('restore',$SolutionPath) + $logArgs) }
-  'build'        { $SolutionPath = (Resolve-Path $SolutionPath).Path; if (-not (Test-Path $SolutionPath)) { throw "Solution not found: $SolutionPath" }; Invoke-Dotnet (@('build',$SolutionPath) + $logArgs) }
-  'build-release'{ $SolutionPath = (Resolve-Path $SolutionPath).Path; if (-not (Test-Path $SolutionPath)) { throw "Solution not found: $SolutionPath" }; Invoke-Dotnet (@('build',$SolutionPath,'-c','Release') + $logArgs) }
-  'build-nr'    { $SolutionPath = (Resolve-Path $SolutionPath).Path; if (-not (Test-Path $SolutionPath)) { throw "Solution not found: $SolutionPath" }; Invoke-Dotnet (@('build',$SolutionPath,'--no-restore') + $logArgs) }
-  'pack'        { $SolutionPath = (Resolve-Path $SolutionPath).Path; if (-not (Test-Path $SolutionPath)) { throw "Solution not found: $SolutionPath" }; Invoke-Dotnet (@('pack',$SolutionPath,'-c','Release') + $logArgs) }
-  'clean'        { if (-not (Test-Path $SolutionPath)) { throw "Solution not found: $SolutionPath" }; Invoke-Dotnet (@('clean',$SolutionPath) + $logArgs) }
-  'tool-restore' { Invoke-Dotnet @('tool','restore') }
+  'restore'      { Invoke-Dotnet (@('restore',$SolutionPath) + $logArgs) }
+  'build'        { Invoke-Dotnet (@('build',$SolutionPath) + $logArgs) }
+  'build-release'{ Invoke-Dotnet (@('build',$SolutionPath,'-c','Release') + $logArgs) }
+  'build-nr'     { Invoke-Dotnet (@('build',$SolutionPath,'--no-restore') + $logArgs) }
+  'pack'         { Invoke-Dotnet (@('pack',$SolutionPath,'-c','Release') + $logArgs) }
+  'clean'        { Invoke-Dotnet (@('clean',$SolutionPath) + $logArgs) }
   'format-check' { Invoke-Dotnet @('format',$SolutionPath,'--verify-no-changes') }
   'format-apply' { Invoke-Dotnet @('format',$SolutionPath) }
-  'vulnerabilities' { Invoke-Dotnet @('list',$SolutionPath,'package','--vulnerable') }
-  'vulnerabilities-deep' { Invoke-Dotnet @('list',$SolutionPath,'package','--vulnerable','--include-transitive') }
+  'vulnerabilities'        { Invoke-Dotnet @('list',$SolutionPath,'package','--vulnerable') }
+  'vulnerabilities-deep'   { Invoke-Dotnet @('list',$SolutionPath,'package','--vulnerable','--include-transitive') }
   'outdated'     { Invoke-Dotnet @('list',$SolutionPath,'package','--outdated') }
   'outdated-json' {
     $tmpDir = Join-Path (Join-Path $PSScriptRoot '..') '.tmp/compliance'
@@ -131,7 +170,7 @@ switch ($Command.ToLowerInvariant()) {
     Write-Host "Self-contained publish complete for RID $rid" -ForegroundColor Green
     Copy-PublishOutput -ProjectPath $ProjectPath -Rid $rid
   }
-  'pack-modules' {
+  'pack-projects' {
     # Packs each module project (Domain/Application/Infrastructure/Presentation) into .tmp/packages
     $root = Split-Path $PSScriptRoot -Parent
     $modulesPath = Join-Path $root 'src/Modules'
@@ -147,6 +186,7 @@ switch ($Command.ToLowerInvariant()) {
     Write-Host "Module packages written to $outDir" -ForegroundColor Green
   }
   'analyzers-export' {
+    # Uses solution (resolved earlier)
     $root = Split-Path $PSScriptRoot -Parent
     $anDir = Join-Path $root '.tmp/analyzers'
     if(-not (Test-Path $anDir)){ New-Item -ItemType Directory -Force -Path $anDir | Out-Null }

@@ -70,6 +70,9 @@
     { "label": "Utilities [clean workspace]", "type": "shell", "command": "pwsh", "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","misc-clean"], "problemMatcher": [] },
     { "label": "Utilities [digest sources]", "type": "shell", "command": "pwsh", "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","misc-digest"], "problemMatcher": [] },
     { "label": "Utilities [csharp repl]", "type": "shell", "command": "pwsh", "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","misc-repl"], "presentation": {"echo": true, "reveal": "always", "focus": true, "panel": "dedicated"}, "problemMatcher": [] },
-    { "label": "Utilities [kill dotnet process]", "type": "shell", "command": "pwsh", "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","misc-kill-dotnet"], "presentation": {"echo": true, "reveal": "always", "focus": true, "panel": "shared"}, "problemMatcher": [] }
+    { "label": "Utilities [kill dotnet process]", "type": "shell", "command": "pwsh", "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","misc-kill-dotnet"], "presentation": {"echo": true, "reveal": "always", "focus": true, "panel": "shared"}, "problemMatcher": [] },
+    { "label": "Utilities [browser seq dashboard]", "type": "shell", "command": "pwsh", "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","misc-browser-seq"], "presentation": {"echo": true, "reveal": "always", "focus": true, "panel": "shared"}, "problemMatcher": [] },
+    { "label": "Utilities [browser server kestrel]", "type": "shell", "command": "pwsh", "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","misc-browser-server-kestrel"], "presentation": {"echo": true, "reveal": "always", "focus": true, "panel": "shared"}, "problemMatcher": [] },
+    { "label": "Utilities [browser server docker]", "type": "shell", "command": "pwsh", "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","misc-browser-server-docker"], "presentation": {"echo": true, "reveal": "always", "focus": true, "panel": "shared"}, "problemMatcher": [] }
   ]
 }
