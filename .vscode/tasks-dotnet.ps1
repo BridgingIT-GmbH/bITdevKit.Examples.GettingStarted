@@ -88,6 +88,17 @@ switch ($Command.ToLowerInvariant()) {
     $pkgs | ConvertTo-Json -Depth 4 | Set-Content -Path $outFile -Encoding UTF8
     Write-Host ("Outdated packages captured: {0}" -f $pkgs.Count) -ForegroundColor Green
   }
+  'update-packages' {
+    # Use dotnet-outdated global tool to update central package versions.
+    Write-Host 'Ensuring dotnet-outdated tool is installed...' -ForegroundColor DarkGray
+    $toolInfo = & dotnet tool list -g | Out-String
+    if($toolInfo -notmatch 'dotnet-outdated'){ & dotnet tool install --global dotnet-outdated-tool }
+    Write-Host 'Running dotnet-outdated (auto upgrade within constraints)...' -ForegroundColor Cyan
+    # Central Package Management: dotnet-outdated supports --upgrade and --allow-major-version-updates if desired.
+    & dotnet outdated $SolutionPath --upgrade
+    if($LASTEXITCODE -ne 0){ Write-Host 'dotnet-outdated reported issues or applied updates with non-zero exit code.' -ForegroundColor Yellow }
+    Write-Host 'dotnet-outdated execution complete.' -ForegroundColor Green
+  }
   'analyzers'    { Invoke-Dotnet @('build',$SolutionPath,'-warnaserror','/p:RunAnalyzers=true','/p:EnableNETAnalyzers=true','/p:AnalysisLevel=latest') }
   'project-build'   { if (-not $ProjectPath) { throw 'ProjectPath required for project-build' }; Invoke-Dotnet (@('build',$ProjectPath) + $logArgs) }
   'project-publish' {

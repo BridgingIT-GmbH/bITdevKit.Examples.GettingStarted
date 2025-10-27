@@ -6,6 +6,7 @@
     { "label": "Solution [build no-restore]", "type": "shell", "command": "pwsh", "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","build-nr"], "group": {"kind":"build"}, "problemMatcher": [] },
     { "label": "Solution [pack]", "type": "shell", "command": "pwsh", "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","pack"], "group": {"kind":"build"}, "problemMatcher": [] },
     { "label": "Solution [pack modules]", "type": "shell", "command": "pwsh", "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","pack-modules"], "group": {"kind":"build"}, "problemMatcher": [] },
+  { "label": "Solution [update packages]", "type": "shell", "command": "pwsh", "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","update-packages"], "group": {"kind":"build"}, "problemMatcher": [] },
     { "label": "Solution [restore]", "type": "shell", "command": "pwsh", "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","restore"], "group": {"kind":"build"}, "problemMatcher": [] },
     { "label": "Solution [clean]", "type": "shell", "command": "pwsh", "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","clean"], "group": {"kind":"build"}, "problemMatcher": [] },
     { "label": "Solution [tool restore]", "type": "shell", "command": "pwsh", "args": ["-NoProfile","-File","${workspaceFolder}/tasks.ps1","-Task","tool-restore"], "problemMatcher": [] },

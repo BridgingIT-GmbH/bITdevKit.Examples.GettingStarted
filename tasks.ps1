@@ -122,6 +122,7 @@ $tasks = [ordered]@{
   'server-run-dev' = @{ Label='Server Project Run Dev'; Script={ Invoke-DotnetScript 'project-run' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'server-watch-fast' = @{ Label='Server Project Watch Fast'; Script={ Invoke-DotnetScript 'project-watch-fast' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'pack-modules' = @{ Label='Pack Modules (Release)'; Script={ Invoke-DotnetScript 'pack-modules' } }
+  'update-packages' = @{ Label='Update Outdated Packages (Central)' ; Script={ Invoke-DotnetScript 'update-packages' } }
   'openapi-lint' = @{ Label='OpenAPI Lint'; Script={ Invoke-OpenApiLint } }
   'misc-clean' = @{ Label='Misc Clean Workspace'; Script={ Invoke-Misc 'clean' } }
   'misc-digest' = @{ Label='Misc Digest Sources'; Script={ Invoke-Misc 'digest' } }
@@ -142,7 +143,7 @@ $tasks = [ordered]@{
 }
 
 $categories = [ordered]@{
-  'Build & Maintenance' = @('restore','build','build-release','build-nr','pack','pack-modules','clean','tool-restore','format-check','format-apply','analyzers','analyzers-export','server-build','server-publish','server-publish-release','server-publish-sc','server-watch','server-run-dev','server-watch-fast')
+  'Build & Maintenance' = @('restore','build','build-release','build-nr','pack','pack-modules','update-packages','clean','tool-restore','format-check','format-apply','analyzers','analyzers-export','server-build','server-publish','server-publish-release','server-publish-sc','server-watch','server-run-dev','server-watch-fast')
   'Testing & Quality'   = @('test-unit','test-int','test-unit-all','test-int-all','coverage','coverage-html','coverage-open','coverage-all-html')
   'EF & Persistence'    = @('ef-info','ef-list','ef-add','ef-remove','ef-removeall','ef-apply','ef-update','ef-recreate','ef-undo','ef-status','ef-reset','ef-script')
   'Publishing & Packaging' = @('server-publish','server-publish-release','server-publish-sc','pack','pack-modules')
