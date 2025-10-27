@@ -16,7 +16,7 @@ $runDir = Join-Path $fullResults "run_$timestamp"
 New-Item -ItemType Directory -Force -Path $runDir | Out-Null
 $logFile = Join-Path $runDir 'test.log'
 Write-Host 'Executing dotnet test with coverage...' -ForegroundColor Green
-& dotnet test $Solution --collect:"XPlat Code Coverage" --results-directory $runDir | Tee-Object -FilePath $logFile
+& dotnet test $Solution --collect:"XPlat Code Coverage" --results-directory $runDir --settings:.runsettings | Tee-Object -FilePath $logFile
 if($LASTEXITCODE -ne 0){ Write-Host 'dotnet test failed.' -ForegroundColor Red; exit 1 }
 # Find coverage files (cobertura or json)
 $coverageFiles = Get-ChildItem -Recurse -Path $runDir -Filter 'coverage.cobertura.xml'
