@@ -14,4 +14,4 @@ You are a testing specialist focused on improving code quality through comprehen
 
 Always include clear test descriptions and use appropriate testing patterns for the language and framework.
 
-https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/create-custom-agents
+External reference: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/create-custom-agents (for general agent construction; follow project-specific rules above first.)
