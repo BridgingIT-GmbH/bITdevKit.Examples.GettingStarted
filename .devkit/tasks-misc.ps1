@@ -304,6 +304,7 @@ Commands:
   kill-dotnet                          Terminate a dotnet process (interactive selection or direct -ProcessId). No confirmation.
   browser-seq                          Open SEQ logging dashboard (http://localhost:15349) in default browser.
   browser-server-docker                Open Server (Docker container) http://localhost:8080 in default browser.
+  docs-update                          Download latest DevKit docs (markdown) from upstream repository into ./devkit/docs.
   help|?                               Show this help.
 
 combine-sources Parameters (defaults shown):
@@ -388,6 +389,7 @@ function Handle-MiscCommand([string]$cmd){
     'browser-seq' { Open-BrowserUrl 'Opening SEQ Dashboard' 'http://localhost:15349'; return }
     'browser-server-kestrel' { Open-BrowserUrl 'Opening Server (Kestrel HTTPS)' 'https://localhost:5001/scalar'; return }
     'browser-server-docker' { Open-BrowserUrl 'Opening Server (Docker HTTP)' 'http://localhost:8080/scalar'; return }
+    'docs-update' { Update-DevKitDocs; return }
     'help' { Help; return }
     '?' { Help; return }
     default { Write-Host "Unknown misc command '$cmd'" -ForegroundColor Red; Help; exit 10 }
@@ -422,6 +424,68 @@ function Kill-DotNetProcess() {
   Write-Host ("Failed to terminate PID {0}: {1}" -f $selectedPid, $errMsg) -ForegroundColor Red
     $global:LASTEXITCODE=5
   }
+}
+
+function Update-DevKitDocs() {
+  Write-Section 'Updating DevKit Docs (markdown)'
+  $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+  $targetRoot = Join-Path $repoRoot '.devkit/docs'
+  New-Item -ItemType Directory -Path $targetRoot -Force | Out-Null
+
+  $apiBase = 'https://api.github.com/repos/BridgingIT-GmbH/bITdevKit/contents/docs'
+  $branchRef = 'main'
+  $headers = @{ 'User-Agent' = 'bITdevKit-DocsSyncScript'; 'Accept' = 'application/vnd.github.v3+json' }
+
+  function Get-DirectoryItems([string]$apiUrl){
+    try { return Invoke-RestMethod -Uri ($apiUrl + '?ref=' + $branchRef) -Headers $headers -ErrorAction Stop }
+    catch { Write-Host ("Failed to list '{0}': {1}" -f $apiUrl,$_.Exception.Message) -ForegroundColor Yellow; return @() }
+  }
+
+  $downloaded = [System.Collections.Generic.List[string]]::new()
+  $failed = [System.Collections.Generic.List[string]]::new()
+
+  function Sync-Directory([string]$apiUrl){
+    $items = Get-DirectoryItems $apiUrl
+    foreach($item in $items){
+      if($item.type -eq 'dir'){
+        Sync-Directory $item.url
+      }
+      elseif($item.type -eq 'file' -and $item.name -like '*.md'){
+        $relative = ($item.path -replace '^docs/','')
+        $localPath = Join-Path $targetRoot $relative
+        $localDir = Split-Path $localPath -Parent
+        New-Item -ItemType Directory -Force -Path $localDir | Out-Null
+        try {
+          $content = Invoke-RestMethod -Uri $item.download_url -Headers $headers -ErrorAction Stop
+          # If content returns as an object (rare), cast to string
+          if($content -isnot [string]){ $content = [string]$content }
+          Set-Content -Path $localPath -Value $content -Encoding UTF8
+          $downloaded.Add($relative) | Out-Null
+        } catch {
+          Write-Host ("Failed to download {0}: {1}" -f $relative, $_.Exception.Message) -ForegroundColor Yellow
+          $failed.Add($relative) | Out-Null
+        }
+      }
+    }
+  }
+
+  # Use Spectre status if available for nicer progress
+  $spectreAvailable = $false
+  try { Import-Module PwshSpectreConsole -ErrorAction Stop; $spectreAvailable = $true } catch { }
+
+  if($spectreAvailable){
+    $rootApi = $apiBase
+    Invoke-SpectreCommandWithStatus -Title 'Downloading latest DevKit docs...' -ScriptBlock {
+      Sync-Directory $rootApi
+    } -Spinner dots
+  } else {
+    Write-Host 'Spectre module not available; falling back to plain output.' -ForegroundColor DarkGray
+    Sync-Directory $apiBase
+  }
+
+  Write-Host ("Downloaded {0} markdown files to {1}" -f $downloaded.Count, $targetRoot) -ForegroundColor Green
+  if($failed.Count -gt 0){ Write-Host ("Failed: {0}" -f ($failed -join ', ')) -ForegroundColor Yellow }
+  else { Write-Host 'All files downloaded successfully.' -ForegroundColor Green }
 }
 
 Handle-MiscCommand $Command

@@ -133,6 +133,7 @@ $tasks = [ordered]@{
   'misc-browser-seq'        = @{ Label='Browser Seq';          Desc='Open Seq dashboard';            Script={ Invoke-Misc 'browser-seq' } }
   'misc-browser-server-kestrel' = @{ Label='Browser Server HTTPS'; Desc='Open Kestrel site';       Script={ Invoke-Misc 'browser-server-kestrel' } }
   'misc-browser-server-docker'  = @{ Label='Browser Server Docker'; Desc='Open container site';   Script={ Invoke-Misc 'browser-server-docker' } }
+  'misc-update-devkit-docs'     = @{ Label='Update DevKit Docs';    Desc='Download latest DevKit markdown docs'; Script={ Invoke-Misc 'docs-update' } }
   'bench'                   = @{ Label='Bench Run';            Desc='Run benchmarks';                Script={ Invoke-Diagnostics 'bench' } }
   'bench-select'            = @{ Label='Bench Run Project';    Desc='Select benchmark project';      Script={ Invoke-Diagnostics 'bench-select' } }
   'trace-flame'             = @{ Label='Trace Flame';          Desc='Flame CPU trace';               Script={ Invoke-Diagnostics 'trace-flame' } }
@@ -161,7 +162,7 @@ $categories = [ordered]@{
   'Docker & Containers' = @('docker-build-run','docker-build-debug','docker-build-release','docker-run','docker-stop','docker-remove','compose-up','compose-up-pull','compose-down','compose-down-clean')
   'Security & Compliance' = @('vulnerabilities','vulnerabilities-deep','outdated','outdated-json','licenses')
   'API & Spec' = @('openapi-lint','openapi-client-dotnet','openapi-client-typescript')
-  'Utilities'  = @('misc-clean','misc-digest','misc-repl','misc-kill-dotnet','misc-browser-devkit-docs','misc-browser-seq','misc-browser-server-kestrel','misc-browser-server-docker')
+  'Utilities'  = @('misc-clean','misc-digest','misc-repl','misc-kill-dotnet','misc-browser-devkit-docs','misc-browser-seq','misc-browser-server-kestrel','misc-browser-server-docker','misc-update-devkit-docs')
   'Performance & Diagnostics' = @('bench','bench-select','trace-flame','trace-cpu','trace-gc','dump-heap','gc-stats','aspnet-metrics','diag-quick','speedscope-view')
 }
 
