@@ -25,7 +25,7 @@ Workflow guidelines:
 3. Draft a structured todo list (layered tasks) then implement iteratively, validating build & tests after meaningful changes.
 4. For each new capability: Domain first (entities/value objects/events/rules) -> Infrastructure (EF config/migration/repository) -> Application (command/query + handler + validator + mapping) -> Presentation (endpoint) -> Tests.
 5. Reference `.devkit/docs` sections for each step to keep alignment with official patterns.
-6. After changes: run build task, optionally run targeted tests, and report PASS/FAIL for build & tests.
+6. Build regularly after meaningful changes (especially after each major layer step) and validate that the build succeeds. If a build failure is detected in the terminal output, the agent must assess the output, identify the cause, and attempt to correct the code before proceeding. The agent should always do its best to fully complete the user's request, including fixing build errors and reporting build status after each attempt.
 
 Quality principles:
 
@@ -81,10 +81,10 @@ This checklist captures the workflow for introducing a new aggregate (e.g. exten
 
 If the user request does not specify a module, assume the target is the `CoreModule`. The model is designed to be minimal yet complete for CRUD scenarios. All extra properties and functions should be added as requested, but don't over‑complicate the initial implementation by adding unnecessary features.
 
-Between each major layer step (Domain → Infrastructure → Application → Presentation) the agent SHOULD trigger a build to validate compilation before proceeding (fast feedback, early detection of layer violations). Avoid advancing if the build fails—fix first.
+Between each major layer step (Domain → Infrastructure → Application → Presentation) the agent SHOULD trigger a build to validate compilation before proceeding (fast feedback, early detection of layer violations). Avoid advancing if the build fails—fix first. The build output must be assessed to find the necessary information to fix the broken build by the agent.
 
 ### Build Checkpoints
-Run a build after completing: 1 (Domain), 2 (Infrastructure), 3 (Application), 4 (Mapping), 5 (Presentation), 7 (Tests). Stop and fix failures before proceeding.
+Run a build after completing: 1 (Domain), 2 (Infrastructure), 3 (Application), 4 (Mapping), 5 (Presentation), 7 (Tests). Fix build failures by the agent before proceeding.
 
 ### 1. Domain Layer (`[Module].Domain`)  ([domain](../../.devkit/docs/features-domain.md), [events](../../.devkit/docs/features-domain-events.md), [rules](../../.devkit/docs/features-rules.md))
 Inputs: Business description of the new domain entity with all its state and functions.
@@ -180,7 +180,7 @@ Reference docs: `.devkit/docs/features-results.md`, `.devkit/docs/features-modul
 
 ### 9. Finalization
 Steps:
-1. Run build & targeted tests; report PASS/FAIL.
+1. Run build & targeted tests; report PASS/FAIL and fix build failures by the agent..
 2. Prepare next migration generation (outside scope here).
 3. Document endpoint usage in module README (optional improvement).
 Reference docs: `.devkit/docs/features-results.md`.
@@ -197,10 +197,10 @@ Reference docs: `.devkit/docs/features-results.md`, `.devkit/docs/features-domai
 1. Domain (aggregate + events + enumeration) → build.
 2. Infrastructure (type configuration + DbContext DbSet + repository registration) → build.
 3. Application (DTO + commands/queries + handlers + validators) → build.
-4. Mapping updates (MapperRegister) → build.
-5. Presentation (endpoints class + registration) → build.
+4. Mapping updates (MapperRegister) → build/fix.
+5. Presentation (endpoints class + registration) → build/fix.
 6. HTTP file (.http) create.
-7. Tests (unit/integration) → build & test.
+7. Tests (unit/integration) → build/fix & test.
 8. Final review & docs.
 
 Use this section as the authoritative workflow for future aggregate additions (excluding EF migration generation which is handled separately by tooling).
