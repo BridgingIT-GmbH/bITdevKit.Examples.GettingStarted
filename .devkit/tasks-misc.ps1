@@ -447,10 +447,10 @@ function Update-DevKitDocs() {
   function Sync-Directory([string]$apiUrl){
     $items = Get-DirectoryItems $apiUrl
     foreach($item in $items){
-      if($item.type -eq 'dir'){
-        Sync-Directory $item.url
-      }
-      elseif($item.type -eq 'file' -and $item.name -like '*.md'){
+      # if($item.type -eq 'dir'){
+      #   Sync-Directory $item.url
+      # }
+      if($item.type -eq 'file' -and $item.name -like '*.md'){
         $relative = ($item.path -replace '^docs/','')
         $localPath = Join-Path $targetRoot $relative
         $localDir = Split-Path $localPath -Parent
@@ -469,23 +469,13 @@ function Update-DevKitDocs() {
     }
   }
 
-  # Use Spectre status if available for nicer progress
-  $spectreAvailable = $false
-  try { Import-Module PwshSpectreConsole -ErrorAction Stop; $spectreAvailable = $true } catch { }
-
-  if($spectreAvailable){
-    $rootApi = $apiBase
-    Invoke-SpectreCommandWithStatus -Title 'Downloading latest DevKit docs...' -ScriptBlock {
-      Sync-Directory $rootApi
-    } -Spinner dots
-  } else {
-    Write-Host 'Spectre module not available; falling back to plain output.' -ForegroundColor DarkGray
-    Sync-Directory $apiBase
-  }
+  $rootApi = $apiBase
+  Invoke-SpectreCommandWithStatus -Title 'Downloading latest DevKit docs...' -ScriptBlock {
+    Sync-Directory $rootApi
+  } -Spinner dots
 
   Write-Host ("Downloaded {0} markdown files to {1}" -f $downloaded.Count, $targetRoot) -ForegroundColor Green
   if($failed.Count -gt 0){ Write-Host ("Failed: {0}" -f ($failed -join ', ')) -ForegroundColor Yellow }
-  else { Write-Host 'All files downloaded successfully.' -ForegroundColor Green }
 }
 
 Handle-MiscCommand $Command
