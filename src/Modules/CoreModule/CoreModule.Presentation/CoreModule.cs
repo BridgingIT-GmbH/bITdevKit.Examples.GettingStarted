@@ -71,6 +71,7 @@ public class CoreModule() : WebModuleBase(nameof(CoreModule).ToLower())
 
         // repository setup
         services.AddEntityFrameworkRepository<Customer, CoreModuleDbContext>()
+            .WithBehavior<RepositoryTracingBehavior<Customer>>()
             .WithBehavior<RepositoryLoggingBehavior<Customer>>()
             .WithBehavior<RepositoryAuditStateBehavior<Customer>>()
             .WithBehavior<RepositoryOutboxDomainEventBehavior<Customer, CoreModuleDbContext>>();

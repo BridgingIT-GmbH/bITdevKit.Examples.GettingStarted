@@ -9,6 +9,7 @@ using BridgingIT.DevKit.Common;
 using BridgingIT.DevKit.Domain.Repositories;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 /// <summary>
 /// Handler for processing <see cref="CustomerFindAllQuery"/>.
@@ -45,14 +46,16 @@ public class CustomerFindAllQueryHandler(
     protected override async Task<Result<IEnumerable<CustomerModel>>> HandleAsync(
         CustomerFindAllQuery request,
         SendOptions options,
-        CancellationToken cancellationToken) =>
-            // Load all matching customers from repository
-            await repository.FindAllResultAsync(request.Filter, cancellationToken: cancellationToken)
+        CancellationToken cancellationToken)
+    {
+        // Load all matching customers from repository
+        return await repository.FindAllResultAsync(request.Filter, cancellationToken: cancellationToken)
 
-            // Side-effect: audit, logging, telemetry, etc.
-            .Tap(_ => Console.WriteLine("AUDIT"))
+        // Side-effect: audit, logging, telemetry, etc.
+        .Tap(_ => Console.WriteLine("AUDIT"))
 
-            // Map domain entities -> DTOs result
-            .Map(mapper.Map<Customer, CustomerModel>);
-            //TODO: .MapResult<Customer, CustomerModel>(mapper) for collections not yet supported
+        // Map domain entities -> DTOs result
+        .Map(mapper.Map<Customer, CustomerModel>);
+    }
+    //TODO: .MapResult<Customer, CustomerModel>(mapper) for collections not yet supported
 }

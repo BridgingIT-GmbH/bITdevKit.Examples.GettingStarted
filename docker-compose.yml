@@ -31,11 +31,15 @@ services:
     restart: unless-stopped
     ports:
       - 15349:80 # http://localhost:15349 azure:https://ml-software.ch/posts/running-seq-on-azure
+      - 43179:5341 # ingestion
     environment:
       - ACCEPT_EULA=Y
-      - SEQ_FIRSTRUN_ADMINUSERNAME=admin
+      - SEQ_FIRSTRUN_REQUIREAUTHENTICATIONFORHTTPINGESTION=False
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=TRUE
+      # - SEQ_FIRSTRUN_ADMINUSERNAME=admin
+      # - SEQ_FIRSTRUN_ADMINPASSWORD=admin
       # https://blog.datalust.co/setting-an-initial-password-when-deploying-seq-to-docker/
-      - SEQ_FIRSTRUN_ADMINPASSWORDHASH=FIQIay86/lqTJOWoq8jeh1KUr3wSfubJJ+/mB+fluLSK+ZhBQQ==
+      # - SEQ_FIRSTRUN_ADMINPASSWORDHASH=FIQIay86/lqTJOWoq8jeh1KUr3wSfubJJ+/mB+fluLSK+ZhBQQ==
     volumes:
       - seq:/data
     networks:
