@@ -14,6 +14,7 @@ using System.Diagnostics;
 // Configure the host
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.ConfigureLogging();
+builder.Services.AddConsoleCommandsInteractive();
 
 // ===============================================================================================
 // Configure the modules
@@ -103,6 +104,8 @@ app.MapHealthChecks();
 app.MapModules();
 app.MapControllers();
 app.MapEndpoints();
+
+app.UseConsoleCommandsInteractive();
 
 app.Run();
 

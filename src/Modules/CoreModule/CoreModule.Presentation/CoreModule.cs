@@ -53,7 +53,7 @@ public class CoreModule() : WebModuleBase(nameof(CoreModule).ToLower())
             .WithSqlServerStore(configuration["JobScheduling:Quartz:quartz.dataSource.default.connectionString"])
             .WithBehavior<ModuleScopeJobSchedulingBehavior>()
             .WithJob<CustomerExportJob>()
-                .Cron(CronExpressions.Every30Seconds)
+                .Cron(CronExpressions.Every30Minutes)
                 .Named(nameof(CustomerExportJob)).RegisterScoped();
 
         // entity framework setup
