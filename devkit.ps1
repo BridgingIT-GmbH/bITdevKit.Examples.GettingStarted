@@ -160,10 +160,10 @@ $categories = [ordered]@{
   'EF & Persistence'    = @('ef-info','ef-list','ef-add','ef-remove','ef-removeall','ef-apply','ef-update','ef-recreate','ef-undo','ef-status','ef-reset','ef-script')
   'Publishing & Packaging' = @('server-publish','server-publish-release','server-publish-sc','pack','pack-projects')
   'Docker & Containers' = @('docker-build-run','docker-build-debug','docker-build-release','docker-run','docker-stop','docker-remove','compose-up','compose-up-pull','compose-down','compose-down-clean')
+  'Performance & Diagnostics' = @('bench','bench-select','trace-flame','trace-cpu','trace-gc','dump-heap','gc-stats','aspnet-metrics','diag-quick','speedscope-view')
   'Security & Compliance' = @('vulnerabilities','vulnerabilities-deep','outdated','outdated-json','licenses')
   'API & Spec' = @('openapi-lint','openapi-client-dotnet','openapi-client-typescript')
   'Utilities'  = @('misc-clean','misc-digest','misc-repl','misc-kill-dotnet','misc-browser-seq','misc-browser-server-kestrel','misc-browser-server-docker')
-  'Performance & Diagnostics' = @('bench','bench-select','trace-flame','trace-cpu','trace-gc','dump-heap','gc-stats','aspnet-metrics','diag-quick','speedscope-view')
   'Documentation'  = @('doc-browser-devkit-docs','doc-update-devkit-docs')
 }
 
