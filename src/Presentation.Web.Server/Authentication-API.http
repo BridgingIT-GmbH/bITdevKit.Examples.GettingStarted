@@ -1,7 +1,3 @@
-@client_id = test-client
-@username = clever.dragon@example.com
-@password = fantasy
-
 ###############################################################################################
 ## Authentication API Integration Tests                                                      ##
 ##                                                                                           ##
@@ -38,9 +34,9 @@ POST {{baseUrl}}/api/_system/identity/connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=password
-&client_id={{client_id}}
-&username={{username}}
-&password={{password}}
+&client_id={{auth_client_id}}
+&username={{auth_username}}
+&password={{auth_password}}
 &scope=openid profile email roles
 
 #############################################
@@ -56,7 +52,7 @@ POST {{baseUrl}}/api/_system/identity/connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=refresh_token
-&client_id={{client_id}}
+&client_id={{auth_client_id}}
 &refresh_token={{login.response.body.$.refresh_token}}
 
 #############################################
@@ -66,7 +62,7 @@ grant_type=refresh_token
 ### https://localhost:5001/api/_system/identity/connect/authorize?response_type=code&client_id=blazor-wasm&scope=openid%20profile%20email%20roles&redirect_uri=https%3A%2F%2Flocalhost%3A5001%2Fauthentication%2Flogin-callback&state=random123
 GET {{baseUrl}}/api/_system/identity/connect/authorize
     ?response_type=code
-    &client_id={{client_id}}
+    &client_id={{auth_client_id}}
     &scope=openid profile email roles
     &redirect_uri={{baseUrl}}/authenticatio/login-callback
     &state=random123
@@ -76,6 +72,6 @@ POST {{baseUrl}}/api/_system/identity/connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=authorization_code
-&client_id={{client_id}}
+&client_id={{auth_client_id}}
 &code=[AUTH_CODE] # Copy from browser redirect URL (5.1 step)
 &redirect_uri={{baseUrl}}

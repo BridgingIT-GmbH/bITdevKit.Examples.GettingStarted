@@ -28,7 +28,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{EDA3
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CoreModule", "CoreModule", "{C8C69834-9EA3-41C0-8FD2-C3B682A8491D}"
 	ProjectSection(SolutionItems) = preProject
-		src\Modules\CoreModule\CoreModule-API.http = src\Modules\CoreModule\CoreModule-API.http
+		src\Modules\CoreModule\CoreModule-Customers-API.http = src\Modules\CoreModule\CoreModule-Customers-API.http
 		src\Modules\CoreModule\CoreModule-README.md = src\Modules\CoreModule\CoreModule-README.md
 	EndProjectSection
 EndProject
