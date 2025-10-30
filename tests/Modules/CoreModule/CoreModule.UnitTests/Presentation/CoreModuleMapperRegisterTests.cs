@@ -1,4 +1,9 @@
-﻿namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Presentation;
+﻿// MIT-License
+// Copyright BridgingIT GmbH - All Rights Reserved
+// Use of this source code is governed by an MIT-style license that can be
+// found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
+
+namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Presentation;
 
 [UnitTest("Presentation")]
 public class CoreModuleMapperRegisterTests
@@ -16,8 +21,8 @@ public class CoreModuleMapperRegisterTests
     {
         // Arrange
         var customerId = Guid.NewGuid();
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create(DateTime.Now, 100000))
-            .ChangeStatus(CustomerStatus.Active);
+        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create(DateTime.Now, 100000)).Value;
+        customer.ChangeStatus(CustomerStatus.Active);
         customer.Id = CustomerId.Create(customerId);
         customer.ConcurrencyVersion = Guid.NewGuid();
 

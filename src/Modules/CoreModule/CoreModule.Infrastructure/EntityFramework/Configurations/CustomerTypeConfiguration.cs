@@ -61,7 +61,7 @@ public class CustomerTypeConfiguration : IEntityTypeConfiguration<Customer>
             .IsRequired()
             .HasConversion(
                 email => email.Value,                // when saving
-                value => EmailAddress.Create(value)) // when loading
+                value => EmailAddress.Create(value).Value) // when loading
             .HasMaxLength(256);
 
         // Map CustomerStatus enumeration → int in database using custom converter

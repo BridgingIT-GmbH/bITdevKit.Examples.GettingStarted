@@ -79,9 +79,15 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <param name="lastName">The last name of the customer.</param>
     /// <param name="email">The email address of the customer.</param>
     /// <returns>A new <see cref="Customer"/> instance.</returns>
-    public static Customer Create(string firstName, string lastName, string email, CustomerNumber number)
+    public static Result<Customer> Create(string firstName, string lastName, string email, CustomerNumber number)
     {
-        var customer = new Customer(firstName, lastName, EmailAddress.Create(email), number);
+        var emailAddressResult = EmailAddress.Create(email);
+        if (emailAddressResult.IsFailure)
+        {
+            return emailAddressResult.Unwrap();
+        }
+
+        var customer = new Customer(firstName, lastName, emailAddressResult.Value, number);
 
         customer.DomainEvents.Register(
             new CustomerCreatedDomainEvent(customer));
@@ -97,19 +103,16 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <param name="firstName">The new first name (optional).</param>
     /// <param name="lastName">The new last name (optional).</param>
     /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
-    public Customer ChangeName(string firstName, string lastName)
+    public Result<Customer> ChangeName(string firstName, string lastName)
     {
         if (string.IsNullOrEmpty(firstName) &&
             string.IsNullOrEmpty(lastName))
         {
-            return this;
+            return Result<Customer>.Failure(this, "Invalid name");
         }
 
-        this.ApplyChange(this.FirstName, firstName, v => this.FirstName = v);
-
-        this.ApplyChange(this.LastName, lastName, v => this.LastName = v);
-
-        return this;
+        return this.ApplyChange(this.FirstName, firstName, v => this.FirstName = v)
+            .Bind(c => c.ApplyChange(this.LastName, lastName, v => this.LastName = v));
     }
 
     /// <summary>
@@ -118,16 +121,20 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// </summary>
     /// <param name="email">The new email address.</param>
     /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
-    public Customer ChangeEmail(string email)
+    public Result<Customer> ChangeEmail(string email)
     {
         if (string.IsNullOrEmpty(email))
         {
-            return this;
+            return Result<Customer>.Failure(this, "Invalid email");
         }
 
-        var newEmail = EmailAddress.Create(email);
+        var emailResult = EmailAddress.Create(email);
+        if (emailResult.IsFailure)
+        {
+            return emailResult.Unwrap();
+        }
 
-        return this.ApplyChange(this.Email, newEmail, v => this.Email = v);
+        return this.ApplyChange(this.Email, emailResult.Value, v => this.Email = v);
     }
 
     /// <summary>
@@ -136,11 +143,11 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// </summary>
     /// <param name="status">The new customer status.</param>
     /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
-    public Customer ChangeStatus(CustomerStatus status)
+    public Result<Customer> ChangeStatus(CustomerStatus status)
     {
         if (status == default)
         {
-            return this;
+            return Result<Customer>.Failure(this, "Invalid status");
         }
 
         return this.ApplyChange(this.Status, status, v => this.Status = v);
@@ -156,16 +163,18 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <param name="newValue">The new value to apply.</param>
     /// <param name="action">The assignment action if a change occurs.</param>
     /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
-    private Customer ApplyChange<T>(T currentValue, T newValue, Action<T> action)
+    private Result<Customer> ApplyChange<T>(T currentValue, T newValue, Action<T> action)
     {
         if (EqualityComparer<T>.Default.Equals(currentValue, newValue))
         {
-            return this; // nothing to do, keep current
+            return Result<Customer>.Success(this); // nothing to do, keep current
         }
 
         action(newValue);
 
-        this.DomainEvents.Register(new CustomerUpdatedDomainEvent(this), true);
+        this.DomainEvents.Register(
+            new CustomerUpdatedDomainEvent(this), true);
+
         return this;
     }
 }

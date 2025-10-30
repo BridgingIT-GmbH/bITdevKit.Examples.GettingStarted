@@ -15,8 +15,8 @@ public class CustomerFindAllQueryHandlerTests(ITestOutputHelper output) : CoreMo
         var timeProvider = this.ServiceProvider.GetService<TimeProvider>();
         var requester = this.ServiceProvider.GetService<IRequester>();
         var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
-        await repository.InsertAsync(Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create(timeProvider.GetUtcNow(), 100000)));
-        await repository.InsertAsync(Customer.Create("Mary", "Jane", "mary.jane@example.com", CustomerNumber.Create(timeProvider.GetUtcNow(), 100001)));
+        await repository.InsertAsync(Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create(timeProvider.GetUtcNow(), 100000)).Value);
+        await repository.InsertAsync(Customer.Create("Mary", "Jane", "mary.jane@example.com", CustomerNumber.Create(timeProvider.GetUtcNow(), 100001)).Value);
         var query = new CustomerFindAllQuery();
 
         // Act

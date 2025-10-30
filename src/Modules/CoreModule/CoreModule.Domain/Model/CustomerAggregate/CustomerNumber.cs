@@ -6,7 +6,7 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
 [DebuggerDisplay("Value={Value}")]
-public class CustomerNumber : ValueObject
+public class CustomerNumber : ValueObject // TODO: refactor to use Result<CustomerNumber> for the create methods
 {
     private static readonly Regex FormatRegex =
         new(@"^CUS-(\d{4})-(\d{6})$", RegexOptions.Compiled | RegexOptions.IgnoreCase);

@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="BridgingIT.DevKit.Domain" />
-    <PackageReference Include="BridgingIT.DevKit.Domain.CodeGen" >
+    <PackageReference Include="BridgingIT.DevKit.Domain.CodeGen">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>analyzers</IncludeAssets>
     </PackageReference>
