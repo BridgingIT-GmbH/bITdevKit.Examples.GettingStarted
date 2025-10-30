@@ -14,7 +14,7 @@ Primary responsibilities:
 - Apply Result<T> for recoverable outcomes; prefer exceptions only for truly exceptional scenarios.
 - Add validation (FluentValidation) and domain invariants (rules/value object guards) appropriately.
 - Consult and cite relevant documents from `.devkit/docs` (e.g., `features-domain.md`, `features-modules.md`, `features-requester-notifier.md`, `features-results.md`, `features-rules.md`, `features-jobscheduling.md`) when explaining decisions.
-- Maintain consistency with naming conventions (e.g., `CustomerCreateCommand`, `CustomerFindAllQuery`, `<Entity><PastTenseEvent>DomainEvent`).
+- Maintain consistency with naming conventions (e.g., `CustomerCreateCommand[Handler]`, `CustomerFindAllQuery[Handler]`, `[Entity][PastTenseEvent]DomainEventBase`).
 - Provide incremental diffs (patches) rather than large rewrites; avoid unrelated refactors.
 - Suggest and create focused tests (unit for domain/handlers, integration for endpoints/persistence) but do not let test generation block feature delivery.
 
@@ -74,7 +74,6 @@ Example transformation:
 Before (template): `[Entity]CreateCommand` with route `api/[ModuleLower]/[EntityPlural]`
 After (Customer in CoreModule): `CustomerCreateCommand` with route `api/core/customers`
 
-
 ## Process: Adding a New Domain Entity (Aggregate) End-to-End
 
 This checklist captures the workflow for introducing a new aggregate (e.g. extending an existing `[Entity]` model or adding a new entity) so it becomes available through Web API endpoints. Follow in order; skip or adapt only with explicit justification.
@@ -90,35 +89,41 @@ Run a build after completing: 1 (Domain), 2 (Infrastructure), 3 (Application), 4
 Inputs: Business description of the new domain entity with all its state and functions.
 Outputs: Aggregate class, supporting value objects/enumerations, domain events.
 Steps:
-1. Create aggregate root class (e.g. `[Entity]`) inheriting from `AuditableAggregateRoot<TId>` with `[TypedEntityId<Guid>]`.
-2. Add primary properties (use private setters).
-3. Implement static factory method (e.g. `Create(...)`) to enforce invariants and register a Created domain event.
-4. Add change methods (`Change[Property]`, etc.) using an internal helper to register Updated events only when a value changes.
-5. Define enumeration(s) (e.g. `[Entity]Status`) using the `Enumeration` pattern with static instances and any metadata (`Enabled`, `Description`).
-6. Add domain events: `[Entity]CreatedDomainEvent`, `[Entity]UpdatedDomainEvent`, `[Entity]DeletedDomainEvent` placed under `Domain/Events`.
-7. Keep domain pure: no repository, logging, mapping, or framework references beyond DevKit domain abstractions.
+0. Review existing domain model for similar entities/value objects to reuse.
+1. Take note of the namespace where the new entity should reside (e.g. `BridgingIT.DevKit.Examples.GettingStarted.Modules.[Module].Domain.Model`) and use it for the new entity.
+2. Create aggregate root class (e.g. `[Entity]`) inheriting from `AuditableAggregateRoot<TId>` with `[TypedEntityId<Guid>]`.
+3. Add primary properties (use private setters).
+4. Implement static factory method (e.g. `Create(...)`) to enforce invariants and register a Created domain event.
+5. Add change methods (`Change[Property]`, etc.) using an internal helper to register Updated events only when a value changes.
+6. Define enumeration(s) (e.g. `[Entity]Status`) using the `Enumeration` pattern with static instances and any metadata (`Enabled`, `Description`).
+7. Add domain events: `[Entity]CreatedDomainEvent`, `[Entity]UpdatedDomainEvent`, `[Entity]DeletedDomainEvent` placed under `Domain/Events`.
+8. Keep domain pure: no repository, logging, mapping, or framework references beyond DevKit domain abstractions.
 Reference docs: `.devkit/docs/features-domain.md`, `.devkit/docs/features-rules.md`.
 
 ### 2. Infrastructure Layer (`[Module].Infrastructure`)  ([modules](../../.devkit/docs/features-modules.md), [repositories](../../.devkit/docs/features-domain-repositories.md), [jobs](../../.devkit/docs/features-jobscheduling.md))
 Inputs: Domain types.
 Outputs: EF Core type configuration, DbContext update, repository registration (DI).
 Steps:
-1. Add an `IEntityTypeConfiguration<T>` implementation (e.g. `[Entity]TypeConfiguration`) under `EntityFramework/Configurations` mirroring existing patterns (table name plural, non-clustered PK, value object & enumeration conversions, audit state ownership, concurrency token).
-2. Extend `[Module]DbContext` with a `DbSet<[Entity]>` property.
-3. Do NOT manually create EF Core migrations here—schema migration generation is deferred to tooling; only add configuration code.
-4. In `[Module].cs`, register the repository: `services.AddEntityFrameworkRepository<[Entity], [Module]DbContext>()` plus standard behaviors (logging, audit, outbox publishing).
+0. Review existing configurations for similar configurations to reuse.
+1. Take note of the namespace where the new new configuration should reside (e.g. `BridgingIT.DevKit.Examples.GettingStarted.Modules.[Module].Infrastructure`) and use it for the new configuration.
+2. Add an `IEntityTypeConfiguration<T>` implementation (e.g. `[Entity]TypeConfiguration`) under `EntityFramework/Configurations` mirroring existing patterns (table name plural, non-clustered PK, value object & enumeration conversions, audit state ownership, concurrency token).
+3. Extend `[Module]DbContext` with a `DbSet<[Entity]>` property.
+4. Do NOT manually create EF Core migrations here—schema migration generation is deferred to tooling; only add configuration code.
+5. In [Module].Presentation project `[Module].cs`, register the repository: `services.AddEntityFrameworkRepository<[Entity], [Module]DbContext>()` plus standard behaviors (logging, audit, outbox publishing).
 Reference docs: `.devkit/docs/features-modules.md`, `.devkit/docs/features-repositories.md`.
 
 ### 3. Application Layer (`[Module].Application`)  ([commands & queries](../../.devkit/docs/features-application-commands-queries.md), [requester/notifier](../../.devkit/docs/features-requester-notifier.md), [results](../../.devkit/docs/features-results.md), [filtering](../../.devkit/docs/features-filtering.md))
 Inputs: Domain model.
 Outputs: DTO, Commands, Queries, Handlers, Validators.
 Steps:
-1. Create DTO (`[Entity]Model`) in `Models/`, exposing scalar values only (Id as string, enumeration as int, concurrency token as string Guid).
-2. Add Commands: `[Entity]CreateCommand`, `[Entity]UpdateCommand`, `[Entity]UpdateStatusCommand`, `[Entity]DeleteCommand` each with nested `Validator` class.
-3. Add Queries: `[Entity]FindOneQuery`, `[Entity]FindAllQuery` (optional `FilterModel`).
-4. Implement Handlers using `RequestHandlerBase<,>`: map DTO ↔ domain via `IMapper`, use repository methods (`InsertResultAsync`, `UpdateResultAsync`, `FindOneResultAsync`, `FindAllResultAsync`, `DeleteResultAsync`).
-5. Register/raise domain events inside handlers after state changes (Created, Updated, Deleted). For status update, adjust enumeration lookup; validate status id.
-6. Use Result chaining & fluent rule checks where appropriate; prefer `Result` failures over exceptions for predictable validation errors.
+0. Review existing models/commands/queries for similarities  to reuse.
+1. Take note of the namespace where the new new classes should reside (e.g. `BridgingIT.DevKit.Examples.GettingStarted.Modules.[Module].Application`) and use it for the new classes.
+2. Create DTO (`[Entity]Model`) in `Models/`, exposing scalar values only (Id as string, enumeration as int, concurrency token as string Guid).
+3. Add Commands: `[Entity]CreateCommand`, `[Entity]UpdateCommand`, `[Entity]UpdateStatusCommand`, `[Entity]DeleteCommand` each with nested `Validator` class.
+4. Add Queries: `[Entity]FindOneQuery`, `[Entity]FindAllQuery` (optional `FilterModel`).
+5. Implement Handlers using `RequestHandlerBase<,>`: map DTO ↔ domain via `IMapper`, use repository methods (`InsertResultAsync`, `UpdateResultAsync`, `FindOneResultAsync`, `FindAllResultAsync`, `DeleteResultAsync`).
+6. Register/raise domain events inside handlers after state changes (Created, Updated, Deleted). For status update, adjust enumeration lookup; validate status id.
+7. Use Result chaining & fluent rule checks where appropriate; prefer `Result` failures over exceptions for predictable validation errors.
 Reference docs: `.devkit/docs/features-requester-notifier.md`, `.devkit/docs/features-results.md`.
 
 Failure pattern (example):
@@ -148,11 +153,13 @@ config.NewConfig<int, CustomerStatus>()
 ### 5. Presentation Layer (`[Core].Presentation`)  ([endpoints](../../.devkit/docs/features-presentation-endpoints.md), [modules](../../.devkit/docs/features-modules.md), [results](../../.devkit/docs/features-results.md))
 Outputs: Minimal API endpoints.
 Steps:
-1. Create endpoint class (e.g. `[Entity]Endpoints`) under `Web/Endpoints` deriving from `EndpointsBase`.
-2. Define route group `api/[Module]/[EntityPlural]` with authorization and tag.
-3. Implement CRUD endpoints and status update, invoking requester with commands/queries. Use appropriate HTTP verbs: GET (by id / all / search), POST (create + search body filters), PUT (update + status), DELETE (delete).
-4. Map responses using `MapHttpOk`, `MapHttpCreated`, `MapHttpNoContent`, aligning with return types (`Unit` → NoContent).
-5. Register endpoints in `[Module].cs` via `services.AddEndpoints<[Entity]Endpoints>();`.
+0. Review existing endpoint classes for similarities to reuse.
+1. Take note of the namespace where the new new endpoint should reside (e.g. `BridgingIT.DevKit.Examples.GettingStarted.Modules.[Module].Presentation`) and use it for the new endpoints.
+2. Create endpoint class (e.g. `[Entity]Endpoints`) under `Web/Endpoints` deriving from `EndpointsBase`.
+3. Define route group `api/[Module]/[EntityPlural]` with authorization and tag.
+4. Implement CRUD endpoints and status update, invoking requester with commands/queries. Use appropriate HTTP verbs: GET (by id / all / search), POST (create + search body filters), PUT (update + status), DELETE (delete).
+5. Map responses using `MapHttpOk`, `MapHttpCreated`, `MapHttpNoContent`, aligning with return types (`Unit` → NoContent).
+6. Register endpoints in `[Module].cs` via `services.AddEndpoints<[Entity]Endpoints>();`.
 Reference docs: `.devkit/docs/features-modules.md` (endpoint registration), `.devkit/docs/features-results.md` (HTTP mapping helpers).
 
 ### 6. HTTP Client File (Manual API Exercise)  ([endpoints](../../.devkit/docs/features-presentation-endpoints.md))
