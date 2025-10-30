@@ -105,6 +105,7 @@ app.MapModules();
 app.MapControllers();
 app.MapEndpoints();
 
+app.UseConsoleCommandsInteractiveStats();
 app.UseConsoleCommandsInteractive();
 
 app.Run();
@@ -115,47 +116,5 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server
     {
         // this partial class is needed to set the accessibilty for the Program class to public
         // needed for endpoint testing when using the webapplicationfactory  https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-7.0#basic-tests-with-the-default-webapplicationfactory
-    }
-}
-
-public class TracingBehavior<TRequest, TResponse>(
-    ILoggerFactory loggerFactory,
-    ActivitySource activitySource = null) : PipelineBehaviorBase<TRequest, TResponse>(loggerFactory)
-    where TRequest : class
-    where TResponse : BridgingIT.DevKit.Common.IResult
-{
-    private readonly ActivitySource activitySource = activitySource;
-
-    protected override bool CanProcess(TRequest request, Type handlerType)
-    {
-        return true; // Always process, no attribute required
-    }
-
-    protected override async Task<TResponse> Process(
-        TRequest request,
-        Type handlerType,
-        Func<Task<TResponse>> next,
-        CancellationToken cancellationToken)
-    {
-        var requestType = typeof(TRequest).PrettyName();
-
-        return await this.activitySource.StartActvity($"REQUEST {requestType}",
-            async (a, c) =>
-            {
-                a?.AddEvent(new ActivityEvent($"processing (type={requestType}, id={handlerType})"));
-
-                return await next();
-            },
-            tags: new Dictionary<string, string>
-            {
-                //["command.request_id"] = command.RequestId.ToString("N"),
-                ["command.request_type"] = requestType
-            },
-            baggages: new Dictionary<string, string>
-            {
-                //["command.id"] = command.RequestId.ToString("N"),
-                ["command.type"] = requestType
-            },
-            cancellationToken: cancellationToken);
     }
 }
