@@ -5,15 +5,15 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.4" />
-    <PackageVersion Include="BridgingIT.DevKit.Application.JobScheduling" Version="9.0.26-preview.0.17" />
-    <PackageVersion Include="BridgingIT.DevKit.Common.Mapping" Version="9.0.26-preview.0.17" />
-    <PackageVersion Include="BridgingIT.DevKit.Common.Utilities.Xunit" Version="9.0.26-preview.0.17" />
-    <PackageVersion Include="BridgingIT.DevKit.Domain" Version="9.0.26-preview.0.17" />
-    <PackageVersion Include="BridgingIT.DevKit.Domain.CodeGen" Version="9.0.26-preview.0.17" />
-    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework" Version="9.0.26-preview.0.7" />
-    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" Version="9.0.26-preview.0.17" />
-    <PackageVersion Include="BridgingIT.DevKit.Presentation.Web" Version="9.0.26-preview.0.17" />
-    <PackageVersion Include="BridgingIT.DevKit.Presentation.Serilog" Version="9.0.26-preview.0.17" />
+    <PackageVersion Include="BridgingIT.DevKit.Application.JobScheduling" Version="9.0.26" />
+    <PackageVersion Include="BridgingIT.DevKit.Common.Mapping" Version="9.0.26" />
+    <PackageVersion Include="BridgingIT.DevKit.Common.Utilities.Xunit" Version="9.0.26" />
+    <PackageVersion Include="BridgingIT.DevKit.Domain" Version="9.0.26" />
+    <PackageVersion Include="BridgingIT.DevKit.Domain.CodeGen" Version="9.0.26" />
+    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework" Version="9.0.26" />
+    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" Version="9.0.26" />
+    <PackageVersion Include="BridgingIT.DevKit.Presentation.Web" Version="9.0.26" />
+    <PackageVersion Include="BridgingIT.DevKit.Presentation.Serilog" Version="9.0.26" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Dumpify" Version="0.6.6" />
     <PackageVersion Include="FluentAssertions.Web" Version="1.9.5" />

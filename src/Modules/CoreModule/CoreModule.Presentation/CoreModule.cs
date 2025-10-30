@@ -6,6 +6,7 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 
 using BridgingIT.DevKit.Application;
+using BridgingIT.DevKit.Application.JobScheduling;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
@@ -50,8 +51,9 @@ public class CoreModule() : WebModuleBase(nameof(CoreModule).ToLower())
         services.AddJobScheduling(o => o
             .StartupDelay(configuration["JobScheduling:StartupDelay"]), configuration) // wait some time before starting the scheduler
             .WithSqlServerStore(configuration["JobScheduling:Quartz:quartz.dataSource.default.connectionString"])
+            .WithBehavior<ModuleScopeJobSchedulingBehavior>()
             .WithJob<CustomerExportJob>()
-                .Cron(CronExpressions.EveryHour)
+                .Cron(CronExpressions.Every30Seconds)
                 .Named(nameof(CustomerExportJob)).RegisterScoped();
 
         // entity framework setup

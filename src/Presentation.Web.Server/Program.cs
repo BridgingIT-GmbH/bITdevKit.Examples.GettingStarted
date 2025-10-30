@@ -136,7 +136,7 @@ public class TracingBehavior<TRequest, TResponse>(
     {
         var requestType = typeof(TRequest).PrettyName();
 
-        return await activitySource.StartActvity($"REQUEST {requestType}",
+        return await this.activitySource.StartActvity($"REQUEST {requestType}",
             async (a, c) =>
             {
                 a?.AddEvent(new ActivityEvent($"processing (type={requestType}, id={handlerType})"));
