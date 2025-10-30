@@ -5,10 +5,8 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
-using BridgingIT.DevKit.Common;
-using BridgingIT.DevKit.Domain.Repositories;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using System.Collections.Generic;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
 /// <summary>
 /// Query for retrieving all <see cref="Customer"/> entities.

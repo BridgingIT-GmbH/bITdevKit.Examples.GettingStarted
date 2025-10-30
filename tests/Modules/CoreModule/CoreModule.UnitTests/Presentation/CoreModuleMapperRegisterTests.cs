@@ -1,13 +1,5 @@
 ﻿namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Presentation;
 
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
-using Mapster;
-using Shouldly;
-using System;
-using Xunit;
-
 [UnitTest("Presentation")]
 public class CoreModuleMapperRegisterTests
 {

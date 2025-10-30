@@ -5,7 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
-using BridgingIT.DevKit.Common;
 using System;
 
 /// <summary>

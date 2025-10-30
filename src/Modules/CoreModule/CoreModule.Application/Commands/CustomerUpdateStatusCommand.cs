@@ -5,9 +5,7 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
-using BridgingIT.DevKit.Common;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using FluentValidation;
 
 /// <summary>
 /// Command to change a customer's status to any valid <see cref="CustomerStatus"/>.

@@ -5,11 +5,7 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure;
 
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using BridgingIT.DevKit.Infrastructure.EntityFramework;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.Diagnostics.CodeAnalysis;
 
 /// <summary>
 /// Entity Framework Core type configuration for the <see cref="Customer"/> aggregate.

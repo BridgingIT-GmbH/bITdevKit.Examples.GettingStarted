@@ -5,11 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Queries;
 
-using BridgingIT.DevKit.Domain.Repositories;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests;
-
 [UnitTest("Application")]
 public class CustomerFindAllQueryHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {

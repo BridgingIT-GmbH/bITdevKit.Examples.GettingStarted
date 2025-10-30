@@ -5,10 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
-using System.Diagnostics;
-using BridgingIT.DevKit.Domain.Model;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Events;
-
 /// <summary>
 /// Represents a customer aggregate root with personal details, email address, and lead/status information.
 /// Supports auditing and concurrency handling.

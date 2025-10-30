@@ -5,9 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 
-using BridgingIT.DevKit.Common;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using Mapster;
 
 /// <summary>

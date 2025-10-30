@@ -3,12 +3,8 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-using BridgingIT.DevKit.Common;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
-using BridgingIT.DevKit.Presentation;
-using BridgingIT.DevKit.Presentation.Web;
 using Hellang.Middleware.ProblemDetails;
-using System.Diagnostics;
 
 // ===============================================================================================
 // Configure the host

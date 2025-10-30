@@ -5,9 +5,6 @@
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-using BridgingIT.DevKit.Common;
-using BridgingIT.DevKit.Presentation;
-using BridgingIT.DevKit.Presentation.Web;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using OpenTelemetry.Exporter;
@@ -15,9 +12,6 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 [ExcludeFromCodeCoverage]
 public static class ProgramExtensions

@@ -5,10 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
-using BridgingIT.DevKit.Common;
-using BridgingIT.DevKit.Domain.Model;
-using System.Diagnostics;
-
 /// <summary>
 /// Represents an immutable email address value object in the domain model.
 /// Provides validation, equality, and implicit conversion to <see cref="string"/>.

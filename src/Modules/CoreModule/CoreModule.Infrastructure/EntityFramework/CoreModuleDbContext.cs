@@ -5,11 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
 
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using BridgingIT.DevKit.Infrastructure.EntityFramework;
-using Microsoft.EntityFrameworkCore;
-
 /// <summary>
 /// Application database context for the CoreModule.
 /// Provides access to domain aggregates persisted in the relational database and applies EF Core mappings from the current assembly.

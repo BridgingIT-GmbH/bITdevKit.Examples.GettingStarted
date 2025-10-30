@@ -5,13 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
-using BridgingIT.DevKit.Common;
-using BridgingIT.DevKit.Domain.Model;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
-
 [DebuggerDisplay("Value={Value}")]
 public class CustomerNumber : ValueObject
 {
@@ -87,7 +80,7 @@ public class CustomerNumber : ValueObject
         if (year < 2000 || year > currentPlusOne)
         {
             throw new RuleException(
-                $"Year out of valid range (2000–{currentPlusOne})."
+                $"Year out of valid range (2000ï¿½{currentPlusOne})."
             );
         }
     }

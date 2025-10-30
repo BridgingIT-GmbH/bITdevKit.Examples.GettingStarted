@@ -5,11 +5,8 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests;
 
-using System.Reflection;
-using BridgingIT.DevKit.Domain.Model;
 using Dumpify;
 using NetArchTest.Rules;
-using Shouldly;
 
 public class TypesFixture
 {

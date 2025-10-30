@@ -5,23 +5,14 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 
-using BridgingIT.DevKit.Application;
 using BridgingIT.DevKit.Application.JobScheduling;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation.Web;
-using BridgingIT.DevKit.Infrastructure.EntityFramework;
-using BridgingIT.DevKit.Presentation;
-using Common;
-using DevKit.Domain.Repositories;
-using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 public class CoreModule() : WebModuleBase(nameof(CoreModule).ToLower())
 {

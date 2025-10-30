@@ -5,11 +5,8 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
-using BridgingIT.DevKit.Common;
-using BridgingIT.DevKit.Domain.Repositories;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using System.Collections.Generic;
-using System.Diagnostics;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
 /// <summary>
 /// Handler for processing <see cref="CustomerFindAllQuery"/>.

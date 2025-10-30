@@ -5,10 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain;
 
-using System.Diagnostics.CodeAnalysis;
-using BridgingIT.DevKit.Common;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-
 /// <summary>
 /// The CoreSeedEntities class provides methods to create and manage seed data for core domain entities such as Customers in the Domain.
 /// </summary>

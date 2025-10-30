@@ -5,16 +5,11 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation.Web;
 
-using BridgingIT.DevKit.Common;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
-using BridgingIT.DevKit.Presentation.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 
 [ExcludeFromCodeCoverage]
 public class CustomerEndpoints : EndpointsBase
