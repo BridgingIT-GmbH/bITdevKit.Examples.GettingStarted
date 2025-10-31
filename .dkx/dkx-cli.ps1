@@ -54,7 +54,13 @@ function Invoke-Test([string]$kind, [switch]$All) {
 }
 
 function Invoke-Misc([string]$cmd) { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-misc.ps1') $cmd }
-function Invoke-Docker([string]$mode) { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-docker.ps1') $mode }
+function Invoke-Docker([string]$mode, [string]$ContainerName = $null, [string]$ImageTag = $null) {
+	$script = Join-Path $PSScriptRoot 'tasks-docker.ps1'
+	$args = @('-NoProfile', '-File', $script, $mode)
+	if ($ContainerName) { $args += @('-ContainerName', $ContainerName) }
+	if ($ImageTag)     { $args += @('-ImageTag', $ImageTag) }
+	& pwsh $args
+}
 function Invoke-Ef([string]$efCmd) { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-ef.ps1') $efCmd }
 function Invoke-Diagnostics([string]$diagCmd) { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-diagnostics.ps1') -Command $diagCmd }
 
@@ -84,12 +90,12 @@ $tasks = [ordered]@{
   'ef-status'                   = @{ Label = 'EF Status'; Desc = 'Migrations status'; Script = { Invoke-Ef 'status' } }
   'ef-reset'                    = @{ Label = 'EF Reset'; Desc = 'Squash migrations'; Script = { Invoke-Ef 'reset' } }
   'ef-script'                   = @{ Label = 'EF Script'; Desc = 'Export SQL script'; Script = { Invoke-Ef 'script' } }
-  'docker-build-run'            = @{ Label = 'Docker Build+Run'; Desc = 'Build image & run'; Script = { Invoke-Docker 'docker-build-run' } }
-  'docker-build-debug'          = @{ Label = 'Docker Build Debug'; Desc = 'Debug image build'; Script = { Invoke-Docker 'docker-build-debug' } }
-  'docker-build-release'        = @{ Label = 'Docker Build Release'; Desc = 'Release image build'; Script = { Invoke-Docker 'docker-build-release' } }
-  'docker-run'                  = @{ Label = 'Docker Run'; Desc = 'Run container'; Script = { Invoke-Docker 'docker-run' } }
-  'docker-stop'                 = @{ Label = 'Docker Stop'; Desc = 'Stop container'; Script = { Invoke-Docker 'docker-stop' } }
-  'docker-remove'               = @{ Label = 'Docker Remove'; Desc = 'Remove container'; Script = { Invoke-Docker 'docker-remove' } }
+  'docker-build-run'            = @{ Label = 'Docker Build+Run'; Desc = 'Build image & run'; Script = { Invoke-Docker 'docker-build-run' -ContainerName 'dkx_gettingstarted-web' -ImageTag 'localhost:5500/dkx_gettingstarted-web:latest' } }
+  'docker-build-debug'          = @{ Label = 'Docker Build Debug'; Desc = 'Debug image build'; Script = { Invoke-Docker 'docker-build-debug' -ContainerName 'dkx_gettingstarted-web' -ImageTag 'localhost:5500/dkx_gettingstarted-web:latest' } }
+  'docker-build-release'        = @{ Label = 'Docker Build Release'; Desc = 'Release image build'; Script = { Invoke-Docker 'docker-build-release' -ContainerName 'dkx_gettingstarted-web' -ImageTag 'localhost:5500/dkx_gettingstarted-web:latest' } }
+  'docker-run'                  = @{ Label = 'Docker Run'; Desc = 'Run container'; Script = { Invoke-Docker 'docker-run' -ContainerName 'dkx_gettingstarted-web' -ImageTag 'localhost:5500/dkx_gettingstarted-web:latest' } }
+  'docker-stop'                 = @{ Label = 'Docker Stop'; Desc = 'Stop container'; Script = { Invoke-Docker 'docker-stop' -ContainerName 'dkx_gettingstarted-web' } }
+  'docker-remove'               = @{ Label = 'Docker Remove'; Desc = 'Remove container'; Script = { Invoke-Docker 'docker-remove' -ContainerName 'dkx_gettingstarted-web' } }
   'compose-up'                  = @{ Label = 'Compose Up'; Desc = 'docker compose up'; Script = { Invoke-Docker 'compose-up' } }
   'compose-recreate'            = @{ Label = 'Compose Recreate'; Desc = 'Recreate container'; Script = { Invoke-Docker 'compose-recreate' } }
   'compose-up-pull'             = @{ Label = 'Compose Up Pull'; Desc = 'Up with image pull'; Script = { Invoke-Docker 'compose-up'; Invoke-Docker 'compose-up' } }

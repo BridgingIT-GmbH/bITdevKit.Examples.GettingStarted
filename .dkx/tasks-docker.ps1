@@ -17,8 +17,8 @@
 #>
 param(
   [Parameter(Position=0)] [string] $Command = 'help',
-  [Parameter()] [string] $ImageTag = 'localhost:5500/dkx_gettingstarted-web:latest',
-  [Parameter()] [string] $ContainerName = 'dkx_gettingstarted-web',
+  [Parameter()] [string] $ImageTag = '',
+  [Parameter()] [string] $ContainerName = '',
   [Parameter()] [string] $Dockerfile = 'src/Presentation.Web.Server/Dockerfile',
   [Parameter()] [string] $ProjectDockerContext = '.',
   [Parameter()] [switch] $NoCache,
@@ -114,29 +114,26 @@ function Docker-Stop() {
 function Docker-Remove() {
   param(
     [string] $Name,
-    [string] $NetName # optional network to remove (falls back to script $Network)
+    [string] $Network
   )
   # Write-Section "Docker Remove ($Name)"
   Write-Step "Removing container (if present): $Name"
   docker rm -f $Name 2>$null | Out-Null
   if ($LASTEXITCODE -eq 0) { Write-Step 'Container removed (if existed).' } else { Write-Step 'Container removal attempted (may not have existed).' }
 
-  # Determine network to remove (use provided NetName or global $Network)
-  if (-not $NetName) { $NetName = $Network }
-
-  if ($NetName) {
-    Write-Step "Attempting to remove network: $NetName (if present and not in use)"
+  if ($Network) {
+    Write-Step "Attempting to remove network: $Network (if present and not in use)"
     try {
-      $exists = docker network ls --format '{{.Name}}' | Select-String -Quiet -Pattern "^$NetName$"
+      $exists = docker network ls --format '{{.Name}}' | Select-String -Quiet -Pattern "^$Network$"
       if ($exists) {
-        docker network rm $NetName 2>$null | Out-Null
+        docker network rm $Network 2>$null | Out-Null
         if ($LASTEXITCODE -eq 0) {
-          Write-Step "Network removed: $NetName"
+          Write-Step "Network removed: $Network"
         } else {
-          Write-Step "Network removal skipped or failed (likely in use): $NetName"
+          Write-Step "Network removal skipped or failed (likely in use): $Network"
         }
       } else {
-        Write-Step "Network not found: $NetName"
+        Write-Step "Network not found: $Network"
       }
     } catch {
       Write-Step "Network removal encountered an error: $($_.Exception.Message)"
@@ -337,7 +334,7 @@ switch ($Command.ToLower()) {
     Docker-Run -Tag $ImageTag -Name $ContainerName -Network $Network -HostPort $HostPort -ContainerPort $ContainerPort
   }
   'docker-stop' { Docker-Stop -Name $ContainerName }
-  'docker-remove' { Docker-Remove -Name $ContainerName }
+  'docker-remove' { Docker-Remove -Name $ContainerName -Network $Network }
   'compose-recreate' {
     # Interactive recreate: list running containers and run `docker compose -f <ComposeFile> up -d --force-recreate <name>`
     Compose-Recreate -ComposeFile $ComposeFile
