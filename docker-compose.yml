@@ -125,7 +125,8 @@ services:
     container_name: dkx_gettingstarted_seq
     restart: unless-stopped
     ports:
-      - "15349:80" # http://localhost:15349 azure:https://ml-software.ch/posts/running-seq-on-azure
+      - "15349:80" # http://localhost:15349
+      - "43179:5341" # trace ingestion
     environment:
       ACCEPT_EULA: "Y"
       SEQ_FIRSTRUN_REQUIREAUTHENTICATIONFORHTTPINGESTION: "False"
