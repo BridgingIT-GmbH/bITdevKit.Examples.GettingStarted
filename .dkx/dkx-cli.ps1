@@ -27,7 +27,10 @@ param(
 $ErrorActionPreference = 'Stop'
 $env:IgnoreSpectreEncoding = $true
 
-$helpersPath = Join-Path $PSScriptRoot '.devkit/tasks-helpers.ps1'
+$scriptFolder = $PSScriptRoot
+$repoRoot = Split-Path -Path $scriptFolder -Parent
+
+$helpersPath = Join-Path $PSScriptRoot 'tasks-helpers.ps1'
 if (Test-Path $helpersPath) { . $helpersPath }
 
 function Ensure-Spectre {
@@ -45,44 +48,39 @@ function Read-Selection($title,[string[]]$choices){
   return $s
 }
 
-function Invoke-DotnetScript([string]$cmd,[string]$projectPath){
-  $script = Join-Path $PSScriptRoot '.devkit/tasks-dotnet.ps1'
-  $sol = Join-Path $PSScriptRoot 'BridgingIT.DevKit.Examples.GettingStarted.sln'
-  $args = @('-NoProfile','-File', $script, '-Command', $cmd, '-SolutionPath', $sol)
+function Invoke-Dotnet([string]$cmd,[string]$projectPath){
+  $script = Join-Path $PSScriptRoot 'tasks-dotnet.ps1'
+  $args = @('-NoProfile','-File', $script, '-Command', $cmd)
   if ($projectPath) { $args += @('-ProjectPath', $projectPath) }
   & pwsh $args
 }
 
-function Invoke-Coverage { & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.devkit/tasks-coverage.ps1') }
-function Invoke-CoverageHtml { & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.devkit/tasks-coverage.ps1') -Html }
-function Invoke-OpenApiLint { & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.devkit/tasks-openapi.ps1') lint }
-function Invoke-Misc([string]$cmd){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.devkit/tasks-misc.ps1') $cmd }
-function Invoke-Docker([string]$mode){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.devkit/tasks-docker.ps1') $mode }
-function Invoke-Ef([string]$efCmd){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.devkit/tasks-ef.ps1') $efCmd }
-function Invoke-Diagnostics([string]$diagCmd){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.devkit/tasks-diagnostics.ps1') -Command $diagCmd }
-function Invoke-Compliance([string]$compCmd){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.devkit/tasks-compliance.ps1') -Command $compCmd }
-
-function Invoke-Test([string]$kind,[switch]$All){
-  if ($All) { $env:TEST_MODULE='All' }
-  & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.devkit/tasks-tests.ps1') $kind
+function Invoke-Test([string]$kind, [switch]$All) {
+  if ($All) { $env:TEST_MODULE = 'All' }
+  & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-tests.ps1') $kind
   if ($All) { Remove-Item Env:TEST_MODULE -ErrorAction SilentlyContinue }
 }
 
+function Invoke-OpenApiLint { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') lint }
+function Invoke-Misc([string]$cmd){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-misc.ps1') $cmd }
+function Invoke-Docker([string]$mode){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-docker.ps1') $mode }
+function Invoke-Ef([string]$efCmd){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-ef.ps1') $efCmd }
+function Invoke-Diagnostics([string]$diagCmd){ & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-diagnostics.ps1') -Command $diagCmd }
+
 $tasks = [ordered]@{
-  'build'                   = @{ Label='Build';                Desc='Build solution';                Script={ Invoke-DotnetScript 'build' } }
-  'build-release'           = @{ Label='Build Release';        Desc='Release build';                 Script={ Invoke-DotnetScript 'build-release' } }
-  'build-nr'                = @{ Label='Build NoRestore';      Desc='Build without restore';         Script={ Invoke-DotnetScript 'build-nr' } }
-  'pack'                    = @{ Label='Pack';                 Desc='Create NuGet packages';         Script={ Invoke-DotnetScript 'pack' } }
-  'restore'                 = @{ Label='Restore';              Desc='Restore packages';              Script={ Invoke-DotnetScript 'restore' } }
-  'clean'                   = @{ Label='Clean';                Desc='Clean projects';                Script={ Invoke-DotnetScript 'clean' } }
-  'tool-restore'            = @{ Label='Restore Tools';        Desc='Restore dotnet tools';          Script={ Invoke-DotnetScript 'tool-restore' } }
+  'build'                   = @{ Label='Build';                Desc='Build solution';                Script={ Invoke-Dotnet 'build' } }
+  'build-release'           = @{ Label='Build Release';        Desc='Release build';                 Script={ Invoke-Dotnet 'build-release' } }
+  'build-nr'                = @{ Label='Build NoRestore';      Desc='Build without restore';         Script={ Invoke-Dotnet 'build-nr' } }
+  'pack'                    = @{ Label='Pack';                 Desc='Create NuGet packages';         Script={ Invoke-Dotnet 'pack' } }
+  'restore'                 = @{ Label='Restore';              Desc='Restore packages';              Script={ Invoke-Dotnet 'restore' } }
+  'clean'                   = @{ Label='Clean';                Desc='Clean projects';                Script={ Invoke-Dotnet 'clean' } }
+  'tool-restore'            = @{ Label='Restore Tools';        Desc='Restore dotnet tools';          Script={ Invoke-Dotnet 'tool-restore' } }
   'test-unit'               = @{ Label='Tests Unit';           Desc='Run selected unit tests';       Script={ Invoke-Test 'unit' } }
   'test-int'                = @{ Label='Tests Integration';    Desc='Run selected integration tests';Script={ Invoke-Test 'integration' } }
   'test-unit-all'           = @{ Label='Tests Unit All';       Desc='Run all unit tests';            Script={ Invoke-Test 'unit' -All } }
   'test-int-all'            = @{ Label='Tests Int All';        Desc='Run all integration tests';     Script={ Invoke-Test 'integration' -All } }
-  'coverage'                = @{ Label='Coverage';             Desc='Compute coverage';              Script={ Invoke-Coverage } }
-  'coverage-html'           = @{ Label='Coverage HTML';        Desc='Coverage HTML report';          Script={ Invoke-CoverageHtml } }
-  'coverage-all-html'       = @{ Label='Coverage All+HTML';    Desc='All tests then HTML';           Script={ Invoke-Test 'unit' -All; Invoke-Test 'integration' -All; Invoke-CoverageHtml } }
+  'coverage'                = @{ Label='Coverage';             Desc='Compute coverage';              Script={ Invoke-Dotnet 'coverage' } }
+  'coverage-html'           = @{ Label='Coverage HTML';        Desc='Coverage HTML report';          Script={ Invoke-Dotnet 'coverage-html' } }
   'ef-info'                 = @{ Label='EF Info';              Desc='DbContext info';                Script={ Invoke-Ef 'info' } }
   'ef-list'                 = @{ Label='EF List';              Desc='List migrations';               Script={ Invoke-Ef 'list' } }
   'ef-add'                  = @{ Label='EF Add';               Desc='Add migration';                 Script={ Invoke-Ef 'add' } }
@@ -105,26 +103,26 @@ $tasks = [ordered]@{
   'compose-up-pull'         = @{ Label='Compose Up Pull';      Desc='Up with image pull';            Script={ Invoke-Docker 'compose-up'; Invoke-Docker 'compose-up' } }
   'compose-down'            = @{ Label='Compose Down';         Desc='docker compose down';           Script={ Invoke-Docker 'compose-down' } }
   'compose-down-clean'      = @{ Label='Compose Down Clean';   Desc='Down & clean volumes';          Script={ Invoke-Docker 'compose-down-clean' } }
-  'vulnerabilities'         = @{ Label='Security Vulnerabilities';       Desc='List vulnerabilities';          Script={ Invoke-DotnetScript 'vulnerabilities' } }
-  'vulnerabilities-deep'    = @{ Label='Security Vulnerabilities Deep';  Desc='Transitive vulnerabilities';    Script={ Invoke-DotnetScript 'vulnerabilities-deep' } }
-  'outdated'                = @{ Label='Packages Outdated';    Desc='List outdated packages';        Script={ Invoke-DotnetScript 'outdated' } }
-  'outdated-json'           = @{ Label='Packages Outdated JSON';Desc='Export outdated JSON';        Script={ Invoke-DotnetScript 'outdated-json' } }
-  'format-check'            = @{ Label='Format Check';         Desc='Check code formatting';              Script={ Invoke-DotnetScript 'format-check' } }
-  'format-apply'            = @{ Label='Format Apply';         Desc='Apply code formatting';              Script={ Invoke-DotnetScript 'format-apply' } }
-  'analyzers'               = @{ Label='Analyzers';            Desc='Run analyzers';                 Script={ Invoke-DotnetScript 'analyzers' } }
-  'analyzers-export'        = @{ Label='Analyzers Export';     Desc='Export analyzer report';        Script={ Invoke-DotnetScript 'analyzers-export' } }
-  'server-build'            = @{ Label='Server Build';         Desc='Build web server';              Script={ Invoke-DotnetScript 'project-build' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'server-publish'          = @{ Label='Server Publish';       Desc='Publish web server';                Script={ Invoke-DotnetScript 'project-publish' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'server-publish-release'  = @{ Label='Server Publish Release'; Desc='Publish web server release';               Script={ Invoke-DotnetScript 'project-publish-release' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'server-publish-sc'       = @{ Label='Server Publish Single';    Desc='Single-file publish';           Script={ Invoke-DotnetScript 'project-publish-sc' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'server-watch'            = @{ Label='Server Watch';         Desc='Run & Watch dev server';                   Script={ Invoke-DotnetScript 'project-watch' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'server-run-dev'          = @{ Label='Server Run';           Desc='Run dev server';                Script={ Invoke-DotnetScript 'project-run' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  # 'server-watch-fast'       = @{ Label='Server Watch Fast';    Desc='Fast watch run';                Script={ Invoke-DotnetScript 'project-watch-fast' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'pack-projects'            = @{ Label='Pack Projects';         Desc='Create NuGet packages';          Script={ Invoke-DotnetScript 'pack-projects' } }
-  'update-packages'         = @{ Label='Update Packages';      Desc='Update Nuget packages';       Script={ Invoke-DotnetScript 'update-packages' } }
+  'vulnerabilities'         = @{ Label='Security Vulnerabilities';       Desc='List vulnerabilities';          Script={ Invoke-Dotnet 'vulnerabilities' } }
+  'vulnerabilities-deep'    = @{ Label='Security Vulnerabilities Deep';  Desc='Transitive vulnerabilities';    Script={ Invoke-Dotnet 'vulnerabilities-deep' } }
+  'outdated'                = @{ Label='Packages Outdated';    Desc='List outdated packages';        Script={ Invoke-Dotnet 'outdated' } }
+  'outdated-json'           = @{ Label='Packages Outdated JSON';Desc='Export outdated JSON';        Script={ Invoke-Dotnet 'outdated-json' } }
+  'format-check'            = @{ Label='Format Check';         Desc='Check code formatting';              Script={ Invoke-Dotnet 'format-check' } }
+  'format-apply'            = @{ Label='Format Apply';         Desc='Apply code formatting';              Script={ Invoke-Dotnet 'format-apply' } }
+  'analyzers'               = @{ Label='Analyzers';            Desc='Run analyzers';                 Script={ Invoke-Dotnet 'analyzers' } }
+  'analyzers-export'        = @{ Label='Analyzers Export';     Desc='Export analyzer report';        Script={ Invoke-Dotnet 'analyzers-export' } }
+  'server-build'            = @{ Label='Server Build';         Desc='Build web server';              Script={ Invoke-Dotnet 'project-build' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-publish'          = @{ Label='Server Publish';       Desc='Publish web server';                Script={ Invoke-Dotnet 'project-publish' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-publish-release'  = @{ Label='Server Publish Release'; Desc='Publish web server release';               Script={ Invoke-Dotnet 'project-publish-release' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-publish-sc'       = @{ Label='Server Publish Single';    Desc='Single-file publish';           Script={ Invoke-Dotnet 'project-publish-sc' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-watch'            = @{ Label='Server Watch';         Desc='Run & Watch dev server';                   Script={ Invoke-Dotnet 'project-watch' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-run-dev'          = @{ Label='Server Run';           Desc='Run dev server';                Script={ Invoke-Dotnet 'project-run' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  # 'server-watch-fast'       = @{ Label='Server Watch Fast';    Desc='Fast watch run';                Script={ Invoke-Dotnet 'project-watch-fast' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'pack-projects'            = @{ Label='Pack Projects';         Desc='Create NuGet packages';          Script={ Invoke-Dotnet 'pack-projects' } }
+  'update-packages'         = @{ Label='Update Packages';      Desc='Update Nuget packages';       Script={ Invoke-Dotnet 'update-packages' } }
   'openapi-lint'            = @{ Label='OpenAPI Lint';         Desc='Lint OpenAPI specs';            Script={ Invoke-OpenApiLint } }
-  'openapi-client-dotnet'   = @{ Label='OpenAPI Client .NET';  Desc='Generate C# client (Kiota)';    Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.devkit/tasks-openapi.ps1') client-dotnet } }
-  'openapi-client-typescript' = @{ Label='OpenAPI Client TS';  Desc='Generate TS client (Kiota)';    Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.devkit/tasks-openapi.ps1') client-typescript } }
+  'openapi-client-dotnet'   = @{ Label='OpenAPI Client .NET';  Desc='Generate C# client (Kiota)';    Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') client-dotnet } }
+  'openapi-client-typescript' = @{ Label='OpenAPI Client TS';  Desc='Generate TS client (Kiota)';    Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') client-typescript } }
   'misc-clean'              = @{ Label='Workspace Clean';      Desc='Clean workspace';               Script={ Invoke-Misc 'clean' } }
   'misc-digest'             = @{ Label='Sources Digest';       Desc='Generate source digest';        Script={ Invoke-Misc 'digest' } }
   'misc-repl'               = @{ Label='C# REPL';              Desc='Interactive REPL';              Script={ Invoke-Misc 'repl' } }
@@ -144,8 +142,8 @@ $tasks = [ordered]@{
   'gc-stats'                = @{ Label='GC Stats';             Desc='Collect GC stats';              Script={ Invoke-Diagnostics 'gc-stats' } }
   'aspnet-metrics'          = @{ Label='ASP.NET Metrics';      Desc='ASP.NET counters';              Script={ Invoke-Diagnostics 'aspnet-metrics' } }
   'diag-quick'              = @{ Label='Diag Quick';           Desc='Quick diagnostics';             Script={ Invoke-Diagnostics 'quick' } }
-  'coverage-open'           = @{ Label='Coverage Open';        Desc='Open coverage HTML';            Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.devkit/tasks-coverage.ps1') -Html -Open } }
-  'licenses'                = @{ Label='Licenses';             Desc='Generate license report';       Script={ Invoke-Compliance 'licenses' } }
+  'coverage-open'           = @{ Label='Coverage Open';        Desc='Open coverage HTML';            Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-coverage.ps1') -Html -Open } }
+  'licenses'                = @{ Label='Licenses';             Desc='Generate license report';       Script={ Invoke-Dotnet 'licenses' } } # <-- changed to use tasks-dotnet.ps1
 }
 # Compute max label width for aligned output
 $TaskLabelWidth = ($tasks.Values | ForEach-Object { $_.Label.Length } | Measure-Object -Maximum).Maximum
@@ -156,7 +154,7 @@ function Format-TaskDisplay([hashtable]$t){
 
 $categories = [ordered]@{
   'Build & Maintenance' = @('restore','build','build-release','build-nr','pack','pack-projects','update-packages','clean','tool-restore','format-check','format-apply','analyzers','analyzers-export','server-build','server-publish','server-publish-release','server-publish-sc','server-watch','server-run-dev')
-  'Testing & Quality'   = @('test-unit','test-int','test-unit-all','test-int-all','coverage','coverage-html','coverage-open','coverage-all-html')
+  'Testing & Quality'   = @('test-unit','test-int','test-unit-all','test-int-all','coverage','coverage-html')
   'EF & Persistence'    = @('ef-info','ef-list','ef-add','ef-remove','ef-removeall','ef-apply','ef-update','ef-recreate','ef-undo','ef-status','ef-reset','ef-script')
   'Publishing & Packaging' = @('server-publish','server-publish-release','server-publish-sc','pack','pack-projects')
   'Docker & Containers' = @('docker-build-run','docker-build-debug','docker-build-release','docker-run','docker-stop','docker-remove','compose-up','compose-up-pull','compose-down','compose-down-clean')
@@ -169,16 +167,17 @@ $categories = [ordered]@{
 
 function Run-Task([string]$key){
   if (-not $tasks.Contains($key)) { Write-Host "Unknown task '$key'" -ForegroundColor Red; return }
+  Write-Host "Task '$key' started." -ForegroundColor Yellow
   $def = $tasks[$key]
   (Format-TaskDisplay $def) | Format-SpectrePadded -Padding 0 | Format-SpectrePanel -Expand -Color "DeepSkyBlue3"
   & $def.Script
-  if ($LASTEXITCODE -ne 0) { Write-Host "Task '$key' failed (exit $LASTEXITCODE)" -ForegroundColor Red } else { Write-Host "Task '$key' completed." -ForegroundColor Green }
+  if ($LASTEXITCODE -ne 0) { Write-Host "Task '$key' failed (exit $LASTEXITCODE)" -ForegroundColor Red } else { Write-Host "Task '$key' completed." -ForegroundColor Yellow }
 }
 
 if ($Task) { Run-Task $Task; exit $LASTEXITCODE }
 
-$repoName = Split-Path $PSScriptRoot -Leaf
-$message = "DevTasks - $repoName"
+$repoName = Split-Path $repoRoot -Leaf
+$message = "dkx - $repoName"
 if ($env:VSCODE_PID -or $env:TERM_PROGRAM -eq 'vscode') {
   $message | Format-SpectrePadded -Padding 0 | Format-SpectrePanel -Expand -Border "Double" -Color "DeepSkyBlue3"
 } else {

@@ -72,7 +72,7 @@ public class CoreModuleMapperRegisterTests
     public void EmailAddressToString_MapsCorrectly()
     {
         // Arrange
-        var email = EmailAddress.Create("test@example.com");
+        var email = EmailAddress.Create("test@example.com").Value;
 
         // Act
         var result = email.Adapt<string>(this.config);

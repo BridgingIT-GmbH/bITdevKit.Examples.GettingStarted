@@ -1,7 +1,9 @@
 param(
   [Parameter(Mandatory=$true)][string]$Command
 )
-$ErrorActionPreference='Stop'
+
+# Write-Host "Executing command: $Command" -ForegroundColor Yellow
+$ErrorActionPreference = 'Stop'
 
 function Export-BenchmarkSummary {
   param(

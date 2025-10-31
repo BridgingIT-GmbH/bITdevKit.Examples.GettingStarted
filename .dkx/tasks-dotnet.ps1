@@ -4,12 +4,40 @@ param(
   [string]$ProjectPath
 )
 
+# Write-Host "Executing command: $Command" -ForegroundColor Yellow
 $ErrorActionPreference = 'Stop'
 
 function Invoke-Dotnet([string[]]$Arguments){
   Write-Host "dotnet $($Arguments -join ' ')" -ForegroundColor DarkGray
   & dotnet @Arguments
   if ($LASTEXITCODE -ne 0){ throw "dotnet command failed ($LASTEXITCODE)" }
+}
+
+function Open-File {
+  param([string]$Path)
+  if (-not $Path) { return }
+  if (-not (Test-Path $Path)) { Write-Host "File not found: $Path" -ForegroundColor Yellow; return }
+  try {
+    if ($IsWindows) {
+      Start-Process -FilePath $Path -ErrorAction Stop
+    }
+    else {
+      # prefer xdg-open, fallback to open (macOS)
+      if (Get-Command xdg-open -ErrorAction SilentlyContinue) {
+        & xdg-open $Path 2>$null
+      }
+      elseif (Get-Command open -ErrorAction SilentlyContinue) {
+        & open $Path 2>$null
+      }
+      else {
+        Write-Host "No known opener found for this platform. File located at: $Path" -ForegroundColor Yellow
+      }
+    }
+    Write-Host "Opened: $Path" -ForegroundColor Green
+  }
+  catch {
+    Write-Host "Error opening: $($_.Exception.Message)" -ForegroundColor Yellow
+  }
 }
 
 function Select-Rid {
@@ -76,7 +104,7 @@ function Resolve-Solution([string]$explicit){
   $choices = $solutions | ForEach-Object { $_.FullName }
   $selected = Read-SpectreSelection -Title 'Select Solution (.sln)' -Choices ($choices + 'Cancel') -EnableSearch -PageSize 15
   if(-not $selected -or $selected -eq 'Cancel'){ throw 'Solution selection cancelled.' }
-  Write-Host "Selected solution: $selected" -ForegroundColor Green
+  # Write-Host "Selected solution: $selected" -ForegroundColor Green
   return $selected
 }
 
@@ -84,7 +112,8 @@ function Resolve-Solution([string]$explicit){
 $needsSolutionCommands = @(
   'restore','build','build-release','build-nr','pack','clean',
   'format-check','format-apply','vulnerabilities','vulnerabilities-deep',
-  'outdated','outdated-json','update-packages','analyzers','analyzers-export'
+  'outdated','outdated-json','update-packages','analyzers','analyzers-export',
+  'licenses','coverage','coverage-html'
 )
 if($needsSolutionCommands -contains $Command.ToLowerInvariant()){
   try {
@@ -108,6 +137,7 @@ switch ($Command.ToLowerInvariant()) {
   'clean'        { Invoke-Dotnet (@('clean',$SolutionPath) + $logArgs) }
   'format-check' { Invoke-Dotnet @('format',$SolutionPath,'--verify-no-changes') }
   'format-apply' { Invoke-Dotnet @('format',$SolutionPath) }
+  'tool-restore' { Invoke-Dotnet @('tool','restore') }
   'vulnerabilities'        { Invoke-Dotnet @('list',$SolutionPath,'package','--vulnerable') }
   'vulnerabilities-deep'   { Invoke-Dotnet @('list',$SolutionPath,'package','--vulnerable','--include-transitive') }
   'outdated'     { Invoke-Dotnet @('list',$SolutionPath,'package','--outdated') }
@@ -209,5 +239,118 @@ switch ($Command.ToLowerInvariant()) {
   'project-watch'   { if (-not $ProjectPath) { throw 'ProjectPath required for project-watch' }; Invoke-Dotnet @('watch','run','--project',$ProjectPath,'--nologo') }
   'project-run'     { if (-not $ProjectPath) { throw 'ProjectPath required for project-run' }; Invoke-Dotnet (@('run','--project',$ProjectPath) + $logArgs) }
   'project-watch-fast' { if (-not $ProjectPath) { throw 'ProjectPath required for project-watch-fast' }; Invoke-Dotnet @('watch','run','--project',$ProjectPath,'--nologo','--no-restore') }
+  'licenses' {
+    # Generate license report using nuget-license (moved from tasks-compliance.ps1)
+    Invoke-Dotnet @('tool', 'restore') | Out-Null
+    $root = Split-Path $PSScriptRoot -Parent
+    $outDir = Join-Path $root '.tmp/compliance'
+    if(-not (Test-Path $outDir)){ New-Item -ItemType Directory -Force -Path $outDir | Out-Null }
+    $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+    $mdFile = Join-Path $outDir "licenses_$timestamp.md"
+    $jsonFile = Join-Path $outDir "licenses_$timestamp.json"
+    Write-Host "Generating license report" -ForegroundColor Cyan
+    # Write-Host "Generating license report -> $mdFile" -ForegroundColor Cyan
+
+    $nlOutput = & dotnet tool run nuget-license -i $SolutionPath -t -o JsonPretty 2>&1
+    $parseSource = ($nlOutput -join "`n")
+    if(-not ($parseSource.TrimStart() -match '^[\[{]')){ throw "nuget-license did not return JSON output. Raw: $parseSource" }
+    try { $data = $parseSource | ConvertFrom-Json } catch { throw 'Failed to parse nuget-license JSON output.' }
+    if(-not ($data -is [System.Collections.IEnumerable])){ throw 'nuget-license JSON unexpected shape (expected array).' }
+
+    $rows = @('| Package | Version | License | LicenseUrl |','|---------|---------|---------|-----------|')
+    $licenseStats = @{ }
+    $jsonList = @()
+    foreach($pkg in $data){
+      $name = $pkg.PackageId
+      $ver = $pkg.PackageVersion
+      $licRaw = $pkg.License
+      $licUrl = $pkg.LicenseUrl
+      if(-not $licRaw){ $licRaw = '(unknown)' }
+      if(-not $licUrl){ $licUrl = '(none)' }
+      $lic = if(($licRaw) -and ($licRaw.Length -gt 120 -or $licRaw -match "`n")) { '(Embedded License Text)' } else { $licRaw }
+      $rows += "| $name | $ver | $lic | $licUrl |"
+      if($licenseStats.ContainsKey($lic)){ $licenseStats[$lic]++ } else { $licenseStats[$lic] = 1 }
+      $jsonList += [pscustomobject]@{ package=$name; version=$ver; license=$lic; licenseUrl=$licUrl }
+    }
+
+    $total = $jsonList.Count
+    $unknownCount = ($jsonList | Where-Object { $_.license -eq '(unknown)' }).Count
+    $summaryLines = @("","## License Summary","Total packages: $total","Unknown licenses: $unknownCount","Top licenses:")
+    foreach($key in ($licenseStats.Keys | Sort-Object)){
+      $count = $licenseStats[$key]
+      $summaryLines += "  - ${key}: ${count}"
+    }
+
+    ($rows + $summaryLines) -join "`n" | Set-Content -Path $mdFile -Encoding UTF8
+    $jsonObj = [pscustomobject]@{ generated = (Get-Date).ToString('o'); total = $total; unknown = $unknownCount; licenses = $licenseStats; packages=$jsonList }
+    $jsonObj | ConvertTo-Json -Depth 6 | Set-Content -Path $jsonFile -Encoding UTF8
+
+    Write-Host 'License reports created with nuget-license:' -ForegroundColor Green
+    Write-Host "  MD:   $mdFile" -ForegroundColor Green
+    Write-Host "  JSON: $jsonFile" -ForegroundColor Green
+
+    # open the generated markdown file
+    Open-File $mdFile
+  }
+  'coverage' {
+    # Ensure plain coverage (no HTML) exists: runs tests with coverage and writes coverage.cobertura.xml files
+    $root = Split-Path $PSScriptROOT -Parent
+    $resultsRoot = Join-Path $root '.tmp/tests/coverage'
+    if(-not (Test-Path $resultsRoot)){ New-Item -ItemType Directory -Force -Path $resultsRoot | Out-Null }
+    $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+    $runDir = Join-Path $resultsRoot ("run_$timestamp")
+    New-Item -ItemType Directory -Force -Path $runDir | Out-Null
+    Write-Host "Running tests with coverage -> $runDir" -ForegroundColor Cyan
+
+    try {
+      Invoke-Dotnet @('test',$SolutionPath,'--collect:"XPlat Code Coverage"','--results-directory',$runDir,'--settings:.runsettings')
+    } catch {
+      Write-Host 'dotnet test failed.' -ForegroundColor Red
+      exit 1
+    }
+
+    $coverageFiles = Get-ChildItem -Recurse -Path $runDir -Filter 'coverage.cobertura.xml' -ErrorAction SilentlyContinue
+    if(-not $coverageFiles){ Write-Host 'No coverage.cobertura.xml files found.' -ForegroundColor Yellow; exit 2 }
+    Write-Host ("Found {0} coverage file(s) under {1}" -f $coverageFiles.Count, $runDir) -ForegroundColor Green
+  }
+  'coverage-html' {
+    # Run coverage and generate HTML report using reportgenerator
+    $root = Split-Path $PSScriptRoot -Parent
+    $resultsRoot = Join-Path $root '.tmp/tests/coverage'
+    if(-not (Test-Path $resultsRoot)){ New-Item -ItemType Directory -Force -Path $resultsRoot | Out-Null }
+    $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+    $runDir = Join-Path $resultsRoot ("run_$timestamp")
+    New-Item -ItemType Directory -Force -Path $runDir | Out-Null
+    Write-Host "Running tests with coverage -> $runDir" -ForegroundColor Cyan
+
+    try {
+      Invoke-Dotnet @('test',$SolutionPath,'--collect:"XPlat Code Coverage"','--results-directory',$runDir,'--settings:.runsettings')
+    } catch {
+      Write-Host 'dotnet test failed.' -ForegroundColor Red
+      exit 1
+    }
+
+    $coverageFiles = Get-ChildItem -Recurse -Path $runDir -Filter 'coverage.cobertura.xml' -ErrorAction SilentlyContinue
+    if(-not $coverageFiles){ Write-Host 'No coverage.cobertura.xml files found.' -ForegroundColor Yellow; exit 2 }
+
+    # Generate HTML using reportgenerator tool (ensure tools restored)
+    Invoke-Dotnet @('tool','restore') | Out-Null
+    $reportRoot = Join-Path $runDir 'report'
+    if(-not (Test-Path $reportRoot)){ New-Item -ItemType Directory -Force -Path $reportRoot | Out-Null }
+    $reportsArg = ($coverageFiles | ForEach-Object { $_.FullName }) -join ';'
+    $reportTypes = 'HtmlInline_AzurePipelines;MarkdownSummaryGithub'
+    Write-Host "Generating HTML report -> $reportRoot" -ForegroundColor Cyan
+    & dotnet tool run reportgenerator -- "-reports:$reportsArg" "-targetdir:$reportRoot" "-reporttypes:$reportTypes"
+    if($LASTEXITCODE -ne 0){ Write-Host 'Report generation failed' -ForegroundColor Red; exit 3 }
+
+    $indexFile = Join-Path $reportRoot 'index.html'
+    if(Test-Path $indexFile){
+      Write-Host "Report generated at: $indexFile" -ForegroundColor Green
+      Open-File $indexFile
+    } else {
+      Write-Host 'Report generation completed but index.html not found.' -ForegroundColor Yellow
+    }
+  }
+
   default { throw "Unknown dotnet command: $Command" }
 }

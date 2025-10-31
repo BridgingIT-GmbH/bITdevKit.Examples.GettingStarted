@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Cross-platform small wrapper to run the dkx PowerShell script
+# Usage: ./dkx [args...]
+
+set -euo pipefail
+
+ROOT_DIR=$(cd "$(dirname "$0")" && pwd)
+SCRIPT="$ROOT_DIR/.dkx/dkx-cli.ps1"
+
+if [ ! -f "$SCRIPT" ]; then
+  echo "Cannot find dkx.ps1 in $ROOT_DIR" >&2
+  exit 2
+fi
+
+# Prefer pwsh (PowerShell Core), fallback to powershell on Windows (if available)
+if command -v pwsh >/dev/null 2>&1; then
+  exec pwsh -NoProfile -File "$SCRIPT" -- "$@"
+elif command -v powershell >/dev/null 2>&1; then
+  # powershell.exe on Windows may not support -NoProfile same way, but keep it
+  exec powershell -NoProfile -File "$SCRIPT" %*
+else
+  echo "No PowerShell interpreter found. Please install PowerShell (pwsh) or use Windows PowerShell." >&2
+  exit 3
+fi

@@ -39,10 +39,10 @@ param(
   [bool]$SkipGeneratedFiles = $true,
   [bool]$UpdateGitIgnore = $true
 )
-Write-Host "Executing command: $Command" -ForegroundColor Yellow
+# Write-Host "Executing command: $Command" -ForegroundColor Yellow
 $ErrorActionPreference = 'Stop'
 
-function Write-Section([string] $Text){ Write-Host "`n=== $Text ===" -ForegroundColor Magenta }
+# function Write-Section([string] $Text){ Write-Host "`n=== $Text ===" -ForegroundColor Magenta }
 function Fail([string] $Msg, [int] $Code=1){ Write-Error $Msg; exit $Code }
 
 # Reused from diagnostics script (with minor fallback enhancements):
@@ -83,7 +83,7 @@ function Select-Pid($title){
 }
 
 function Run-CSharpRepl() {
-  Write-Section 'Starting C# REPL'
+  # Write-Section 'Starting C# REPL'
   Write-Host 'Restoring dotnet tools...' -ForegroundColor Cyan
   dotnet tool restore | Out-Null
   if ($LASTEXITCODE -ne 0) { Fail 'dotnet tool restore failed.' 91 }
@@ -99,9 +99,8 @@ function Run-CSharpRepl() {
 }
 
 function Combine-Sources() {
-  Write-Section 'Combining sources'
+  # Write-Section 'Combining sources'
 
-  # NOTE: Because this script now in .vscode, we map gitignore path to repository root (parent of PSScriptRoot)
   $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 
   # Statistics tracking
@@ -118,9 +117,9 @@ function Combine-Sources() {
   }
 
   # Logging helpers (original)
-  function Write-Progress-Info    { param([string]$message) Write-Host "[INFO] $message" -ForegroundColor Cyan }
-  function Write-Progress-Warning { param([string]$message) Write-Host "[WARN] $message" -ForegroundColor Yellow }
-  function Write-Progress-Success { param([string]$message) Write-Host "[SUCCESS] $message" -ForegroundColor Green }
+  function Write-Progress-Info    { param([string]$message) Write-Host "-- $message" -ForegroundColor Cyan }
+  function Write-Progress-Warning { param([string]$message) Write-Host "-- $message" -ForegroundColor Yellow }
+  function Write-Progress-Success { param([string]$message) Write-Host "$message" -ForegroundColor Green }
   function Write-ProgressBar      { param([int]$Current,[int]$Total,[string]$Activity,[string]$Status); $percentComplete = [math]::Min(100, ($Current / $Total * 100)); Write-Progress -Activity $Activity -Status $Status -PercentComplete $percentComplete }
 
   # Using statement handling
@@ -283,7 +282,7 @@ function Open-BrowserUrl() {
     [string]$title,
     [string]$url
   )
-  Write-Section $title
+  # Write-Section $title
   try {
     Write-Host "Launching browser: $url" -ForegroundColor Cyan
     Start-Process $url
@@ -345,7 +344,7 @@ Notes:
 }
 
 function Clean-Workspace() {
-  Write-Section 'Cleaning workspace build artifacts'
+  # Write-Section 'Cleaning workspace build artifacts'
   $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
   Write-Host "Root: $root" -ForegroundColor Cyan
   $patterns = @('bin','obj','bld','Backup','_UpgradeReport_Files','Debug','Release','ipch','node_modules','.tmp')
@@ -397,7 +396,7 @@ function Handle-MiscCommand([string]$cmd){
 }
 
 function Kill-DotNetProcess() {
-  Write-Section 'Kill .NET Process'
+  # Write-Section 'Kill .NET Process'
   # Non-interactive direct path if provided
   # If ProcessId provided non-interactively, skip selection & confirmation when -ForceKill used.
   $selectedPid = $null
@@ -427,9 +426,9 @@ function Kill-DotNetProcess() {
 }
 
 function Update-DevKitDocs() {
-  Write-Section 'Updating DevKit Docs (markdown)'
+  # Write-Section 'Updating DevKit Docs (markdown)'
   $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-  $targetRoot = Join-Path $repoRoot '.devkit/docs'
+  $targetRoot = Join-Path $repoRoot '.dkx/docs'
   New-Item -ItemType Directory -Path $targetRoot -Force | Out-Null
 
   $apiBase = 'https://api.github.com/repos/BridgingIT-GmbH/bITdevKit/contents/docs'
