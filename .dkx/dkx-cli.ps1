@@ -118,12 +118,12 @@ $tasks = [ordered]@{
   'server-run-dev'              = @{ Label = 'Server Run'; Desc = 'Run dev server'; Script = { Invoke-Dotnet 'project-run' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   # 'server-watch-fast'       = @{ Label='Server Watch Fast';    Desc='Fast watch run';                Script={ Invoke-Dotnet 'project-watch-fast' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'pack-projects'               = @{ Label = 'Pack Projects'; Desc = 'Create NuGet packages'; Script = { Invoke-Dotnet 'pack-projects' } }
-  'update-packages'         = @{ Label='Update all Packages';      Desc='Update all Nuget packages';       Script={ Invoke-DotnetScript 'update-packages' } }
-  'update-packages-devkit' = @{ Label='Update Devkit Packages'; Desc='Update DevKit Nuget packages'; Script={ Invoke-DotnetScript 'update-packages-devkit' } }
-  'openapi-lint'              = @{ Label='OpenAPI Lint';         Desc='Lint OpenAPI specs';            Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.dkx/tasks-openapi.ps1') lint } }
-  'openapi-client-dotnet'     = @{ Label='OpenAPI Client .NET';  Desc='Generate C# client (Kiota)';    Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.dkx/tasks-openapi.ps1') client-dotnet } }
-  'openapi-client-typescript' = @{ Label='OpenAPI Client TS';    Desc='Generate TS client (Kiota)';    Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.dkx/tasks-openapi.ps1') client-typescript } }
-  'openapi-http'              = @{ Label='OpenAPI HTTP';         Desc='Generate .http request files';  Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot '.dkx/tasks-openapi.ps1') http-requests } }
+  'update-packages'         = @{ Label='Update all Packages';      Desc='Update all Nuget packages';       Script={ Invoke-Dotnet 'update-packages' } }
+  'update-packages-devkit' = @{ Label='Update Devkit Packages'; Desc='Update DevKit Nuget packages'; Script={ Invoke-Dotnet 'update-packages-devkit' } }
+  'openapi-lint'              = @{ Label='OpenAPI Lint';         Desc='Lint OpenAPI specs';            Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') lint } }
+  'openapi-client-dotnet'     = @{ Label='OpenAPI Client .NET';  Desc='Generate C# client (Kiota)';    Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') client-dotnet } }
+  'openapi-client-typescript' = @{ Label='OpenAPI Client TS';    Desc='Generate TS client (Kiota)';    Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') client-typescript } }
+  'openapi-http'              = @{ Label='OpenAPI HTTP';         Desc='Generate .http request files';  Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') http-requests } }
   'misc-clean'                  = @{ Label = 'Workspace Clean'; Desc = 'Clean workspace'; Script = { Invoke-Misc 'clean' } }
   'misc-digest'                 = @{ Label = 'Sources Digest'; Desc = 'Generate source digest'; Script = { Invoke-Misc 'digest' } }
   'misc-repl'                   = @{ Label = 'C# REPL'; Desc = 'Interactive REPL'; Script = { Invoke-Misc 'repl' } }

@@ -293,7 +293,7 @@ function Open-BrowserUrl() {
 }
 
 function Show-MinVer() {
-  Write-Section 'MinVer Semantic Version'
+  # Write-Section 'MinVer Semantic Version'
   dotnet tool restore | Out-Null
   if($LASTEXITCODE -ne 0){ Fail 'dotnet tool restore failed.' 200 }
   # Write-Host 'Running: dotnet minver -v d -p preview.0' -ForegroundColor Cyan

@@ -146,7 +146,7 @@ function Generate-KiotaClient {
 }
 
 function Generate-HttpRequests {
-  Write-Section 'Generating .http request files'
+  # Write-Section 'Generating .http request files'
   dotnet tool restore | Out-Null
   if ($LASTEXITCODE -ne 0) { Fail 'dotnet tool restore failed.' 91 }
   $specFull = Resolve-Spec
