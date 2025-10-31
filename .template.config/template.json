@@ -21,6 +21,28 @@
       "replaces": "DevKit.Examples.GettingStarted",
       "fileRename": "DevKit.Examples.GettingStarted"
     },
+    "SolutionNameUnderscore": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "SolutionName",
+        "steps": [
+          {
+            "regex": "\\.",
+            "replacement": "_"
+          }
+        ]
+      }
+    },
+    "SolutionNameAlt": {
+      "type": "generated",
+      "generator": "casing",
+      "parameters": {
+        "source": "SolutionNameUnderscore",
+        "casing": "lowerCase"
+      },
+      "replaces": "bit_devkit_gettingstarted"
+    },
     "ModuleName": {
       "type": "parameter",
       "datatype": "string",

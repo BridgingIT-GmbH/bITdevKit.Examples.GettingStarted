@@ -47,6 +47,7 @@ function Load-DotEnv([string]$path) {
 		$val = $parts[1].Trim().Trim("'""")
 		if (-not [string]::IsNullOrEmpty($key)) {
 			$map[$key] = $val
+      Write-Host "Loaded .env: $key=$val" -ForegroundColor DarkGray
 			# also export to process env so other scripts can use it
 			# $env:$key = $val
 		}
