@@ -72,7 +72,7 @@ function Docker-Run() {
   $logsDir = Join-Path (Get-Location) 'logs'
   if (-not (Test-Path $logsDir)) { New-Item -ItemType Directory -Force -Path $logsDir | Out-Null }
 
-  $envVars = @(
+  $envVars = @( # TODO: pass as function params or read from .env?
     'ASPNETCORE_ENVIRONMENT=Development'
     'Modules__CoreModule__ConnectionStrings__Default=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;'
     'JobScheduling__Quartz__quartz.dataSource.default.connectionString=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;'
@@ -107,6 +107,7 @@ function Docker-Run() {
 function Docker-Stop() {
   param([string] $Name)
   # Write-Section "Docker Stop ($Name)"
+  Write-Command "docker stop $Name"
   docker stop $Name 2>$null | Out-Null
   if ($LASTEXITCODE -eq 0) { Write-Step 'Stopped (if existed).' }
 }
@@ -118,6 +119,7 @@ function Docker-Remove() {
   )
   # Write-Section "Docker Remove ($Name)"
   Write-Step "Removing container (if present): $Name"
+  Write-Command "docker rm -f $Name"
   docker rm -f $Name 2>$null | Out-Null
   if ($LASTEXITCODE -eq 0) { Write-Step 'Container removed (if existed).' } else { Write-Step 'Container removal attempted (may not have existed).' }
 
@@ -126,6 +128,7 @@ function Docker-Remove() {
     try {
       $exists = docker network ls --format '{{.Name}}' | Select-String -Quiet -Pattern "^$Network$"
       if ($exists) {
+        Write-Command "docker network rm -f $Network"
         docker network rm $Network 2>$null | Out-Null
         if ($LASTEXITCODE -eq 0) {
           Write-Step "Network removed: $Network"
@@ -306,9 +309,6 @@ switch ($Command.ToLower()) {
     Docker-Build -Tag $ImageTag -File $Dockerfile -Context $ProjectDockerContext -NoCache:$NoCache
     Docker-Run -Tag $ImageTag -Name $ContainerName -Network $Network -HostPort $HostPort -ContainerPort $ContainerPort
   }
-  # 'docker-build' {
-  #   Docker-Build -Tag $ImageTag -File $Dockerfile -Context $ProjectDockerContext -NoCache:$NoCache
-  # }
   'docker-build-debug' {
     $tag = "$ImageTag-debug"
     Write-Step "Using debug tag: $tag"

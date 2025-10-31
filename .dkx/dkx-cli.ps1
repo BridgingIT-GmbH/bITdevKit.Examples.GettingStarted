@@ -33,6 +33,37 @@ $root = Split-Path -Path $scriptFolder -Parent
 $helpersPath = Join-Path $PSScriptRoot 'tasks-helpers.ps1'
 if (Test-Path $helpersPath) { . $helpersPath }
 
+# load .env (KEY=VALUE) from repo root and export to $env:
+function Load-DotEnv([string]$path) {
+	$map = @{}
+	if (-not (Test-Path $path)) { return $map }
+	foreach ($ln in Get-Content $path) {
+		$line = $ln.Trim()
+		if ([string]::IsNullOrWhiteSpace($line) -or $line.StartsWith('#')) { continue }
+		# split on first '='
+		$parts = $line -split '=', 2
+		if ($parts.Length -ne 2) { continue }
+		$key = $parts[0].Trim()
+		$val = $parts[1].Trim().Trim("'""")
+		if (-not [string]::IsNullOrEmpty($key)) {
+			$map[$key] = $val
+			# also export to process env so other scripts can use it
+			# $env:$key = $val
+		}
+	}
+	return $map
+}
+
+# load .env
+$dotEnvPath = Join-Path $root '.env'
+$dotenvMap = Load-DotEnv $dotEnvPath
+
+# compute defaults using loaded env (fall back to existing literal defaults if absent)
+$containerPrefix = $dotenvMap['CONTAINER_PREFIX'] ?? 'dkx_gettingstarted'
+$registryHost    = $dotenvMap['REGISTRY_HOST']    ?? 'localhost:5500'
+$defaultContainerName = "${containerPrefix}-web"
+$defaultImageTag      = "${registryHost}/${defaultContainerName}:latest"
+
 function Read-Selection($title, [string[]]$choices) {
   $choices += 'Cancel'
   $s = Read-SpectreSelection -Title $title -Choices $choices -EnableSearch -PageSize 15
@@ -90,12 +121,12 @@ $tasks = [ordered]@{
   'ef-status'                   = @{ Label = 'EF Status'; Desc = 'Migrations status'; Script = { Invoke-Ef 'status' } }
   'ef-reset'                    = @{ Label = 'EF Reset'; Desc = 'Squash migrations'; Script = { Invoke-Ef 'reset' } }
   'ef-script'                   = @{ Label = 'EF Script'; Desc = 'Export SQL script'; Script = { Invoke-Ef 'script' } }
-  'docker-build-run'            = @{ Label = 'Docker Build+Run'; Desc = 'Build image & run'; Script = { Invoke-Docker 'docker-build-run' -ContainerName 'dkx_gettingstarted-web' -ImageTag 'localhost:5500/dkx_gettingstarted-web:latest' } }
-  'docker-build-debug'          = @{ Label = 'Docker Build Debug'; Desc = 'Debug image build'; Script = { Invoke-Docker 'docker-build-debug' -ContainerName 'dkx_gettingstarted-web' -ImageTag 'localhost:5500/dkx_gettingstarted-web:latest' } }
-  'docker-build-release'        = @{ Label = 'Docker Build Release'; Desc = 'Release image build'; Script = { Invoke-Docker 'docker-build-release' -ContainerName 'dkx_gettingstarted-web' -ImageTag 'localhost:5500/dkx_gettingstarted-web:latest' } }
-  'docker-run'                  = @{ Label = 'Docker Run'; Desc = 'Run container'; Script = { Invoke-Docker 'docker-run' -ContainerName 'dkx_gettingstarted-web' -ImageTag 'localhost:5500/dkx_gettingstarted-web:latest' } }
-  'docker-stop'                 = @{ Label = 'Docker Stop'; Desc = 'Stop container'; Script = { Invoke-Docker 'docker-stop' -ContainerName 'dkx_gettingstarted-web' } }
-  'docker-remove'               = @{ Label = 'Docker Remove'; Desc = 'Remove container'; Script = { Invoke-Docker 'docker-remove' -ContainerName 'dkx_gettingstarted-web' } }
+  'docker-build-run'            = @{ Label = 'Docker Build+Run'; Desc = 'Build image & run'; Script = { Invoke-Docker 'docker-build-run' $defaultContainerName $defaultImageTag } }
+  'docker-build-debug'          = @{ Label = 'Docker Build Debug'; Desc = 'Debug image build'; Script = { Invoke-Docker 'docker-build-debug' $defaultContainerName $defaultImageTag } }
+  'docker-build-release'        = @{ Label = 'Docker Build Release'; Desc = 'Release image build'; Script = { Invoke-Docker 'docker-build-release' $defaultContainerName $defaultImageTag } }
+  'docker-run'                  = @{ Label = 'Docker Run'; Desc = 'Run container'; Script = { Invoke-Docker 'docker-run' $defaultContainerName $defaultImageTag } }
+  'docker-stop'                 = @{ Label = 'Docker Stop'; Desc = 'Stop container'; Script = { Invoke-Docker 'docker-stop' $defaultContainerName } }
+  'docker-remove'               = @{ Label = 'Docker Remove'; Desc = 'Remove container'; Script = { Invoke-Docker 'docker-remove' $defaultContainerName } }
   'compose-up'                  = @{ Label = 'Compose Up'; Desc = 'docker compose up'; Script = { Invoke-Docker 'compose-up' } }
   'compose-recreate'            = @{ Label = 'Compose Recreate'; Desc = 'Recreate container'; Script = { Invoke-Docker 'compose-recreate' } }
   'compose-up-pull'             = @{ Label = 'Compose Up Pull'; Desc = 'Up with image pull'; Script = { Invoke-Docker 'compose-up'; Invoke-Docker 'compose-up' } }
