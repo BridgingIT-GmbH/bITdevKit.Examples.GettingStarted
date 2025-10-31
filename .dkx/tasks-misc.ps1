@@ -385,7 +385,8 @@ function Handle-MiscCommand([string]$cmd){
     'shell' { Run-CSharpRepl; return }
     'kill-dotnet' { Kill-DotNetProcess; return }
     'browser-devkit-docs' { Open-BrowserUrl 'Opening DevKit Docs' 'https://github.com/BridgingIT-GmbH/bITdevKit/tree/main/docs'; return }
-    'browser-seq' { Open-BrowserUrl 'Opening SEQ Dashboard' 'http://localhost:15349'; return }
+    'browser-seq' { Open-BrowserUrl 'Opening Seq Dashboard' 'http://localhost:15349'; return }
+    'browser-adminneo' { Open-BrowserUrl 'Opening AdminNeo Dashboard' 'http://localhost:18089'; return }
     'browser-server-kestrel' { Open-BrowserUrl 'Opening Server (Kestrel HTTPS)' 'https://localhost:5001/scalar'; return }
     'browser-server-docker' { Open-BrowserUrl 'Opening Server (Docker HTTP)' 'http://localhost:8080/scalar'; return }
     'docs-update' { Update-DevKitDocs; return }

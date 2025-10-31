@@ -1,21 +1,28 @@
 services:
+  # ==============================================================================
+  # SQL Server 2022 - Microsoft's relational database
+  # Port: 14339 -> 1433 (default MSSQL port)
+  # Credentials: sa / Abcd1234!
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: dkx_gettingstarted_mssql
     restart: unless-stopped
     environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=Abcd1234!
-      - MSSQL_PID=Developer
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Abcd1234!"
+      MSSQL_PID: "Developer"
     healthcheck:
       test: /opt/mssql-tools/bin/sqlcmd -S mssql -U SA -P 'Abcd1234!' -Q 'select 1'
     ports:
-      - 14339:1433
+      - "14339:1433"
     volumes:
       - mssql:/var/opt/mssql
     networks:
       - dkx_gettingstarted
 
+  # ==============================================================================
+  # Initialization script runner for MSSQL
+  # Waits for SQL Server to be ready before other services start
   mssqlscripts:
     image: mcr.microsoft.com/mssql-tools:latest
     container_name: dkx_gettingstarted_mssqlscripts
@@ -25,22 +32,27 @@ services:
     networks:
       - dkx_gettingstarted
 
+  # ==============================================================================
+  # PostgreSQL 16 - Open-source relational database
+  # Port: 54329 -> 5432 (default PostgreSQL port)
+  # Credentials: postgres / Abcd1234!
+  # Database: appdb
   postgres:
     image: postgres:16
     container_name: dkx_gettingstarted_postgres
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=Abcd1234!
-      - POSTGRES_DB=appdb
-      # - LANG=en_US.utf8
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "Abcd1234!"
+      POSTGRES_DB: "appdb"
+      # LANG: "en_US.utf8"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d appdb -h localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
     ports:
-      - 54329:5432
+      - "54329:5432"
     volumes:
       - postgres:/var/lib/postgresql/data
       # Optionally seed SQL files: anything in /docker-entrypoint-initdb.d runs on first init
@@ -48,6 +60,9 @@ services:
     networks:
       - dkx_gettingstarted
 
+  # ==============================================================================
+  # Initialization script runner for PostgreSQL
+  # Waits for PostgreSQL to be ready before other services start
   pgscripts:
     image: postgres:16
     container_name: dkx_gettingstarted_pgscripts
@@ -55,30 +70,15 @@ services:
       - postgres
     command: /bin/bash -c 'until pg_isready -h postgres -U postgres -d appdb; do sleep 5; done && echo "Postgres is ready";'
     environment:
-      - PGPASSWORD=Abcd1234!
+      PGPASSWORD: "Abcd1234!"
     networks:
       - dkx_gettingstarted
 
-  pgadmin:
-    image: dpage/pgadmin4:9.9
-    container_name: dkx_gettingstarted_pgadmin
-    restart: unless-stopped
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@example.com
-      - PGADMIN_DEFAULT_PASSWORD=Abcd1234!
-      - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
-      - PGADMIN_CONFIG_SERVER_MODE=False
-    ports:
-      - 16549:80 # http://localhost:16549
-    volumes:
-      - pgadmin:/var/lib/pgadmin
-      - .dkx/docker/pgadmin-servers.json:/pgadmin4/servers.json:ro
-      - .dkx/docker/pgadmin-pgpass:/var/lib/pgadmin/.pgpass:ro
-    depends_on:
-      - postgres
-    networks:
-      - dkx_gettingstarted
-
+  # ==============================================================================
+  # AdminNeo - Universal database administration tool
+  # Port: 18089 -> 8080
+  # Supports MSSQL and PostgreSQL with pre-configured connections
+  # Web interface: http://localhost:18089
   adminneo:
     image: adminneoorg/adminneo:devel
     container_name: dkx_gettingstarted_adminneo
@@ -95,7 +95,7 @@ services:
         [
           {
             "driver": "mssql",
-            "name": "[docker] master",
+            "name": "[docker] mssql",
             "server": "mssql",
             "database": "master",
             "username": "sa",
@@ -115,47 +115,62 @@ services:
     networks:
       - dkx_gettingstarted
 
+  # ==============================================================================
+  # Seq - Structured log server for .NET applications
+  # Port: 15349 -> 80
+  # Web interface: http://localhost:15349
+  # Configured for anonymous ingestion (no auth required)
   seq:
     image: datalust/seq:2025.2
     container_name: dkx_gettingstarted_seq
     restart: unless-stopped
     ports:
-      - 15349:80 # http://localhost:15349 azure:https://ml-software.ch/posts/running-seq-on-azure
+      - "15349:80" # http://localhost:15349 azure:https://ml-software.ch/posts/running-seq-on-azure
     environment:
-      - ACCEPT_EULA=Y
-      - SEQ_FIRSTRUN_REQUIREAUTHENTICATIONFORHTTPINGESTION=False
-      - SEQ_FIRSTRUN_NOAUTHENTICATION=TRUE
-      # - SEQ_FIRSTRUN_ADMINUSERNAME=admin
-      # - SEQ_FIRSTRUN_ADMINPASSWORD=admin
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_REQUIREAUTHENTICATIONFORHTTPINGESTION: "False"
+      SEQ_FIRSTRUN_NOAUTHENTICATION: "TRUE"
+      # SEQ_FIRSTRUN_ADMINUSERNAME: "admin"
+      # SEQ_FIRSTRUN_ADMINPASSWORD: "admin"
       # https://blog.datalust.co/setting-an-initial-password-when-deploying-seq-to-docker/
-      # - SEQ_FIRSTRUN_ADMINPASSWORDHASH=FIQIay86/lqTJOWoq8jeh1KUr3wSfubJJ+/mB+fluLSK+ZhBQQ==
+      # SEQ_FIRSTRUN_ADMINPASSWORDHASH: "FIQIay86/lqTJOWoq8jeh1KUr3wSfubJJ+/mB+fluLSK+ZhBQQ=="
     volumes:
       - seq:/data
     networks:
       - dkx_gettingstarted
 
+  # ==============================================================================
+  # Docker Registry - Private container image registry
+  # Port: 5500 -> 5000
+  # API: http://localhost:5500/v2/_catalog
+  # Push images: docker tag [IMAGE_NAME] localhost:5500/[IMAGE_NAME] && docker push localhost:5500/[IMAGE_NAME]
   registry:
     image: registry:3
     container_name: dkx_gettingstarted_registry
     restart: unless-stopped
     ports:
-      - 5500:5000
+      - "5500:5000"
     environment:
-      - REGISTRY_STORAGE_DELETE_ENABLED=true
+      REGISTRY_STORAGE_DELETE_ENABLED: "true"
     volumes:
       - registry:/var/lib/registry
     networks:
       - dkx_gettingstarted
 
+  # ==============================================================================
+  # .NET Aspire Dashboard - Observability dashboard for .NET apps
+  # Port: 18889 -> 18888 (browser UI), 43179 -> 18889 (OTLP endpoint)
+  # Web interface: http://localhost:18889
+  # OTLP endpoint: http://localhost:43179
   # aspire-dashboard:
   #   image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
   #   container_name: dkx_aspire-dashboard
   #   restart: unless-stopped
   #   ports:
-  #     - 18889:18888
-  #     - 43179:18889
+  #     - "18889:18888"
+  #     - "43179:18889"
   #   environment:
-  #     - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true
+  #     DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: "true"
   #   networks:
   #     - dkx_gettingstarted
 
@@ -165,9 +180,6 @@ volumes:
     driver: local
   postgres:
     name: dkx_gettingstarted_postgres
-    driver: local
-  pgadmin:
-    name: dkx_gettingstarted_pgadmin
     driver: local
   seq:
     name: dkx_gettingstarted_seq
