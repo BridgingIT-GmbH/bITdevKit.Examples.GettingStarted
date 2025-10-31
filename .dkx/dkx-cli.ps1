@@ -51,7 +51,7 @@ function Read-Selection($title,[string[]]$choices){
 function Invoke-Dotnet([string]$cmd,[string]$projectPath){
   $script = Join-Path $PSScriptRoot 'tasks-dotnet.ps1'
   $args = @('-NoProfile','-File', $script, '-Command', $cmd)
-  if ($projectPath) { $args += @('-ProjectPath', $projectPath) }
+  if ($projectPath) { $args += @('-SolutionPath', $projectPath) }
   & pwsh $args
 }
 
