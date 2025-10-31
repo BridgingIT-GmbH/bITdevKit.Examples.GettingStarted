@@ -112,7 +112,7 @@ function Resolve-Solution([string]$explicit) {
 $needsSolutionCommands = @(
   'restore', 'build', 'build-release', 'build-nr', 'pack', 'clean',
   'format-check', 'format-apply', 'vulnerabilities', 'vulnerabilities-deep',
-  'outdated', 'outdated-json', 'update-packages', 'analyzers', 'analyzers-export',
+  'outdated', 'outdated-json', 'update-packages', 'update-packages-devkit', 'analyzers', 'analyzers-export',
   'licenses', 'coverage', 'coverage-html'
 )
 if ($needsSolutionCommands -contains $Command.ToLowerInvariant()) {
@@ -159,14 +159,23 @@ switch ($Command.ToLowerInvariant()) {
     Write-Host ("Outdated packages captured: {0}" -f $pkgs.Count) -ForegroundColor Green
   }
   'update-packages' {
-    # Use dotnet-outdated global tool to update central package versions.
-    Write-Host 'Ensuring dotnet-outdated tool is installed...' -ForegroundColor DarkGray
-    $toolInfo = & dotnet tool list -g | Out-String
-    if ($toolInfo -notmatch 'dotnet-outdated') { & dotnet tool install --global dotnet-outdated-tool }
+    # Use dotnet-outdated global tool to update package versions. https://github.com/dotnet-outdated/dotnet-outdated
+    dotnet tool restore | Out-Null
+    if ($LASTEXITCODE -ne 0) { Fail 'dotnet tool restore failed.' 91 }
     Write-Host 'Running dotnet-outdated (auto upgrade within constraints)...' -ForegroundColor Cyan
     # Central Package Management: dotnet-outdated supports --upgrade and --allow-major-version-updates if desired.
     & dotnet outdated $SolutionPath --upgrade
-    if ($LASTEXITCODE -ne 0) { Write-Host 'dotnet-outdated reported issues or applied updates with non-zero exit code.' -ForegroundColor Yellow }
+    if($LASTEXITCODE -ne 0){ Write-Host 'dotnet-outdated reported issues or applied updates with non-zero exit code.' -ForegroundColor Yellow }
+    Write-Host 'dotnet-outdated execution complete.' -ForegroundColor Green
+  }
+  'update-packages-devkit' {
+    # Use dotnet-outdated global tool to update package versions. https://github.com/dotnet-outdated/dotnet-outdated
+    dotnet tool restore | Out-Null
+    if ($LASTEXITCODE -ne 0) { Fail 'dotnet tool restore failed.' 91 }
+    Write-Host 'Running dotnet-outdated (auto upgrade devkit within constraints)...' -ForegroundColor Cyan
+    # Central Package Management: dotnet-outdated supports --upgrade and --allow-major-version-updates if desired.
+    & dotnet outdated $SolutionPath --upgrade -inc 'BridgingIT.DevKit'
+    if($LASTEXITCODE -ne 0){ Write-Host 'dotnet-outdated reported issues or applied updates with non-zero exit code.' -ForegroundColor Yellow }
     Write-Host 'dotnet-outdated execution complete.' -ForegroundColor Green
   }
   'analyzers' { Invoke-Dotnet @('build', $SolutionPath, '-warnaserror', '/p:RunAnalyzers=true', '/p:EnableNETAnalyzers=true', '/p:AnalysisLevel=latest') }
