@@ -1,0 +1,17 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Local Postgres",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "appdb",
+      "Username": "postgres",
+      "SSLMode": "prefer",
+      "ConnectNow": true,
+      "PassFile": "/var/lib/pgadmin/.pgpass",
+      "Password": "Abcd1234!",
+      "SavePassword": true
+    }
+  }
+}

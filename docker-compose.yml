@@ -1,7 +1,7 @@
 services:
   mssql:
-    image: mcr.microsoft.com/mssql/server:2019-latest
-    container_name: bdk_gettingstarted_mssql
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: dkx_gettingstarted_mssql
     restart: unless-stopped
     environment:
       - ACCEPT_EULA=Y
@@ -14,24 +14,113 @@ services:
     volumes:
       - mssql:/var/opt/mssql
     networks:
-      - bdk_gettingstarted
+      - dkx_gettingstarted
 
   mssqlscripts:
     image: mcr.microsoft.com/mssql-tools:latest
-    container_name: bdk_gettingstarted_mssqlscripts
+    container_name: dkx_gettingstarted_mssqlscripts
     depends_on:
       - mssql
     command: /bin/bash -c 'until /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P "Abcd1234!" -Q "SELECT @@VERSION"; do sleep 5; done'
     networks:
-      - bdk_gettingstarted
+      - dkx_gettingstarted
+
+  postgres:
+    image: postgres:16
+    container_name: dkx_gettingstarted_postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Abcd1234!
+      - POSTGRES_DB=appdb
+      # - LANG=en_US.utf8
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d appdb -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 54329:5432
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      # Optionally seed SQL files: anything in /docker-entrypoint-initdb.d runs on first init
+      # - ./db/init-sql:/docker-entrypoint-initdb.d:ro
+    networks:
+      - dkx_gettingstarted
+
+  pgscripts:
+    image: postgres:16
+    container_name: dkx_gettingstarted_pgscripts
+    depends_on:
+      - postgres
+    command: /bin/bash -c 'until pg_isready -h postgres -U postgres -d appdb; do sleep 5; done && echo "Postgres is ready";'
+    environment:
+      - PGPASSWORD=Abcd1234!
+    networks:
+      - dkx_gettingstarted
+
+  pgadmin:
+    image: dpage/pgadmin4:9.9
+    container_name: dkx_gettingstarted_pgadmin
+    restart: unless-stopped
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=Abcd1234!
+      - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    ports:
+      - 16549:80 # http://localhost:16549
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+      - .dkx/docker/pgadmin-servers.json:/pgadmin4/servers.json:ro
+      - .dkx/docker/pgadmin-pgpass:/var/lib/pgadmin/.pgpass:ro
+    depends_on:
+      - postgres
+    networks:
+      - dkx_gettingstarted
+
+  adminneo:
+    image: adminneoorg/adminneo:devel
+    container_name: dkx_gettingstarted_adminneo
+    restart: unless-stopped
+    ports:
+      - "18089:8080" # webapp http://localhost:18089
+    environment:
+      NEO_COLOR_VARIANT: "green"
+      NEO_PREFER_SELECTION: "true"
+      NEO_JSON_VALUES_DETECTION: "true"
+      NEO_JSON_VALUES_AUTO_FORMAT: "true"
+      NEO_SSL_TRUST_SERVER_CERTIFICATE: "true"
+      NEO_SERVERS: >
+        [
+          {
+            "driver": "mssql",
+            "name": "[docker] master",
+            "server": "mssql",
+            "database": "master",
+            "username": "sa",
+            "password": "Abcd1234!"
+          },
+          {
+            "driver": "pgsql",
+            "name": "[docker] postgres",
+            "server": "postgres",
+            "database": "appdb",
+            "username": "postgres",
+            "password": "Abcd1234!"
+          }
+        ]
+    volumes:
+      - .dkx/docker/adminneo-config.php:/var/www/html/adminneo-config.php
+    networks:
+      - dkx_gettingstarted
 
   seq:
-    image: datalust/seq:preview
-    container_name: bdk_gettingstarted_seq
+    image: datalust/seq:2025.2
+    container_name: dkx_gettingstarted_seq
     restart: unless-stopped
     ports:
       - 15349:80 # http://localhost:15349 azure:https://ml-software.ch/posts/running-seq-on-azure
-      - 43179:5341 # ingestion
     environment:
       - ACCEPT_EULA=Y
       - SEQ_FIRSTRUN_REQUIREAUTHENTICATIONFORHTTPINGESTION=False
@@ -43,11 +132,11 @@ services:
     volumes:
       - seq:/data
     networks:
-      - bdk_gettingstarted
+      - dkx_gettingstarted
 
   registry:
-    image: registry:2
-    container_name: bdk_gettingstarted_registry
+    image: registry:3
+    container_name: dkx_gettingstarted_registry
     restart: unless-stopped
     ports:
       - 5500:5000
@@ -56,11 +145,11 @@ services:
     volumes:
       - registry:/var/lib/registry
     networks:
-      - bdk_gettingstarted
+      - dkx_gettingstarted
 
   # aspire-dashboard:
   #   image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
-  #   container_name: bdk_aspire-dashboard
+  #   container_name: dkx_aspire-dashboard
   #   restart: unless-stopped
   #   ports:
   #     - 18889:18888
@@ -68,20 +157,26 @@ services:
   #   environment:
   #     - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true
   #   networks:
-  #     - bdk_gettingstarted
+  #     - dkx_gettingstarted
 
 volumes:
   mssql:
-    name: bdk_gettingstarted_mssql
+    name: dkx_gettingstarted_mssql
+    driver: local
+  postgres:
+    name: dkx_gettingstarted_postgres
+    driver: local
+  pgadmin:
+    name: dkx_gettingstarted_pgadmin
     driver: local
   seq:
-    name: bdk_gettingstarted_seq
+    name: dkx_gettingstarted_seq
     driver: local
   registry:
-    name: bdk_gettingstarted_registry
+    name: dkx_gettingstarted_registry
     driver: local
 
 networks:
-  bdk_gettingstarted:
-    name: bdk_gettingstarted
+  dkx_gettingstarted:
+    name: dkx_gettingstarted
     driver: bridge

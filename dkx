@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Cross-platform small wrapper to run the dkx PowerShell script
+# Cross-platform wrapper to run the dkx PowerShell script
 # Usage: ./dkx [args...]
 
 set -euo pipefail

@@ -17,12 +17,12 @@
 #>
 param(
   [Parameter(Position=0)] [string] $Command = 'help',
-  [Parameter()] [string] $ImageTag = 'localhost:5500/bdk_gettingstarted-web:latest',
-  [Parameter()] [string] $ContainerName = 'bdk_gettingstarted-web',
+  [Parameter()] [string] $ImageTag = 'localhost:5500/dkx_gettingstarted-web:latest',
+  [Parameter()] [string] $ContainerName = 'dkx_gettingstarted-web',
   [Parameter()] [string] $Dockerfile = 'src/Presentation.Web.Server/Dockerfile',
   [Parameter()] [string] $ProjectDockerContext = '.',
   [Parameter()] [switch] $NoCache,
-  [Parameter()] [string] $Network = 'bdk_gettingstarted',
+  [Parameter()] [string] $Network = 'dkx_gettingstarted',
   [Parameter()] [int] $HostPort = 8080,
   [Parameter()] [int] $ContainerPort = 8080,
   [Parameter()] [string] $ComposeFile = 'docker-compose.yml',
@@ -202,11 +202,11 @@ Commands:
   help               Show this help
 
 Common Parameters:
-  -ImageTag <tag>            (default: localhost:5500/bdk_gettingstarted-web:latest)
-  -ContainerName <name>      (default: bdk_gettingstarted-web)
+  -ImageTag <tag>            (default: localhost:5500/dkx_gettingstarted-web:latest)
+  -ContainerName <name>      (default: dkx_gettingstarted-web)
   -Dockerfile <path>         (default: src/Presentation.Web.Server/Dockerfile)
   -ProjectDockerContext <dir>(default: .)
-  -Network <name>            (default: bdk_gettingstarted)
+  -Network <name>            (default: dkx_gettingstarted)
   -HostPort <port>           (default: 8080)
   -ContainerPort <port>      (default: 8080)
   -NoCache                   (skip build cache)

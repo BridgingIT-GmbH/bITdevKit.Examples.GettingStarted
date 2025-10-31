@@ -28,7 +28,7 @@ $ErrorActionPreference = 'Stop'
 $env:IgnoreSpectreEncoding = $true
 
 $scriptFolder = $PSScriptRoot
-$repoRoot = Split-Path -Path $scriptFolder -Parent
+$root = Split-Path -Path $scriptFolder -Parent
 
 $helpersPath = Join-Path $PSScriptRoot 'tasks-helpers.ps1'
 if (Test-Path $helpersPath) { . $helpersPath }
@@ -111,13 +111,13 @@ $tasks = [ordered]@{
   'format-apply'            = @{ Label='Format Apply';         Desc='Apply code formatting';              Script={ Invoke-Dotnet 'format-apply' } }
   'analyzers'               = @{ Label='Analyzers';            Desc='Run analyzers';                 Script={ Invoke-Dotnet 'analyzers' } }
   'analyzers-export'        = @{ Label='Analyzers Export';     Desc='Export analyzer report';        Script={ Invoke-Dotnet 'analyzers-export' } }
-  'server-build'            = @{ Label='Server Build';         Desc='Build web server';              Script={ Invoke-Dotnet 'project-build' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'server-publish'          = @{ Label='Server Publish';       Desc='Publish web server';                Script={ Invoke-Dotnet 'project-publish' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'server-publish-release'  = @{ Label='Server Publish Release'; Desc='Publish web server release';               Script={ Invoke-Dotnet 'project-publish-release' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'server-publish-sc'       = @{ Label='Server Publish Single';    Desc='Single-file publish';           Script={ Invoke-Dotnet 'project-publish-sc' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'server-watch'            = @{ Label='Server Watch';         Desc='Run & Watch dev server';                   Script={ Invoke-Dotnet 'project-watch' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'server-run-dev'          = @{ Label='Server Run';           Desc='Run dev server';                Script={ Invoke-Dotnet 'project-run' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  # 'server-watch-fast'       = @{ Label='Server Watch Fast';    Desc='Fast watch run';                Script={ Invoke-Dotnet 'project-watch-fast' (Join-Path $PSScriptRoot 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-build'            = @{ Label='Server Build';         Desc='Build web server';              Script={ Invoke-Dotnet 'project-build' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-publish'          = @{ Label='Server Publish';       Desc='Publish web server';                Script={ Invoke-Dotnet 'project-publish' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-publish-release'  = @{ Label='Server Publish Release'; Desc='Publish web server release';               Script={ Invoke-Dotnet 'project-publish-release' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-publish-sc'       = @{ Label='Server Publish Single';    Desc='Single-file publish';           Script={ Invoke-Dotnet 'project-publish-sc' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-watch'            = @{ Label='Server Watch';         Desc='Run & Watch dev server';                   Script={ Invoke-Dotnet 'project-watch' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-run-dev'          = @{ Label='Server Run';           Desc='Run dev server';                Script={ Invoke-Dotnet 'project-run' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  # 'server-watch-fast'       = @{ Label='Server Watch Fast';    Desc='Fast watch run';                Script={ Invoke-Dotnet 'project-watch-fast' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'pack-projects'            = @{ Label='Pack Projects';         Desc='Create NuGet packages';          Script={ Invoke-Dotnet 'pack-projects' } }
   'update-packages'         = @{ Label='Update Packages';      Desc='Update Nuget packages';       Script={ Invoke-Dotnet 'update-packages' } }
   'openapi-lint'            = @{ Label='OpenAPI Lint';         Desc='Lint OpenAPI specs';            Script={ Invoke-OpenApiLint } }
@@ -142,7 +142,6 @@ $tasks = [ordered]@{
   'gc-stats'                = @{ Label='GC Stats';             Desc='Collect GC stats';              Script={ Invoke-Diagnostics 'gc-stats' } }
   'aspnet-metrics'          = @{ Label='ASP.NET Metrics';      Desc='ASP.NET counters';              Script={ Invoke-Diagnostics 'aspnet-metrics' } }
   'diag-quick'              = @{ Label='Diag Quick';           Desc='Quick diagnostics';             Script={ Invoke-Diagnostics 'quick' } }
-  'coverage-open'           = @{ Label='Coverage Open';        Desc='Open coverage HTML';            Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-coverage.ps1') -Html -Open } }
   'licenses'                = @{ Label='Licenses';             Desc='Generate license report';       Script={ Invoke-Dotnet 'licenses' } } # <-- changed to use tasks-dotnet.ps1
 }
 # Compute max label width for aligned output
@@ -176,7 +175,7 @@ function Run-Task([string]$key){
 
 if ($Task) { Run-Task $Task; exit $LASTEXITCODE }
 
-$repoName = Split-Path $repoRoot -Leaf
+$repoName = Split-Path $root -Leaf
 $message = "dkx - $repoName"
 if ($env:VSCODE_PID -or $env:TERM_PROGRAM -eq 'vscode') {
   $message | Format-SpectrePadded -Padding 0 | Format-SpectrePanel -Expand -Border "Double" -Color "DeepSkyBlue3"
@@ -204,3 +203,15 @@ while ($true) {
 }
 
 Write-Host 'Exiting' -ForegroundColor DarkGray
+
+# TODO tools
+# https://josefpihrt.github.io/docs/roslynator/cli/category/commands
+# https://github.com/christianhelle/curlgenerator
+# https://github.com/MapsterMapper/Mapster/wiki/Mapster.Tool
+# https://www.nuget.org/packages/Microsoft.dotnet-httprepl/8.1.0-preview.24554.1
+# https://github.com/devlooped/dotnet-file    for devkit task updates
+# https://www.nuget.org/packages/dotnet-retest
+# https://github.com/WeihanLi/dotnet-httpie   run .http files from cli
+# https://github.com/xoofx/dotnet-releaser
+# https://abp.io/docs/latest/cli
+# docker recreate specific containers:docker compose up -d --force-recreate CONTAINER_NAME

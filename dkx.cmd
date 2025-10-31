@@ -1,5 +1,5 @@
 @echo off
-REM Simple wrapper to run dkx.ps1 from repository root
+REM wrapper to run dkx.ps1 from repository root
 SETLOCAL
 set SCRIPT_DIR=%~dp0
 set SCRIPT=%SCRIPT_DIR%.dkx\dkx-cli.ps1
