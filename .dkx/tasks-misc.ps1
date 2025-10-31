@@ -39,10 +39,10 @@ param(
   [bool]$SkipGeneratedFiles = $true,
   [bool]$UpdateGitIgnore = $true
 )
-Write-Host "Executing command: $Command" -ForegroundColor Yellow
+# Write-Host "Executing command: $Command" -ForegroundColor Yellow
 $ErrorActionPreference = 'Stop'
 
-function Write-Section([string] $Text){ Write-Host "`n=== $Text ===" -ForegroundColor Magenta }
+# function Write-Section([string] $Text){ Write-Host "`n=== $Text ===" -ForegroundColor Magenta }
 function Fail([string] $Msg, [int] $Code=1){ Write-Error $Msg; exit $Code }
 
 # Reused from diagnostics script (with minor fallback enhancements):
@@ -83,7 +83,7 @@ function Select-Pid($title){
 }
 
 function Run-CSharpRepl() {
-  Write-Section 'Starting C# REPL'
+  # Write-Section 'Starting C# REPL'
   Write-Host 'Restoring dotnet tools...' -ForegroundColor Cyan
   dotnet tool restore | Out-Null
   if ($LASTEXITCODE -ne 0) { Fail 'dotnet tool restore failed.' 91 }
@@ -99,9 +99,8 @@ function Run-CSharpRepl() {
 }
 
 function Combine-Sources() {
-  Write-Section 'Combining sources'
+  # Write-Section 'Combining sources'
 
-  # NOTE: Because this script now in .vscode, we map gitignore path to repository root (parent of PSScriptRoot)
   $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 
   # Statistics tracking
@@ -118,9 +117,9 @@ function Combine-Sources() {
   }
 
   # Logging helpers (original)
-  function Write-Progress-Info    { param([string]$message) Write-Host "[INFO] $message" -ForegroundColor Cyan }
-  function Write-Progress-Warning { param([string]$message) Write-Host "[WARN] $message" -ForegroundColor Yellow }
-  function Write-Progress-Success { param([string]$message) Write-Host "[SUCCESS] $message" -ForegroundColor Green }
+  function Write-Progress-Info    { param([string]$message) Write-Host "-- $message" -ForegroundColor Cyan }
+  function Write-Progress-Warning { param([string]$message) Write-Host "-- $message" -ForegroundColor Yellow }
+  function Write-Progress-Success { param([string]$message) Write-Host "$message" -ForegroundColor Green }
   function Write-ProgressBar      { param([int]$Current,[int]$Total,[string]$Activity,[string]$Status); $percentComplete = [math]::Min(100, ($Current / $Total * 100)); Write-Progress -Activity $Activity -Status $Status -PercentComplete $percentComplete }
 
   # Using statement handling
@@ -283,7 +282,7 @@ function Open-BrowserUrl() {
     [string]$title,
     [string]$url
   )
-  Write-Section $title
+  # Write-Section $title
   try {
     Write-Host "Launching browser: $url" -ForegroundColor Cyan
     Start-Process $url
@@ -314,6 +313,8 @@ Commands:
   kill-dotnet                          Terminate a dotnet process (interactive selection or direct -ProcessId). No confirmation.
   browser-seq                          Open SEQ logging dashboard (http://localhost:15349) in default browser.
   browser-server-docker                Open Server (Docker container) http://localhost:8080 in default browser.
+  show-minver                          Display semantic version computed by MinVer (pre-release tag: preview.0).
+  docs-update                          Download latest DevKit docs (markdown) from upstream repository into ./devkit/docs.
   help|?                               Show this help.
 
 combine-sources Parameters (defaults shown):
@@ -357,7 +358,7 @@ Notes:
 }
 
 function Clean-Workspace() {
-  Write-Section 'Cleaning workspace build artifacts'
+  # Write-Section 'Cleaning workspace build artifacts'
   $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
   Write-Host "Root: $root" -ForegroundColor Cyan
   $patterns = @('bin','obj','bld','Backup','_UpgradeReport_Files','Debug','Release','ipch','node_modules','.tmp')
@@ -398,13 +399,12 @@ function Handle-MiscCommand([string]$cmd){
     'shell' { Run-CSharpRepl; return }
     'kill-dotnet' { Kill-DotNetProcess; return }
     'browser-devkit-docs' { Open-BrowserUrl 'Opening DevKit Docs' 'https://github.com/BridgingIT-GmbH/bITdevKit/tree/main/docs'; return }
-    'browser-seq' { Open-BrowserUrl 'Opening SEQ Dashboard' 'http://localhost:15349'; return }
+    'browser-seq' { Open-BrowserUrl 'Opening Seq Dashboard' 'http://localhost:15349'; return }
+    'browser-adminneo' { Open-BrowserUrl 'Opening AdminNeo Dashboard' 'http://localhost:18089'; return }
     'browser-server-kestrel' { Open-BrowserUrl 'Opening Server (Kestrel HTTPS)' 'https://localhost:5001/scalar'; return }
     'browser-server-docker' { Open-BrowserUrl 'Opening Server (Docker HTTP)' 'http://localhost:8080/scalar'; return }
     'show-minver' { Show-MinVer; return }
-    'minver' { Show-MinVer; return }
-    'version' { Show-MinVer; return }
-    'show-version' { Show-MinVer; return }
+    'docs-update' { Update-DevKitDocs; return }
     'help' { Help; return }
     '?' { Help; return }
     default { Write-Host "Unknown misc command '$cmd'" -ForegroundColor Red; Help; exit 10 }
@@ -412,7 +412,7 @@ function Handle-MiscCommand([string]$cmd){
 }
 
 function Kill-DotNetProcess() {
-  Write-Section 'Kill .NET Process'
+  # Write-Section 'Kill .NET Process'
   # Non-interactive direct path if provided
   # If ProcessId provided non-interactively, skip selection & confirmation when -ForceKill used.
   $selectedPid = $null
@@ -439,6 +439,58 @@ function Kill-DotNetProcess() {
   Write-Host ("Failed to terminate PID {0}: {1}" -f $selectedPid, $errMsg) -ForegroundColor Red
     $global:LASTEXITCODE=5
   }
+}
+
+function Update-DevKitDocs() {
+  # Write-Section 'Updating DevKit Docs (markdown)'
+  $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+  $targetRoot = Join-Path $repoRoot '.dkx/docs'
+  New-Item -ItemType Directory -Path $targetRoot -Force | Out-Null
+
+  $apiBase = 'https://api.github.com/repos/BridgingIT-GmbH/bITdevKit/contents/docs'
+  $branchRef = 'main'
+  $headers = @{ 'User-Agent' = 'bITdevKit-DocsSyncScript'; 'Accept' = 'application/vnd.github.v3+json' }
+
+  function Get-DirectoryItems([string]$apiUrl){
+    try { return Invoke-RestMethod -Uri ($apiUrl + '?ref=' + $branchRef) -Headers $headers -ErrorAction Stop }
+    catch { Write-Host ("Failed to list '{0}': {1}" -f $apiUrl,$_.Exception.Message) -ForegroundColor Yellow; return @() }
+  }
+
+  $downloaded = [System.Collections.Generic.List[string]]::new()
+  $failed = [System.Collections.Generic.List[string]]::new()
+
+  function Sync-Directory([string]$apiUrl){
+    $items = Get-DirectoryItems $apiUrl
+    foreach($item in $items){
+      # if($item.type -eq 'dir'){
+      #   Sync-Directory $item.url
+      # }
+      if($item.type -eq 'file' -and $item.name -like '*.md'){
+        $relative = ($item.path -replace '^docs/','')
+        $localPath = Join-Path $targetRoot $relative
+        $localDir = Split-Path $localPath -Parent
+        New-Item -ItemType Directory -Force -Path $localDir | Out-Null
+        try {
+          $content = Invoke-RestMethod -Uri $item.download_url -Headers $headers -ErrorAction Stop
+          # If content returns as an object (rare), cast to string
+          if($content -isnot [string]){ $content = [string]$content }
+          Set-Content -Path $localPath -Value $content -Encoding UTF8
+          $downloaded.Add($relative) | Out-Null
+        } catch {
+          Write-Host ("Failed to download {0}: {1}" -f $relative, $_.Exception.Message) -ForegroundColor Yellow
+          $failed.Add($relative) | Out-Null
+        }
+      }
+    }
+  }
+
+  $rootApi = $apiBase
+  Invoke-SpectreCommandWithStatus -Title 'Downloading latest DevKit docs...' -ScriptBlock {
+    Sync-Directory $rootApi
+  } -Spinner dots
+
+  Write-Host ("Downloaded {0} markdown files to {1}" -f $downloaded.Count, $targetRoot) -ForegroundColor Green
+  if($failed.Count -gt 0){ Write-Host ("Failed: {0}" -f ($failed -join ', ')) -ForegroundColor Yellow }
 }
 
 Handle-MiscCommand $Command

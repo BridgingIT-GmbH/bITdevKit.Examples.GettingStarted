@@ -5,22 +5,14 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 
-using BridgingIT.DevKit.Application;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
+using BridgingIT.DevKit.Application.JobScheduling;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation.Web;
-using BridgingIT.DevKit.Infrastructure.EntityFramework;
-using BridgingIT.DevKit.Presentation;
-using Common;
-using DevKit.Domain.Repositories;
-using FluentValidation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 public class CoreModule() : WebModuleBase(nameof(CoreModule).ToLower())
 {
@@ -50,8 +42,9 @@ public class CoreModule() : WebModuleBase(nameof(CoreModule).ToLower())
         services.AddJobScheduling(o => o
             .StartupDelay(configuration["JobScheduling:StartupDelay"]), configuration) // wait some time before starting the scheduler
             .WithSqlServerStore(configuration["JobScheduling:Quartz:quartz.dataSource.default.connectionString"])
+            .WithBehavior<ModuleScopeJobSchedulingBehavior>()
             .WithJob<CustomerExportJob>()
-                .Cron(CronExpressions.EveryHour)
+                .Cron(CronExpressions.Every30Minutes)
                 .Named(nameof(CustomerExportJob)).RegisterScoped();
 
         // entity framework setup
@@ -71,6 +64,7 @@ public class CoreModule() : WebModuleBase(nameof(CoreModule).ToLower())
 
         // repository setup
         services.AddEntityFrameworkRepository<Customer, CoreModuleDbContext>()
+            .WithBehavior<RepositoryTracingBehavior<Customer>>()
             .WithBehavior<RepositoryLoggingBehavior<Customer>>()
             .WithBehavior<RepositoryAuditStateBehavior<Customer>>()
             .WithBehavior<RepositoryOutboxDomainEventBehavior<Customer, CoreModuleDbContext>>();

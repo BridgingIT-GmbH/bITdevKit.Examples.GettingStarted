@@ -5,11 +5,7 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
-using BridgingIT.DevKit.Common;
-using BridgingIT.DevKit.Domain.Repositories;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Events;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 using System;
 
@@ -60,16 +56,16 @@ public class CustomerCreateCommandHandler(
 
                 .Log(logger, "Customer number created{@Number}", r => [r.Value.Number])
 
-                // STEP 4 — Create aggregate
+                // STEP 4 — Create new Aggregate
                 .Bind(this.CreateEntity)
 
-                // STEP 6 — Save aggregate to repository
+                // STEP 6 — Save new Aggregate to repository
                 .BindResultAsync(this.PersistEntityAsync, this.CapturePersistedEntity, cancellationToken)
 
                 // STEP 7 — Side effects (audit/logging)
                 .Log(logger, "AUDIT - Customer {Id} created for {Email}", r => [r.Value.Entity.Id, r.Value.Entity.Email.Value])
 
-                // STEP 8 — Map domain → DTO
+                // STEP 8 — Map new Aggregate → Model
                 .Map(this.ToModel)
                 .Log(logger, "Mapped to {@Model}", r => [r.Value]);
 
@@ -85,13 +81,15 @@ public class CustomerCreateCommandHandler(
         return ctx;
     }
 
-    private CustomerCreateContext CreateEntity(CustomerCreateContext ctx)
+    private Result<CustomerCreateContext> CreateEntity(CustomerCreateContext ctx)
     {
-        ctx.Entity = Customer.Create(
-            ctx.Model.FirstName,
-            ctx.Model.LastName,
-            ctx.Model.Email,
-            ctx.Number);
+        var createResult = Customer.Create(ctx.Model.FirstName, ctx.Model.LastName, ctx.Model.Email, ctx.Number);
+        if (createResult.IsFailure)
+        {
+            return createResult.Unwrap();
+        }
+
+        ctx.Entity = createResult.Value;
         return ctx;
     }
 

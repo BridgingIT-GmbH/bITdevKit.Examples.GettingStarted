@@ -5,9 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
 
-using BridgingIT.DevKit.Infrastructure.EntityFramework;
-using Microsoft.EntityFrameworkCore;
-
 /// <summary>
 /// A factory for creating instances of <see cref="CoreModuleDbContext"/> during design-time operations,
 /// such as Entity Framework Core migrations. Extends the generic factory to provide SQL Server-specific configuration

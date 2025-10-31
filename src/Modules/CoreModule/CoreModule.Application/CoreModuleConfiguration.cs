@@ -5,9 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
-using FluentValidation;
-using System.Diagnostics.CodeAnalysis;
-
 /// <summary>
 /// Strongly typed configuration model for the CoreModule.
 /// Used for binding configuration settings (e.g. from <c>appsettings.json</c> or environment variables)

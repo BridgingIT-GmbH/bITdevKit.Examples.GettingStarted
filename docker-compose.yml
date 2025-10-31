@@ -1,83 +1,195 @@
 services:
+  # ==============================================================================
+  # SQL Server 2022 - Microsoft's relational database
+  # Port: ${MSSQL_PORT} -> 1433 (default MSSQL port)
+  # Credentials: ${MSSQL_USER} / ${MSSQL_PASSWORD}
   mssql:
-    image: mcr.microsoft.com/mssql/server:2019-latest
-    container_name: bdk_gettingstarted_mssql
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: ${CONTAINER_PREFIX}_mssql
     restart: unless-stopped
     environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=Abcd1234!
-      - MSSQL_PID=Developer
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "${MSSQL_PASSWORD}"
+      MSSQL_PID: "Developer"
     healthcheck:
-      test: /opt/mssql-tools/bin/sqlcmd -S mssql -U SA -P 'Abcd1234!' -Q 'select 1'
+      test: /opt/mssql-tools/bin/sqlcmd -S mssql -U ${MSSQL_USER} -P '${MSSQL_PASSWORD}' -Q 'select 1'
     ports:
-      - 14339:1433
+      - "${MSSQL_PORT}:1433"
     volumes:
       - mssql:/var/opt/mssql
     networks:
-      - bdk_gettingstarted
+      - ${NETWORK_NAME}
 
+  # ==============================================================================
+  # Initialization script runner for MSSQL
+  # Waits for SQL Server to be ready before other services start
   mssqlscripts:
     image: mcr.microsoft.com/mssql-tools:latest
-    container_name: bdk_gettingstarted_mssqlscripts
+    container_name: ${CONTAINER_PREFIX}_mssqlscripts
     depends_on:
       - mssql
-    command: /bin/bash -c 'until /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P "Abcd1234!" -Q "SELECT @@VERSION"; do sleep 5; done'
+    command: /bin/bash -c 'until /opt/mssql-tools/bin/sqlcmd -S mssql -U ${MSSQL_USER} -P "${MSSQL_PASSWORD}" -Q "SELECT @@VERSION"; do sleep 5; done'
     networks:
-      - bdk_gettingstarted
+      - ${NETWORK_NAME}
 
-  seq:
-    image: datalust/seq:preview
-    container_name: bdk_gettingstarted_seq
+  # ==============================================================================
+  # PostgreSQL 16 - Open-source relational database
+  # Port: ${POSTGRES_PORT} -> 5432 (default PostgreSQL port)
+  # Credentials: ${POSTGRES_USER} / ${POSTGRES_PASSWORD}
+  # Database: ${POSTGRES_DB}
+  postgres:
+    image: postgres:16
+    container_name: ${CONTAINER_PREFIX}_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+      # LANG: "en_US.utf8"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      # Optionally seed SQL files: anything in /docker-entrypoint-initdb.d runs on first init
+      # - ./db/init-sql:/docker-entrypoint-initdb.d:ro
+    networks:
+      - ${NETWORK_NAME}
+
+  # ==============================================================================
+  # Initialization script runner for PostgreSQL
+  # Waits for PostgreSQL to be ready before other services start
+  pgscripts:
+    image: postgres:16
+    container_name: ${CONTAINER_PREFIX}_pgscripts
+    depends_on:
+      - postgres
+    command: /bin/bash -c 'until pg_isready -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB}; do sleep 5; done && echo "Postgres is ready";'
+    environment:
+      PGPASSWORD: "${POSTGRES_PASSWORD}"
+    networks:
+      - ${NETWORK_NAME}
+
+  # ==============================================================================
+  # AdminNeo - Universal database administration tool
+  # Port: ${ADMINNEO_PORT} -> 8080
+  # Supports MSSQL and PostgreSQL with pre-configured connections
+  # Web interface: http://localhost:${ADMINNEO_PORT}
+  adminneo:
+    image: adminneoorg/adminneo:devel
+    container_name: ${CONTAINER_PREFIX}_adminneo
     restart: unless-stopped
     ports:
-      - 15349:80 # http://localhost:15349 azure:https://ml-software.ch/posts/running-seq-on-azure
+      - "${ADMINNEO_PORT}:8080" # webapp http://localhost:${ADMINNEO_PORT}
     environment:
-      - ACCEPT_EULA=Y
-      - SEQ_FIRSTRUN_ADMINUSERNAME=admin
+      NEO_COLOR_VARIANT: "green"
+      NEO_PREFER_SELECTION: "true"
+      NEO_JSON_VALUES_DETECTION: "true"
+      NEO_JSON_VALUES_AUTO_FORMAT: "true"
+      NEO_SSL_TRUST_SERVER_CERTIFICATE: "true"
+      NEO_SERVERS: >
+        [
+          {
+            "driver": "mssql",
+            "name": "[docker] mssql",
+            "server": "mssql",
+            "database": "${MSSQL_DATABASE}",
+            "username": "${MSSQL_USER}",
+            "password": "${MSSQL_PASSWORD}"
+          },
+          {
+            "driver": "pgsql",
+            "name": "[docker] postgres",
+            "server": "postgres",
+            "database": "${POSTGRES_DB}",
+            "username": "${POSTGRES_USER}",
+            "password": "${POSTGRES_PASSWORD}"
+          }
+        ]
+    volumes:
+      - .dkx/docker/adminneo-config.php:/var/www/html/adminneo-config.php
+    networks:
+      - ${NETWORK_NAME}
+
+  # ==============================================================================
+  # Seq - Structured log server for .NET applications
+  # Port: ${SEQ_PORT} -> 80
+  # Web interface: http://localhost:${SEQ_PORT}
+  # Configured for anonymous ingestion (no auth required)
+  seq:
+    image: datalust/seq:2025.2
+    container_name: ${CONTAINER_PREFIX}_seq
+    restart: unless-stopped
+    ports:
+      - "${SEQ_PORT}:80" # http://localhost:${SEQ_PORT}
+      - "${SEQ_INGESTION_PORT}:5341" # trace ingestion
+    environment:
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_REQUIREAUTHENTICATIONFORHTTPINGESTION: "False"
+      SEQ_FIRSTRUN_NOAUTHENTICATION: "TRUE"
+      # SEQ_FIRSTRUN_ADMINUSERNAME: "admin"
+      # SEQ_FIRSTRUN_ADMINPASSWORD: "admin"
       # https://blog.datalust.co/setting-an-initial-password-when-deploying-seq-to-docker/
-      - SEQ_FIRSTRUN_ADMINPASSWORDHASH=FIQIay86/lqTJOWoq8jeh1KUr3wSfubJJ+/mB+fluLSK+ZhBQQ==
+      # SEQ_FIRSTRUN_ADMINPASSWORDHASH: "FIQIay86/lqTJOWoq8jeh1KUr3wSfubJJ+/mB+fluLSK+ZhBQQ=="
     volumes:
       - seq:/data
     networks:
-      - bdk_gettingstarted
+      - ${NETWORK_NAME}
 
+  # ==============================================================================
+  # Docker Registry - Private container image registry
+  # Port: ${REGISTRY_PORT} -> 5000
+  # API: http://localhost:${REGISTRY_PORT}/v2/_catalog
+  # Push images: docker tag [IMAGE_NAME] localhost:${REGISTRY_PORT}/[IMAGE_NAME] && docker push localhost:${REGISTRY_PORT}/[IMAGE_NAME]
   registry:
-    image: registry:2
-    container_name: bdk_gettingstarted_registry
+    image: registry:3
+    container_name: ${CONTAINER_PREFIX}_registry
     restart: unless-stopped
     ports:
-      - 5500:5000
+      - "${REGISTRY_PORT}:5000"
     environment:
-      - REGISTRY_STORAGE_DELETE_ENABLED=true
+      REGISTRY_STORAGE_DELETE_ENABLED: "true"
     volumes:
       - registry:/var/lib/registry
     networks:
-      - bdk_gettingstarted
+      - ${NETWORK_NAME}
 
+  # ==============================================================================
+  # .NET Aspire Dashboard - Observability dashboard for .NET apps
+  # Port: ${ASPIRE_DASHBOARD_PORT} -> 18888 (browser UI), ${ASPIRE_OTLP_PORT} -> 18889 (OTLP endpoint)
+  # Web interface: http://localhost:${ASPIRE_DASHBOARD_PORT}
+  # OTLP endpoint: http://localhost:${ASPIRE_OTLP_PORT}
   # aspire-dashboard:
   #   image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
-  #   container_name: bdk_aspire-dashboard
+  #   container_name: ${CONTAINER_PREFIX}_aspire-dashboard
   #   restart: unless-stopped
   #   ports:
-  #     - 18889:18888
-  #     - 43179:18889
+  #     - "${ASPIRE_DASHBOARD_PORT}:18888"
+  #     - "${ASPIRE_OTLP_PORT}:18889"
   #   environment:
-  #     - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true
+  #     DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: "true"
   #   networks:
-  #     - bdk_gettingstarted
+  #     - ${NETWORK_NAME}
 
 volumes:
   mssql:
-    name: bdk_gettingstarted_mssql
+    name: ${CONTAINER_PREFIX}_mssql
+    driver: local
+  postgres:
+    name: ${CONTAINER_PREFIX}_postgres
     driver: local
   seq:
-    name: bdk_gettingstarted_seq
+    name: ${CONTAINER_PREFIX}_seq
     driver: local
   registry:
-    name: bdk_gettingstarted_registry
+    name: ${CONTAINER_PREFIX}_registry
     driver: local
 
 networks:
-  bdk_gettingstarted:
-    name: bdk_gettingstarted
+  dkx_gettingstarted:
+    name: ${NETWORK_NAME}
     driver: bridge

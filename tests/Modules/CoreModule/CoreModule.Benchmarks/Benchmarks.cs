@@ -5,10 +5,8 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Benchmarks;
 
-using BenchmarkDotNet.Attributes;
-using Microsoft.VSDiagnostics;
-using System;
 using System.Security.Cryptography;
+using BenchmarkDotNet.Attributes;
 
 // For more information on the VS BenchmarkDotNet Diagnosers see https://learn.microsoft.com/visualstudio/profiling/profiling-with-benchmark-dotnet
 //[CPUUsageDiagnoser]
@@ -22,13 +20,13 @@ public class Benchmarks
     [GlobalSetup]
     public void Setup()
     {
-        data = new byte[10000];
-        new Random(42).NextBytes(data);
+        this.data = new byte[10000];
+        new Random(42).NextBytes(this.data);
     }
 
     [Benchmark]
     public byte[] Sha256()
     {
-        return sha256.ComputeHash(data);
+        return this.sha256.ComputeHash(this.data);
     }
 }

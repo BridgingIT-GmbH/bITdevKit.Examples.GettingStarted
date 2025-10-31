@@ -5,9 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Events;
 
-using BridgingIT.DevKit.Domain;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-
 /// <summary>
 /// Domain event that is raised whenever an existing <see cref="Customer"/> aggregate has been updated.
 /// </summary>

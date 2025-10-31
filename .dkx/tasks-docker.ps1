@@ -17,22 +17,23 @@
 #>
 param(
   [Parameter(Position=0)] [string] $Command = 'help',
-  [Parameter()] [string] $ImageTag = 'localhost:5500/bdk_gettingstarted-web:latest',
-  [Parameter()] [string] $ContainerName = 'bdk_gettingstarted-web',
+  [Parameter()] [string] $ImageTag = 'localhost:5500/dkx_gettingstarted-web:latest',
+  [Parameter()] [string] $ContainerName = 'dkx_gettingstarted-web',
   [Parameter()] [string] $Dockerfile = 'src/Presentation.Web.Server/Dockerfile',
   [Parameter()] [string] $ProjectDockerContext = '.',
   [Parameter()] [switch] $NoCache,
-  [Parameter()] [string] $Network = 'bdk_gettingstarted',
+  [Parameter()] [string] $Network = 'dkx_gettingstarted',
   [Parameter()] [int] $HostPort = 8080,
   [Parameter()] [int] $ContainerPort = 8080,
   [Parameter()] [string] $ComposeFile = 'docker-compose.yml',
   [Parameter()] [switch] $Pull
 )
-Write-Host "Executing command: $Command" -ForegroundColor Yellow
+# Write-Host "Executing command: $Command" -ForegroundColor Yellow
 $ErrorActionPreference = 'Stop'
 
-function Write-Section([string] $Text) { Write-Host "`n=== $Text ===" -ForegroundColor Cyan }
-function Write-Step([string] $Text) { Write-Host "-- $Text" -ForegroundColor DarkCyan }
+# function Write-Section([string] $Text) { Write-Host "`n=== $Text ===" -ForegroundColor Cyan }
+function Write-Step([string] $Text) { Write-Host "-- $Text" -ForegroundColor Cyan }
+function Write-Command([string] $Text) { Write-Host "$Text" -ForegroundColor DarkGray }
 function Fail([string] $Message, [int] $Code = 1) { Write-Error $Message; exit $Code }
 
 function Ensure-Network() {
@@ -46,11 +47,11 @@ function Ensure-Network() {
 
 function Docker-Build() {
   param([string] $Tag, [string] $File, [string] $Context, [switch] $NoCache)
-  Write-Section "Docker Build ($Tag)"
+  # Write-Section "Docker Build ($Tag)"
   $args = @('build', '-t', $Tag, '-f', $File)
   if ($NoCache) { $args += '--no-cache' }
   $args += $Context
-  Write-Step "docker $($args -join ' ')"
+  Write-Command "docker $($args -join ' ')"
   docker @args
   if ($LASTEXITCODE -ne 0) { Fail "Docker build failed." $LASTEXITCODE }
 }
@@ -63,7 +64,7 @@ function Docker-Run() {
     [int] $HostPort,
     [int] $ContainerPort
   )
-  Write-Section "Docker Run ($Name)"
+  # Write-Section "Docker Run ($Name)"
   Write-Step 'Removing any existing container'
   docker stop $Name 2>$null | Out-Null
   docker rm $Name 2>$null | Out-Null
@@ -81,33 +82,75 @@ function Docker-Run() {
   $runArgs = @('run','-d','--name', $Name,'-p',"$HostPort`:$ContainerPort",'--network', $Network)
   foreach($e in $envVars){ $runArgs += @('-e', $e) }
   $runArgs += @('-v',"$(Resolve-Path $logsDir):/.logs", $Tag)
-  Write-Step "docker $($runArgs -join ' ')"
+  Write-Command "docker $($runArgs -join ' ')"
   docker @runArgs
   if ($LASTEXITCODE -ne 0) { Fail "Docker run failed." $LASTEXITCODE }
   Write-Step "Container running: http://localhost:$HostPort"
+
+  # show concise container details (ID, Name, Status, Ports)
+  try {
+    $fmt = '{{.ID}};{{.Names}};{{.Status}};{{.Ports}}'
+    Write-Step "Container details:"
+    Write-Command "docker ps --filter name=$Name --format `"$fmt`""
+    $info = docker ps --filter "name=$Name" --format $fmt 2>$null
+    if ($info) {
+      $cols = $info -split ";"
+      Write-Host ("ID: {0}  `nName: {1}  `nStatus: {2}  `nPorts: {3}" -f $cols[0], $cols[1], $cols[2], ($cols[3] -replace '\s+', ' ')) -ForegroundColor Green
+    } else {
+      Write-Step "No running container matched the name: $Name"
+    }
+  } catch {
+    Write-Step "Failed to list container details: $($_.Exception.Message)"
+  }
 }
 
 function Docker-Stop() {
   param([string] $Name)
-  Write-Section "Docker Stop ($Name)"
+  # Write-Section "Docker Stop ($Name)"
   docker stop $Name 2>$null | Out-Null
   if ($LASTEXITCODE -eq 0) { Write-Step 'Stopped (if existed).' }
 }
 
 function Docker-Remove() {
-  param([string] $Name)
-  Write-Section "Docker Remove ($Name)"
+  param(
+    [string] $Name,
+    [string] $NetName # optional network to remove (falls back to script $Network)
+  )
+  # Write-Section "Docker Remove ($Name)"
+  Write-Step "Removing container (if present): $Name"
   docker rm -f $Name 2>$null | Out-Null
-  if ($LASTEXITCODE -eq 0) { Write-Step 'Removed (if existed).' }
+  if ($LASTEXITCODE -eq 0) { Write-Step 'Container removed (if existed).' } else { Write-Step 'Container removal attempted (may not have existed).' }
+
+  # Determine network to remove (use provided NetName or global $Network)
+  if (-not $NetName) { $NetName = $Network }
+
+  if ($NetName) {
+    Write-Step "Attempting to remove network: $NetName (if present and not in use)"
+    try {
+      $exists = docker network ls --format '{{.Name}}' | Select-String -Quiet -Pattern "^$NetName$"
+      if ($exists) {
+        docker network rm $NetName 2>$null | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+          Write-Step "Network removed: $NetName"
+        } else {
+          Write-Step "Network removal skipped or failed (likely in use): $NetName"
+        }
+      } else {
+        Write-Step "Network not found: $NetName"
+      }
+    } catch {
+      Write-Step "Network removal encountered an error: $($_.Exception.Message)"
+    }
+  }
 }
 
 function Compose-Up() {
   param([string] $File,[switch] $Pull)
-  Write-Section "docker compose up ($File)"
+  # Write-Section "docker compose up ($File)"
   if (-not (Test-Path $File)) { Fail "Compose file not found: $File" }
   $args = @('compose','-f', $File,'up','-d')
-  if ($Pull) { $args = @('compose','-f', $File,'pull'); Write-Step "docker $($args -join ' ')"; docker @args; if ($LASTEXITCODE -ne 0){ Fail 'docker compose pull failed.' $LASTEXITCODE }; $args = @('compose','-f', $File,'up','-d') }
-  Write-Step "docker $($args -join ' ')"
+  if ($Pull) { $args = @('compose','-f', $File,'pull'); Write-Command "docker $($args -join ' ')"; docker @args; if ($LASTEXITCODE -ne 0){ Fail 'docker compose pull failed.' $LASTEXITCODE }; $args = @('compose','-f', $File,'up','-d') }
+  Write-Command "docker $($args -join ' ')"
   docker @args
   if ($LASTEXITCODE -ne 0) { Fail 'docker compose up failed.' $LASTEXITCODE }
   Write-Step 'Compose stack started.'
@@ -115,10 +158,10 @@ function Compose-Up() {
 
 function Compose-Down-Clean() {
   param([string] $File)
-  Write-Section "docker compose down + prune ($File)"
+  # Write-Section "docker compose down + prune ($File)"
   if (-not (Test-Path $File)) { Fail "Compose file not found: $File" }
   $downArgs = @('compose','-f', $File,'down','--remove-orphans','--volumes')
-  Write-Step "docker $($downArgs -join ' ')"
+  Write-Command "docker $($downArgs -join ' ')"
   docker @downArgs
   if ($LASTEXITCODE -ne 0) { Fail 'docker compose down failed.' $LASTEXITCODE }
   # Remove images defined in the compose file (basic parse by 'image:' tokens)
@@ -132,10 +175,10 @@ function Compose-Down-Clean() {
 
 function Compose-Down() {
   param([string] $File)
-  Write-Section "docker compose down ($File)"
+  # Write-Section "docker compose down ($File)"
   if (-not (Test-Path $File)) { Fail "Compose file not found: $File" }
   $downArgs = @('compose','-f', $File,'down')
-  Write-Step "docker $($downArgs -join ' ')"
+  Write-Command "docker $($downArgs -join ' ')"
   docker @downArgs
   if ($LASTEXITCODE -ne 0) { Fail 'docker compose down failed.' $LASTEXITCODE }
   Write-Step 'Compose stack stopped.'
@@ -159,11 +202,11 @@ Commands:
   help               Show this help
 
 Common Parameters:
-  -ImageTag <tag>            (default: localhost:5500/bdk_gettingstarted-web:latest)
-  -ContainerName <name>      (default: bdk_gettingstarted-web)
+  -ImageTag <tag>            (default: localhost:5500/dkx_gettingstarted-web:latest)
+  -ContainerName <name>      (default: dkx_gettingstarted-web)
   -Dockerfile <path>         (default: src/Presentation.Web.Server/Dockerfile)
   -ProjectDockerContext <dir>(default: .)
-  -Network <name>            (default: bdk_gettingstarted)
+  -Network <name>            (default: dkx_gettingstarted)
   -HostPort <port>           (default: 8080)
   -ContainerPort <port>      (default: 8080)
   -NoCache                   (skip build cache)
@@ -187,7 +230,7 @@ switch ($Command.ToLower()) {
     $args = @('build','-t',$tag,'-f',$Dockerfile,'--build-arg','CONFIG=Debug')
     if($NoCache){ $args += '--no-cache' }
     $args += $ProjectDockerContext
-    Write-Step "docker $($args -join ' ')"
+    Write-Command "docker $($args -join ' ')"
     docker @args
     if($LASTEXITCODE -ne 0){ Fail 'Docker debug build failed.' $LASTEXITCODE }
   }
@@ -197,7 +240,7 @@ switch ($Command.ToLower()) {
     $args = @('build','-t',$tag,'-f',$Dockerfile,'--build-arg','CONFIG=Release')
     if($NoCache){ $args += '--no-cache' }
     $args += $ProjectDockerContext
-    Write-Step "docker $($args -join ' ')"
+    Write-Command "docker $($args -join ' ')"
     docker @args
     if($LASTEXITCODE -ne 0){ Fail 'Docker release build failed.' $LASTEXITCODE }
   }

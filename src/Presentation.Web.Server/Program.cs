@@ -3,16 +3,14 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-using BridgingIT.DevKit.Common;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
-using BridgingIT.DevKit.Presentation;
-using BridgingIT.DevKit.Presentation.Web;
 using Hellang.Middleware.ProblemDetails;
 
 // ===============================================================================================
 // Configure the host
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.ConfigureLogging();
+builder.Services.AddConsoleCommandsInteractive();
 
 // ===============================================================================================
 // Configure the modules
@@ -25,12 +23,14 @@ builder.Services.AddModules(builder.Configuration, builder.Environment)
 // Configure the services
 builder.Services.AddRequester()
     .AddHandlers()
+    .WithBehavior(typeof(TracingBehavior<,>))
     .WithBehavior(typeof(ModuleScopeBehavior<,>))
     .WithBehavior(typeof(ValidationPipelineBehavior<,>))
     .WithBehavior(typeof(RetryPipelineBehavior<,>))
     .WithBehavior(typeof(TimeoutPipelineBehavior<,>));
 builder.Services.AddNotifier()
     .AddHandlers()
+    .WithBehavior(typeof(TracingBehavior<,>))
     .WithBehavior(typeof(ModuleScopeBehavior<,>))
     .WithBehavior(typeof(ValidationPipelineBehavior<,>))
     .WithBehavior(typeof(RetryPipelineBehavior<,>))
@@ -66,7 +66,7 @@ builder.Services.AddHealthChecks(builder.Configuration);
 
 // ===============================================================================================
 // Configure Observability
-builder.Services.AddOpenTelemetry(builder.Configuration);
+builder.Services.AddOpenTelemetry(builder);
 
 // ===============================================================================================
 // Configure the HTTP request pipeline
@@ -77,18 +77,22 @@ if (app.Environment.IsLocalDevelopment() || app.Environment.IsContainerized())
     app.MapScalar();
 }
 
+app.UseRuleLogger();
+app.UseResultLogger();
+
 app.UseStaticFiles();
 app.UseRequestCorrelation();
+app.UseRequestModuleContext();
 app.UseRequestLogging();
 
 app.UseCors();
 app.UseProblemDetails();
 app.UseHttpsRedirection();
 
+app.UseModules();
+
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseModules();
 
 app.UseCurrentUserLogging();
 
@@ -96,6 +100,9 @@ app.MapHealthChecks();
 app.MapModules();
 app.MapControllers();
 app.MapEndpoints();
+
+app.UseConsoleCommandsInteractiveStats();
+app.UseConsoleCommandsInteractive();
 
 app.Run();
 

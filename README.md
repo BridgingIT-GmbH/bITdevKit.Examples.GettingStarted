@@ -345,7 +345,7 @@ public class CoreModuleMapperRegister : IRegister
 }
 ```
 
-Perfect 🚀 — let’s make it **short and developer‑oriented**, but also **informative** about how the OpenAPI part is setup (MSBuild, package references, and post‑build step).  
+Perfect 🚀 — let’s make it **short and developer‑oriented**, but also **informative** about how the OpenAPI part is setup (MSBuild, package references, and post‑build step).
 
 Here’s a **drop‑in section** for your README that matches the style of what you already have:
 
@@ -355,7 +355,7 @@ Here’s a **drop‑in section** for your README that matches the style of what 
 
 The project uses **build‑time OpenAPI** documentation creation.
 
-- On **build**, the OpenAPI specification is generated to `wwwroot/openapi.json`.  
+- On **build**, the OpenAPI specification is generated to `wwwroot/openapi.json`.
 - ASP.NET Core serves this as a **static file** at [https://localhost:5001/openapi.json](https://localhost:5001/openapi.json).
 - **Swagger UI** ([https://localhost:5001/swagger/index.html](https://localhost:5001/swagger/index.html)) is configured to use the generated specification.
 
@@ -363,9 +363,9 @@ This ensures the specification is **consistent across environments** and availab
 
 #### Setup
 
-- **Packages used**:  
-  - `Microsoft.AspNetCore.OpenApi`  
-  - `Microsoft.Extensions.ApiDescription.Server`  
+- **Packages used**:
+  - `Microsoft.AspNetCore.OpenApi`
+  - `Microsoft.Extensions.ApiDescription.Server`
   - `Swashbuckle.AspNetCore.SwaggerUI` (for the UI only)
 
 - **Project file configuration** (`Presentation.Web.Server.csproj`):
@@ -437,17 +437,17 @@ This appendix documents building, tagging, pushing, pulling and running the `Pre
 
 ### Build Image
 ```pwsh
-docker build -t bdk_gettingstarted-web:latest -f src/Presentation.Web.Server/Dockerfile .
+docker build -t dkx_gettingstarted-web:latest -f src/Presentation.Web.Server/Dockerfile .
 ```
 
 ### Tag For Local Registry
 ```pwsh
-docker tag bdk_gettingstarted-web:latest localhost:5500/bdk_gettingstarted-web:latest
+docker tag dkx_gettingstarted-web:latest localhost:5500/dkx_gettingstarted-web:latest
 ```
 
 ### Push To Local Registry
 ```pwsh
-docker push localhost:5500/bdk_gettingstarted-web:latest
+docker push localhost:5500/dkx_gettingstarted-web:latest
 ```
 List Local Registry catalog:
 ```pwsh
@@ -456,20 +456,20 @@ curl http://localhost:5500/v2/_catalog
 
 ### Run Container
 ```pwsh
-docker run -d -p8080:8080 --name bdk_gettingstarted-web localhost:5500/bdk_gettingstarted-web:latest
+docker run -d -p8080:8080 --name dkx_gettingstarted-web localhost:5500/dkx_gettingstarted-web:latest
 ```
 or
 ```pwsh
 docker run `
   -d `
   -p 8080:8080 `
-  --name bdk_gettingstarted-web `
-  --network bdk_gettingstarted `
+  --name dkx_gettingstarted-web `
+  --network dkx_gettingstarted `
   -e ASPNETCORE_ENVIRONMENT=Development `
   -e "Modules__CoreModule__ConnectionStrings__Default=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;" `
   -e "JobScheduling__Quartz__quartz.dataSource.default.connectionString=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;" `
   -e "Authentication__Authority=http://localhost:8080" `
-  localhost:5500/bdk_gettingstarted-web:latest
+  localhost:5500/dkx_gettingstarted-web:latest
 ```
 
 Test Running Container:
@@ -480,33 +480,33 @@ or browse to [http://localhost:8080/scalar](http://localhost:8080/scalar)
 
 Tail logs:
 ```pwsh
-docker logs -f bdk_gettingstarted-web
+docker logs -f dkx_gettingstarted-web
 ```
 
 ### Build and Run Container
 
 ```pwsh
-docker build -t localhost:5500/bdk_gettingstarted-web:latest -f src/Presentation.Web.Server/Dockerfile .; if ($?) {
-  (docker stop bdk_gettingstarted-web 2>$null | Out-Null); (docker rm bdk_gettingstarted-web 2>$null | Out-Null);
+docker build -t localhost:5500/dkx_gettingstarted-web:latest -f src/Presentation.Web.Server/Dockerfile .; if ($?) {
+  (docker stop dkx_gettingstarted-web 2>$null | Out-Null); (docker rm dkx_gettingstarted-web 2>$null | Out-Null);
   New-Item -ItemType Directory -Force -Path "$PWD/logs" | Out-Null
-  docker run --name bdk_gettingstarted-web -p 8080:8080 --network bdk_gettingstarted `
+  docker run --name dkx_gettingstarted-web -p 8080:8080 --network dkx_gettingstarted `
     -e ASPNETCORE_ENVIRONMENT=Development `
     -e "Modules__CoreModule__ConnectionStrings__Default=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;" `
     -e "JobScheduling__Quartz__quartz.dataSource.default.connectionString=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;" `
     -e "Authentication__Authority=http://localhost:8080" `
     -v "${PWD}/logs:/.logs" `
-    localhost:5500/bdk_gettingstarted-web:latest
+    localhost:5500/dkx_gettingstarted-web:latest
 }
 ```
 
 ### Stop/Remove Image & Container
 ```pwsh
-docker stop bdk_gettingstarted-web
-docker rm -f bdk_gettingstarted-web
-docker rmi localhost:5500/bdk_gettingstarted-web:latest bdk_gettingstarted-web:latest
+docker stop dkx_gettingstarted-web
+docker rm -f dkx_gettingstarted-web
+docker rmi localhost:5500/dkx_gettingstarted-web:latest dkx_gettingstarted-web:latest
 ```
 
---- 
+---
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.

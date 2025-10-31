@@ -27,11 +27,11 @@ param(
   [Parameter()] [string] $HttpOutputType = 'OneFilePerTag'
 )
 
-Write-Host "Executing OpenAPI command: $Command" -ForegroundColor Yellow
+# Write-Host "Executing command: $Command" -ForegroundColor Yellow
 $ErrorActionPreference = 'Stop'
 
 function Fail([string] $Message, [int] $Code = 1) { Write-Error $Message; exit $Code }
-function Write-Section([string] $Text) { Write-Host "`n=== $Text ===" -ForegroundColor DarkCyan }
+# function Write-Section([string] $Text) { Write-Host "`n=== $Text ===" -ForegroundColor DarkCyan }
 function Write-Step([string] $Text) { Write-Host "-- $Text" -ForegroundColor Cyan }
 
 function Ensure-DockerImage([string] $Image) {
@@ -46,7 +46,7 @@ function Resolve-Path-Safely([string] $Path) {
 }
 
 function Lint-OpenApi() {
-  Write-Section 'Spectral OpenAPI Lint'
+  # Write-Section 'Spectral OpenAPI Lint'
 
   $specFull = Resolve-Path-Safely $SpecificationPath
   if (-not (Test-Path -LiteralPath $specFull)) { Fail "OpenAPI specification not found: $SpecificationPath (have you built the project?)" 2 }
@@ -95,7 +95,7 @@ function Generate-KiotaClient {
     [string]$ClientClassName = 'ApiClient',
     [string]$Namespace = 'OpenApi.Client'
   )
-  Write-Section "Kiota Generate ($Language)"
+  # Write-Section "Kiota Generate ($Language)"
   dotnet tool restore | Out-Null
   if ($LASTEXITCODE -ne 0) { Fail 'dotnet tool restore failed.' 91 }
   $specFull = Resolve-Spec

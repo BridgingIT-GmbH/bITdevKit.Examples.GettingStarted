@@ -1,12 +1,9 @@
-﻿namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Presentation;
+﻿// MIT-License
+// Copyright BridgingIT GmbH - All Rights Reserved
+// Use of this source code is governed by an MIT-style license that can be
+// found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
-using Mapster;
-using Shouldly;
-using System;
-using Xunit;
+namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Presentation;
 
 [UnitTest("Presentation")]
 public class CoreModuleMapperRegisterTests
@@ -24,8 +21,8 @@ public class CoreModuleMapperRegisterTests
     {
         // Arrange
         var customerId = Guid.NewGuid();
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create(DateTime.Now, 100000))
-            .ChangeStatus(CustomerStatus.Active);
+        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create(DateTime.Now, 100000)).Value;
+        customer.ChangeStatus(CustomerStatus.Active);
         customer.Id = CustomerId.Create(customerId);
         customer.ConcurrencyVersion = Guid.NewGuid();
 
@@ -75,7 +72,7 @@ public class CoreModuleMapperRegisterTests
     public void EmailAddressToString_MapsCorrectly()
     {
         // Arrange
-        var email = EmailAddress.Create("test@example.com");
+        var email = EmailAddress.Create("test@example.com").Value;
 
         // Act
         var result = email.Adapt<string>(this.config);

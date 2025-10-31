@@ -5,9 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Commands;
 
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests;
-
 [UnitTest("Application")]
 public class CustomerCreateCommandHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {

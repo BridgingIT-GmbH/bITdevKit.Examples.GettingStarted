@@ -67,16 +67,16 @@ Modules live in `src/Modules/<ModuleName>` (e.g., `CoreModule`) and must be self
 
 ## 4. Naming & Folder Conventions
 Within each module:
-- `<Module>.Domain` -> domain model (`Model/`, `Events/`, `Rules/`, `Specifications/`).
-- `<Module>.Application` -> `Commands/`, `Queries/`, `Models/`, `Handlers/` (co-located with command/query), `Behaviors/` (rare), `Validators/` (if not nested).
-- `<Module>.Infrastructure` -> `EntityFramework/` (DbContext, Configurations, Migrations), `Repositories/`, `Jobs/`, `StartupTasks/`.
-- `<Module>.Presentation` -> `Web/Endpoints/`, `MapperRegister`, `Module` class.
-- Tests mirror structure: `<Module>.UnitTests`, `<Module>.IntegrationTests`.
+- `[Module].Domain` -> domain model (`Model/`, `Events/`, `Rules/`, `Specifications/`).
+- `[Module].Application` -> `Commands/`, `Queries/`, `Models/`, `Handlers/` (co-located with command/query), `Behaviors/` (rare), `Validators/` (if not nested).
+- `[Module].Infrastructure` -> `EntityFramework/` (DbContext, Configurations, Migrations), `Repositories/`, `Jobs/`, `StartupTasks/`.
+- `[Module].Presentation` -> `Web/Endpoints/`, `MapperRegister`, `Module` class.
+- Tests mirror structure: `[Module].UnitTests`, `[Module].IntegrationTests`.
 
-Command names: `<Entity><Action>Command` (e.g., `CustomerCreateCommand`).
-Query names: `<Entity><Action>Query` (e.g., `CustomerFindAllQuery`).
-Handlers: `<Command|Query>Handler` in same folder.
-Domain Events: `<Entity><PastTenseEvent>DomainEvent`.
+Command names: `[Entity][Action]Command` (e.g., `CustomerCreateCommand`).
+Query names: `[Entity][Action]Query` (e.g., `CustomerFindAllQuery`).
+Handlers: `[Entity][Command|Quer]>Handler` in same folder.
+Domain Events: `[Entity]<PastTenseEvent>DomainEvent`.
 Value Objects: Singular descriptive (e.g., `EmailAddress`).
 Enumerations: PascalCase static instances defined inside class `Enumeration` derivative.
 
@@ -140,7 +140,7 @@ Mapster is used via `services.AddMapping().WithMapster<CoreModuleMapperRegister>
 2. Add Db mappings (type configuration + migration) if persistence needed.
 3. Add Application layer command/query + validator + handler.
 4. Add Mapster mapping definitions.
-5. Add endpoints in `<Module>.Presentation/Web/Endpoints` using requester pattern.
+5. Add endpoints in `[Module].Presentation/Web/Endpoints` using requester pattern.
 6. Register endpoints via `services.AddEndpoints<TEndpoints>();` in module.
 7. Extend module tests (unit + integration + architecture if new rules introduced).
 8. Update documentation if externally visible.
@@ -215,8 +215,18 @@ Provide: current filename(s), goal (e.g., split large handler), constraints (no 
     IntegrationTests/
 ```
 
-### 23.1 Folder Exclusions
+### 23.1 Folder Inclusions
+- `src/Modules/` contains all application modules, each with Domain, Application, Infrastructure, and Presentation projects.
+- `src/Presentation.Web.Server/` hosts the web server project that serves as the composition root for the application.
+- `tests/` contains unit and integration tests organized by module.
+- `.dkx/docs/` contains official documentation references for development patterns and practices.
+- `.github/` contains GitHub-specific configurations including Copilot instructions and chat modes.
+- `Directory.Packages.props` manages centralized NuGet package versions for consistency across projects.
+- `README.md` provides an overview of the project and setup instructions.
+
+### 23.2 Folder Exclusions
 - `obj/` and `bin/` folders should be excluded from AI processing to avoid noise from build artifacts.
 - `Migrations/` folders can be excluded unless specifically working on database schema changes.
 - `.tmp/` folders should be excluded as they contain temporary files not relevant to the project structure.
 - `.template.config/` can be included only when working on template definitions.
+- `logs` folders should be excluded as they contain runtime log files not relevant to source code.

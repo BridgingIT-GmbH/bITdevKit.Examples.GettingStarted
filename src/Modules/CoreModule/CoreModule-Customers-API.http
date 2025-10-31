@@ -19,21 +19,40 @@
 ## Use in Visual Studio: https://learn.microsoft.com/en-us/aspnet/core/test/http-files       ##
 ###############################################################################################
 
+#############################################
+### Resource Owner Password Flow
+# @name login
+POST {{baseUrl}}/api/_system/identity/connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password
+&client_id={{auth_client_id}}
+&username={{auth_username}}
+&password={{auth_password}}
+&scope=openid profile email roles
+
 ###############################################################################################
 ### [GET] Customers - Find One                                                              ###
 GET {{baseUrl}}/api/coremodule/customers/{{customerId}} HTTP/1.1
+Authorization: Bearer {{login.response.body.$.access_token}}
+Content-Type: application/json
 
 ###############################################################################################
 ### [GET] Customers - Find All                                                              ###
 GET {{baseUrl}}/api/coremodule/customers HTTP/1.1
+Authorization: Bearer {{login.response.body.$.access_token}}
+Content-Type: application/json
 
 ###############################################################################################
 ### [GET] Customers - Find All filter                                                       ###
 GET {{baseUrl}}/api/coremodule/customers?filter={"page":1,"pageSize":10,"filters":[{"field":"firstName","operator":"isnotnull"},{"field":"firstName","operator":"eq","value":"John"}]} HTTP/1.1
+Authorization: Bearer {{login.response.body.$.access_token}}
+Content-Type: application/json
 
 ###############################################################################################
 ### [POST] Customers - Search All filter                                                    ###
 POST {{baseUrl}}/api/coremodule/customers/search HTTP/1.1
+Authorization: Bearer {{login.response.body.$.access_token}}
 Content-Type: application/json
 
 {
@@ -46,6 +65,7 @@ Content-Type: application/json
 ###############################################################################################
 ### [POST] Customers - Create                                                               ###
 POST {{baseUrl}}/api/coremodule/customers HTTP/1.1
+Authorization: Bearer {{login.response.body.$.access_token}}
 Content-Type: application/json
 
 {
@@ -58,6 +78,7 @@ Content-Type: application/json
 ###############################################################################################
 ### [PUT] Customers - Update                                                                ###
 PUT {{baseUrl}}/api/coremodule/customers/{{customerId}} HTTP/1.1
+Authorization: Bearer {{login.response.body.$.access_token}}
 Content-Type: application/json
 
 {
@@ -72,6 +93,7 @@ Content-Type: application/json
 ###############################################################################################
 ### [PUT] Customers - Change Status -> Active                                               ###
 PUT {{baseUrl}}/api/coremodule/customers/{{customerId}}/status HTTP/1.1
+Authorization: Bearer {{login.response.body.$.access_token}}
 Content-Type: application/json
 
 {
@@ -82,7 +104,8 @@ Content-Type: application/json
 ### [DELETE] Customers - Delete (Created)                                                   ###
 ### (Idempotent test - expect 204 first time, 404 if repeated)                  ###
 DELETE {{baseUrl}}/api/coremodule/customers/{{customerId}} HTTP/1.1
-
+Authorization: Bearer {{login.response.body.$.access_token}}
+Content-Type: application/json
 
 
 ###############################################################################################
@@ -90,6 +113,7 @@ DELETE {{baseUrl}}/api/coremodule/customers/{{customerId}} HTTP/1.1
 ### [NEGATIVE] Customers - Invalid first/lastname (empty)                       ###
 ### (Should return 400)                                                         ###
 POST {{baseUrl}}/api/coremodule/customers HTTP/1.1
+Authorization: Bearer {{login.response.body.$.access_token}}
 Content-Type: application/json
 
 {
@@ -104,6 +128,7 @@ Content-Type: application/json
 ### [NEGATIVE] Customers - Update invalid concurrencyVersion (Random GUID)      ###
 ### (Should return 409)                                                         ###
 PUT {{baseUrl}}/api/coremodule/customers/{{customerId}} HTTP/1.1
+Authorization: Bearer {{login.response.body.$.access_token}}
 Content-Type: application/json
 
 {
@@ -120,12 +145,15 @@ Content-Type: application/json
 ### [NEGATIVE] Customers - Get Not Found (Random GUID)                          ###
 ### (Should return 404)                                                         ###
 GET {{baseUrl}}/api/coremodule/customers/00000000-0000-0000-0000-000000000001 HTTP/1.1
+Authorization: Bearer {{login.response.body.$.access_token}}
+Content-Type: application/json
 
 ###############################################################################################
 ### [PUT] Customers - Update                                                                ###
 ### [NEGATIVE] Customers - Change invalid status                                ###
 ### (Should return 400)                                                         ###
 PUT {{baseUrl}}/api/coremodule/customers/{{customerId}}/status HTTP/1.1
+Authorization: Bearer {{login.response.body.$.access_token}}
 Content-Type: application/json
 
 {
@@ -137,9 +165,13 @@ Content-Type: application/json
 ### [NEGATIVE] Customers - Not Found (Random GUID)                              ###
 ### (Should return 404)                                                         ###
 DELETE {{baseUrl}}/api/coremodule/customers/00000000-0000-0000-0000-000000000001 HTTP/1.1
+Authorization: Bearer {{login.response.body.$.access_token}}
+Content-Type: application/json
 
 ###############################################################################################
 ### [DELETE] Customers - Delete                                                             ###
 ### [NEGATIVE] Customers - Not Found (Random GUID)                              ###
 ### (Should return 404)                                                         ###
 DELETE {{baseUrl}}/api/coremodule/customers/exception HTTP/1.1
+Authorization: Bearer {{login.response.body.$.access_token}}
+Content-Type: application/json

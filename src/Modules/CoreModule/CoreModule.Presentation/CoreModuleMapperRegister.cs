@@ -5,9 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 
-using BridgingIT.DevKit.Common;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using Mapster;
 
 /// <summary>
@@ -33,7 +30,7 @@ public class CoreModuleMapperRegister : IRegister
 
         // Map string -> EmailAddress (for reconstructing value object on input)
         config.NewConfig<string, EmailAddress>()
-            .MapWith(src => EmailAddress.Create(src));
+            .MapWith(src => EmailAddress.Create(src).Value);
 
         // ----------------------------
         // Enumeration conversions

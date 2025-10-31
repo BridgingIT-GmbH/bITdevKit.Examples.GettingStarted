@@ -5,8 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
-using BridgingIT.DevKit.Common;
-using BridgingIT.DevKit.Domain.Repositories;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
 /// <summary>
@@ -27,7 +25,7 @@ public class CustomerUpdateStatusCommandHandler(
             await repository.FindOneResultAsync(CustomerId.Create(request.CustomerId), cancellationToken: cancellationToken)
 
             // Change status (idempotent if same)
-            .Tap(e => e.ChangeStatus(request.Status))
+            .Bind(e => e.ChangeStatus(request.Status))
 
             // Update in repository
             .BindAsync(async (e, ct) =>

@@ -5,17 +5,13 @@
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-using BridgingIT.DevKit.Common;
-using BridgingIT.DevKit.Presentation.Web;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using OpenTelemetry;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 [ExcludeFromCodeCoverage]
 public static class ProgramExtensions
@@ -63,9 +59,9 @@ public static class ProgramExtensions
             o.AddDocumentTransformer<DiagnosticDocumentTransformer>()
              .AddDocumentTransformer(
                 new DocumentInfoTransformer(new DocumentInfoOptions
-                 {
-                     Title = "GettingsStarted API",
-                 }))
+                {
+                    Title = "GettingsStarted API",
+                }))
              .AddSchemaTransformer<DiagnosticSchemaTransformer>()
              .AddSchemaTransformer<ResultProblemDetailsSchemaTransformer>()
              .AddDocumentTransformer<BearerSecurityRequirementDocumentTransformer>();
@@ -107,12 +103,14 @@ public static class ProgramExtensions
     }
 
     /// <summary>
-    /// Configure OpenTelemetry metrics, tracing, and OTLP exporter using IConfiguration.
+    /// Configure OpenTelemetry metrics, tracing, and OTLP exporter.
     /// </summary>
-    public static IServiceCollection AddOpenTelemetry(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddOpenTelemetry(this IServiceCollection services, WebApplicationBuilder builder)
     {
         // https://learn.microsoft.com/en-us/dotnet/core/diagnostics/observability-otlp-example
-        var otel = services.AddOpenTelemetry()
+        // https://datalust.co/docs/opentelemetry-net-sdk-traces
+        var otel = builder.Services.AddOpenTelemetry()
+         .ConfigureResource(r => r.AddService(builder.Configuration["OpenTelemetry:ServiceName"]))
          .WithMetrics(metrics =>
          {
              metrics.AddAspNetCoreInstrumentation();
@@ -121,15 +119,27 @@ public static class ProgramExtensions
          })
          .WithTracing(tracing =>
          {
+             if (builder.Environment.IsLocalDevelopment())
+             {
+                 tracing.SetSampler(new AlwaysOnSampler());
+             }
+
              tracing.AddAspNetCoreInstrumentation();
              tracing.AddHttpClientInstrumentation();
-         });
+             tracing.AddSqlClientInstrumentation();
+             //tracing.AddConsoleExporter();
 
-        var otlpEndpoint = configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
-        if (otlpEndpoint != null)
-        {
-            otel.UseOtlpExporter();
-        }
+             var otlpEndpoint = builder.Configuration["OpenTelemetry:ExporterEndpoint"];
+             if (otlpEndpoint != null)
+             {
+                 Serilog.Log.Information("Configuring OpenTelemetry OTLP Exporter with endpoint: {OtlpEndpoint}", otlpEndpoint);
+                 tracing.AddOtlpExporter(opt =>
+                 {
+                     opt.Endpoint = new Uri(otlpEndpoint);
+                     opt.Protocol = OtlpExportProtocol.HttpProtobuf;
+                 });
+             }
+         });
 
         return services;
     }

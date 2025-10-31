@@ -5,10 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
-using BridgingIT.DevKit.Common;
-using BridgingIT.DevKit.Domain.Model;
-using System.Diagnostics;
-
 /// <summary>
 /// Represents an immutable email address value object in the domain model.
 /// Provides validation, equality, and implicit conversion to <see cref="string"/>.
@@ -52,14 +48,21 @@ public class EmailAddress : ValueObject
     /// Thrown if <paramref name="value"/> is not a valid email format.
     /// </exception>
     /// <returns>A new <see cref="EmailAddress"/> value object.</returns>
-    public static EmailAddress Create(string value)
+    public static Result<EmailAddress> Create(string value)
     {
         value = value?.Trim()?.ToLowerInvariant();
 
-        Rule.Add(RuleSet.IsValidEmail(value))
-            .Throw();
+        var ruleResult = Rule.Add(RuleSet.IsValidEmail(value))
+            .Check();
 
-        return new EmailAddress(value);
+        if (ruleResult.IsFailure)
+        {
+            return Result<EmailAddress>.Failure()
+                .WithMessages(ruleResult.Messages)
+                .WithErrors(ruleResult.Errors);
+        }
+
+        return new EmailAddress(value); // implicitly wrapped in a successful Result
     }
 
     /// <summary>

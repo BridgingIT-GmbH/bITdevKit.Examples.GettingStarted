@@ -5,10 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain;
 
-using System.Diagnostics.CodeAnalysis;
-using BridgingIT.DevKit.Common;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-
 /// <summary>
 /// The CoreSeedEntities class provides methods to create and manage seed data for core domain entities such as Customers in the Domain.
 /// </summary>
@@ -21,7 +17,7 @@ public static class CoreModuleSeedEntities
     public static Customer[] CreateCustomer() => [
         ..new[]
             {
-                Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create(DateTime.Now, 100000)),
-                Customer.Create("Mary", "Jane", "mary.jane@example.com", CustomerNumber.Create(DateTime.Now, 100001))
+                Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create(DateTime.Now.AddYears(-1), 100000)).Value,
+                Customer.Create("Mary", "Jane", "mary.jane@example.com", CustomerNumber.Create(DateTime.Now.AddYears(-1), 100001)).Value
          }.ForEach(e => e.Id = GuidGenerator.Create($"Customer_{e.Email.Value}"))];
 }

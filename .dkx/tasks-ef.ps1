@@ -21,8 +21,8 @@ param(
   [Parameter()] [string] $OutputDirectory = './.tmp/ef'
 )
 
+# Write-Host "Executing command: $Command" -ForegroundColor Yellow
 $ErrorActionPreference = 'Stop'
-# Write-Host "EF Command: $Command" -ForegroundColor Yellow
 
 # maintain script-scoped copies of mutable selection variables so function-local assignment doesn't lose them
 $script:Module = $Module

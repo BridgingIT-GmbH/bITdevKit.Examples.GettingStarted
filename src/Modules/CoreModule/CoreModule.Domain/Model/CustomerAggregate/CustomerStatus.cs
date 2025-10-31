@@ -5,9 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
-using BridgingIT.DevKit.Common;
-using System.Diagnostics;
-
 /// <summary>
 /// Represents the status of a <see cref="Customer"/> in the domain.
 /// Inherits from <see cref="Enumeration"/> to provide strongly typed
