@@ -184,6 +184,93 @@ function Compose-Down() {
   Write-Step 'Compose stack stopped.'
 }
 
+function Read-SpectreSelectionOrNull([string]$title, [string[]]$choices) {
+  # Spectre is present; present choices with Cancel as last option and return $null on cancel
+  $choices += 'Cancel'
+  $sel = Read-SpectreSelection -Title $title -Choices $choices -EnableSearch -PageSize 15
+  if (-not $sel -or $sel -eq 'Cancel') { return $null }
+  return $sel
+}
+
+function Compose-Recreate([string] $ComposeFile) {
+  Write-Step "Retrieving running containers..."
+  $fmt = '{{.Names}}|{{.Image}}|{{.Status}}'
+  $raw = docker ps --format $fmt 2>$null
+  if (-not $raw) {
+    Write-Step "No running containers found."
+    return
+  }
+
+  $names = @()
+  $choices = @()
+  foreach ($line in $raw) {
+    $parts = $line -split '\|', 3
+    $name = $parts[0]
+    $image = if ($parts.Length -ge 2) { $parts[1] } else { '' }
+    $status = if ($parts.Length -ge 3) { $parts[2] } else { '' }
+    $names += $name
+    $choices += ("{0}  ({1}) - {2}" -f $name, $image, $status)
+  }
+
+  # Insert an "All" option at the top to recreate all services
+  $allLabel = 'All services (recreate all)'
+  $choices = @($allLabel) + $choices
+
+  $selection = Read-SpectreSelectionOrNull 'Select container (Cancel to quit)' $choices
+  if (-not $selection) { Write-Step 'Cancelled.'; return }
+
+  $idx = $choices.IndexOf($selection)
+  if ($idx -lt 0) { Fail "Invalid selection mapping." 2 }
+
+  # If user selected the top "All" option, run compose without service name
+  if ($idx -eq 0) {
+    Write-Step "Recreating ALL services (compose file: $ComposeFile)"
+    $args = @('compose','-f',$ComposeFile,'up','-d','--force-recreate')
+    Write-Command "docker $($args -join ' ')"
+    docker @args
+    if ($LASTEXITCODE -ne 0) { Fail "docker compose recreate (all) failed." $LASTEXITCODE }
+    Write-Step "Recreate requested for ALL services"
+    return
+  }
+
+  # Map selection back to container (offset by 1 because of the All entry)
+  $selectedName = $names[$idx - 1]
+  $selectedImage = ($raw[$idx - 1] -split '\|')[1]
+
+  # Prefer compose service label provided by docker (com.docker.compose.service)
+  $serviceName = $null
+  try {
+    $label = docker inspect --format '{{ index .Config.Labels "com.docker.compose.service" }}' $selectedName 2>$null
+    if ($label) { $label = $label.Trim() }
+    if ($label -and $label -ne '<no value>') {
+      $serviceName = $label
+    }
+  } catch {
+    $serviceName = $null
+  }
+
+  # Fallback: strip CONTAINER_PREFIX_ if present, otherwise take last underscore segment
+  if (-not $serviceName) {
+    $prefix = $env:CONTAINER_PREFIX
+    if ($prefix -and $selectedName.StartsWith("$prefix`_")) {
+      $serviceName = $selectedName.Substring($prefix.Length + 1)
+    } elseif ($selectedName -match '_') {
+      $serviceName = ($selectedName -split '_')[-1]
+    } else {
+      $serviceName = $selectedName
+    }
+  }
+
+  Write-Step "Resolved compose service name: $serviceName (from container: $selectedName, image: $selectedImage)"
+  Write-Step "Recreating service/container: $serviceName (compose file: $ComposeFile)"
+  $args = @('compose','-f',$ComposeFile,'up','-d','--force-recreate',$serviceName)
+  Write-Command "docker $($args -join ' ')"
+  docker @args
+  if ($LASTEXITCODE -ne 0) { Fail "docker compose recreate failed for $serviceName." $LASTEXITCODE }
+  Write-Step "Recreate requested for: $serviceName"
+}
+
+# Update Help to include the new command
 function Help() {
   @'
 Usage: pwsh -File .vscode/task.ps1 <command> [options]
@@ -196,6 +283,7 @@ Commands:
   docker-run         Run container (assumes image built)
   docker-stop        Stop container
   docker-remove      Remove (force) container
+  docker-recreate    Recreate a specific container/service (interactive selection)
   compose-up         docker compose up (uses -ComposeFile, add -Pull to fetch latest)
   compose-down       docker compose down (stop stack, keep volumes & images)
   compose-down-clean docker compose down (remove volumes, orphans) and delete images
@@ -250,6 +338,10 @@ switch ($Command.ToLower()) {
   }
   'docker-stop' { Docker-Stop -Name $ContainerName }
   'docker-remove' { Docker-Remove -Name $ContainerName }
+  'compose-recreate' {
+    # Interactive recreate: list running containers and run `docker compose -f <ComposeFile> up -d --force-recreate <name>`
+    Compose-Recreate -ComposeFile $ComposeFile
+  }
   'compose-up' { Compose-Up -File $ComposeFile -Pull:$Pull }
   'compose-down' { Compose-Down -File $ComposeFile }
   'compose-down-clean' { Compose-Down-Clean -File $ComposeFile }

@@ -33,14 +33,6 @@ $root = Split-Path -Path $scriptFolder -Parent
 $helpersPath = Join-Path $PSScriptRoot 'tasks-helpers.ps1'
 if (Test-Path $helpersPath) { . $helpersPath }
 
-function Ensure-Spectre {
-  if (-not (Get-Module -ListAvailable -Name PwshSpectreConsole)) {
-    Install-Module -Name PwshSpectreConsole -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop
-  }
-  Import-Module PwshSpectreConsole -Force
-}
-Ensure-Spectre
-
 function Read-Selection($title, [string[]]$choices) {
   $choices += 'Cancel'
   $s = Read-SpectreSelection -Title $title -Choices $choices -EnableSearch -PageSize 15
@@ -99,6 +91,7 @@ $tasks = [ordered]@{
   'docker-stop'                 = @{ Label = 'Docker Stop'; Desc = 'Stop container'; Script = { Invoke-Docker 'docker-stop' } }
   'docker-remove'               = @{ Label = 'Docker Remove'; Desc = 'Remove container'; Script = { Invoke-Docker 'docker-remove' } }
   'compose-up'                  = @{ Label = 'Compose Up'; Desc = 'docker compose up'; Script = { Invoke-Docker 'compose-up' } }
+  'compose-recreate'            = @{ Label = 'Compose Recreate'; Desc = 'Recreate container'; Script = { Invoke-Docker 'compose-recreate' } }
   'compose-up-pull'             = @{ Label = 'Compose Up Pull'; Desc = 'Up with image pull'; Script = { Invoke-Docker 'compose-up'; Invoke-Docker 'compose-up' } }
   'compose-down'                = @{ Label = 'Compose Down'; Desc = 'docker compose down'; Script = { Invoke-Docker 'compose-down' } }
   'compose-down-clean'          = @{ Label = 'Compose Down Clean'; Desc = 'Down & clean volumes'; Script = { Invoke-Docker 'compose-down-clean' } }
@@ -118,12 +111,12 @@ $tasks = [ordered]@{
   'server-run-dev'              = @{ Label = 'Server Run'; Desc = 'Run dev server'; Script = { Invoke-Dotnet 'project-run' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   # 'server-watch-fast'       = @{ Label='Server Watch Fast';    Desc='Fast watch run';                Script={ Invoke-Dotnet 'project-watch-fast' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
   'pack-projects'               = @{ Label = 'Pack Projects'; Desc = 'Create NuGet packages'; Script = { Invoke-Dotnet 'pack-projects' } }
-  'update-packages'         = @{ Label='Update all Packages';      Desc='Update all Nuget packages';       Script={ Invoke-Dotnet 'update-packages' } }
-  'update-packages-devkit' = @{ Label='Update Devkit Packages'; Desc='Update DevKit Nuget packages'; Script={ Invoke-Dotnet 'update-packages-devkit' } }
-  'openapi-lint'              = @{ Label='OpenAPI Lint';         Desc='Lint OpenAPI specs';            Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') lint } }
-  'openapi-client-dotnet'     = @{ Label='OpenAPI Client .NET';  Desc='Generate C# client (Kiota)';    Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') client-dotnet } }
-  'openapi-client-typescript' = @{ Label='OpenAPI Client TS';    Desc='Generate TS client (Kiota)';    Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') client-typescript } }
-  'openapi-http'              = @{ Label='OpenAPI HTTP';         Desc='Generate .http request files';  Script={ & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') http-requests } }
+  'update-packages'             = @{ Label = 'Update all Packages'; Desc = 'Update all Nuget packages'; Script = { Invoke-Dotnet 'update-packages' } }
+  'update-packages-devkit'      = @{ Label = 'Update Devkit Packages'; Desc = 'Update DevKit Nuget packages'; Script = { Invoke-Dotnet 'update-packages-devkit' } }
+  'openapi-lint'                = @{ Label = 'OpenAPI Lint'; Desc = 'Lint OpenAPI specs'; Script = { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') lint } }
+  'openapi-client-dotnet'       = @{ Label = 'OpenAPI Client .NET'; Desc = 'Generate C# client (Kiota)'; Script = { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') client-dotnet } }
+  'openapi-client-typescript'   = @{ Label = 'OpenAPI Client TS'; Desc = 'Generate TS client (Kiota)'; Script = { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') client-typescript } }
+  'openapi-http'                = @{ Label = 'OpenAPI HTTP'; Desc = 'Generate .http request files'; Script = { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') http-requests } }
   'misc-clean'                  = @{ Label = 'Workspace Clean'; Desc = 'Clean workspace'; Script = { Invoke-Misc 'clean' } }
   'misc-digest'                 = @{ Label = 'Sources Digest'; Desc = 'Generate source digest'; Script = { Invoke-Misc 'digest' } }
   'misc-repl'                   = @{ Label = 'C# REPL'; Desc = 'Interactive REPL'; Script = { Invoke-Misc 'repl' } }
@@ -145,7 +138,7 @@ $tasks = [ordered]@{
   'aspnet-metrics'              = @{ Label = 'ASP.NET Metrics'; Desc = 'ASP.NET counters'; Script = { Invoke-Diagnostics 'aspnet-metrics' } }
   'diag-quick'                  = @{ Label = 'Diag Quick'; Desc = 'Quick diagnostics'; Script = { Invoke-Diagnostics 'quick' } }
   'licenses'                    = @{ Label = 'Licenses'; Desc = 'Generate license report'; Script = { Invoke-Dotnet 'licenses' } }
-  'misc-show-minver'            = @{ Label='Show Version';         Desc='Display semantic version (MinVer)'; Script={ Invoke-Misc 'show-minver' } }
+  'misc-show-minver'            = @{ Label = 'Show Version'; Desc = 'Display semantic version (MinVer)'; Script = { Invoke-Misc 'show-minver' } }
 }
 # Compute max label width for aligned output
 $TaskLabelWidth = ($tasks.Values | ForEach-Object { $_.Label.Length } | Measure-Object -Maximum).Maximum
@@ -155,15 +148,15 @@ function Format-TaskDisplay([hashtable]$t) {
 }
 
 $categories = [ordered]@{
-  'Build & Maintenance'       = @('restore', 'build', 'build-release', 'build-nr', 'pack', 'pack-projects', 'update-packages','update-packages-devkit', 'clean', 'tool-restore', 'format-check', 'format-apply', 'analyzers', 'analyzers-export', 'server-build', 'server-publish', 'server-publish-release', 'server-publish-sc', 'server-watch', 'server-run-dev')
+  'Build & Maintenance'       = @('restore', 'build', 'build-release', 'build-nr', 'pack', 'pack-projects', 'update-packages', 'update-packages-devkit', 'clean', 'tool-restore', 'format-check', 'format-apply', 'analyzers', 'analyzers-export', 'server-build', 'server-publish', 'server-publish-release', 'server-publish-sc', 'server-watch', 'server-run-dev')
   'Testing & Quality'         = @('test-unit', 'test-int', 'test-unit-all', 'test-int-all', 'coverage', 'coverage-html')
   'EF & Persistence'          = @('ef-info', 'ef-list', 'ef-add', 'ef-remove', 'ef-removeall', 'ef-apply', 'ef-update', 'ef-recreate', 'ef-undo', 'ef-status', 'ef-reset', 'ef-script')
   'Publishing & Packaging'    = @('server-publish', 'server-publish-release', 'server-publish-sc', 'pack', 'pack-projects')
-  'Docker & Containers'       = @('docker-build-run', 'docker-build-debug', 'docker-build-release', 'docker-run', 'docker-stop', 'docker-remove', 'compose-up', 'compose-up-pull', 'compose-down', 'compose-down-clean')
+  'Docker & Containers'       = @('docker-build-run', 'docker-build-debug', 'docker-build-release', 'docker-run', 'docker-stop', 'docker-remove', 'compose-up', 'compose-up-pull', 'compose-recreate', 'compose-down', 'compose-down-clean')
   'Performance & Diagnostics' = @('bench', 'bench-select', 'trace-flame', 'trace-cpu', 'trace-gc', 'dump-heap', 'gc-stats', 'aspnet-metrics', 'diag-quick', 'speedscope-view')
   'Security & Compliance'     = @('vulnerabilities', 'vulnerabilities-deep', 'outdated', 'outdated-json', 'licenses')
-  'API & Spec'                = @('openapi-lint', 'openapi-client-dotnet', 'openapi-client-typescript','openapi-http')
-  'Utilities'                 = @('misc-clean', 'misc-digest', 'misc-repl', 'misc-kill-dotnet', 'misc-browser-seq', 'misc-browser-adminneo', 'misc-browser-server-kestrel', 'misc-browser-server-docker','misc-show-minver')
+  'API & Spec'                = @('openapi-lint', 'openapi-client-dotnet', 'openapi-client-typescript', 'openapi-http')
+  'Utilities'                 = @('misc-clean', 'misc-digest', 'misc-repl', 'misc-kill-dotnet', 'misc-browser-seq', 'misc-browser-adminneo', 'misc-browser-server-kestrel', 'misc-browser-server-docker', 'misc-show-minver')
   'Documentation'             = @('doc-browser-devkit-docs', 'doc-update-devkit-docs')
 }
 
