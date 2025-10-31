@@ -57,6 +57,20 @@
         "nuget-license"
       ],
       "rollForward": false
+    },
+    "httpgenerator": {
+      "version": "1.0.0",
+      "commands": [
+        "httpgenerator"
+      ],
+      "rollForward": false
+    },
+    "roslynator.dotnet.cli": {
+      "version": "0.11.0",
+      "commands": [
+        "roslynator"
+      ],
+      "rollForward": false
     }
   }
 }

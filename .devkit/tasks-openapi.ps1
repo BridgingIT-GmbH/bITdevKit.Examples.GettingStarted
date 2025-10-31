@@ -22,7 +22,9 @@ param(
   [Parameter()] [string] $FailSeverity = 'error',
   [Parameter()] [string] $Format = 'stylish',
   [Parameter()] [string] $DockerImage = 'stoplight/spectral:latest',
-  [Parameter()] [string] $OutputRoot = '.tmp/openapi'
+  [Parameter()] [string] $OutputRoot = '.tmp/openapi',
+  [Parameter()] [string] $HttpBaseUrl = 'https://localhost:5001',
+  [Parameter()] [string] $HttpOutputType = 'OneFilePerTag'
 )
 
 Write-Host "Executing OpenAPI command: $Command" -ForegroundColor Yellow
@@ -143,31 +145,48 @@ function Generate-KiotaClient {
   Write-Host "Kiota $Language client generated ($fileCount files)." -ForegroundColor Green
 }
 
+function Generate-HttpRequests {
+  Write-Section 'Generating .http request files'
+  dotnet tool restore | Out-Null
+  if ($LASTEXITCODE -ne 0) { Fail 'dotnet tool restore failed.' 91 }
+  $specFull = Resolve-Spec
+  $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+  $outDir = Join-Path $root $OutputRoot
+  New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+  Write-Step "Spec: $specFull"
+  Write-Step "Output: $outDir"
+  Write-Step "BaseUrl: $HttpBaseUrl"
+  Write-Step "OutputType: $HttpOutputType"
+  # httpgenerator usage: dotnet httpgenerator generate -i <spec> -b <base-url> -o <out> -t <type> -f
+  $args = @('httpgenerator', $specFull,
+    '--base-url', $HttpBaseUrl,
+    '--output', $outDir,
+    '--authorization-header', 'Bearer TOKEN',
+    '--output-type', $HttpOutputType)
+  Write-Step "dotnet $($args -join ' ')"
+  & dotnet @args
+  if ($LASTEXITCODE -ne 0) { Fail "httpgenerator failed ($LASTEXITCODE)" $LASTEXITCODE }
+  $httpFiles = Get-ChildItem -Path $outDir -Filter '*.http' -File -Recurse
+  $count = ($httpFiles | Measure-Object).Count
+  Write-Host "Generated $count .http file(s) in $outDir" -ForegroundColor Green
+}
+
 function Help() {
 @'
-Usage: pwsh -File .vscode/tasks-openapi.ps1 <command> [options]
+Usage: pwsh -File .devkit/tasks-openapi.ps1 <command> [options]
 
 Commands:
-  lint                Run Spectral lint against the OpenAPI specification
-  client-dotnet       Generate C# typed client via Kiota
-  client-typescript   Generate TypeScript typed client via Kiota
-  help                Show this help text
+  lint                Lint OpenAPI (Spectral)
+  client-dotnet       Generate C# client (Kiota)
+  client-typescript   Generate TypeScript client (Kiota)
+  http-requests       Generate .http request files (httpgenerator)
+  help                Show help
 
-Kiota Generation Notes:
-  - Requires kiota tool in local manifest (dotnet tool install kiota)
-  - Uses flags: -d (spec), -l (language), -o (output), -c (client class),
-    -n (namespace, C# only), -m (module name, TS only), --clear-output
-  - Output folders: .tmp/openapi/dotnet and .tmp/openapi/typescript
-
-Parameters:
-  -SpecificationPath <path>  Spec file (default: src/Presentation.Web.Server/wwwroot/openapi.json)
-  -OutputRoot <path>         Base output (default: .tmp/openapi)
-  (Lint-only parameters preserved: -RulesetPath -FailSeverity -Format -DockerImage)
-
-Examples:
-  pwsh -File .vscode/tasks-openapi.ps1 lint
-  pwsh -File .vscode/tasks-openapi.ps1 client-dotnet
-  pwsh -File .vscode/tasks-openapi.ps1 client-typescript -SpecificationPath api/openapi.json
+HTTP Request Generation Defaults:
+  Base URL: https://localhost:5001
+  Output:   ./tmp/openapi/http
+  OutputType: OneFilePerTag
+  Flags used: -i (spec) -b (base-url) -o (output) -t (output-type) -f (force overwrite)
 '@ | Write-Host
 }
 
@@ -175,6 +194,7 @@ switch ($Command.ToLower()) {
   'lint'               { Lint-OpenApi }
   'client-dotnet'      { Generate-KiotaClient -Language CSharp }
   'client-typescript'  { Generate-KiotaClient -Language TypeScript }
+  'http-requests'      { Generate-HttpRequests }
   'help'               { Help }
   default              { Write-Host "Unknown command '$Command'" -ForegroundColor Red; Help; exit 1 }
 }

@@ -293,6 +293,16 @@ function Open-BrowserUrl() {
   }
 }
 
+function Show-MinVer() {
+  Write-Section 'MinVer Semantic Version'
+  dotnet tool restore | Out-Null
+  if($LASTEXITCODE -ne 0){ Fail 'dotnet tool restore failed.' 200 }
+  # Write-Host 'Running: dotnet minver -v d -p preview.0' -ForegroundColor Cyan
+  dotnet minver -v d -p preview.0
+  $exit = $LASTEXITCODE
+  if($exit -ne 0){ Fail "MinVer failed (exit $exit)" 201 }
+}
+
 function Help() {
 @'
 Usage: pwsh -File .vscode/tasks-misc.ps1 <command> [options]
@@ -331,6 +341,9 @@ Examples:
   pwsh -File .vscode/tasks-misc.ps1 repl
   pwsh -File .vscode/tasks-misc.ps1 kill-dotnet               # interactive selection (no confirmation)
   pwsh -File .vscode/tasks-misc.ps1 kill-dotnet -ProcessId 1234  # direct kill (no confirmation)
+
+New Commands:
+  show-minver|minver|version|show-version  Display semantic version computed by MinVer (pre-release tag: preview.0)
 
 Exit Codes:
   0 success, non-zero on failure.
@@ -388,6 +401,10 @@ function Handle-MiscCommand([string]$cmd){
     'browser-seq' { Open-BrowserUrl 'Opening SEQ Dashboard' 'http://localhost:15349'; return }
     'browser-server-kestrel' { Open-BrowserUrl 'Opening Server (Kestrel HTTPS)' 'https://localhost:5001/scalar'; return }
     'browser-server-docker' { Open-BrowserUrl 'Opening Server (Docker HTTP)' 'http://localhost:8080/scalar'; return }
+    'show-minver' { Show-MinVer; return }
+    'minver' { Show-MinVer; return }
+    'version' { Show-MinVer; return }
+    'show-version' { Show-MinVer; return }
     'help' { Help; return }
     '?' { Help; return }
     default { Write-Host "Unknown misc command '$cmd'" -ForegroundColor Red; Help; exit 10 }
