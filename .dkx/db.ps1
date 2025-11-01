@@ -1,6 +1,10 @@
 # .dkx/lib/db.ps1
 # Cross-platform PS7+ ADO.NET helpers with on-the-fly NuGet loading
 
+#
+# https://t3.chat/share/9qv6ny4joa
+#
+
 using namespace System.IO.Compression
 
 # ------------- Utility: simple log -------------
@@ -115,6 +119,8 @@ function Invoke-UniversalQuery {
     [Parameter(Mandatory)] [string] $Query,
     [hashtable] $Parameters
   )
+
+  Write-Host "================================================"
 
   $kind = Import-DbProviderAuto -ConnectionString $ConnectionString
 

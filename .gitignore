@@ -417,10 +417,9 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-# JetBrains Rider
-*.sln.iml
-
 # Custom
 /src/**/*.db
 /.tmp/
+/logs/
 /TestOutput/
+/.dkx/nuget/

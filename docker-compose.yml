@@ -190,6 +190,6 @@ volumes:
     driver: local
 
 networks:
-  dkx_gettingstarted:
+  bit_devkit_gettingstarted:
     name: ${NETWORK_NAME}
     driver: bridge
