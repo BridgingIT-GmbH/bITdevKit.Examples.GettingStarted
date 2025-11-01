@@ -41,7 +41,8 @@
         "source": "SolutionNameUnderscore",
         "casing": "lowerCase"
       },
-      "replaces": "bit_devkit_gettingstarted"
+      "replaces": "bit_devkit_gettingstarted",
+      "fileRename": "bit_devkit_gettingstarted"
     },
     "ModuleName": {
       "type": "parameter",

@@ -62,6 +62,7 @@ $dotenvMap = Load-DotEnv $dotEnvPath
 # compute defaults using loaded env (fall back to existing literal defaults if absent)
 $containerPrefix = $dotenvMap['CONTAINER_PREFIX'] ?? 'dkx_gettingstarted'
 $registryHost    = $dotenvMap['REGISTRY_HOST']    ?? 'localhost:5500'
+$defaultNetwork       = $dotenvMap['NETWORK_NAME']     ?? 'dkx_gettingstarted'
 $defaultContainerName = "${containerPrefix}-web"
 $defaultImageTag      = "${registryHost}/${defaultContainerName}:latest"
 
@@ -86,11 +87,12 @@ function Invoke-Test([string]$kind, [switch]$All) {
 }
 
 function Invoke-Misc([string]$cmd) { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-misc.ps1') $cmd }
-function Invoke-Docker([string]$mode, [string]$ContainerName = $null, [string]$ImageTag = $null) {
+function Invoke-Docker([string]$mode, [string]$ContainerName = $null, [string]$ImageTag = $null, [string]$Network = $null) {
 	$script = Join-Path $PSScriptRoot 'tasks-docker.ps1'
 	$args = @('-NoProfile', '-File', $script, $mode)
 	if ($ContainerName) { $args += @('-ContainerName', $ContainerName) }
 	if ($ImageTag)     { $args += @('-ImageTag', $ImageTag) }
+	if ($Network)      { $args += @('-Network', $Network) }
 	& pwsh $args
 }
 function Invoke-Ef([string]$efCmd) { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-ef.ps1') $efCmd }
@@ -122,12 +124,12 @@ $tasks = [ordered]@{
   'ef-status'                   = @{ Label = 'EF Status'; Desc = 'Migrations status'; Script = { Invoke-Ef 'status' } }
   'ef-reset'                    = @{ Label = 'EF Reset'; Desc = 'Squash migrations'; Script = { Invoke-Ef 'reset' } }
   'ef-script'                   = @{ Label = 'EF Script'; Desc = 'Export SQL script'; Script = { Invoke-Ef 'script' } }
-  'docker-build-run'            = @{ Label = 'Docker Build+Run'; Desc = 'Build image & run'; Script = { Invoke-Docker 'docker-build-run' $defaultContainerName $defaultImageTag } }
-  'docker-build-debug'          = @{ Label = 'Docker Build Debug'; Desc = 'Debug image build'; Script = { Invoke-Docker 'docker-build-debug' $defaultContainerName $defaultImageTag } }
-  'docker-build-release'        = @{ Label = 'Docker Build Release'; Desc = 'Release image build'; Script = { Invoke-Docker 'docker-build-release' $defaultContainerName $defaultImageTag } }
-  'docker-run'                  = @{ Label = 'Docker Run'; Desc = 'Run container'; Script = { Invoke-Docker 'docker-run' $defaultContainerName $defaultImageTag } }
+  'docker-build-run'            = @{ Label = 'Docker Build Run'; Desc = 'Build image & run'; Script = { Invoke-Docker 'docker-build-run' $defaultContainerName $defaultImageTag $defaultNetwork } }
+  'docker-build-debug'          = @{ Label = 'Docker Build (Debug)'; Desc = 'Debug image build'; Script = { Invoke-Docker 'docker-build-debug' $defaultContainerName $defaultImageTag } }
+  'docker-build-release'        = @{ Label = 'Docker Build (Release)'; Desc = 'Release image build'; Script = { Invoke-Docker 'docker-build-release' $defaultContainerName $defaultImageTag } }
+  'docker-run'                  = @{ Label = 'Docker Run'; Desc = 'Run container'; Script = { Invoke-Docker 'docker-run' $defaultContainerName $defaultImageTag $defaultNetwork } }
   'docker-stop'                 = @{ Label = 'Docker Stop'; Desc = 'Stop container'; Script = { Invoke-Docker 'docker-stop' $defaultContainerName } }
-  'docker-remove'               = @{ Label = 'Docker Remove'; Desc = 'Remove container'; Script = { Invoke-Docker 'docker-remove' $defaultContainerName } }
+  'docker-remove'               = @{ Label = 'Docker Remove'; Desc = 'Remove container'; Script = { Invoke-Docker 'docker-remove' $defaultContainerName $defaultNetwork } }
   'compose-up'                  = @{ Label = 'Compose Up'; Desc = 'docker compose up'; Script = { Invoke-Docker 'compose-up' } }
   'compose-recreate'            = @{ Label = 'Compose Recreate'; Desc = 'Recreate container'; Script = { Invoke-Docker 'compose-recreate' } }
   'compose-up-pull'             = @{ Label = 'Compose Up Pull'; Desc = 'Up with image pull'; Script = { Invoke-Docker 'compose-up'; Invoke-Docker 'compose-up' } }

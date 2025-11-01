@@ -22,7 +22,7 @@ param(
   [Parameter()] [string] $Dockerfile = 'src/Presentation.Web.Server/Dockerfile',
   [Parameter()] [string] $ProjectDockerContext = '.',
   [Parameter()] [switch] $NoCache,
-  [Parameter()] [string] $Network = 'dkx_gettingstarted',
+  [Parameter()] [string] $Network = '',
   [Parameter()] [int] $HostPort = 8080,
   [Parameter()] [int] $ContainerPort = 8080,
   [Parameter()] [string] $ComposeFile = 'docker-compose.yml',
@@ -30,6 +30,8 @@ param(
 )
 # Write-Host "Executing command: $Command" -ForegroundColor Yellow
 $ErrorActionPreference = 'Stop'
+$Root = Split-Path $PSScriptRoot -Parent
+$OutputDirectory = Join-Path $Root ".tmp"
 
 # function Write-Section([string] $Text) { Write-Host "`n=== $Text ===" -ForegroundColor Cyan }
 function Write-Step([string] $Text) { Write-Host "-- $Text" -ForegroundColor Cyan }
@@ -72,12 +74,15 @@ function Docker-Run() {
   $logsDir = Join-Path (Get-Location) 'logs'
   if (-not (Test-Path $logsDir)) { New-Item -ItemType Directory -Force -Path $logsDir | Out-Null }
 
-  $envVars = @( # TODO: pass as function params or read from .env?
-    'ASPNETCORE_ENVIRONMENT=Development'
-    'Modules__CoreModule__ConnectionStrings__Default=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;'
-    'JobScheduling__Quartz__quartz.dataSource.default.connectionString=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;'
-    'Authentication__Authority=http://localhost:8080'
-  )
+  $jsonPath = Join-Path $Root ".docker/$Name.json"
+  if (Test-Path $jsonPath) {
+    Write-Step "Reading settings from $jsonPath"
+    $jsonContent = Get-Content $jsonPath -Raw | ConvertFrom-Json
+    $envVars += $jsonContent.Environment
+  }
+  else{
+    Write-Host "No settings file found at $jsonPath" -ForegroundColor Red
+  }
 
   $runArgs = @('run','-d','--name', $Name,'-p',"$HostPort`:$ContainerPort",'--network', $Network)
   foreach($e in $envVars){ $runArgs += @('-e', $e) }
@@ -310,9 +315,7 @@ switch ($Command.ToLower()) {
     Docker-Run -Tag $ImageTag -Name $ContainerName -Network $Network -HostPort $HostPort -ContainerPort $ContainerPort
   }
   'docker-build-debug' {
-    $tag = "$ImageTag-debug"
-    Write-Step "Using debug tag: $tag"
-    $args = @('build','-t',$tag,'-f',$Dockerfile,'--build-arg','CONFIG=Debug')
+    $args = @('build','-t',$ImageTag,'-f',$Dockerfile,'--build-arg','CONFIG=Debug')
     if($NoCache){ $args += '--no-cache' }
     $args += $ProjectDockerContext
     Write-Command "docker $($args -join ' ')"
@@ -320,9 +323,7 @@ switch ($Command.ToLower()) {
     if($LASTEXITCODE -ne 0){ Fail 'Docker debug build failed.' $LASTEXITCODE }
   }
   'docker-build-release' {
-    $tag = "$ImageTag-release"
-    Write-Step "Using release tag: $tag"
-    $args = @('build','-t',$tag,'-f',$Dockerfile,'--build-arg','CONFIG=Release')
+    $args = @('build','-t',$ImageTag,'-f',$Dockerfile,'--build-arg','CONFIG=Release')
     if($NoCache){ $args += '--no-cache' }
     $args += $ProjectDockerContext
     Write-Command "docker $($args -join ' ')"

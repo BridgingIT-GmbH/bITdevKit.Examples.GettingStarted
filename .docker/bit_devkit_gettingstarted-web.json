@@ -1,0 +1,8 @@
+{
+  "Environment":[
+    "ASPNETCORE_ENVIRONMENT=Development",
+    "Modules__CoreModule__ConnectionStrings__Default=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;",
+    "JobScheduling__Quartz__quartz.dataSource.default.connectionString=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;",
+    "Authentication__Authority=http://localhost:8080"
+  ]
+}

@@ -111,7 +111,7 @@ services:
           }
         ]
     volumes:
-      - .dkx/docker/adminneo-config.php:/var/www/html/adminneo-config.php
+      - .docker/adminneo-config.php:/var/www/html/adminneo-config.php
     networks:
       - ${NETWORK_NAME}
 
