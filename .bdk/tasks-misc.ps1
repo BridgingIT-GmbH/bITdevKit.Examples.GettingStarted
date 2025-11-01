@@ -309,6 +309,7 @@ Usage: pwsh -File .vscode/tasks-misc.ps1 <command> [options]
 Commands:
   digest                               Generate consolidated markdown documentation per project (.g.md).
   clean|cleanup                        Remove build/output artifact directories (bin/obj/node_modules/etc.).
+  remove-headers                       Remove License headers from all C# files in src/ and tests/.
   repl|shell                           Run C# REPL (dotnet tool csharprepl) after tool restore.
   kill-dotnet                          Terminate a dotnet process (interactive selection or direct -ProcessId). No confirmation.
   browser-seq                          Open SEQ logging dashboard (http://localhost:15349) in default browser.
@@ -335,10 +336,16 @@ clean Operation:
     bin, obj, bld, Backup, _UpgradeReport_Files, Debug, Release, ipch, node_modules, .tmp
   Removes them deepest-first (single pass) and skips .git.
 
+remove-headers Operation:
+  Scans all C# files in src/ and tests/ directories.
+  Removes the 4-line MIT-License header comment block from the beginning of each file.
+  Preserves all code and other comments.
+
 Examples:
   pwsh -File .vscode/tasks-misc.ps1 digest
   pwsh -File .vscode/tasks-misc.ps1 digest -OutputDirectory ./.tmp/docs -StripComments true -StripEmptyLines true
   pwsh -File .vscode/tasks-misc.ps1 clean
+  pwsh -File .vscode/tasks-misc.ps1 remove-headers
   pwsh -File .vscode/tasks-misc.ps1 repl
   pwsh -File .vscode/tasks-misc.ps1 kill-dotnet               # interactive selection (no confirmation)
   pwsh -File .vscode/tasks-misc.ps1 kill-dotnet -ProcessId 1234  # direct kill (no confirmation)
@@ -395,6 +402,7 @@ function Handle-MiscCommand([string]$cmd){
     'digest' { Combine-Sources; return }
     'clean' { Clean-Workspace; return }
     'cleanup' { Clean-Workspace; return }
+    'remove-headers' { Remove-FileHeaders; return }
     'repl' { Run-CSharpRepl; return }
     'shell' { Run-CSharpRepl; return }
     'kill-dotnet' { Kill-DotNetProcess; return }
@@ -439,6 +447,80 @@ function Kill-DotNetProcess() {
   Write-Host ("Failed to terminate PID {0}: {1}" -f $selectedPid, $errMsg) -ForegroundColor Red
     $global:LASTEXITCODE=5
   }
+}
+
+function Remove-FileHeaders() {
+  # Remove MIT license headers from all C# files in src/ and tests/
+  $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+  $srcPath = Join-Path $repoRoot 'src'
+  $testsPath = Join-Path $repoRoot 'tests'
+
+  Write-Host "Removing file headers from C# files..." -ForegroundColor Cyan
+
+  $filesToProcess = @()
+  if (Test-Path $srcPath) {
+    $filesToProcess += @(Get-ChildItem -Path $srcPath -Recurse -Filter '*.cs' -ErrorAction SilentlyContinue)
+  }
+  if (Test-Path $testsPath) {
+    $filesToProcess += @(Get-ChildItem -Path $testsPath -Recurse -Filter '*.cs' -ErrorAction SilentlyContinue)
+  }
+
+  if ($filesToProcess.Count -eq 0) {
+    Write-Host "No C# files found in src/ or tests/" -ForegroundColor Yellow
+    return
+  }
+
+  Write-Host "Found $($filesToProcess.Count) C# files" -ForegroundColor Cyan
+
+  $headerPattern = '^\s*//\s*MIT-License\s*$|^\s*//\s*Copyright\s+BridgingIT|^\s*//\s*Use\s+of\s+this\s+source\s+code|^\s*//\s*found\s+in\s+the\s+LICENSE'
+  $filesModified = 0
+  $i = 0
+
+  foreach ($file in $filesToProcess) {
+    $i++
+    Write-Progress -Activity 'Removing headers' -Status "Processing $i of $($filesToProcess.Count)" -PercentComplete (($i / $filesToProcess.Count) * 100)
+
+    try {
+      $content = Get-Content -Path $file.FullName -Raw -Encoding UTF8
+      $originalLength = $content.Length
+
+      # Split into lines to identify header
+      $lines = $content -split "`n"
+      $headerEndIndex = 0
+
+      # Look for the license header pattern (typically 4 lines + blank line)
+      if ($lines.Count -gt 5) {
+        # Check if first 4 lines match the header pattern
+        $hasHeader = $false
+        if ($lines[0] -match 'MIT-License' -and $lines[1] -match 'Copyright\s+BridgingIT') {
+          $hasHeader = $true
+          $headerEndIndex = 4
+          # Skip one more blank line if present
+          if ($headerEndIndex + 1 -lt $lines.Count -and [string]::IsNullOrWhiteSpace($lines[$headerEndIndex + 1])) {
+            $headerEndIndex += 1
+          }
+        }
+
+        if ($hasHeader -and $headerEndIndex -gt 0) {
+          # Remove header lines and rejoin
+          $newLines = $lines[($headerEndIndex + 1)..$($lines.Count - 1)]
+          $newContent = ($newLines -join "`n").TrimStart()
+
+          if ($newContent.Length -lt $originalLength) {
+            Set-Content -Path $file.FullName -Value $newContent -Encoding UTF8 -Force
+            $filesModified++
+            Write-Host "  Removed header: $($file.FullName.Replace($repoRoot, '.'))" -ForegroundColor Green
+          }
+        }
+      }
+    }
+    catch {
+      Write-Host "  Error processing $($file.FullName): $($_.Exception.Message)" -ForegroundColor Red
+    }
+  }
+
+  Write-Progress -Activity 'Removing headers' -Completed
+  Write-Host "`nFile header removal complete. Modified: $filesModified files" -ForegroundColor Green
 }
 
 function Update-DevKitDocs() {

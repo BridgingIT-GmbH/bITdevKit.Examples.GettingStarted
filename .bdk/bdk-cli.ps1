@@ -159,6 +159,7 @@ $tasks = [ordered]@{
   'openapi-http'                = @{ Label = 'OpenAPI HTTP'; Desc = 'Generate .http request files'; Script = { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') http-requests } }
   'misc-clean'                  = @{ Label = 'Workspace Clean'; Desc = 'Clean workspace'; Script = { Invoke-Misc 'clean' } }
   'misc-digest'                 = @{ Label = 'Sources Digest'; Desc = 'Generate source digest'; Script = { Invoke-Misc 'digest' } }
+  'misc-remove-headers'         = @{ Label = 'Remove File Headers'; Desc = 'Strip MIT headers from C# files'; Script = { Invoke-Misc 'remove-headers' } }
   'misc-repl'                   = @{ Label = 'C# REPL'; Desc = 'Interactive REPL'; Script = { Invoke-Misc 'repl' } }
   'misc-kill-dotnet'            = @{ Label = '.NET Kill'; Desc = 'Kill dotnet process'; Script = { Invoke-Misc 'kill-dotnet' } }
   'misc-browser-seq'            = @{ Label = 'Browser Seq'; Desc = 'Open Seq dashboard'; Script = { Invoke-Misc 'browser-seq' } }
@@ -196,7 +197,7 @@ $categories = [ordered]@{
   'Performance & Diagnostics' = @('bench', 'bench-select', 'trace-flame', 'trace-cpu', 'trace-gc', 'dump-heap', 'gc-stats', 'aspnet-metrics', 'diag-quick', 'speedscope-view')
   'Security & Compliance'     = @('vulnerabilities', 'vulnerabilities-deep', 'outdated', 'outdated-json', 'licenses')
   'API & Spec'                = @('openapi-lint', 'openapi-client-dotnet', 'openapi-client-typescript', 'openapi-http')
-  'Utilities'                 = @('misc-clean', 'misc-digest', 'misc-repl', 'misc-kill-dotnet', 'misc-browser-seq', 'misc-browser-adminneo', 'misc-browser-server-kestrel', 'misc-browser-server-docker', 'misc-show-minver')
+  'Utilities'                 = @('misc-clean', 'misc-digest', 'misc-remove-headers', 'misc-repl', 'misc-kill-dotnet', 'misc-browser-seq', 'misc-browser-adminneo', 'misc-browser-server-kestrel', 'misc-browser-server-docker', 'misc-show-minver')
   'Documentation'             = @('doc-browser-devkit-docs', 'doc-update-devkit-docs')
 }
 
