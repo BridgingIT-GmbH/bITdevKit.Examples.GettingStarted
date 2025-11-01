@@ -17,6 +17,7 @@
     "ModuleName": {
       "type": "parameter",
       "datatype": "string",
+      "isRequired": true,
       "defaultValue": "Core",
       "replaces": "CoreModule",
       "fileRename": "CoreModule"

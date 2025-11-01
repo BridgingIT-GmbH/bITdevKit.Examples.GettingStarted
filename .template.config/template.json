@@ -11,15 +11,15 @@
     "language": "C#",
     "type": "solution"
   },
-  "sourceName": "BridgingIT.DevKit.Examples.GettingStarted",
   "preferNameDirectory": true,
   "symbols": {
     "SolutionName": {
       "type": "parameter",
       "datatype": "string",
-      "defaultValue": "DevKit.Examples.GettingStarted",
-      "replaces": "DevKit.Examples.GettingStarted",
-      "fileRename": "DevKit.Examples.GettingStarted"
+      "isRequired": true,
+      "defaultValue": "BridgingIT.DevKit.Examples.GettingStarted",
+      "replaces": "BridgingIT.DevKit.Examples.GettingStarted",
+      "fileRename": "BridgingIT.DevKit.Examples.GettingStarted"
     },
     "SolutionNameUnderscore": {
       "type": "generated",
