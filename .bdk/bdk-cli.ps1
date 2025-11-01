@@ -35,24 +35,24 @@ if (Test-Path $helpersPath) { . $helpersPath }
 
 # load .env (KEY=VALUE) from repo root and export to $env:
 function Load-DotEnv([string]$path) {
-	$map = @{}
-	if (-not (Test-Path $path)) { return $map }
-	foreach ($ln in Get-Content $path) {
-		$line = $ln.Trim()
-		if ([string]::IsNullOrWhiteSpace($line) -or $line.StartsWith('#')) { continue }
-		# split on first '='
-		$parts = $line -split '=', 2
-		if ($parts.Length -ne 2) { continue }
-		$key = $parts[0].Trim()
-		$val = $parts[1].Trim().Trim("'""")
-		if (-not [string]::IsNullOrEmpty($key)) {
-			$map[$key] = $val
+  $map = @{}
+  if (-not (Test-Path $path)) { return $map }
+  foreach ($ln in Get-Content $path) {
+    $line = $ln.Trim()
+    if ([string]::IsNullOrWhiteSpace($line) -or $line.StartsWith('#')) { continue }
+    # split on first '='
+    $parts = $line -split '=', 2
+    if ($parts.Length -ne 2) { continue }
+    $key = $parts[0].Trim()
+    $val = $parts[1].Trim().Trim("'""")
+    if (-not [string]::IsNullOrEmpty($key)) {
+      $map[$key] = $val
       Write-Host "Loaded .env: $key=$val" -ForegroundColor DarkGray
-			# also export to process env so other scripts can use it
-			# $env:$key = $val
-		}
-	}
-	return $map
+      # also export to process env so other scripts can use it
+      # $env:$key = $val
+    }
+  }
+  return $map
 }
 
 # load .env
@@ -61,10 +61,10 @@ $dotenvMap = Load-DotEnv $dotEnvPath
 
 # compute defaults using loaded env (fall back to existing literal defaults if absent)
 $containerPrefix = $dotenvMap['CONTAINER_PREFIX'] ?? 'bdk_gettingstarted'
-$registryHost    = $dotenvMap['REGISTRY_HOST']    ?? 'localhost:5500'
-$defaultNetwork       = $dotenvMap['NETWORK_NAME']     ?? 'bdk_gettingstarted'
+$registryHost = $dotenvMap['REGISTRY_HOST'] ?? 'localhost:5500'
+$defaultNetwork = $dotenvMap['NETWORK_NAME'] ?? 'bdk_gettingstarted'
 $defaultContainerName = "${containerPrefix}-web"
-$defaultImageTag      = "${registryHost}/${defaultContainerName}:latest"
+$defaultImageTag = "${registryHost}/${defaultContainerName}:latest"
 
 function Read-Selection($title, [string[]]$choices) {
   $choices += 'Cancel'
@@ -88,12 +88,12 @@ function Invoke-Test([string]$kind, [switch]$All) {
 
 function Invoke-Misc([string]$cmd) { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-misc.ps1') $cmd }
 function Invoke-Docker([string]$mode, [string]$ContainerName = $null, [string]$ImageTag = $null, [string]$Network = $null) {
-	$script = Join-Path $PSScriptRoot 'tasks-docker.ps1'
-	$args = @('-NoProfile', '-File', $script, $mode)
-	if ($ContainerName) { $args += @('-ContainerName', $ContainerName) }
-	if ($ImageTag)     { $args += @('-ImageTag', $ImageTag) }
-	if ($Network)      { $args += @('-Network', $Network) }
-	& pwsh $args
+  $script = Join-Path $PSScriptRoot 'tasks-docker.ps1'
+  $args = @('-NoProfile', '-File', $script, $mode)
+  if ($ContainerName) { $args += @('-ContainerName', $ContainerName) }
+  if ($ImageTag) { $args += @('-ImageTag', $ImageTag) }
+  if ($Network) { $args += @('-Network', $Network) }
+  & pwsh $args
 }
 function Invoke-Ef([string]$efCmd) { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-ef.ps1') $efCmd }
 function Invoke-Diagnostics([string]$diagCmd) { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-diagnostics.ps1') -Command $diagCmd }
@@ -247,6 +247,7 @@ while ($true) {
 Write-Host 'Exiting' -ForegroundColor DarkGray
 
 # TODO tools
+# https://swharden.com/blog/2023-03-05-dotnet-code-analysis/ cyclomatic complexity analysis8
 # https://josefpihrt.github.io/docs/roslynator/cli/category/commands
 # https://github.com/christianhelle/curlgenerator
 # https://github.com/MapsterMapper/Mapster/wiki/Mapster.Tool
@@ -256,4 +257,3 @@ Write-Host 'Exiting' -ForegroundColor DarkGray
 # https://github.com/WeihanLi/dotnet-httpie   run .http files from cli
 # https://github.com/xoofx/dotnet-releaser
 # https://abp.io/docs/latest/cli
-# docker recreate specific containers:docker compose up -d --force-recreate CONTAINER_NAME
