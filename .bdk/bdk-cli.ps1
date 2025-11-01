@@ -112,6 +112,9 @@ $tasks = [ordered]@{
   'test-int-all'                = @{ Label = 'Tests Int All'; Desc = 'Run all integration tests'; Script = { Invoke-Test 'integration' -All } }
   'coverage'                    = @{ Label = 'Coverage'; Desc = 'Compute coverage'; Script = { Invoke-Dotnet 'coverage' } }
   'coverage-html'               = @{ Label = 'Coverage HTML'; Desc = 'Coverage HTML report'; Script = { Invoke-Dotnet 'coverage-html' } }
+  'roslynator-analyze'          = @{ Label = 'Roslynator Analyze'; Desc = 'Code analysis with Roslynator'; Script = { Invoke-Dotnet 'roslynator-analyze' } }
+  'roslynator-loc'              = @{ Label = 'Roslynator LOC'; Desc = 'Lines of Code analysis'; Script = { Invoke-Dotnet 'roslynator-loc' } }
+  'roslynator-lloc'             = @{ Label = 'Roslynator LLOC'; Desc = 'Logical Lines of Code analysis'; Script = { Invoke-Dotnet 'roslynator-lloc' } }
   'ef-info'                     = @{ Label = 'EF Info'; Desc = 'DbContext info'; Script = { Invoke-Ef 'info' } }
   'ef-list'                     = @{ Label = 'EF List'; Desc = 'List migrations'; Script = { Invoke-Ef 'list' } }
   'ef-add'                      = @{ Label = 'EF Add'; Desc = 'Add migration'; Script = { Invoke-Ef 'add' } }
@@ -190,7 +193,7 @@ function Format-TaskDisplay([hashtable]$t) {
 
 $categories = [ordered]@{
   'Build & Maintenance'       = @('restore', 'build', 'build-release', 'build-nr', 'pack', 'pack-projects', 'update-packages', 'update-packages-devkit', 'clean', 'tool-restore', 'format-check', 'format-apply', 'analyzers', 'analyzers-export', 'server-build', 'server-publish', 'server-publish-release', 'server-publish-sc', 'server-watch', 'server-run-dev')
-  'Testing & Quality'         = @('test-unit', 'test-int', 'test-unit-all', 'test-int-all', 'coverage', 'coverage-html')
+  'Testing & Quality'         = @('test-unit', 'test-int', 'test-unit-all', 'test-int-all', 'coverage', 'coverage-html', 'roslynator-analyze', 'roslynator-loc', 'roslynator-lloc')
   'EF & Persistence'          = @('ef-info', 'ef-list', 'ef-add', 'ef-remove', 'ef-removeall', 'ef-apply', 'ef-update', 'ef-recreate', 'ef-undo', 'ef-status', 'ef-reset', 'ef-script')
   'Publishing & Packaging'    = @('server-publish', 'server-publish-release', 'server-publish-sc', 'pack', 'pack-projects')
   'Docker & Containers'       = @('docker-build-run', 'docker-build-debug', 'docker-build-release', 'docker-run', 'docker-stop', 'docker-remove', 'compose-up', 'compose-up-pull', 'compose-recreate', 'compose-down', 'compose-down-clean')

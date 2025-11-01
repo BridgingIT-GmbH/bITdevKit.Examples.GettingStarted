@@ -113,7 +113,7 @@ $needsSolutionCommands = @(
   'restore', 'build', 'build-release', 'build-nr', 'pack', 'clean',
   'format-check', 'format-apply', 'vulnerabilities', 'vulnerabilities-deep',
   'outdated', 'outdated-json', 'update-packages', 'update-packages-devkit', 'analyzers', 'analyzers-export',
-  'licenses', 'coverage', 'coverage-html'
+  'licenses', 'coverage', 'coverage-html', 'roslynator-analyze', 'roslynator-loc', 'roslynator-lloc'
 )
 if ($needsSolutionCommands -contains $Command.ToLowerInvariant()) {
   try {
@@ -358,6 +358,24 @@ switch ($Command.ToLowerInvariant()) {
     else {
       Write-Host 'Report generation completed but index.html not found.' -ForegroundColor Yellow
     }
+  }
+  'roslynator-analyze' {
+    Write-Host "Running Roslynator Analyze on solution: $SolutionPath" -ForegroundColor Cyan
+    Invoke-Dotnet @('tool', 'restore') | Out-Null
+    & dotnet roslynator analyze $SolutionPath
+    if ($LASTEXITCODE -ne 0) { Write-Host 'Roslynator analyze completed with warnings or errors.' -ForegroundColor Yellow }
+  }
+  'roslynator-loc' {
+    Write-Host "Running Roslynator LOC (Lines of Code) on solution: $SolutionPath" -ForegroundColor Cyan
+    Invoke-Dotnet @('tool', 'restore') | Out-Null
+    & dotnet roslynator loc $SolutionPath
+    if ($LASTEXITCODE -ne 0) { Write-Host 'Roslynator loc completed with warnings or errors.' -ForegroundColor Yellow }
+  }
+  'roslynator-lloc' {
+    Write-Host "Running Roslynator LLOC (Logical Lines of Code) on solution: $SolutionPath" -ForegroundColor Cyan
+    Invoke-Dotnet @('tool', 'restore') | Out-Null
+    & dotnet roslynator lloc $SolutionPath
+    if ($LASTEXITCODE -ne 0) { Write-Host 'Roslynator lloc completed with warnings or errors.' -ForegroundColor Yellow }
   }
 
   default { throw "Unknown dotnet command: $Command" }
