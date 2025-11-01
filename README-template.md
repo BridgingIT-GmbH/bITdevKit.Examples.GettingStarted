@@ -217,7 +217,10 @@ You can customize these templates by modifying the template configuration files:
 - Solution template: `.template.config/template.json` in the solution template directory
 - Module template: `src/Modules/CoreModule/.template.config/template.json` in the module template directory
 
-For more information about .NET template development, see the [official documentation](https://docs.microsoft.com/en-us/dotnet/core/tools/custom-templates).
+For more information about .NET template development:
+
+- [Official documentation](https://docs.microsoft.com/en-us/dotnet/core/tools/custom-templates)
+- [Template Samples](https://github.com/dotnet/templating/tree/main/dotnet-template-samples)
 
 ## Support and Issues
 

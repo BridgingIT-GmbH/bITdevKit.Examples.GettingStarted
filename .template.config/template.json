@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/dotnet/templating/master/schemas/template-config.schema.json",
+  "$schema": "https://www.schemastore.org/template.json",
   "author": "BridgingIT",
   "classifications": [
     "Solution"
