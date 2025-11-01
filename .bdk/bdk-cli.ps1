@@ -60,9 +60,9 @@ $dotEnvPath = Join-Path $root '.env'
 $dotenvMap = Load-DotEnv $dotEnvPath
 
 # compute defaults using loaded env (fall back to existing literal defaults if absent)
-$containerPrefix = $dotenvMap['CONTAINER_PREFIX'] ?? 'dkx_gettingstarted'
+$containerPrefix = $dotenvMap['CONTAINER_PREFIX'] ?? 'bdk_gettingstarted'
 $registryHost    = $dotenvMap['REGISTRY_HOST']    ?? 'localhost:5500'
-$defaultNetwork       = $dotenvMap['NETWORK_NAME']     ?? 'dkx_gettingstarted'
+$defaultNetwork       = $dotenvMap['NETWORK_NAME']     ?? 'bdk_gettingstarted'
 $defaultContainerName = "${containerPrefix}-web"
 $defaultImageTag      = "${registryHost}/${defaultContainerName}:latest"
 
@@ -212,7 +212,7 @@ function Run-Task([string]$key) {
 if ($Task) { Run-Task $Task; exit $LASTEXITCODE }
 
 $repoName = Split-Path $root -Leaf
-$message = "dkx - $repoName"
+$message = "bdk - $repoName"
 if ($env:VSCODE_PID -or $env:TERM_PROGRAM -eq 'vscode') {
   $message | Format-SpectrePadded -Padding 0 | Format-SpectrePanel -Expand -Border "Double" -Color "DeepSkyBlue3"
 }

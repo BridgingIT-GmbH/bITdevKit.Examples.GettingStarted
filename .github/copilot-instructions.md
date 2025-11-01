@@ -219,7 +219,7 @@ Provide: current filename(s), goal (e.g., split large handler), constraints (no 
 - `src/Modules/` contains all application modules, each with Domain, Application, Infrastructure, and Presentation projects.
 - `src/Presentation.Web.Server/` hosts the web server project that serves as the composition root for the application.
 - `tests/` contains unit and integration tests organized by module.
-- `.dkx/docs/` contains official documentation references for development patterns and practices.
+- `.bdk/docs/` contains official documentation references for development patterns and practices.
 - `.github/` contains GitHub-specific configurations including Copilot instructions and chat modes.
 - `Directory.Packages.props` manages centralized NuGet package versions for consistency across projects.
 - `README.md` provides an overview of the project and setup instructions.

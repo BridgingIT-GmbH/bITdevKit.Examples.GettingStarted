@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Cross-platform wrapper to run the dkx PowerShell script
-# Usage: ./dkx [args...]
+# Cross-platform wrapper to run the bdk PowerShell script
+# Usage: ./bdk [args...]
 
 set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "$0")" && pwd)
-SCRIPT="$ROOT_DIR/.dkx/dkx-cli.ps1"
+SCRIPT="$ROOT_DIR/.bdk/bdk-cli.ps1"
 
 if [ ! -f "$SCRIPT" ]; then
-  echo "Cannot find dkx.ps1 in $ROOT_DIR" >&2
+  echo "Cannot find bdk-cli.ps1 in $ROOT_DIR" >&2
   exit 2
 fi
 

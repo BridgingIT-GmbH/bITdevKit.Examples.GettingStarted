@@ -1,10 +1,10 @@
 @echo off
-REM wrapper to run dkx.ps1 from repository root
+REM wrapper to run bdk-cli.ps1 from repository root
 SETLOCAL
 set SCRIPT_DIR=%~dp0
-set SCRIPT=%SCRIPT_DIR%.dkx\dkx-cli.ps1
+set SCRIPT=%SCRIPT_DIR%.bdk\bdk-cli.ps1
 IF NOT EXIST "%SCRIPT%" (
-  echo Cannot find dkx.ps1 in %SCRIPT_DIR%
+  echo Cannot find bdk-cli.ps1 in %SCRIPT_DIR%
   exit /b 2
 )
 

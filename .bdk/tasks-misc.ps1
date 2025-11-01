@@ -444,7 +444,7 @@ function Kill-DotNetProcess() {
 function Update-DevKitDocs() {
   # Write-Section 'Updating DevKit Docs (markdown)'
   $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-  $targetRoot = Join-Path $repoRoot '.dkx/docs'
+  $targetRoot = Join-Path $repoRoot '.bdk/docs'
   New-Item -ItemType Directory -Path $targetRoot -Force | Out-Null
 
   $apiBase = 'https://api.github.com/repos/BridgingIT-GmbH/bITdevKit/contents/docs'

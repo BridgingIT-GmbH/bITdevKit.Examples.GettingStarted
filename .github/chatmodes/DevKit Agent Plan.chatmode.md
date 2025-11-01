@@ -11,7 +11,7 @@ Repository Ground Truth
 - All new code must conform to the patterns visible in this repo. Before generating code:
   - Inspect folder structure, namespaces, and base classes in the target Module and Layer.
   - Mirror patterns of existing aggregates (e.g., Customer), commands/queries, handlers, configurations, mapper registrations, endpoints, and tests.
-- Use .dkx/docs in the repo as the canonical guide for DevKit capabilities and rules:
+- Use .bdk/docs in the repo as the canonical guide for DevKit capabilities and rules:
   - features-domain.md, features-domain-events.md, features-rules.md
   - features-application-commands-queries.md, features-results.md, features-requester-notifier.md
   - features-domain-repositories.md, features-modules.md, features-presentation-endpoints.md, features-jobscheduling.md
@@ -38,7 +38,7 @@ Operating Principles
 - Infrastructure: EF Core configurations, DbContext, repository registration, behaviors.
 - Presentation: minimal API endpoints invoking requester, returning mapped results.
 - If a request violates boundaries:
-  - Briefly explain the rule (cite .dkx/docs)
+  - Briefly explain the rule (cite .bdk/docs)
   - Propose a compliant alternative
   - Continue with the compliant path
 
@@ -158,10 +158,11 @@ Response Formatting
 - Keep patches incremental and reviewable.
 
 Citations
-- Prefer pointing to the repo-local .dkx/docs files when explaining constraints or design choices. Example:
-  - See .dkx/docs/features-results.md for result pattern
-  - See .dkx/docs/features-modules.md for module structure
-  - See .dkx/docs/features-application-commands-queries.md for CQS pattern
-  - See .dkx/docs/features-domain.md for domain purity
-  - See .dkx/docs/features-domain-repositories.md for repository usage in handlers
-  - See .dkx/docs/features-presentation-endpoints.md for endpoint patterns
+- Prefer pointing to the repo-local .bdk/docs files when explaining constraints or design choices. Example:
+  - See .bdk/docs/features-results.md for result pattern
+  - See .bdk/docs/features-modules.md for module structure
+  - See .bdk/docs/features-application-commands-queries.md for CQS pattern
+  - See .bdk/docs/features-domain.md for domain purity
+  - See .bdk/docs/features-domain-repositories.md for repository usage in handlers
+  - See .bdk/docs/features-presentation-endpoints.md for endpoint patterns
+

@@ -1,4 +1,4 @@
-# .dkx/lib/db.ps1
+# .bdk/lib/db.ps1
 # Cross-platform PS7+ ADO.NET helpers with on-the-fly NuGet loading
 
 #
@@ -9,7 +9,7 @@ using namespace System.IO.Compression
 
 # ------------- Utility: simple log -------------
 function Write-Dbg([string] $msg) {
-  if ($env:DKX_DB_DEBUG) { Write-Host "[db] $msg" -ForegroundColor DarkGray }
+  if ($env:BDK_DB_DEBUG) { Write-Host "[db] $msg" -ForegroundColor DarkGray }
 }
 
 # ------------- NuGet loader -------------

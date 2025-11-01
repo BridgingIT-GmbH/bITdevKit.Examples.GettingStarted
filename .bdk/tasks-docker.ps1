@@ -295,11 +295,11 @@ Commands:
   help               Show this help
 
 Common Parameters:
-  -ImageTag <tag>            (default: localhost:5500/dkx_gettingstarted-web:latest)
-  -ContainerName <name>      (default: dkx_gettingstarted-web)
+  -ImageTag <tag>            (default: localhost:5500/bdk_gettingstarted-web:latest)
+  -ContainerName <name>      (default: bdk_gettingstarted-web)
   -Dockerfile <path>         (default: src/Presentation.Web.Server/Dockerfile)
   -ProjectDockerContext <dir>(default: .)
-  -Network <name>            (default: dkx_gettingstarted)
+  -Network <name>            (default: bdk_gettingstarted)
   -HostPort <port>           (default: 8080)
   -ContainerPort <port>      (default: 8080)
   -NoCache                   (skip build cache)
