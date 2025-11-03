@@ -1,0 +1,41 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/assets/">
+    <File Path=".azure/azure-pipelines-template.yml" />
+    <File Path=".azure/azure-pipelines.yml" />
+    <File Path=".config/dotnet-tools.json" />
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="docker-compose.yml" />
+    <File Path="global.json" />
+    <File Path="http-client.env.json" />
+    <File Path="nuget.config" />
+    <File Path="README-template.md" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Presentation.Web.Server/Presentation.Web.Server.csproj" DefaultStartup="true" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/CoreModule/">
+    <File Path="src/Modules/CoreModule/CoreModule-Customers-API.http" />
+    <File Path="src/Modules/CoreModule/CoreModule-README.md" />
+    <Project Path="src/Modules/CoreModule/CoreModule.Application/CoreModule.Application.csproj" />
+    <Project Path="src/Modules/CoreModule/CoreModule.Domain/CoreModule.Domain.csproj" />
+    <Project Path="src/Modules/CoreModule/CoreModule.Infrastructure/CoreModule.Infrastructure.csproj" />
+    <Project Path="src/Modules/CoreModule/CoreModule.Presentation/CoreModule.Presentation.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/Modules/" />
+  <Folder Name="/tests/Modules/CoreModule/">
+    <Project Path="tests/Modules/CoreModule/CoreModule.Benchmarks/CoreModule.Benchmarks.csproj" />
+    <Project Path="tests/Modules/CoreModule/CoreModule.IntegrationTests/CoreModule.IntegrationTests.csproj" />
+    <Project Path="tests/Modules/CoreModule/CoreModule.UnitTests/CoreModule.UnitTests.csproj" />
+  </Folder>
+</Solution>
