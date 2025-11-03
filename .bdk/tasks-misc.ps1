@@ -6,18 +6,15 @@
   Provides wrapper functions for scripts like CombineSources.ps1 so they can be invoked via VS Code tasks.
 
 .EXAMPLES
-  pwsh -File .vscode/tasks-misc.ps1 combine-sources -OutputDirectory ./.tmp/combined
+  pwsh -File .vscode/tasks-misc.ps1 digest-sources -OutputDirectory ./.tmp/combined
   pwsh -File .vscode/tasks-misc.ps1 help
 #>
 param(
-  # Command routing (added wrapper around original script logic)
-  [Parameter(Position=0)] [string] $Command = 'help',
+  [Parameter(Position = 0)] [string] $Command = 'help',
   # Optional process id for non-interactive kill-dotnet
   [int] $ProcessId,
   [switch] $ForceKill,
 
-  # === Original CombineSources.ps1 parameters (kept defaults) ===
-  [string]$OutputDirectory = './.tmp',
   [string[]]$ExcludePatterns = @(
     'docs?',
     'obj',
@@ -39,68 +36,30 @@ param(
   [bool]$SkipGeneratedFiles = $true,
   [bool]$UpdateGitIgnore = $true
 )
-# Write-Host "Executing command: $Command" -ForegroundColor Yellow
-$ErrorActionPreference = 'Stop'
 
-# function Write-Section([string] $Text){ Write-Host "`n=== $Text ===" -ForegroundColor Magenta }
-function Fail([string] $Msg, [int] $Code=1){ Write-Error $Msg; exit $Code }
+$ErrorActionPreference = 'Stop'
+$Root = Split-Path $PSScriptRoot -Parent
+
+# Load configuration
+$commonScriptsPath = Join-Path $PSScriptRoot "tasks-common.ps1"
+if (Test-Path $commonScriptsPath) { . $commonScriptsPath }
+Load-Settings
+
+$OutputDirectory = Get-OutputDirectory
 
 # Reused from diagnostics script (with minor fallback enhancements):
 ${script:DotNetOnly} = $false
-function Select-Pid($title){
-  try {
-    Import-Module PwshSpectreConsole -ErrorAction Stop
-    $procs = Get-Process | Where-Object { $_.Id -gt 0 }
-    if($script:DotNetOnly){ $procs = $procs | Where-Object { $_.ProcessName -match 'dotnet|Presentation.Web.Server' } }
-    $procs = $procs | Sort-Object ProcessName,Id
-    $rows = @()
-    foreach($p in $procs){
-      $label = "$($p.ProcessName) (#$($p.Id))"
-      if($rows -notcontains $label){ $rows += $label }
-    }
-    if(-not $rows){ Write-Host 'No matching processes found.' -ForegroundColor Yellow; return $null }
-    $choices = $rows + 'Cancel'
-    $sel = Read-SpectreSelection -Title $title -Choices $choices -EnableSearch -PageSize 25
-    Write-Host "Raw selection: '$sel'" -ForegroundColor DarkGray
-    if([string]::IsNullOrWhiteSpace($sel) -or $sel -eq 'Cancel'){ return $null }
-    if($sel -match '\(#(\d+)\)$'){ Write-Host "Selected PID: $($Matches[1])" -ForegroundColor DarkGray; return [int]$Matches[1] }
-    Write-Host "Could not parse PID from selection: $sel" -ForegroundColor Yellow
-    return $null
-  } catch {
-    # Fallback to manual numeric selection if Spectre unavailable
-    Write-Host ('Spectre selection unavailable; falling back to manual input. Reason: {0}' -f $_.Exception.Message) -ForegroundColor Yellow
-    $procs = Get-Process | Where-Object { $_.Id -gt 0 }
-    if($script:DotNetOnly){ $procs = $procs | Where-Object { $_.ProcessName -match 'dotnet|Presentation.Web.Server' } }
-    $procs = $procs | Sort-Object ProcessName,Id
-    if(-not $procs){ Write-Host 'No matching processes found.' -ForegroundColor Yellow; return $null }
-    Write-Host 'Index | ProcessName | PID' -ForegroundColor Cyan
-    for($i=0;$i -lt $procs.Count;$i++){ Write-Host ("{0,5} | {1,-25} | {2}" -f $i,$procs[$i].ProcessName,$procs[$i].Id) -ForegroundColor DarkGray }
-    $raw = Read-Host 'Enter index to select (or blank to cancel)'
-    if([string]::IsNullOrWhiteSpace($raw)){ return $null }
-    if(-not ([int]::TryParse($raw,[ref]$idx)) -or $idx -lt 0 -or $idx -ge $procs.Count){ Write-Host 'Invalid index.' -ForegroundColor Red; return $null }
-    return $procs[$idx].Id
-  }
-}
 
 function Run-CSharpRepl() {
   # Write-Section 'Starting C# REPL'
-  Write-Host 'Restoring dotnet tools...' -ForegroundColor Cyan
-  dotnet tool restore | Out-Null
-  if ($LASTEXITCODE -ne 0) { Fail 'dotnet tool restore failed.' 91 }
-  # Use dotnet tool run to ensure proper shim invocation even if PATH not updated
-  $toolListRaw = dotnet tool list --local 2>$null
-  $toolList = ($toolListRaw | Out-String)
-  if ($LASTEXITCODE -ne 0) { Fail 'dotnet tool list failed.' 92 }
-  if ($toolList -notmatch 'csharprepl') {
-    Write-Host 'WARNING: csharprepl not detected in tool list output, attempting direct run anyway...' -ForegroundColor Yellow
-  }
-  Write-Host 'Launching csharprepl (Ctrl+C to exit) ...' -ForegroundColor Cyan
+  Ensure-DotNetTools
+  Write-Info 'Launching csharprepl (Ctrl+C to exit) ...'
+  Write-Debug 'dotnet tool run csharprepl'
   dotnet tool run csharprepl
 }
 
-function Combine-Sources() {
+function Digest-Sources() {
   # Write-Section 'Combining sources'
-
   $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 
   # Statistics tracking
@@ -117,23 +76,24 @@ function Combine-Sources() {
   }
 
   # Logging helpers (original)
-  function Write-Progress-Info    { param([string]$message) Write-Host "-- $message" -ForegroundColor Cyan }
-  function Write-Progress-Warning { param([string]$message) Write-Host "-- $message" -ForegroundColor Yellow }
+  function Write-Progress-Info { param([string]$message) Write-Host "-- $message" -ForegroundColor Cyan }
+  function Write-Progress-Warning { param([string]$message) Write-Host "-- $message" -ForegroundColor DarkYellow }
   function Write-Progress-Success { param([string]$message) Write-Host "$message" -ForegroundColor Green }
-  function Write-ProgressBar      { param([int]$Current,[int]$Total,[string]$Activity,[string]$Status); $percentComplete = [math]::Min(100, ($Current / $Total * 100)); Write-Progress -Activity $Activity -Status $Status -PercentComplete $percentComplete }
+  function Write-ProgressBar { param([int]$Current, [int]$Total, [string]$Activity, [string]$Status); $percentComplete = [math]::Min(100, ($Current / $Total * 100)); Write-Progress -Activity $Activity -Status $Status -PercentComplete $percentComplete }
 
   # Using statement handling
-  function Get-UsingStatements   { param([string]$content); [regex]::Matches($content,'(?m)^using\s+([^;]+);') | ForEach-Object { $_.Groups[1].Value.Trim() } }
-  function Remove-UsingStatements{ param([string]$content); $content -replace '(?m)^using\s+[^;]+;\r?\n?', '' }
-  function Format-UsingStatements{ param([string[]]$usings)
+  function Get-UsingStatements { param([string]$content); [regex]::Matches($content, '(?m)^using\s+([^;]+);') | ForEach-Object { $_.Groups[1].Value.Trim() } }
+  function Remove-UsingStatements { param([string]$content); $content -replace '(?m)^using\s+[^;]+;\r?\n?', '' }
+  function Format-UsingStatements {
+    param([string[]]$usings)
     $uniqueUsings = $usings | Select-Object -Unique | Sort-Object
     $systemUsings = $uniqueUsings | Where-Object { $_ -like 'System*' } | Sort-Object
     $microsoftUsings = $uniqueUsings | Where-Object { $_ -like 'Microsoft*' } | Sort-Object
     $otherUsings = $uniqueUsings | Where-Object { -not ($_ -like 'System*' -or $_ -like 'Microsoft*') } | Sort-Object
     $result = ''
-    if($systemUsings){ $result += ($systemUsings | ForEach-Object { "using $_;" }) -join "`n"; $result += "`n`n" }
-    if($microsoftUsings){ $result += ($microsoftUsings | ForEach-Object { "using $_;" }) -join "`n"; $result += "`n`n" }
-    if($otherUsings){ $result += ($otherUsings | ForEach-Object { "using $_;" }) -join "`n" }
+    if ($systemUsings) { $result += ($systemUsings | ForEach-Object { "using $_;" }) -join "`n"; $result += "`n`n" }
+    if ($microsoftUsings) { $result += ($microsoftUsings | ForEach-Object { "using $_;" }) -join "`n"; $result += "`n`n" }
+    if ($otherUsings) { $result += ($otherUsings | ForEach-Object { "using $_;" }) -join "`n" }
     $result.Trim()
   }
 
@@ -147,34 +107,35 @@ function Combine-Sources() {
       [bool]$stripAttributes,
       [bool]$stripHeaderComments
     )
-    if($stripHeaderComments){
-      $content = $content -replace '(?sm)^/\*.*?\*/',''
-      $content = $content -replace '(?m)^//.*MIT.*$\n?',''
-      $content = $content -replace '(?m)^//.*[Ll]icense.*$\n?',''
-      $content = $content -replace '(?m)^//.*[Cc]opyright.*$\n?',''
-      $content = $content -replace '(?m)^//.*[Aa]ll [Rr]ights.*$\n?',''
-      $content = $content -replace '(?m)^//.*[Gg]overned by.*$\n?',''
-      $content = $content -replace '(?m)^//.*[Uu]se of this source.*$\n?',''
-      $content = $content -replace '^\s*\n',''
+    if ($stripHeaderComments) {
+      $content = $content -replace '(?sm)^/\*.*?\*/', ''
+      $content = $content -replace '(?m)^//.*MIT.*$\n?', ''
+      $content = $content -replace '(?m)^//.*[Ll]icense.*$\n?', ''
+      $content = $content -replace '(?m)^//.*[Cc]opyright.*$\n?', ''
+      $content = $content -replace '(?m)^//.*[Aa]ll [Rr]ights.*$\n?', ''
+      $content = $content -replace '(?m)^//.*[Gg]overned by.*$\n?', ''
+      $content = $content -replace '(?m)^//.*[Uu]se of this source.*$\n?', ''
+      $content = $content -replace '^\s*\n', ''
     }
-    if($stripRegions){ $content = $content -replace '(?m)^\s*#region.*$\n?',''; $content = $content -replace '(?m)^\s*#endregion.*$\n?','' }
-    if($stripComments){ $content = $content -replace '(?m)^\s*//.*$\n?',''; $content = $content -replace '(?s)/\*.*?\*/','' }
-    if($stripEmptyLines){ $content = $content -replace '(?m)^\s*$\n','' }
-    if($stripAttributes){ $content = $content -replace '(?m)^\s*\[.*?\]\r?\n','' }
+    if ($stripRegions) { $content = $content -replace '(?m)^\s*#region.*$\n?', ''; $content = $content -replace '(?m)^\s*#endregion.*$\n?', '' }
+    if ($stripComments) { $content = $content -replace '(?m)^\s*//.*$\n?', ''; $content = $content -replace '(?s)/\*.*?\*/', '' }
+    if ($stripEmptyLines) { $content = $content -replace '(?m)^\s*$\n', '' }
+    if ($stripAttributes) { $content = $content -replace '(?m)^\s*\[.*?\]\r?\n', '' }
     $content.Trim()
   }
 
   function Should-ProcessFile {
-    param([System.IO.FileInfo]$file,[bool]$skipGenerated,[string[]]$excludePatterns)
-    foreach($pattern in $excludePatterns){ if($file.FullName -match $pattern){ $stats.FilesSkipped++; Write-Progress-Info "Skipping file: $($file.FullName) (matched pattern: $pattern)"; return $false } }
-    if($skipGenerated){ $generatedPatterns='\.g\.cs$','\.designer\.cs$','\.generated\.cs$','TemporaryGeneratedFile','\.AssemblyInfo\.cs$'; foreach($gp in $generatedPatterns){ if($file.Name -match $gp){ $stats.FilesSkipped++; Write-Progress-Info "Skipping generated file: $($file.Name)"; return $false } } }
+    param([System.IO.FileInfo]$file, [bool]$skipGenerated, [string[]]$excludePatterns)
+    foreach ($pattern in $excludePatterns) { if ($file.FullName -match $pattern) { $stats.FilesSkipped++; Write-Progress-Info "Skipping file: $($file.FullName) (matched pattern: $pattern)"; return $false } }
+    if ($skipGenerated) { $generatedPatterns = '\.g\.cs$', '\.designer\.cs$', '\.generated\.cs$', 'TemporaryGeneratedFile', '\.AssemblyInfo\.cs$'; foreach ($gp in $generatedPatterns) { if ($file.Name -match $gp) { $stats.FilesSkipped++; Write-Progress-Info "Skipping generated file: $($file.Name)"; return $false } } }
     return $true
   }
 
-  function Get-RelativePath { param([string]$fullPath,[string]$basePath)
+  function Get-RelativePath {
+    param([string]$fullPath, [string]$basePath)
     # Use a char array for TrimStart to avoid multi-character string binding error
     $relative = $fullPath.Substring($basePath.Length)
-    return $relative.TrimStart(@([char]'\',[char]'/'))
+    return $relative.TrimStart(@([char]'\', [char]'/'))
   }
 
   Write-Progress-Info 'Starting documentation generation...'
@@ -187,39 +148,39 @@ function Combine-Sources() {
   $projectCount = $projects.Count
   Write-Progress-Info "Found $projectCount projects to process"
 
-  $projects | ForEach-Object -Begin { $currentProject=0 } -Process {
+  $projects | ForEach-Object -Begin { $currentProject = 0 } -Process {
     $currentProject++
     Write-ProgressBar -Current $currentProject -Total $projectCount -Activity 'Processing Projects' -Status "Project $currentProject of $projectCount"
     $projectFile = $_
-    $projectDir  = $projectFile.Directory
+    $projectDir = $projectFile.Directory
     $projectName = $projectFile.BaseName
     Write-Progress-Info "`nProcessing project: $projectName"
     $shouldExclude = $false
-    foreach($pattern in $ExcludePatterns){ if($projectFile.FullName -match $pattern){ $shouldExclude=$true; Write-Progress-Warning "Skipping $projectName (matched exclude pattern: $pattern)"; $stats.ProjectsSkipped++; break } }
-    if($shouldExclude){ return }
+    foreach ($pattern in $ExcludePatterns) { if ($projectFile.FullName -match $pattern) { $shouldExclude = $true; Write-Progress-Warning "Skipping $projectName (matched exclude pattern: $pattern)"; $stats.ProjectsSkipped++; break } }
+    if ($shouldExclude) { return }
     $stats.ProjectsProcessed++
     $markdown = "# $projectName`n`n"
-    $allUsings=@(); $processedFiles=@()
+    $allUsings = @(); $processedFiles = @()
     $sourceFiles = @( Get-ChildItem -Path $projectDir -Recurse -Filter '*.cs' | Where-Object { Should-ProcessFile -file $_ -skipGenerated $SkipGeneratedFiles -excludePatterns $ExcludePatterns } )
-    $razorFiles  = @( Get-ChildItem -Path $projectDir -Recurse -Filter '*.razor' | Where-Object { Should-ProcessFile -file $_ -skipGenerated $SkipGeneratedFiles -excludePatterns $ExcludePatterns } )
-    $totalFiles = $sourceFiles.Count + $razorFiles.Count; $currentFile=0
+    $razorFiles = @( Get-ChildItem -Path $projectDir -Recurse -Filter '*.razor' | Where-Object { Should-ProcessFile -file $_ -skipGenerated $SkipGeneratedFiles -excludePatterns $ExcludePatterns } )
+    $totalFiles = $sourceFiles.Count + $razorFiles.Count; $currentFile = 0
     Write-Progress-Info "Processing $totalFiles source files..."
     $sourceFiles | ForEach-Object {
       $currentFile++; Write-ProgressBar -Current $currentFile -Total $totalFiles -Activity 'Processing Source Files' -Status "File $currentFile of $totalFiles"
       $content = Get-Content $_.FullName -Raw; $stats.OriginalSize += $content.Length
-      if($CombineUsings -or $StripUsings){ $usings = Get-UsingStatements -content $content; $stats.TotalUsings += $usings.Count; if($CombineUsings){ $allUsings += $usings }; $content = Remove-UsingStatements -content $content }
+      if ($CombineUsings -or $StripUsings) { $usings = Get-UsingStatements -content $content; $stats.TotalUsings += $usings.Count; if ($CombineUsings) { $allUsings += $usings }; $content = Remove-UsingStatements -content $content }
       $content = Remove-CodeElements -content $content -stripRegions $StripRegions -stripComments $StripComments -stripEmptyLines $StripEmptyLines -stripAttributes $StripAttributes -stripHeaderComments $StripHeaderComments
-      $processedFiles += @{ Path = Get-RelativePath $_.FullName $projectDir.FullName; Content=$content; Type='cs' }
+      $processedFiles += @{ Path = Get-RelativePath $_.FullName $projectDir.FullName; Content = $content; Type = 'cs' }
       $stats.TotalSourceFiles++
     }
     $razorFiles | ForEach-Object {
       $currentFile++; Write-ProgressBar -Current $currentFile -Total $totalFiles -Activity 'Processing Source Files' -Status "File $currentFile of $totalFiles"
       $content = Get-Content $_.FullName -Raw; $stats.OriginalSize += $content.Length
       $content = Remove-CodeElements -content $content -stripRegions $StripRegions -stripComments $StripComments -stripEmptyLines $StripEmptyLines -stripAttributes $StripAttributes -stripHeaderComments $StripHeaderComments
-      $processedFiles += @{ Path = Get-RelativePath $_.FullName $projectDir.FullName; Content=$content; Type='razor' }
+      $processedFiles += @{ Path = Get-RelativePath $_.FullName $projectDir.FullName; Content = $content; Type = 'razor' }
       $stats.TotalSourceFiles++
     }
-    if($CombineUsings -and -not $StripUsings -and $allUsings.Count -gt 0){ $combinedUsings = Format-UsingStatements -usings $allUsings; $markdown += "## Global Usings`n`n"; $markdown += '```csharp'; $markdown += "`n"; $markdown += $combinedUsings; $markdown += "`n"; $markdown += '```' }
+    if ($CombineUsings -and -not $StripUsings -and $allUsings.Count -gt 0) { $combinedUsings = Format-UsingStatements -usings $allUsings; $markdown += "## Global Usings`n`n"; $markdown += '```csharp'; $markdown += "`n"; $markdown += $combinedUsings; $markdown += "`n"; $markdown += '```' }
     Write-Progress-Info 'Processing markdown files...'
     $generatedMdName = "${projectName}.g.md"
     Get-ChildItem -Path $projectDir -Recurse -Filter '*.md' | Where-Object { $_.Name -ne $generatedMdName -and (Should-ProcessFile -file $_ -skipGenerated $false -excludePatterns $ExcludePatterns) } | ForEach-Object {
@@ -228,7 +189,7 @@ function Combine-Sources() {
       $markdown += "`n`n## Documentation: $relativePath`n`n"
       $markdown += $mdContent; $stats.TotalMarkdownFiles++
     }
-    foreach($file in $processedFiles){ $markdown += "`n`n## Source: $($file.Path)`n`n"; $markdown += '```csharp'; $markdown += "`n"; $markdown += $file.Content; $markdown += "`n"; $markdown += '```' }
+    foreach ($file in $processedFiles) { $markdown += "`n`n## Source: $($file.Path)`n`n"; $markdown += '```csharp'; $markdown += "`n"; $markdown += $file.Content; $markdown += "`n"; $markdown += '```' }
     $outputFile = Join-Path $OutputDirectory $generatedMdName
     $markdown | Out-File $outputFile -Encoding UTF8
     $stats.FinalSize += (Get-Item $outputFile).Length
@@ -236,11 +197,11 @@ function Combine-Sources() {
   } -End { Write-Progress -Activity 'Processing Projects' -Completed }
 
   # Update .gitignore (mapped to repo root)
-  if($UpdateGitIgnore){
+  if ($UpdateGitIgnore) {
     $gitignorePath = Join-Path $repoRoot '.gitignore'
     $outputDirName = Split-Path $OutputDirectory -Leaf
     $ignoreEntry = "/$outputDirName/"
-    if(Test-Path $gitignorePath){ $gitignoreContent = Get-Content $gitignorePath; if($gitignoreContent -notcontains $ignoreEntry){ Add-Content $gitignorePath "`n$ignoreEntry"; Write-Progress-Info "Added /$outputDirName/ to .gitignore" } }
+    if (Test-Path $gitignorePath) { $gitignoreContent = Get-Content $gitignorePath; if ($gitignoreContent -notcontains $ignoreEntry) { Add-Content $gitignorePath "`n$ignoreEntry"; Write-Progress-Info "Added /$outputDirName/ to .gitignore" } }
     else { Set-Content $gitignorePath $ignoreEntry; Write-Progress-Info "Created .gitignore with /$outputDirName/" }
   }
 
@@ -273,7 +234,7 @@ Size Reduction:      $( if ($stats.OriginalSize -eq 0) { if ($stats.FinalSize -e
 
 Output Location:     $OutputDirectory
 "@
-  Write-Host $report -ForegroundColor Cyan
+  Write-Info $report
   Write-Progress-Success 'Documentation generation complete!'
 }
 
@@ -284,26 +245,211 @@ function Open-BrowserUrl() {
   )
   # Write-Section $title
   try {
-    Write-Host "Launching browser: $url" -ForegroundColor Cyan
+    Write-Debug "Launching browser: $url"
     Start-Process $url
-    Write-Host "$title opened." -ForegroundColor Green
-  } catch {
-    Write-Host "Failed to open $title ($url): $($_.Exception.Message)" -ForegroundColor Yellow
+    Write-Info "$title opened."
+  }
+  catch {
+    Write-Error "Failed to open $title ($url): $($_.Exception.Message)"
   }
 }
 
 function Show-MinVer() {
   # Write-Section 'MinVer Semantic Version'
-  dotnet tool restore | Out-Null
-  if($LASTEXITCODE -ne 0){ Fail 'dotnet tool restore failed.' 200 }
-  # Write-Host 'Running: dotnet minver -v d -p preview.0' -ForegroundColor Cyan
+  Ensure-DotNetTools
+  Write-Debug 'dotnet minver -v d -p preview.0'
   dotnet minver -v d -p preview.0
-  $exit = $LASTEXITCODE
-  if($exit -ne 0){ Fail "MinVer failed (exit $exit)" 201 }
+  if ($LASTEXITCODE -ne 0) { Fail "MinVer failed (exit $LASTEXITCODE)" 201 }
+}
+
+function Clean-Workspace() {
+  # Write-Section 'Cleaning workspace build artifacts'
+  $patterns = @('bin', 'obj', 'bld', 'Backup', '_UpgradeReport_Files', 'Debug', 'Release', 'ipch', 'node_modules', (Get-OutputDirectory), (Get-ArtifactsDirectory))
+  # Gather candidate directories (silently continue on access issues)
+  $raw = Get-ChildItem -Path $Root -Recurse -Directory -Force -ErrorAction SilentlyContinue |
+  Where-Object { $patterns -contains $_.Name -and $_.FullName -notmatch '\\.git\\' }
+  if (-not $raw) { Write-Warn 'No matching directories found.'; return }
+  # Sort by depth descending so deepest folders removed first preventing second pass necessity
+  $candidates = $raw | Sort-Object { $_.FullName.Split([char]'\').Length } -Descending
+  # De-duplicate paths that may have been collected after parents deleted mid-loop
+  $unique = [System.Collections.Generic.HashSet[string]]::new(); $ordered = @()
+  foreach ($c in $candidates) { if ($unique.Add($c.FullName)) { $ordered += $c } }
+  Write-Info ("Found {0} directories to remove" -f $ordered.Count)
+  $i = 0
+  foreach ($dir in $ordered) {
+    $i++
+    Write-Progress -Activity 'Cleaning' -Status "$i / $($ordered.Count): $($dir.FullName)" -PercentComplete (($i / $ordered.Count) * 100)
+    if (-not (Test-Path -LiteralPath $dir.FullName)) { continue }
+    try {
+      Write-Info "Removing: $($dir.FullName)"
+      Remove-Item -LiteralPath $dir.FullName -Recurse -Force -ErrorAction Stop
+    }
+    catch {
+      Write-Error "Failed to remove: $($dir.FullName) -> $($_.Exception.Message)"
+    }
+  }
+  Write-Progress -Activity 'Cleaning artifacts' -Completed
+  Write-Info 'Workspace clean complete.'
+}
+
+function Kill-DotNetProcess() {
+  # Write-Section 'Kill .NET Process'
+  # Non-interactive direct path if provided
+  # If ProcessId provided non-interactively, skip selection & confirmation when -ForceKill used.
+  $selectedPid = $null
+  if ($ProcessId -gt 0) {
+    Write-Info ("Non-interactive target PID specified: {0}" -f $ProcessId)
+    $selectedPid = $ProcessId
+  }
+  if (-not $selectedPid) {
+    # Use shared Select-Pid logic scoped to dotnet processes
+    $script:DotNetOnly = $true
+    $selectedPid = Select-Pid 'Select .NET process to KILL'
+    if (-not $selectedPid) { Write-Warn 'Kill operation cancelled or no process selected.'; $global:LASTEXITCODE = 0; return }
+  }
+  $proc = Get-Process -Id $selectedPid -ErrorAction SilentlyContinue
+  if (-not $proc) { Write-Error ("Process with PID {0} no longer exists." -f $selectedPid); $global:LASTEXITCODE = 0; return }
+  Write-Debug ("Target: {0} (PID {1})" -f $proc.ProcessName, $selectedPid)
+  try {
+    Stop-Process -Id $selectedPid -Force -ErrorAction Stop
+    Write-Info ("Process {0} terminated." -f $selectedPid)
+    $global:LASTEXITCODE = 0
+  }
+  catch {
+    $errMsg = $_.Exception.Message
+    Write-Error ("Failed to terminate PID {0}: {1}" -f $selectedPid, $errMsg)
+    $global:LASTEXITCODE = 5
+  }
+}
+
+function Remove-FileHeaders() {
+  # Remove MIT license headers from all C# files in src/ and tests/
+  $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+  $srcPath = Join-Path $repoRoot 'src'
+  $testsPath = Join-Path $repoRoot 'tests'
+
+  Write-Info "Removing file headers from C# files..."
+
+  $filesToProcess = @()
+  if (Test-Path $srcPath) {
+    $filesToProcess += @(Get-ChildItem -Path $srcPath -Recurse -Filter '*.cs' -ErrorAction SilentlyContinue)
+  }
+  if (Test-Path $testsPath) {
+    $filesToProcess += @(Get-ChildItem -Path $testsPath -Recurse -Filter '*.cs' -ErrorAction SilentlyContinue)
+  }
+
+  if ($filesToProcess.Count -eq 0) {
+    Write-Warn "No C# files found in src/ or tests/"
+    return
+  }
+
+  Write-Info "Found $($filesToProcess.Count) C# files"
+
+  $headerPattern = '^\s*//\s*MIT-License\s*$|^\s*//\s*Copyright\s+BridgingIT|^\s*//\s*Use\s+of\s+this\s+source\s+code|^\s*//\s*found\s+in\s+the\s+LICENSE'
+  $filesModified = 0
+  $i = 0
+
+  foreach ($file in $filesToProcess) {
+    $i++
+    Write-Progress -Activity 'Removing headers' -Status "Processing $i of $($filesToProcess.Count)" -PercentComplete (($i / $filesToProcess.Count) * 100)
+
+    try {
+      $content = Get-Content -Path $file.FullName -Raw -Encoding UTF8
+      $originalLength = $content.Length
+
+      # Split into lines to identify header
+      $lines = $content -split "`n"
+      $headerEndIndex = 0
+
+      # Look for the license header pattern (typically 4 lines + blank line)
+      if ($lines.Count -gt 5) {
+        # Check if first 4 lines match the header pattern
+        $hasHeader = $false
+        if ($lines[0] -match 'MIT-License' -and $lines[1] -match 'Copyright\s+BridgingIT') {
+          $hasHeader = $true
+          $headerEndIndex = 4
+          # Skip one more blank line if present
+          if ($headerEndIndex + 1 -lt $lines.Count -and [string]::IsNullOrWhiteSpace($lines[$headerEndIndex + 1])) {
+            $headerEndIndex += 1
+          }
+        }
+
+        if ($hasHeader -and $headerEndIndex -gt 0) {
+          # Remove header lines and rejoin
+          $newLines = $lines[($headerEndIndex + 1)..$($lines.Count - 1)]
+          $newContent = ($newLines -join "`n").TrimStart()
+
+          if ($newContent.Length -lt $originalLength) {
+            Set-Content -Path $file.FullName -Value $newContent -Encoding UTF8 -Force
+            $filesModified++
+            Write-Step "  Removed header: $($file.FullName.Replace($repoRoot, '.'))"
+          }
+        }
+      }
+    }
+    catch {
+      Write-Error "  Error processing $($file.FullName): $($_.Exception.Message)"
+    }
+  }
+
+  Write-Progress -Activity 'Removing headers' -Completed
+  Write-Info "`nFile header removal complete. Modified: $filesModified files"
+}
+
+function Update-DevKitDocs() {
+  # Write-Section 'Updating DevKit Docs (markdown)'
+  $targetRoot = Join-Path $Root '.bdk/docs'
+  New-Item -ItemType Directory -Path $targetRoot -Force | Out-Null
+
+  $apiBase = 'https://api.github.com/repos/BridgingIT-GmbH/bITdevKit/contents/docs'
+  $branchRef = 'main'
+  $headers = @{ 'User-Agent' = 'bdk_sync'; 'Accept' = 'application/vnd.github.v3+json' }
+
+  function Get-DirectoryItems([string]$apiUrl) {
+    try { return Invoke-RestMethod -Uri ($apiUrl + '?ref=' + $branchRef) -Headers $headers -ErrorAction Stop }
+    catch { Write-Error ("Failed to list '{0}': {1}" -f $apiUrl, $_.Exception.Message); return @() }
+  }
+
+  $downloaded = [System.Collections.Generic.List[string]]::new()
+  $failed = [System.Collections.Generic.List[string]]::new()
+
+  function Sync-Directory([string]$apiUrl) {
+    $items = Get-DirectoryItems $apiUrl
+    foreach ($item in $items) {
+      # if($item.type -eq 'dir'){
+      #   Sync-Directory $item.url
+      # }
+      if ($item.type -eq 'file' -and $item.name -like '*.md') {
+        $relative = ($item.path -replace '^docs/', '')
+        $localPath = Join-Path $targetRoot $relative
+        $localDir = Split-Path $localPath -Parent
+        New-Item -ItemType Directory -Force -Path $localDir | Out-Null
+        try {
+          $content = Invoke-RestMethod -Uri $item.download_url -Headers $headers -ErrorAction Stop
+          # If content returns as an object (rare), cast to string
+          if ($content -isnot [string]) { $content = [string]$content }
+          Set-Content -Path $localPath -Value $content -Encoding UTF8
+          $downloaded.Add($relative) | Out-Null
+        }
+        catch {
+          Write-Error ("Failed to download {0}: {1}" -f $relative, $_.Exception.Message)
+          $failed.Add($relative) | Out-Null
+        }
+      }
+    }
+  }
+
+  $rootApi = $apiBase
+  Invoke-SpectreCommandWithStatus -Title 'Downloading latest DevKit docs...' -ScriptBlock {
+    Sync-Directory $rootApi
+  } -Spinner dots
+
+  Write-Info ("Downloaded {0} markdown files to {1}" -f $downloaded.Count, $targetRoot)
+  if ($failed.Count -gt 0) { Write-Error ("Failed: {0}" -f ($failed -join ', ')) }
 }
 
 function Help() {
-@'
+  @'
 Usage: pwsh -File .vscode/tasks-misc.ps1 <command> [options]
 
 Commands:
@@ -318,7 +464,7 @@ Commands:
   docs-update                          Download latest DevKit docs (markdown) from upstream repository into ./devkit/docs.
   help|?                               Show this help.
 
-combine-sources Parameters (defaults shown):
+digest-sources Parameters (defaults shown):
   -OutputDirectory <path>        (default: ./.tmp)
   -ExcludePatterns <patterns[]>  (default: docs?, obj, bin, debug, release, packages, node_modules, filesystem, logs)
   -StripHeaderComments <bool>    (default: true)
@@ -364,42 +510,10 @@ Notes:
 '@ | Write-Host
 }
 
-function Clean-Workspace() {
-  # Write-Section 'Cleaning workspace build artifacts'
-  $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-  Write-Host "Root: $root" -ForegroundColor Cyan
-  $patterns = @('bin','obj','bld','Backup','_UpgradeReport_Files','Debug','Release','ipch','node_modules','.tmp')
-  # Gather candidate directories (silently continue on access issues)
-  $raw = Get-ChildItem -Path $root -Recurse -Directory -Force -ErrorAction SilentlyContinue |
-    Where-Object { $patterns -contains $_.Name -and $_.FullName -notmatch '\\.git\\' }
-  if(-not $raw) { Write-Host 'No matching artifact directories found.' -ForegroundColor Yellow; return }
-  # Sort by depth descending so deepest folders removed first preventing second pass necessity
-  $candidates = $raw | Sort-Object { $_.FullName.Split([char]'\').Length } -Descending
-  # De-duplicate paths that may have been collected after parents deleted mid-loop
-  $unique = [System.Collections.Generic.HashSet[string]]::new(); $ordered = @()
-  foreach($c in $candidates){ if($unique.Add($c.FullName)){ $ordered += $c } }
-  Write-Host ("Found {0} artifact directories to remove" -f $ordered.Count) -ForegroundColor Cyan
-  $i = 0
-  foreach($dir in $ordered) {
-    $i++
-    Write-Progress -Activity 'Cleaning artifacts' -Status "$i / $($ordered.Count): $($dir.FullName)" -PercentComplete (($i / $ordered.Count) * 100)
-    if(-not (Test-Path -LiteralPath $dir.FullName)) { continue }
-    try {
-      Write-Host "Removing: $($dir.FullName)" -ForegroundColor DarkGray
-      Remove-Item -LiteralPath $dir.FullName -Recurse -Force -ErrorAction Stop
-    }
-    catch {
-      Write-Host "Failed to remove: $($dir.FullName) -> $($_.Exception.Message)" -ForegroundColor Yellow
-    }
-  }
-  Write-Progress -Activity 'Cleaning artifacts' -Completed
-  Write-Host 'Workspace clean complete.' -ForegroundColor Green
-}
-
-function Handle-MiscCommand([string]$cmd){
+function Handle-MiscCommand([string]$cmd) {
   $key = ($cmd ?? '').ToLowerInvariant()
   switch ($key) {
-    'digest' { Combine-Sources; return }
+    'digest' { Digest-Sources; return }
     'clean' { Clean-Workspace; return }
     'cleanup' { Clean-Workspace; return }
     'remove-headers' { Remove-FileHeaders; return }
@@ -415,164 +529,8 @@ function Handle-MiscCommand([string]$cmd){
     'docs-update' { Update-DevKitDocs; return }
     'help' { Help; return }
     '?' { Help; return }
-    default { Write-Host "Unknown misc command '$cmd'" -ForegroundColor Red; Help; exit 10 }
+    default { Write-Error "Unknown misc command '$cmd'"; Help; exit 10 }
   }
-}
-
-function Kill-DotNetProcess() {
-  # Write-Section 'Kill .NET Process'
-  # Non-interactive direct path if provided
-  # If ProcessId provided non-interactively, skip selection & confirmation when -ForceKill used.
-  $selectedPid = $null
-  if($ProcessId -gt 0){
-    Write-Host ("Non-interactive target PID specified: {0}" -f $ProcessId) -ForegroundColor Cyan
-    $selectedPid = $ProcessId
-  }
-  if(-not $selectedPid){
-    # Use shared Select-Pid logic scoped to dotnet processes
-    $script:DotNetOnly = $true
-    $selectedPid = Select-Pid 'Select .NET process to KILL'
-    if(-not $selectedPid){ Write-Host 'Kill operation cancelled or no process selected.' -ForegroundColor Yellow; $global:LASTEXITCODE=0; return }
-  }
-  $proc = Get-Process -Id $selectedPid -ErrorAction SilentlyContinue
-  if(-not $proc){ Write-Host ("Process with PID {0} no longer exists." -f $selectedPid) -ForegroundColor Yellow; $global:LASTEXITCODE=0; return }
-  Write-Host ("Target: {0} (PID {1})" -f $proc.ProcessName,$selectedPid) -ForegroundColor Cyan
-  # Confirmation omitted per user request; proceed immediately.
-  try {
-  Stop-Process -Id $selectedPid -Force -ErrorAction Stop
-  Write-Host ("Process {0} terminated." -f $selectedPid) -ForegroundColor Green
-    $global:LASTEXITCODE=0
-  } catch {
-    $errMsg = $_.Exception.Message
-  Write-Host ("Failed to terminate PID {0}: {1}" -f $selectedPid, $errMsg) -ForegroundColor Red
-    $global:LASTEXITCODE=5
-  }
-}
-
-function Remove-FileHeaders() {
-  # Remove MIT license headers from all C# files in src/ and tests/
-  $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-  $srcPath = Join-Path $repoRoot 'src'
-  $testsPath = Join-Path $repoRoot 'tests'
-
-  Write-Host "Removing file headers from C# files..." -ForegroundColor Cyan
-
-  $filesToProcess = @()
-  if (Test-Path $srcPath) {
-    $filesToProcess += @(Get-ChildItem -Path $srcPath -Recurse -Filter '*.cs' -ErrorAction SilentlyContinue)
-  }
-  if (Test-Path $testsPath) {
-    $filesToProcess += @(Get-ChildItem -Path $testsPath -Recurse -Filter '*.cs' -ErrorAction SilentlyContinue)
-  }
-
-  if ($filesToProcess.Count -eq 0) {
-    Write-Host "No C# files found in src/ or tests/" -ForegroundColor Yellow
-    return
-  }
-
-  Write-Host "Found $($filesToProcess.Count) C# files" -ForegroundColor Cyan
-
-  $headerPattern = '^\s*//\s*MIT-License\s*$|^\s*//\s*Copyright\s+BridgingIT|^\s*//\s*Use\s+of\s+this\s+source\s+code|^\s*//\s*found\s+in\s+the\s+LICENSE'
-  $filesModified = 0
-  $i = 0
-
-  foreach ($file in $filesToProcess) {
-    $i++
-    Write-Progress -Activity 'Removing headers' -Status "Processing $i of $($filesToProcess.Count)" -PercentComplete (($i / $filesToProcess.Count) * 100)
-
-    try {
-      $content = Get-Content -Path $file.FullName -Raw -Encoding UTF8
-      $originalLength = $content.Length
-
-      # Split into lines to identify header
-      $lines = $content -split "`n"
-      $headerEndIndex = 0
-
-      # Look for the license header pattern (typically 4 lines + blank line)
-      if ($lines.Count -gt 5) {
-        # Check if first 4 lines match the header pattern
-        $hasHeader = $false
-        if ($lines[0] -match 'MIT-License' -and $lines[1] -match 'Copyright\s+BridgingIT') {
-          $hasHeader = $true
-          $headerEndIndex = 4
-          # Skip one more blank line if present
-          if ($headerEndIndex + 1 -lt $lines.Count -and [string]::IsNullOrWhiteSpace($lines[$headerEndIndex + 1])) {
-            $headerEndIndex += 1
-          }
-        }
-
-        if ($hasHeader -and $headerEndIndex -gt 0) {
-          # Remove header lines and rejoin
-          $newLines = $lines[($headerEndIndex + 1)..$($lines.Count - 1)]
-          $newContent = ($newLines -join "`n").TrimStart()
-
-          if ($newContent.Length -lt $originalLength) {
-            Set-Content -Path $file.FullName -Value $newContent -Encoding UTF8 -Force
-            $filesModified++
-            Write-Host "  Removed header: $($file.FullName.Replace($repoRoot, '.'))" -ForegroundColor Green
-          }
-        }
-      }
-    }
-    catch {
-      Write-Host "  Error processing $($file.FullName): $($_.Exception.Message)" -ForegroundColor Red
-    }
-  }
-
-  Write-Progress -Activity 'Removing headers' -Completed
-  Write-Host "`nFile header removal complete. Modified: $filesModified files" -ForegroundColor Green
-}
-
-function Update-DevKitDocs() {
-  # Write-Section 'Updating DevKit Docs (markdown)'
-  $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-  $targetRoot = Join-Path $repoRoot '.bdk/docs'
-  New-Item -ItemType Directory -Path $targetRoot -Force | Out-Null
-
-  $apiBase = 'https://api.github.com/repos/BridgingIT-GmbH/bITdevKit/contents/docs'
-  $branchRef = 'main'
-  $headers = @{ 'User-Agent' = 'bITdevKit-DocsSyncScript'; 'Accept' = 'application/vnd.github.v3+json' }
-
-  function Get-DirectoryItems([string]$apiUrl){
-    try { return Invoke-RestMethod -Uri ($apiUrl + '?ref=' + $branchRef) -Headers $headers -ErrorAction Stop }
-    catch { Write-Host ("Failed to list '{0}': {1}" -f $apiUrl,$_.Exception.Message) -ForegroundColor Yellow; return @() }
-  }
-
-  $downloaded = [System.Collections.Generic.List[string]]::new()
-  $failed = [System.Collections.Generic.List[string]]::new()
-
-  function Sync-Directory([string]$apiUrl){
-    $items = Get-DirectoryItems $apiUrl
-    foreach($item in $items){
-      # if($item.type -eq 'dir'){
-      #   Sync-Directory $item.url
-      # }
-      if($item.type -eq 'file' -and $item.name -like '*.md'){
-        $relative = ($item.path -replace '^docs/','')
-        $localPath = Join-Path $targetRoot $relative
-        $localDir = Split-Path $localPath -Parent
-        New-Item -ItemType Directory -Force -Path $localDir | Out-Null
-        try {
-          $content = Invoke-RestMethod -Uri $item.download_url -Headers $headers -ErrorAction Stop
-          # If content returns as an object (rare), cast to string
-          if($content -isnot [string]){ $content = [string]$content }
-          Set-Content -Path $localPath -Value $content -Encoding UTF8
-          $downloaded.Add($relative) | Out-Null
-        } catch {
-          Write-Host ("Failed to download {0}: {1}" -f $relative, $_.Exception.Message) -ForegroundColor Yellow
-          $failed.Add($relative) | Out-Null
-        }
-      }
-    }
-  }
-
-  $rootApi = $apiBase
-  Invoke-SpectreCommandWithStatus -Title 'Downloading latest DevKit docs...' -ScriptBlock {
-    Sync-Directory $rootApi
-  } -Spinner dots
-
-  Write-Host ("Downloaded {0} markdown files to {1}" -f $downloaded.Count, $targetRoot) -ForegroundColor Green
-  if($failed.Count -gt 0){ Write-Host ("Failed: {0}" -f ($failed -join ', ')) -ForegroundColor Yellow }
 }
 
 Handle-MiscCommand $Command

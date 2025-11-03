@@ -10,6 +10,8 @@
 *.userosscache
 *.sln.docstates
 *.sln.DotSettings
+*.slnx.docstates
+*.slnx.DotSettings
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -332,6 +334,7 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+*.slnx.iml
 
 # CodeRush personal settings
 .cr/personal
@@ -413,9 +416,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
-
-# JetBrains Rider
-*.sln.iml
 
 # Custom
 /src/**/*.db

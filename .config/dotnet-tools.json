@@ -45,7 +45,7 @@
       "rollForward": false
     },
     "dotnet-dump": {
-      "version": "9.0.621003",
+      "version": "9.0.652701",
       "commands": [
         "dotnet-dump"
       ],
@@ -76,6 +76,13 @@
       "version": "1.1.2",
       "commands": [
         "csharpier"
+      ],
+      "rollForward": false
+    },
+    "dotnet-counters": {
+      "version": "9.0.652701",
+      "commands": [
+        "dotnet-counters"
       ],
       "rollForward": false
     }

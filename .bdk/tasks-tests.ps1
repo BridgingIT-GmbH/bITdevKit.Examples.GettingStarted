@@ -12,58 +12,63 @@
     TEST_MODULE=All pwsh -File .vscode/tasks-tests.ps1 unit
 #>
 param(
-  [Parameter(Position=0)] [ValidateSet('unit','integration','help')] [string] $Kind = 'help',
+  [Parameter(Position = 0)] [ValidateSet('unit', 'integration', 'help')] [string] $Kind = 'help',
   [Parameter()] [string] $Module,
   [Parameter()] [switch] $Coverage,
   [Parameter()] [switch] $FailFast
 )
 
 $ErrorActionPreference = 'Stop'
-function Fail([string] $Msg, [int] $Code=1){ Write-Error $Msg; exit $Code }
-function Step([string] $Msg){ Write-Host "-- $Msg" -ForegroundColor DarkCyan }
-function Section([string] $Msg){ Write-Host "`n=== $Msg ===" -ForegroundColor Cyan }
+$Root = Split-Path $PSScriptRoot -Parent
 
-# Dot-source shared helpers
-$helpersPath = Join-Path $PSScriptRoot 'tasks-helpers.ps1'
-if (Test-Path $helpersPath) { . $helpersPath } else { Fail "Helper script not found: $helpersPath" 10 }
+# Load configuration
+$commonScriptsPath = Join-Path $PSScriptRoot "tasks-common.ps1"
+if (Test-Path $commonScriptsPath) { . $commonScriptsPath }
+Load-Settings
 
-function Build-TestProjectPath([string] $ModuleName, [string] $kind){
+$OutputDirectory = Join-Path $Root (Get-OutputDirectory) 'test'
+
+function Run-ModuleTests([string] $ModuleName) {
+  $proj = Build-TestProjectPath $ModuleName $Kind
+  Write-Step "Testing $Kind for $ModuleName"
+  $dotnetArgs = @('test', $proj)
+  if ($Coverage) { $dotnetArgs += @('--collect:XPlat Code Coverage', '--results-directory', (Join-Path $OutputDirectory 'coverage')) }
+  Write-Debug "dotnet $($dotnetArgs -join ' ')"
+  dotnet $dotnetArgs
+  if ($LASTEXITCODE -ne 0) {
+    if ($FailFast) { Fail "Tests failed for module $ModuleName" $LASTEXITCODE } else { Write-Error "Tests failed for module $ModuleName (continuing)" }
+  }
+}
+
+function Build-TestProjectPath([string] $ModuleName, [string] $kind) {
   $proj = "tests/Modules/$ModuleName/$ModuleName.$(if($kind -eq 'unit'){ 'UnitTests' } else { 'IntegrationTests' })/$ModuleName.$(if($kind -eq 'unit'){ 'UnitTests' } else { 'IntegrationTests' }).csproj"
   if (-not (Test-Path $proj)) { Fail "Test project not found: $proj" 60 }
   return $proj
 }
 
-function Run-TestsForModule([string] $ModuleName){
-  $proj = Build-TestProjectPath $ModuleName $Kind
-  Section "Testing $Kind for $ModuleName"
-  $args = @('test', $proj)
-  if ($Coverage) { $args += @('--collect:XPlat Code Coverage','--results-directory','./.tmp/tests/coverage') }
-  Step "dotnet $($args -join ' ')"
-  dotnet $args
-  if ($LASTEXITCODE -ne 0) {
-    if ($FailFast) { Fail "Tests failed for module $ModuleName" $LASTEXITCODE } else { Write-Host "Tests failed for module $ModuleName (continuing)" -ForegroundColor Red }
-  }
-}
 
-function Help(){ @'
+function Help() {
+  @'
 Usage: pwsh -File .vscode/tasks-tests.ps1 <unit|integration|help> [-Module <Name>|All] [-Coverage] [-FailFast]
 Env Vars: TEST_MODULE=CoreModule | TEST_MODULE=All
 Examples:
   pwsh -File .vscode/tasks-tests.ps1 unit -Module CoreModule
   TEST_MODULE=All pwsh -File .vscode/tasks-tests.ps1 integration -Coverage
-'@ | Write-Host }
+'@ | Write-Host
+}
 
-if ($Kind -eq 'help'){ Help; exit 0 }
+if ($Kind -eq 'help') { Help; exit 0 }
 
-[string[]]$available = Get-DevKitModules -Root (Split-Path $PSScriptRoot -Parent)
-if (-not $available -or $available.Count -eq 0){ Fail 'No modules discovered.' 50 }
+[string[]]$available = Get-Modules -Root (Split-Path $PSScriptRoot -Parent)
+if (-not $available -or $available.Count -eq 0) { Fail 'No modules discovered.' 50 }
 
-$selection = Select-DevKitModule -Available $available -Requested $Module -EnvVarName 'TEST_MODULE' -AllowAll
-Write-Host "Resolved Test Module: $selection" -ForegroundColor Green
+$selection = Select-Module -Available $available -Requested $Module -EnvVarName 'TEST_MODULE' -AllowAll
+Write-Info "Resolved Test Module: $selection"
 
 if ($selection -eq 'All') {
-  foreach ($m in $available) { Run-TestsForModule $m }
-} else {
-  Run-TestsForModule $selection
+  foreach ($m in $available) { Run-ModuleTests $m }
+}
+else {
+  Run-ModuleTests $selection
 }
 exit 0

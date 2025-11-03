@@ -16,163 +16,146 @@
   Requires Docker daemon running locally.
 #>
 param(
-  [Parameter(Position=0)] [string] $Command = 'help',
+  [Parameter(Position = 0)] [string] $Command = 'help',
   [Parameter()] [string] $SpecificationPath = 'src/Presentation.Web.Server/wwwroot/openapi.json',
   [Parameter()] [string] $RulesetPath = '.spectral.yaml',
   [Parameter()] [string] $FailSeverity = 'error',
   [Parameter()] [string] $Format = 'stylish',
   [Parameter()] [string] $DockerImage = 'stoplight/spectral:latest',
-  [Parameter()] [string] $OutputRoot = '.tmp/openapi',
   [Parameter()] [string] $HttpBaseUrl = 'https://localhost:5001',
   [Parameter()] [string] $HttpOutputType = 'OneFilePerTag'
 )
 
 # Write-Host "Executing command: $Command" -ForegroundColor Yellow
 $ErrorActionPreference = 'Stop'
+$Root = Split-Path $PSScriptRoot -Parent
 
-function Fail([string] $Message, [int] $Code = 1) { Write-Error $Message; exit $Code }
-# function Write-Section([string] $Text) { Write-Host "`n=== $Text ===" -ForegroundColor DarkCyan }
-function Write-Step([string] $Text) { Write-Host "-- $Text" -ForegroundColor Cyan }
+# Load configuration
+$commonScriptsPath = Join-Path $PSScriptRoot "tasks-common.ps1"
+if (Test-Path $commonScriptsPath) { . $commonScriptsPath }
+Load-Settings
 
-function Ensure-DockerImage([string] $Image) {
-  Write-Step "Ensuring docker image '$Image' is available"
-  $exists = docker images --format '{{.Repository}}:{{.Tag}}' | Where-Object { $_ -eq $Image }
-  if (-not $exists) { Write-Step "Pulling image $Image"; docker pull $Image | Out-Null }
-}
-
-function Resolve-Path-Safely([string] $Path) {
-  $resolved = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
-  return $resolved
-}
+$OutputDirectory = Join-Path $Root (Get-OutputDirectory) 'openapi'
 
 function Lint-OpenApi() {
   # Write-Section 'Spectral OpenAPI Lint'
-
-  $specFull = Resolve-Path-Safely $SpecificationPath
-  if (-not (Test-Path -LiteralPath $specFull)) { Fail "OpenAPI specification not found: $SpecificationPath (have you built the project?)" 2 }
-
-  $rulesetFull = $null
-  if ($RulesetPath -and (Test-Path -LiteralPath $RulesetPath)) { $rulesetFull = Resolve-Path-Safely $RulesetPath }
+  $specPath = Resolve-Path
+  $rulesPath = Join-Path $Root $RulesetPath
 
   # Validate severity & format
-  $validSeverities = 'error','warn','info','hint','off'
+  $validSeverities = 'error', 'warn', 'info', 'hint', 'off'
   if ($validSeverities -notcontains $FailSeverity.ToLower()) { Fail "Invalid -FailSeverity '$FailSeverity'. Valid: $($validSeverities -join ', ')" 3 }
-  $validFormats = 'stylish','json','text'
+  $validFormats = 'stylish', 'json', 'text'
   if ($validFormats -notcontains $Format.ToLower()) { Fail "Invalid -Format '$Format'. Valid: $($validFormats -join ', ')" 4 }
 
   Ensure-DockerImage -Image $DockerImage
 
-  $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-  Write-Step "Repository root: $repoRoot"
-  Write-Step "Spec path: $specFull"
-  if ($rulesetFull) { Write-Step "Ruleset: $rulesetFull" } else { Write-Step 'Ruleset: (none / default rules)' }
+  Write-Step "Spec path: $specPath"
   Write-Step "Fail severity: $FailSeverity"
   Write-Step "Output format: $Format"
 
   # Construct docker run arguments. Mount repo root to /work for access to spec & ruleset
   # Use $() to delimit variable before colon to avoid parser treating ':' as part of variable name
-  $dockerArgs = @('run','--rm','-v',"$($repoRoot):/work", $DockerImage, 'lint', "/work/$SpecificationPath", '--format', $Format, '--fail-severity', $FailSeverity)
-  if ($rulesetFull) { $dockerArgs += @('-r', "/work/$RulesetPath") }
+  $dockerArgs = @('run', '--rm', '-v', "$($Root):/work", $DockerImage, 'lint', "/work/$SpecificationPath", '--format', $Format, '--fail-severity', $FailSeverity)
+  if ($rulesPath) { $dockerArgs += @('-r', "/work/$RulesetPath") }
 
-  Write-Step "docker $($dockerArgs -join ' ')"
+  Write-Debug "docker $($dockerArgs -join ' ')"
   docker @dockerArgs
-  $exit = $LASTEXITCODE
-  if ($exit -ne 0) { Fail "Spectral lint failed (exit code $exit)." $exit }
-  Write-Host 'OpenAPI lint succeeded with no violations above threshold.' -ForegroundColor Green
-}
-
-function Resolve-Spec() {
-  $specFull = Resolve-Path-Safely $SpecificationPath
-  if (-not (Test-Path -LiteralPath $specFull)) {
-    Fail "Specification not found: $SpecificationPath (expected build to generate it)" 21
-  }
-  return $specFull
+  if ($LASTEXITCODE -ne 0) { Fail "Spectral lint failed (exit code $LASTEXITCODE)." $LASTEXITCODE }
+  Write-Info 'OpenAPI lint succeeded with no violations above threshold.'
 }
 
 function Generate-KiotaClient {
   param(
-    [Parameter(Mandatory)][ValidateSet('CSharp','TypeScript')] [string]$Language,
+    [Parameter(Mandatory)][ValidateSet('CSharp', 'TypeScript')] [string]$Language,
     [string]$ClientClassName = 'ApiClient',
     [string]$Namespace = 'OpenApi.Client'
   )
   # Write-Section "Kiota Generate ($Language)"
-  dotnet tool restore | Out-Null
-  if ($LASTEXITCODE -ne 0) { Fail 'dotnet tool restore failed.' 91 }
-  $specFull = Resolve-Spec
+  Ensure-DotNetTools
+  $specPath = Resolve-Path
 
   # Output directory selection
-  $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-  $baseOut = Join-Path $root $OutputRoot
-  $outDir = if ($Language -eq 'CSharp') { Join-Path $baseOut 'dotnet' }
-            else { Join-Path $baseOut 'typescript' }
+  $outDir = if ($Language -eq 'CSharp') { Join-Path $OutputDirectory 'dotnet' }
+  else { Join-Path $OutputDirectory 'typescript' }
   New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
   # Build Kiota args
   if ($Language -eq 'CSharp') {
-    $args = @('kiota','generate',
-      '-d', $specFull,
+    $args = @('kiota', 'generate',
+      '-d', $specPath,
       '-l', 'CSharp',
       '-o', $outDir,
       '--clean-output',
       '-c', $ClientClassName,
       '-n', $Namespace)
-  } else {
-    $args = @('kiota','generate',
-      '-d', $specFull,
+  }
+  else {
+    # typescript
+    $args = @('kiota', 'generate',
+      '-d', $specPath,
       '-l', 'TypeScript',
       '-o', $outDir,
       '--clean-output',
       '-c', $ClientClassName)
   }
 
-  try {
-    Import-Module PwshSpectreConsole -ErrorAction Stop
-    @( "Kiota Generation",
-       "Spec: $specFull",
-       "Language: $Language",
-       "Output: $outDir",
-       "ClientClass: $ClientClassName",
-       "Namespace: $Namespace"
-     ) | Format-SpectreRows | Format-SpectrePanel -Expand -Color "DeepSkyBlue3" | Out-Null
-  } catch { }
+  # Import-Module PwshSpectreConsole -ErrorAction Stop
+  # @( "Kiota Generation",
+  #   "Spec: $specPath",
+  #   "Language: $Language",
+  #   "Output: $outDir",
+  #   "ClientClass: $ClientClassName",
+  #   "Namespace: $Namespace"
+  # ) | Format-SpectreRows | Format-SpectrePanel -Expand -Color "DeepSkyBlue3"
 
-  Write-Step "dotnet $($args -join ' ')"
+  Clean-Path $outDir
+  Write-Debug "dotnet $($args -join ' ')"
   & dotnet @args
   if ($LASTEXITCODE -ne 0) { Fail "Kiota generation failed ($LASTEXITCODE)" $LASTEXITCODE }
 
   # Post-generation brief summary
   $fileCount = (Get-ChildItem -Path $outDir -Recurse -File | Measure-Object).Count
-  Write-Host "Kiota $Language client generated ($fileCount files)." -ForegroundColor Green
+  Write-Info "Kiota $Language client generated ($fileCount files)."
 }
 
 function Generate-HttpRequests {
   # Write-Section 'Generating .http request files'
-  dotnet tool restore | Out-Null
-  if ($LASTEXITCODE -ne 0) { Fail 'dotnet tool restore failed.' 91 }
-  $specFull = Resolve-Spec
-  $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-  $outDir = Join-Path $root $OutputRoot
+  Ensure-DotNetTools
+  $specPath = Resolve-Path
+  $outDir = Join-Path $OutputDirectory 'http'
   New-Item -ItemType Directory -Force -Path $outDir | Out-Null
-  Write-Step "Spec: $specFull"
+
+  Write-Step "Spec: $specPath"
   Write-Step "Output: $outDir"
   Write-Step "BaseUrl: $HttpBaseUrl"
   Write-Step "OutputType: $HttpOutputType"
   # httpgenerator usage: dotnet httpgenerator generate -i <spec> -b <base-url> -o <out> -t <type> -f
-  $args = @('httpgenerator', $specFull,
+  $args = @('httpgenerator', $specPath,
     '--base-url', $HttpBaseUrl,
     '--output', $outDir,
     '--authorization-header', 'Bearer TOKEN',
     '--output-type', $HttpOutputType)
-  Write-Step "dotnet $($args -join ' ')"
+
+  Clean-Path $outDir
+  Write-Debug "dotnet $($args -join ' ')"
   & dotnet @args
   if ($LASTEXITCODE -ne 0) { Fail "httpgenerator failed ($LASTEXITCODE)" $LASTEXITCODE }
   $httpFiles = Get-ChildItem -Path $outDir -Filter '*.http' -File -Recurse
   $count = ($httpFiles | Measure-Object).Count
-  Write-Host "Generated $count .http file(s) in $outDir" -ForegroundColor Green
+  Write-Info "Generated $count .http file(s) in $outDir"
+}
+
+function Resolve-Path() {
+  $path = Join-Path $Root $SpecificationPath
+  if (-not (Test-Path -LiteralPath $path)) {
+    Fail "Path not found: $SpecificationPath" 21
+  }
+  return $path
 }
 
 function Help() {
-@'
+  @'
 Usage: pwsh -File .devkit/tasks-openapi.ps1 <command> [options]
 
 Commands:
@@ -191,12 +174,12 @@ HTTP Request Generation Defaults:
 }
 
 switch ($Command.ToLower()) {
-  'lint'               { Lint-OpenApi }
-  'client-dotnet'      { Generate-KiotaClient -Language CSharp }
-  'client-typescript'  { Generate-KiotaClient -Language TypeScript }
-  'http-requests'      { Generate-HttpRequests }
-  'help'               { Help }
-  default              { Write-Host "Unknown command '$Command'" -ForegroundColor Red; Help; exit 1 }
+  'lint' { Lint-OpenApi }
+  'client-dotnet' { Generate-KiotaClient -Language CSharp }
+  'client-typescript' { Generate-KiotaClient -Language TypeScript }
+  'http-requests' { Generate-HttpRequests }
+  'help' { Help }
+  default { Write-Host "Unknown command '$Command'" -ForegroundColor Red; Help; exit 1 }
 }
 
 exit 0

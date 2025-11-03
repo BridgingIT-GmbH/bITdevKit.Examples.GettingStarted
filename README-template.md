@@ -109,7 +109,7 @@ SolutionName/
 │   │   │   ├── ModuleName.Presentation/
 │   │   │   └── ModuleName.UnitTests/
 │   └── Presentation.Web.Server/
-└── SolutionName.sln
+└── SolutionName.slnx
 ```
 
 ## Available Templates

@@ -55,7 +55,7 @@ The GettingStarted project follows Clean/Onion Architecture principles, powered 
 ### Solution Structure
 
 ```
-BridgingIT.DevKit.Examples.GettingStarted.sln
+BridgingIT.DevKit.Examples.GettingStarted.slnx
 ├── src
 │   ├── Modules
 │   │   └── CoreModule
@@ -437,17 +437,17 @@ This appendix documents building, tagging, pushing, pulling and running the `Pre
 
 ### Build Image
 ```pwsh
-docker build -t bdk_gettingstarted-web:latest -f src/Presentation.Web.Server/Dockerfile .
+docker build -t bit_devkit_gettingstarted-web:latest -f src/Presentation.Web.Server/Dockerfile .
 ```
 
 ### Tag For Local Registry
 ```pwsh
-docker tag bdk_gettingstarted-web:latest localhost:5500/bdk_gettingstarted-web:latest
+docker tag bit_devkit_gettingstarted-web:latest localhost:5500/bit_devkit_gettingstarted-web:latest
 ```
 
 ### Push To Local Registry
 ```pwsh
-docker push localhost:5500/bdk_gettingstarted-web:latest
+docker push localhost:5500/bit_devkit_gettingstarted-web:latest
 ```
 List Local Registry catalog:
 ```pwsh
@@ -456,20 +456,20 @@ curl http://localhost:5500/v2/_catalog
 
 ### Run Container
 ```pwsh
-docker run -d -p8080:8080 --name bdk_gettingstarted-web localhost:5500/bdk_gettingstarted-web:latest
+docker run -d -p8080:8080 --name bit_devkit_gettingstarted-web localhost:5500/bit_devkit_gettingstarted-web:latest
 ```
 or
 ```pwsh
 docker run `
   -d `
   -p 8080:8080 `
-  --name bdk_gettingstarted-web `
-  --network bdk_gettingstarted `
+  --name bit_devkit_gettingstarted-web `
+  --network bit_devkit_gettingstarted `
   -e ASPNETCORE_ENVIRONMENT=Development `
   -e "Modules__CoreModule__ConnectionStrings__Default=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;" `
   -e "JobScheduling__Quartz__quartz.dataSource.default.connectionString=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;" `
   -e "Authentication__Authority=http://localhost:8080" `
-  localhost:5500/bdk_gettingstarted-web:latest
+  localhost:5500/bit_devkit_gettingstarted-web:latest
 ```
 
 Test Running Container:
@@ -480,30 +480,30 @@ or browse to [http://localhost:8080/scalar](http://localhost:8080/scalar)
 
 Tail logs:
 ```pwsh
-docker logs -f bdk_gettingstarted-web
+docker logs -f bit_devkit_gettingstarted-web
 ```
 
 ### Build and Run Container
 
 ```pwsh
-docker build -t localhost:5500/bdk_gettingstarted-web:latest -f src/Presentation.Web.Server/Dockerfile .; if ($?) {
-  (docker stop bdk_gettingstarted-web 2>$null | Out-Null); (docker rm bdk_gettingstarted-web 2>$null | Out-Null);
+docker build -t localhost:5500/bit_devkit_gettingstarted-web:latest -f src/Presentation.Web.Server/Dockerfile .; if ($?) {
+  (docker stop bit_devkit_gettingstarted-web 2>$null | Out-Null); (docker rm bit_devkit_gettingstarted-web 2>$null | Out-Null);
   New-Item -ItemType Directory -Force -Path "$PWD/logs" | Out-Null
-  docker run --name bdk_gettingstarted-web -p 8080:8080 --network bdk_gettingstarted `
+  docker run --name bit_devkit_gettingstarted-web -p 8080:8080 --network bit_devkit_gettingstarted `
     -e ASPNETCORE_ENVIRONMENT=Development `
     -e "Modules__CoreModule__ConnectionStrings__Default=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;" `
     -e "JobScheduling__Quartz__quartz.dataSource.default.connectionString=Server=mssql,1433;Initial Catalog=bit_devkit_gettingstarted;User Id=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=False;" `
     -e "Authentication__Authority=http://localhost:8080" `
     -v "${PWD}/logs:/.logs" `
-    localhost:5500/bdk_gettingstarted-web:latest
+    localhost:5500/bit_devkit_gettingstarted-web:latest
 }
 ```
 
 ### Stop/Remove Image & Container
 ```pwsh
-docker stop bdk_gettingstarted-web
-docker rm -f bdk_gettingstarted-web
-docker rmi localhost:5500/bdk_gettingstarted-web:latest bdk_gettingstarted-web:latest
+docker stop bit_devkit_gettingstarted-web
+docker rm -f bit_devkit_gettingstarted-web
+docker rmi localhost:5500/bit_devkit_gettingstarted-web:latest bit_devkit_gettingstarted-web:latest
 ```
 
 ---

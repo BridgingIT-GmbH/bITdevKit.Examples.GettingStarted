@@ -26,52 +26,14 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $env:IgnoreSpectreEncoding = $true
-
 $scriptFolder = $PSScriptRoot
 $root = Split-Path -Path $scriptFolder -Parent
 
-$helpersPath = Join-Path $PSScriptRoot 'tasks-helpers.ps1'
-if (Test-Path $helpersPath) { . $helpersPath }
-
-# load .env (KEY=VALUE) from repo root and export to $env:
-function Load-DotEnv([string]$path) {
-  $map = @{}
-  if (-not (Test-Path $path)) { return $map }
-  foreach ($ln in Get-Content $path) {
-    $line = $ln.Trim()
-    if ([string]::IsNullOrWhiteSpace($line) -or $line.StartsWith('#')) { continue }
-    # split on first '='
-    $parts = $line -split '=', 2
-    if ($parts.Length -ne 2) { continue }
-    $key = $parts[0].Trim()
-    $val = $parts[1].Trim().Trim("'""")
-    if (-not [string]::IsNullOrEmpty($key)) {
-      $map[$key] = $val
-      Write-Host "Loaded .env: $key=$val" -ForegroundColor DarkGray
-      # also export to process env so other scripts can use it
-      # $env:$key = $val
-    }
-  }
-  return $map
-}
-
-# load .env
-$dotEnvPath = Join-Path $root '.env'
-$dotenvMap = Load-DotEnv $dotEnvPath
-
-# compute defaults using loaded env (fall back to existing literal defaults if absent)
-$containerPrefix = $dotenvMap['CONTAINER_PREFIX'] ?? 'bdk_gettingstarted'
-$registryHost = $dotenvMap['REGISTRY_HOST'] ?? 'localhost:5500'
-$defaultNetwork = $dotenvMap['NETWORK_NAME'] ?? 'bdk_gettingstarted'
-$defaultContainerName = "${containerPrefix}-web"
-$defaultImageTag = "${registryHost}/${defaultContainerName}:latest"
-
-function Read-Selection($title, [string[]]$choices) {
-  $choices += 'Cancel'
-  $s = Read-SpectreSelection -Title $title -Choices $choices -EnableSearch -PageSize 15
-  if (-not $s -or $s -eq 'Cancel') { return $null }
-  return $s
-}
+# Load configuration
+$commonScriptsPath = Join-Path $PSScriptRoot "tasks-common.ps1"
+if (Test-Path $commonScriptsPath) { . $commonScriptsPath }
+Ensure-SpectreConsoleAvailable
+Load-Settings
 
 function Invoke-Dotnet([string]$cmd, [string]$projectPath) {
   $script = Join-Path $PSScriptRoot 'tasks-dotnet.ps1'
@@ -87,6 +49,7 @@ function Invoke-Test([string]$kind, [switch]$All) {
 }
 
 function Invoke-Misc([string]$cmd) { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-misc.ps1') $cmd }
+
 function Invoke-Docker([string]$mode, [string]$ContainerName = $null, [string]$ImageTag = $null, [string]$Network = $null) {
   $script = Join-Path $PSScriptRoot 'tasks-docker.ps1'
   $args = @('-NoProfile', '-File', $script, $mode)
@@ -96,6 +59,7 @@ function Invoke-Docker([string]$mode, [string]$ContainerName = $null, [string]$I
   & pwsh $args
 }
 function Invoke-Ef([string]$efCmd) { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-ef.ps1') $efCmd }
+
 function Invoke-Diagnostics([string]$diagCmd) { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-diagnostics.ps1') -Command $diagCmd }
 
 $tasks = [ordered]@{
@@ -127,12 +91,13 @@ $tasks = [ordered]@{
   'ef-status'                   = @{ Label = 'EF Status'; Desc = 'Migrations status'; Script = { Invoke-Ef 'status' } }
   'ef-reset'                    = @{ Label = 'EF Reset'; Desc = 'Squash migrations'; Script = { Invoke-Ef 'reset' } }
   'ef-script'                   = @{ Label = 'EF Script'; Desc = 'Export SQL script'; Script = { Invoke-Ef 'script' } }
-  'docker-build-run'            = @{ Label = 'Docker Build Run'; Desc = 'Build image & run'; Script = { Invoke-Docker 'docker-build-run' $defaultContainerName $defaultImageTag $defaultNetwork } }
-  'docker-build-debug'          = @{ Label = 'Docker Build (Debug)'; Desc = 'Debug image build'; Script = { Invoke-Docker 'docker-build-debug' $defaultContainerName $defaultImageTag } }
-  'docker-build-release'        = @{ Label = 'Docker Build (Release)'; Desc = 'Release image build'; Script = { Invoke-Docker 'docker-build-release' $defaultContainerName $defaultImageTag } }
-  'docker-run'                  = @{ Label = 'Docker Run'; Desc = 'Run container'; Script = { Invoke-Docker 'docker-run' $defaultContainerName $defaultImageTag $defaultNetwork } }
-  'docker-stop'                 = @{ Label = 'Docker Stop'; Desc = 'Stop container'; Script = { Invoke-Docker 'docker-stop' $defaultContainerName } }
-  'docker-remove'               = @{ Label = 'Docker Remove'; Desc = 'Remove container'; Script = { Invoke-Docker 'docker-remove' $defaultContainerName $defaultNetwork } }
+  'docker-build-run'            = @{ Label = 'Docker Build Run'; Desc = 'Build image & run'; Script = { Invoke-Docker 'docker-build-run' } }
+  'docker-build-debug'          = @{ Label = 'Docker Build (Debug)'; Desc = 'Debug image build'; Script = { Invoke-Docker 'docker-build-debug' } }
+  'docker-build-release'        = @{ Label = 'Docker Build (Release)'; Desc = 'Release image build'; Script = { Invoke-Docker 'docker-build-release' } }
+  'docker-run'                  = @{ Label = 'Docker Run'; Desc = 'Run container'; Script = { Invoke-Docker 'docker-run' } }
+  'docker-stop'                 = @{ Label = 'Docker Stop'; Desc = 'Stop container'; Script = { Invoke-Docker 'docker-stop' } }
+  'docker-remove'               = @{ Label = 'Docker Remove'; Desc = 'Remove container'; Script = { Invoke-Docker 'docker-remove' } }
+  'docker-remove-image'         = @{ Label = 'Docker Remove Image'; Desc = 'Remove image'; Script = { Invoke-Docker 'docker-remove-image' } }
   'compose-up'                  = @{ Label = 'Compose Up'; Desc = 'docker compose up'; Script = { Invoke-Docker 'compose-up' } }
   'compose-recreate'            = @{ Label = 'Compose Recreate'; Desc = 'Recreate container'; Script = { Invoke-Docker 'compose-recreate' } }
   'compose-up-pull'             = @{ Label = 'Compose Up Pull'; Desc = 'Up with image pull'; Script = { Invoke-Docker 'compose-up'; Invoke-Docker 'compose-up' } }
@@ -146,13 +111,13 @@ $tasks = [ordered]@{
   'format-apply'                = @{ Label = 'Format Apply'; Desc = 'Apply code formatting'; Script = { Invoke-Dotnet 'format-apply' } }
   'analyzers'                   = @{ Label = 'Analyzers'; Desc = 'Run analyzers'; Script = { Invoke-Dotnet 'analyzers' } }
   'analyzers-export'            = @{ Label = 'Analyzers Export'; Desc = 'Export analyzer report'; Script = { Invoke-Dotnet 'analyzers-export' } }
-  'server-build'                = @{ Label = 'Server Build'; Desc = 'Build web server'; Script = { Invoke-Dotnet 'project-build' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'server-publish'              = @{ Label = 'Server Publish'; Desc = 'Publish web server'; Script = { Invoke-Dotnet 'project-publish' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'server-publish-release'      = @{ Label = 'Server Publish Release'; Desc = 'Publish web server release'; Script = { Invoke-Dotnet 'project-publish-release' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'server-publish-sc'           = @{ Label = 'Server Publish Single'; Desc = 'Single-file publish'; Script = { Invoke-Dotnet 'project-publish-sc' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'server-watch'                = @{ Label = 'Server Watch'; Desc = 'Run & Watch dev server'; Script = { Invoke-Dotnet 'project-watch' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  'server-run-dev'              = @{ Label = 'Server Run'; Desc = 'Run dev server'; Script = { Invoke-Dotnet 'project-run' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
-  # 'server-watch-fast'       = @{ Label='Server Watch Fast';    Desc='Fast watch run';                Script={ Invoke-Dotnet 'project-watch-fast' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } }
+  'server-build'                = @{ Label = 'Server Build'; Desc = 'Build web server'; Script = { Invoke-Dotnet 'project-build' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } } # TODO: use DOTNET_PUBLISH_PROJECT setting
+  'server-publish'              = @{ Label = 'Publish Server'; Desc = 'Publish web server'; Script = { Invoke-Dotnet 'project-publish' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } } # TODO: use DOTNET_PUBLISH_PROJECT setting
+  'server-publish-release'      = @{ Label = 'Publish Server (Release)'; Desc = 'Publish web server release'; Script = { Invoke-Dotnet 'project-publish-release' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } } # TODO: use DOTNET_PUBLISH_PROJECT setting
+  'server-publish-sc'           = @{ Label = 'Publish Server Single'; Desc = 'Single-file publish'; Script = { Invoke-Dotnet 'project-publish-sc' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } } # TODO: use DOTNET_PUBLISH_PROJECT setting
+  'server-watch'                = @{ Label = 'Watch'; Desc = 'Watch Server'; Script = { Invoke-Dotnet 'project-watch' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } } # TODO: use DOTNET_PUBLISH_PROJECT setting
+  'server-run-dev'              = @{ Label = 'Run'; Desc = 'Run Server'; Script = { Invoke-Dotnet 'project-run' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } } # TODO: use DOTNET_PUBLISH_PROJECT setting
+  # 'server-watch-fast'       = @{ Label='Server Watch Fast';    Desc='Fast watch run';                Script={ Invoke-Dotnet 'project-watch-fast' (Join-Path $root 'src/Presentation.Web.Server/Presentation.Web.Server.csproj') } } # TODO: use DOTNET_PUBLISH_PROJECT setting
   'pack-projects'               = @{ Label = 'Pack Projects'; Desc = 'Create NuGet packages'; Script = { Invoke-Dotnet 'pack-projects' } }
   'update-packages'             = @{ Label = 'Update all Packages'; Desc = 'Update all Nuget packages'; Script = { Invoke-Dotnet 'update-packages' } }
   'update-packages-devkit'      = @{ Label = 'Update Devkit Packages'; Desc = 'Update DevKit Nuget packages'; Script = { Invoke-Dotnet 'update-packages-devkit' } }
@@ -160,11 +125,11 @@ $tasks = [ordered]@{
   'openapi-client-dotnet'       = @{ Label = 'OpenAPI Client .NET'; Desc = 'Generate C# client (Kiota)'; Script = { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') client-dotnet } }
   'openapi-client-typescript'   = @{ Label = 'OpenAPI Client TS'; Desc = 'Generate TS client (Kiota)'; Script = { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') client-typescript } }
   'openapi-http'                = @{ Label = 'OpenAPI HTTP'; Desc = 'Generate .http request files'; Script = { & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'tasks-openapi.ps1') http-requests } }
-  'misc-clean'                  = @{ Label = 'Workspace Clean'; Desc = 'Clean workspace'; Script = { Invoke-Misc 'clean' } }
-  'misc-digest'                 = @{ Label = 'Sources Digest'; Desc = 'Generate source digest'; Script = { Invoke-Misc 'digest' } }
+  'misc-clean'                  = @{ Label = 'Clean Workspace'; Desc = 'Clean workspace'; Script = { Invoke-Misc 'clean' } }
+  'misc-digest'                 = @{ Label = 'Digest Sources'; Desc = 'Generate source digest'; Script = { Invoke-Misc 'digest' } }
   'misc-remove-headers'         = @{ Label = 'Remove File Headers'; Desc = 'Strip MIT headers from C# files'; Script = { Invoke-Misc 'remove-headers' } }
   'misc-repl'                   = @{ Label = 'C# REPL'; Desc = 'Interactive REPL'; Script = { Invoke-Misc 'repl' } }
-  'misc-kill-dotnet'            = @{ Label = '.NET Kill'; Desc = 'Kill dotnet process'; Script = { Invoke-Misc 'kill-dotnet' } }
+  'misc-kill-dotnet'            = @{ Label = 'Kill Process'; Desc = 'Kill Process'; Script = { Invoke-Misc 'kill-dotnet' } }
   'misc-browser-seq'            = @{ Label = 'Browser Seq'; Desc = 'Open Seq dashboard'; Script = { Invoke-Misc 'browser-seq' } }
   'misc-browser-adminneo'       = @{ Label = 'Browser AdminNeo'; Desc = 'Open AdminNeo dashboard'; Script = { Invoke-Misc 'browser-adminneo' } }
   'misc-browser-server-kestrel' = @{ Label = 'Browser Server HTTPS'; Desc = 'Open Kestrel site'; Script = { Invoke-Misc 'browser-server-kestrel' } }
@@ -183,6 +148,7 @@ $tasks = [ordered]@{
   'diag-quick'                  = @{ Label = 'Diag Quick'; Desc = 'Quick diagnostics'; Script = { Invoke-Diagnostics 'quick' } }
   'licenses'                    = @{ Label = 'Licenses'; Desc = 'Generate license report'; Script = { Invoke-Dotnet 'licenses' } }
   'misc-show-minver'            = @{ Label = 'Show Version'; Desc = 'Display semantic version (MinVer)'; Script = { Invoke-Misc 'show-minver' } }
+  'exit'                        = @{ Label = 'Exit'; Desc = 'Exit'; Script = { exit } }
 }
 # Compute max label width for aligned output
 $TaskLabelWidth = ($tasks.Values | ForEach-Object { $_.Label.Length } | Measure-Object -Maximum).Maximum
@@ -192,16 +158,17 @@ function Format-TaskDisplay([hashtable]$t) {
 }
 
 $categories = [ordered]@{
-  'Build & Maintenance'       = @('restore', 'build', 'build-release', 'build-nr', 'pack', 'pack-projects', 'update-packages', 'update-packages-devkit', 'clean', 'tool-restore', 'format-check', 'format-apply', 'analyzers', 'analyzers-export', 'server-build', 'server-publish', 'server-publish-release', 'server-publish-sc', 'server-watch', 'server-run-dev')
+  'Build & Maintenance'       = @('clean', 'restore', 'build', 'server-run-dev', 'server-watch', 'build-release', 'build-nr', 'pack', 'pack-projects', 'update-packages', 'update-packages-devkit', 'tool-restore', 'format-check', 'format-apply', 'analyzers', 'analyzers-export', 'server-build', 'server-publish', 'server-publish-release', 'server-publish-sc' )
   'Testing & Quality'         = @('test-unit', 'test-int', 'test-unit-all', 'test-int-all', 'coverage', 'coverage-html', 'roslynator-analyze', 'roslynator-loc', 'roslynator-lloc')
   'EF & Persistence'          = @('ef-info', 'ef-list', 'ef-add', 'ef-remove', 'ef-removeall', 'ef-apply', 'ef-update', 'ef-recreate', 'ef-undo', 'ef-status', 'ef-reset', 'ef-script')
   'Publishing & Packaging'    = @('server-publish', 'server-publish-release', 'server-publish-sc', 'pack', 'pack-projects')
-  'Docker & Containers'       = @('docker-build-run', 'docker-build-debug', 'docker-build-release', 'docker-run', 'docker-stop', 'docker-remove', 'compose-up', 'compose-up-pull', 'compose-recreate', 'compose-down', 'compose-down-clean')
+  'Docker & Containers'       = @('docker-build-run', 'docker-build-debug', 'docker-build-release', 'docker-run', 'docker-stop', 'docker-remove', 'docker-remove-image', 'compose-up', 'compose-up-pull', 'compose-recreate', 'compose-down', 'compose-down-clean')
   'Performance & Diagnostics' = @('bench', 'bench-select', 'trace-flame', 'trace-cpu', 'trace-gc', 'dump-heap', 'gc-stats', 'aspnet-metrics', 'diag-quick', 'speedscope-view')
   'Security & Compliance'     = @('vulnerabilities', 'vulnerabilities-deep', 'outdated', 'outdated-json', 'licenses')
   'API & Spec'                = @('openapi-lint', 'openapi-client-dotnet', 'openapi-client-typescript', 'openapi-http')
-  'Utilities'                 = @('misc-clean', 'misc-digest', 'misc-remove-headers', 'misc-repl', 'misc-kill-dotnet', 'misc-browser-seq', 'misc-browser-adminneo', 'misc-browser-server-kestrel', 'misc-browser-server-docker', 'misc-show-minver')
+  'Utilities'                 = @('doc-update-devkit-docs', 'misc-clean', 'misc-digest', 'misc-remove-headers', 'misc-repl', 'misc-kill-dotnet', 'misc-browser-seq', 'misc-browser-adminneo', 'misc-browser-server-kestrel', 'misc-browser-server-docker', 'misc-show-minver')
   'Documentation'             = @('doc-browser-devkit-docs', 'doc-update-devkit-docs')
+  'Exit'                      = @('exit')
 }
 
 function Run-Task([string]$key) {
@@ -216,7 +183,15 @@ function Run-Task([string]$key) {
 if ($Task) { Run-Task $Task; exit $LASTEXITCODE }
 
 $repoName = Split-Path $root -Leaf
-$message = "bdk - $repoName"
+$message = "    $repoName`n
+  ░▒▓███████▓▒░░▒▓███████▓▒░░▒▓█▓▒░░▒▓█▓▒░
+  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
+  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
+  ░▒▓███████▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓███████▓▒░
+  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
+  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
+  ░▒▓███████▓▒░░▒▓███████▓▒░░▒▓█▓▒░░▒▓█▓▒░
+"
 if ($env:VSCODE_PID -or $env:TERM_PROGRAM -eq 'vscode') {
   $message | Format-SpectrePadded -Padding 0 | Format-SpectrePanel -Expand -Border "Double" -Color "DeepSkyBlue3"
 }
@@ -231,15 +206,17 @@ else {
 }
 
 while ($true) {
-  $cat = Read-Selection 'Select Task Category' $categories.Keys
+  $cat = Read-Selection 'Select Category' $categories.Keys -PageSize 15 -EnableSearch
   if (-not $cat) { break }
+  if ( $cat -eq 'Exit') { break }
+  if ( $cat -eq 'Cancel') { break }
   $taskKeys = $categories[$cat]
   # Present aligned label + description
   $choices = $taskKeys | ForEach-Object { Format-TaskDisplay $tasks[$_] }
-  $selection = Read-Selection "Select Task ($cat)" $choices
+  $selection = Read-Selection "Select Task ($cat)" $choices -EnableSearch -AddCancel
   if (-not $selection) { continue }
   $selectedIndex = $choices.IndexOf($selection)
-  if ($selectedIndex -lt 0) { Write-Host 'Invalid selection mapping.' -ForegroundColor Red; continue }
+  if ($selectedIndex -lt 0) { Write-Error 'Invalid selection mapping.'; continue }
   $selectedKey = $taskKeys[$selectedIndex]
   Run-Task $selectedKey
 }
