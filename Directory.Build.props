@@ -9,25 +9,20 @@
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors>true</WarningsAsErrors>
-    <CodeAnalysisRuleSet></CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>
     <Using Include="System" />
-    <Using Include="System.Text" />
-    <Using Include="System.Text.Json" />
     <Using Include="System.Linq" />
     <Using Include="System.Collections.Generic" />
     <Using Include="System.Threading" />
     <Using Include="System.Threading.Tasks" />
     <Using Include="System.Diagnostics" />
     <Using Include="System.Linq" />
-    <Using Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 
   <ItemGroup Condition="$(MSBuildProjectName.EndsWith('Tests'))">
     <Using Include="Xunit" />
     <Using Include="Shouldly" />
   </ItemGroup>
-
 </Project>
