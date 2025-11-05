@@ -6,7 +6,7 @@
   ],
   "name": "BridgingIT.DevKit Solution",
   "identity": "BridgingIT.DevKit.Solution.Template",
-  "shortName": "bitdevkitsolution",
+  "shortName": "bdksolution",
   "tags": {
     "language": "C#",
     "type": "solution"

@@ -6,7 +6,7 @@
   ],
   "name": "BridgingIT.DevKit Module",
   "identity": "BridgingIT.DevKit.Module.Template",
-  "shortName": "bitdevkitmodule",
+  "shortName": "bdkmodule",
   "tags": {
     "language": "C#",
     "type": "item"
@@ -64,42 +64,21 @@
   ],
   "postActions": [
     {
-      "description": "Add module projects to solution",
+      "description": "Add module projects and files to solution",
       "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
       "manualInstructions": [
         {
-          "text": "Add generated module projects to solution manually if scripts were not allowed."
+          "text": "Run .bdk/template/post-action-bdkmodule.ps1 manually if scripts were not allowed."
         }
       ],
       "applyFileRenamesToArgs": [
         "args"
       ],
       "args": {
-        "executable": "dotnet",
-        "args": "sln ../../../TestSolution.slnx add \"../../../src/Modules/CoreModule/CoreModule.Application/CoreModule.Application.csproj\" \"../../../src/Modules/CoreModule/CoreModule.Domain/CoreModule.Domain.csproj\" \"../../../src/Modules/CoreModule/CoreModule.Infrastructure/CoreModule.Infrastructure.csproj\" \"../../../src/Modules/CoreModule/CoreModule.Presentation/CoreModule.Presentation.csproj\" \"../../../src/Modules/CoreModule/CoreModule.IntegrationTests/CoreModule.IntegrationTests.csproj\" \"../../../src/Modules/CoreModule/CoreModule.UnitTests/CoreModule.UnitTests.csproj\""
+        "executable": "pwsh",
+        "args": "-NoProfile -ExecutionPolicy Bypass -File \"../../../.bdk/template/post-action-bdkmodule.ps1\" \"../../../src/Modules/CoreModule\""
       },
       "continueOnError": true
     }
-  // "postActions": [
-  //   {
-  //     "description": "Add module projects to solution",
-  //     "actionId": "D396686C-DE0E-4DE6-906D-291CD29FC5DE", // DOES NOT SUPPORT NEW SLNX SOLUTIONS
-  //     "continueOnError": true,
-  //     "manualInstructions": [
-  //       {
-  //         "text": "Add generated module projects to solution manually."
-  //       }
-  //     ],
-  //     "args": {
-  //       "projectFiles": [
-  //         "CoreModule.Application.csproj",
-  //         "CoreModule.Domain.csproj",
-  //         "CoreModule.Infrastructure.csproj",
-  //         "CoreModule.IntegrationTests.csproj",
-  //         "CoreModule.Presentation.csproj",
-  //         "CoreModule.UnitTests.csproj"
-  //       ]
-  //     }
-  //   }
-  // ]
+  ]
 }

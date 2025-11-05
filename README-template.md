@@ -4,11 +4,11 @@ This repository contains custom .NET templates based on BridgingIT DevKit (bIT D
 
 ## Templates Overview
 
-### 1. DevKit Solution Template (`bitdevkitsolution`)
+### 1. DevKit Solution Template (`bdksolution`)
 
 The solution template creates a complete solution structure with an initial module. It sets up the foundation for your application following Onion Architecture principles.
 
-### 2. DevKit Module Template (`bitdevkitmodule`)
+### 2. DevKit Module Template (`bdkmodule`)
 
 The module template helps you add new functional modules to your solution. Each module is structured following the Onion Architecture pattern with separate projects for different concerns.
 
@@ -47,8 +47,8 @@ dotnet new list
 You should see:
 
 ```
-BridgingIT.DevKit Solution  bitdevkitsolution  [C#]     Solution
-BridgingIT.DevKit Module    bitdevkitmodule    [C#]     Module
+BridgingIT.DevKit Solution  bdksolution  [C#]     Solution
+BridgingIT.DevKit Module    bdkmodule    [C#]     Module
 ```
 
 ### Update Templates
@@ -83,7 +83,7 @@ To add a new module to an existing solution:
 
 ```bash
 cd ./projects/SolutionName
-dotnet new bitdevkitmodule -n ModuleName -o src/Modules/ModuleName
+dotnet new bdkmodule -n ModuleName -o src/Modules/ModuleName
 ```
 
 Parameters:
@@ -116,8 +116,8 @@ SolutionName/
 
 | Template Name | Short Name | Description |
 |---------------|------------|-------------|
-| BridgingIT.DevKit Solution | `bitdevkitsolution` | Creates a complete solution with initial module following Onion Architecture |
-| BridgingIT.DevKit Module   | `bitdevkitmodule`   | Adds a new module to an existing solution |
+| BridgingIT.DevKit Solution | `bdksolution` | Creates a complete solution with initial module following Onion Architecture |
+| BridgingIT.DevKit Module   | `bdkmodule`   | Adds a new module to an existing solution |
 
 ## Troubleshooting
 
@@ -206,8 +206,8 @@ cd bIT.devkit-examples-gettingstarted
 dotnet new uninstall . | dotnet new install .
 
 # Test template creation
-dotnet new bitdevkitsolution --SolutionName TestSolution --ModuleName Core -o ../TestSolution
-dotnet new bitdevkitmodule --ModuleName Administration -o src/Modules/Administration
+dotnet new bdksolution --SolutionName TestSolution --ModuleName Core -o ../TestSolution
+dotnet new bdkmodule --ModuleName Administration -o src/Modules/Administration
 ```
 
 ## Custom Modifications
@@ -215,6 +215,7 @@ dotnet new bitdevkitmodule --ModuleName Administration -o src/Modules/Administra
 You can customize these templates by modifying the template configuration files:
 
 - Solution template: `.template.config/template.json` in the solution template directory
+- Navigate: `cd ..\TestSolution\`
 - Module template: `src/Modules/CoreModule/.template.config/template.json` in the module template directory
 
 For more information about .NET template development:
