@@ -202,12 +202,12 @@ For developers who want to test templates locally from source:
 git clone https://github.com/bridgingIT/bIT.devkit-examples-gettingstarted.git
 cd bIT.devkit-examples-gettingstarted
 
-# Install templates from local source
-dotnet new uninstall .
-dotnet new install .
+# Reinstall templates from local source
+dotnet new uninstall . | dotnet new install .
 
 # Test template creation
 dotnet new bitdevkitsolution --SolutionName TestSolution --ModuleName Core -o ../TestSolution
+dotnet new bitdevkitmodule --ModuleName Administration -o src/Modules/Administration
 ```
 
 ## Custom Modifications

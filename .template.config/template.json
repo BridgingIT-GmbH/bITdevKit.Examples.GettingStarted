@@ -78,7 +78,10 @@
           "exclude": [
             ".git/**/*",
             ".gitignore",
-            ".gitattributes"
+            ".gitattributes",
+            ".azure/azure-pipelines-template.yml",
+            "BridgingIT.DevKit.Templates.csproj",
+            "README-template.md"
           ]
         }
       ]
