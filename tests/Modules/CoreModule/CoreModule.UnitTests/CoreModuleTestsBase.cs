@@ -16,7 +16,7 @@ public class CoreModuleTestsBase(ITestOutputHelper output, Action<IServiceCollec
         services.AddMapping().WithMapster<CoreModuleMapperRegister>();
         services.AddRequester().AddHandlers();
         services.AddNotifier().AddHandlers();
-        services.AddSingleton<TimeProvider>(new FakeTimeProvider(new DateTimeOffset(2024, 1, 1, 1, 0, 1, TimeSpan.Zero)));
+        services.AddTimeProvider(new DateTimeOffset(2024, 1, 1, 1, 0, 1, TimeSpan.Zero));
 
         services.AddInMemoryRepository(new InMemoryContext<Customer>())
             .WithSequenceNumberGenerator(CodeModuleConstants.CustomerNumberSequenceName, 100000, schema: "core")

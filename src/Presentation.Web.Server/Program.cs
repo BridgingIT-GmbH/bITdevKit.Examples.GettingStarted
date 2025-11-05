@@ -44,7 +44,7 @@ builder.Services.AddControllers(); // TODO: needed for openapi gen, even with no
 #pragma warning disable CS0618 // Type or member is obsolete
 builder.Services.AddProblemDetails(o => Configure.ProblemDetails(o, true));
 #pragma warning restore CS0618 // Type or member is obsolete
-builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddTimeProvider();
 
 // ===============================================================================================
 // Configure OpenAPI generation (openapi.json)

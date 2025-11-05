@@ -23,11 +23,12 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Customer"/> class with the specified name and email address.
-    /// This constructor is private to enforce controlled creation through the <see cref="Create(string, string, string)"/> factory method.
+    /// This constructor is private to enforce controlled creation through the <see cref="Create(string, string, string, CustomerNumber)"/> factory method.
     /// </summary>
     /// <param name="firstName">The first name of the customer.</param>
     /// <param name="lastName">The last name of the customer.</param>
     /// <param name="email">The validated <see cref="EmailAddress"/> of the customer.</param>
+    /// <param name="number">The number of the customer.</param>
     private Customer(string firstName, string lastName, EmailAddress email, CustomerNumber number)
     {
         this.FirstName = firstName;
@@ -78,6 +79,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <param name="firstName">The first name of the customer.</param>
     /// <param name="lastName">The last name of the customer.</param>
     /// <param name="email">The email address of the customer.</param>
+    /// <param name="number">The number of the customer.</param>
     /// <returns>A new <see cref="Customer"/> instance.</returns>
     public static Result<Customer> Create(string firstName, string lastName, string email, CustomerNumber number)
     {
@@ -138,6 +140,22 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     }
 
     /// <summary>
+    /// Changes the date of birth of the customer if different from the current value.
+    /// Registers a <see cref="CustomerUpdatedDomainEvent"/> if changed.
+    /// </summary>
+    /// <param name="dateOfBirth">The new date of birth.</param>
+    /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
+    public Result<Customer> ChangeBirthDate(DateOnly dateOfBirth)
+    {
+        if (dateOfBirth > TimeProviderAccessor.Current.GetUtcNow().ToDateOnly())
+        {
+            return Result<Customer>.Failure(this, "Invalid dateOfBirth");
+        }
+
+        return this.ApplyChange(this.DateOfBirth, dateOfBirth, v => this.DateOfBirth = v);
+    }
+
+    /// <summary>
     /// Changes the status of the customer if different from the current value.
     /// Registers a <see cref="CustomerUpdatedDomainEvent"/> if changed.
     /// </summary>
@@ -145,7 +163,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
     public Result<Customer> ChangeStatus(CustomerStatus status)
     {
-        if (status == default)
+        if (status == null)
         {
             return Result<Customer>.Failure(this, "Invalid status");
         }
