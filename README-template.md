@@ -68,7 +68,7 @@ dotnet new install BridgingIT.DevKit.Templates
 To create a new solution with an initial module:
 
 ```bash
-dotnet new devkitsolution --SolutionName SolutionName --ModuleName Core -o ./projects/SolutionName
+dotnet new devkitsolution --SolutionName SolutionName --ModuleName Core --allow-scripts yes -o ./projects/SolutionName
 ```
 
 Parameters:
@@ -83,7 +83,7 @@ To add a new module to an existing solution:
 
 ```bash
 cd ./projects/SolutionName
-dotnet new bdkmodule -n ModuleName -o src/Modules/ModuleName
+dotnet new bdkmodule -n ModuleName -o src/Modules/ModuleName --allow-scripts yes
 ```
 
 Parameters:
@@ -206,8 +206,8 @@ cd bIT.devkit-examples-gettingstarted
 dotnet new uninstall . | dotnet new install .
 
 # Test template creation
-dotnet new bdksolution --SolutionName TestSolution --ModuleName Core -o ../TestSolution
-dotnet new bdkmodule --ModuleName Administration -o src/Modules/Administration
+dotnet new bdksolution --SolutionName TestSolution --ModuleName Core -o ../TestSolution --allow-scripts yes
+dotnet new bdkmodule --ModuleName Administration -o src/Modules/Administration --allow-scripts yes
 ```
 
 ## Custom Modifications

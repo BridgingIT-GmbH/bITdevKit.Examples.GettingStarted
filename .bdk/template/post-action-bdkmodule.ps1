@@ -24,16 +24,23 @@ $slnx = Get-ChildItem -LiteralPath $repoRoot -Filter *.slnx -File -ErrorAction S
 $solutionPath = $slnx.FullName
 Write-Host "Solution (.slnx): $solutionPath"
 
-# Project paths (all under src/Modules/<ModuleName>)
-$moduleSrcDir = [System.IO.Path]::Combine($repoRoot, "src", "Modules", $moduleName)
-$projects = @(
-  [System.IO.Path]::Combine($moduleSrcDir, "$moduleName.Application", "$moduleName.Application.csproj"),
-  [System.IO.Path]::Combine($moduleSrcDir, "$moduleName.Domain", "$moduleName.Domain.csproj"),
-  [System.IO.Path]::Combine($moduleSrcDir, "$moduleName.Infrastructure", "$moduleName.Infrastructure.csproj"),
-  [System.IO.Path]::Combine($moduleSrcDir, "$moduleName.Presentation", "$moduleName.Presentation.csproj"),
-  [System.IO.Path]::Combine($moduleSrcDir, "$moduleName.IntegrationTests", "$moduleName.IntegrationTests.csproj"),
-  [System.IO.Path]::Combine($moduleSrcDir, "$moduleName.UnitTests", "$moduleName.UnitTests.csproj")
+# 2) Build expected project paths
+$srcModulesDir = [System.IO.Path]::Combine($repoRoot, "src", "Modules", $moduleName)
+$testsModulesDir = [System.IO.Path]::Combine($repoRoot, "tests", "Modules", $moduleName)
+
+$srcProjects = @(
+  [System.IO.Path]::Combine($srcModulesDir, "$moduleName.Application", "$moduleName.Application.csproj"),
+  [System.IO.Path]::Combine($srcModulesDir, "$moduleName.Domain", "$moduleName.Domain.csproj"),
+  [System.IO.Path]::Combine($srcModulesDir, "$moduleName.Infrastructure", "$moduleName.Infrastructure.csproj"),
+  [System.IO.Path]::Combine($srcModulesDir, "$moduleName.Presentation", "$moduleName.Presentation.csproj")
 ) | Where-Object { Test-Path -LiteralPath $_ }
+
+$testProjects = @(
+  [System.IO.Path]::Combine($testsModulesDir, "$moduleName.IntegrationTests", "$moduleName.IntegrationTests.csproj"),
+  [System.IO.Path]::Combine($testsModulesDir, "$moduleName.UnitTests", "$moduleName.UnitTests.csproj")
+) | Where-Object { Test-Path -LiteralPath $_ }
+
+$projects = $srcProjects + $testProjects
 
 # Add projects via dotnet
 foreach ($p in $projects) {
@@ -51,35 +58,71 @@ $files = @(
   "src/Modules/$moduleName/Directory.Build.props"
 )
 
+# Load XML and set up namespace manager
 [xml]$xml = Get-Content -LiteralPath $solutionPath
 
-function Ensure-Folder([xml]$doc, [string]$name) {
-  $n = $doc.Solution.Folder | Where-Object { $_.Name -eq $name }
-  if (-not $n) {
-    $n = $doc.CreateElement("Folder")
-    $null = $n.SetAttribute("Name", $name)
-    $null = $doc.Solution.AppendChild($n)
-  }
-  $n
+$ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+# Read the default namespace from the root element
+$defaultNs = $xml.DocumentElement.NamespaceURI
+if ([string]::IsNullOrEmpty($defaultNs)) {
+  # No namespace – fallback to simple selection
+  $useNs = $false
+}
+else {
+  $useNs = $true
+  $ns.AddNamespace('s', $defaultNs)
 }
 
-$null = Ensure-Folder $xml "/src/"
-$null = Ensure-Folder $xml "/src/Modules/"
-$moduleFolderName = "/src/Modules/$moduleName/"
-$moduleFolder = $xml.Solution.Folder | Where-Object { $_.Name -eq $moduleFolderName }
-if (-not $moduleFolder) {
-  $moduleFolder = $xml.CreateElement("Folder")
-  $null = $moduleFolder.SetAttribute("Name", $moduleFolderName)
-  $null = $xml.Solution.AppendChild($moduleFolder)
+function Get-Or-Create-RootFolder {
+  param(
+    [xml]$doc,
+    [System.Xml.XmlNamespaceManager]$nsMgr,
+    [bool]$useNs,
+    [string]$name
+  )
+  if ($useNs) {
+    $node = $doc.SelectSingleNode("/s:Solution/s:Folder[@Name='$name']", $nsMgr)
+  }
+  else {
+    $node = $doc.SelectSingleNode("/Solution/Folder[@Name='$name']")
+  }
+  if (-not $node) {
+    $node = $doc.CreateElement("Folder", $doc.DocumentElement.NamespaceURI)
+    $null = $node.SetAttribute("Name", $name)
+    $null = $doc.DocumentElement.AppendChild($node)
+  }
+  return $node
 }
+
+# Ensure folders
+$null = Get-Or-Create-RootFolder -doc $xml -nsMgr $ns -useNs $useNs -name "/src/"
+$null = Get-Or-Create-RootFolder -doc $xml -nsMgr $ns -useNs $useNs -name "/src/Modules/"
+$moduleFolderName = "/src/Modules/$moduleName/"
+$moduleFolder = Get-Or-Create-RootFolder -doc $xml -nsMgr $ns -useNs $useNs -name $moduleFolderName
+
+# Add files
+$files = @(
+  "src/Modules/$moduleName/$moduleName-Customers-API.http",
+  "src/Modules/$moduleName/$moduleName-README.md",
+  "src/Modules/$moduleName/Directory.Build.props"
+)
 
 foreach ($f in $files) {
   $path = $f -replace "\\", "/"
-  if (-not ($moduleFolder.File | Where-Object { $_.Path -eq $path })) {
-    $fileNode = $xml.CreateElement("File")
+  if ($useNs) {
+    $existing = $moduleFolder.SelectSingleNode("s:File[@Path='$path']", $ns)
+  }
+  else {
+    $existing = $moduleFolder.SelectSingleNode("File[@Path='$path']")
+  }
+  if (-not $existing) {
+    $fileNode = $xml.CreateElement("File", $xml.DocumentElement.NamespaceURI)
     $null = $fileNode.SetAttribute("Path", $path)
     $null = $moduleFolder.AppendChild($fileNode)
     Write-Host "Added File: $path"
+  }
+  else {
+    Write-Host "File already present: $path"
   }
 }
 
