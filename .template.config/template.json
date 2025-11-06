@@ -87,5 +87,24 @@
         }
       ]
     }
+  ],
+  "postActions": [
+    {
+      "description": "Post action for BridgingIT.DevKit Solution template.",
+      "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
+      "manualInstructions": [
+        {
+          "text": "Run .bdk/template/post-action-bdksolution.ps1 manually if scripts were not allowed."
+        }
+      ],
+      "applyFileRenamesToArgs": [
+        "args"
+      ],
+      "args": {
+        "executable": "pwsh",
+        "args": "-NoProfile -ExecutionPolicy Bypass -File \"./.bdk/template/post-action-bdksolution.ps1\" \"./src/Modules/CoreModule\""
+      },
+      "continueOnError": true
+    }
   ]
 }

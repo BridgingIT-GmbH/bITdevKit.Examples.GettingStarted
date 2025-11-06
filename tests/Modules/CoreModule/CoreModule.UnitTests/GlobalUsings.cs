@@ -11,6 +11,5 @@ global using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Applic
 global using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 global using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 global using Mapster;
-global using Microsoft.Extensions.Time.Testing;
 global using Shouldly;
 global using Xunit;

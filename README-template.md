@@ -32,7 +32,6 @@ Each module contains the following projects:
 To install the templates from NuGet.org:
 
 ```bash
-# Install the BridgingIT DevKit Templates package
 dotnet new install BridgingIT.DevKit.Templates
 ```
 
@@ -46,7 +45,7 @@ dotnet new list
 
 You should see:
 
-```
+```text
 BridgingIT.DevKit Solution  bdksolution  [C#]     Solution
 BridgingIT.DevKit Module    bdkmodule    [C#]     Module
 ```
@@ -83,15 +82,44 @@ To add a new module to an existing solution:
 
 ```bash
 cd ./projects/SolutionName
-dotnet new bdkmodule -n ModuleName -o src/Modules/ModuleName --allow-scripts yes
+dotnet new bdkmodule --ModuleName ModuleName -o src/Modules/ModuleName --allow-scripts yes
 ```
 
 Parameters:
 
-- `-n` or `--ModuleName`: The name of the new module
+- `--ModuleName`: The name of the new module
 - `-o`: Output directory for the module
 
 After adding a new module, the template will automatically add the generated projects to your solution file.
+
+> Importannt: Some manual adjustments are required after adding a new module. Otherwise the new module will not be fully setup.
+> Please follow the steps below.
+
+- src\Presentation.Web.Server\Program.cs: Register the new module in the service configuration:
+
+```csharp
+// ===============================================================================================
+// Configure the modules
+builder.Services.AddModules(builder.Configuration, builder.Environment)
+    // ...
+    .WithModule<[ModuleName]Module>()  // add this manually
+    // ...
+```
+
+- src\Presentation.Web.Server\appsettings.json: Add configuration section for the new module:
+
+```json
+  // ...
+  "Modules": {
+    // ...
+    "[ModuleName]": {  // add this manually
+      "Enabled": true,
+      "ConnectionStrings": {
+        "Default": "ConnectionStringHere"
+      }
+    }
+  }
+```
 
 ## Project Structure
 
@@ -105,10 +133,12 @@ SolutionName/
 │   │   │   ├── ModuleName.Application/
 │   │   │   ├── ModuleName.Domain/
 │   │   │   ├── ModuleName.Infrastructure/
-│   │   │   ├── ModuleName.IntegrationTests/
-│   │   │   ├── ModuleName.Presentation/
-│   │   │   └── ModuleName.UnitTests/
+│   │   │   └── ModuleName.UnitTestPresentations/
 │   └── Presentation.Web.Server/
+├── tests/
+│       └── ModuleName/
+│           ├── ModuleName.IntegrationTests/
+│           └── ModuleName.UnitTests/
 └── SolutionName.slnx
 ```
 
@@ -167,8 +197,8 @@ If you encounter any issues with the templates:
 
    ```bash
    # Check available parameters for a template
-   dotnet new devkitsolution --help
-   dotnet new devkitmodule --help
+   dotnet new bdksolution --help
+   dotnet new bdkmodule --help
    ```
 
 ### NuGet Package Issues
@@ -207,6 +237,7 @@ dotnet new uninstall . | dotnet new install .
 
 # Test template creation
 dotnet new bdksolution --SolutionName TestSolution --ModuleName Core -o ../TestSolution --allow-scripts yes
+cd ../TestSolution
 dotnet new bdkmodule --ModuleName Administration -o src/Modules/Administration --allow-scripts yes
 ```
 
@@ -215,8 +246,8 @@ dotnet new bdkmodule --ModuleName Administration -o src/Modules/Administration -
 You can customize these templates by modifying the template configuration files:
 
 - Solution template: `.template.config/template.json` in the solution template directory
-- Navigate: `cd ..\TestSolution\`
 - Module template: `src/Modules/CoreModule/.template.config/template.json` in the module template directory
+- Post template scripts: `.bdk/template/post-action-*.ps1`
 
 For more information about .NET template development:
 

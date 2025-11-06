@@ -82,21 +82,21 @@ function Generate-KiotaClient {
 
   # Build Kiota args
   if ($Language -eq 'CSharp') {
-    $args = @('kiota', 'generate',
+    $kiotaArgs = @('kiota', 'generate',
       '-d', $specPath,
       '-l', 'CSharp',
       '-o', $outDir,
-      '--clean-output',
+      '--log-level', 'Error',
       '-c', $ClientClassName,
       '-n', $Namespace)
   }
   else {
     # typescript
-    $args = @('kiota', 'generate',
+    $kiotaArgs = @('kiota', 'generate',
       '-d', $specPath,
       '-l', 'TypeScript',
       '-o', $outDir,
-      '--clean-output',
+      '--log-level', 'Error',
       '-c', $ClientClassName)
   }
 
@@ -110,8 +110,8 @@ function Generate-KiotaClient {
   # ) | Format-SpectreRows | Format-SpectrePanel -Expand -Color "DeepSkyBlue3"
 
   Clean-Path $outDir
-  Write-Debug "dotnet $($args -join ' ')"
-  & dotnet @args
+  Write-Debug "dotnet $($kiotaArgs -join ' ')"
+  & dotnet @kiotaArgs
   if ($LASTEXITCODE -ne 0) { Fail "Kiota generation failed ($LASTEXITCODE)" $LASTEXITCODE }
 
   # Post-generation brief summary
@@ -131,15 +131,15 @@ function Generate-HttpRequests {
   Write-Step "BaseUrl: $HttpBaseUrl"
   Write-Step "OutputType: $HttpOutputType"
   # httpgenerator usage: dotnet httpgenerator generate -i <spec> -b <base-url> -o <out> -t <type> -f
-  $args = @('httpgenerator', $specPath,
+  $genArgs = @('httpgenerator', $specPath,
     '--base-url', $HttpBaseUrl,
     '--output', $outDir,
     '--authorization-header', 'Bearer TOKEN',
     '--output-type', $HttpOutputType)
 
   Clean-Path $outDir
-  Write-Debug "dotnet $($args -join ' ')"
-  & dotnet @args
+  Write-Debug "dotnet $($genArgs -join ' ')"
+  & dotnet @genArgs
   if ($LASTEXITCODE -ne 0) { Fail "httpgenerator failed ($LASTEXITCODE)" $LASTEXITCODE }
   $httpFiles = Get-ChildItem -Path $outDir -Filter '*.http' -File -Recurse
   $count = ($httpFiles | Measure-Object).Count

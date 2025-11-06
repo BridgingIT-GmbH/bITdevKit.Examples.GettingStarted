@@ -108,7 +108,7 @@ function Build-EfArgs([string[]] $extra) {
   if (-not $script:Module) { Fail 'Build-EfArgs: Module is empty.' 201 }
   $proj = Resolve-InfrastructureProject $script:Module
   # Write-debug "EF Args Module: $script:Module | DbContext: $script:DbContext | Project: $proj"
-  return @('dotnet', 'ef') + $extra + @('--project', $proj, '--startup-project', $StartupProject)
+  return @('dotnet', 'ef') + $extra + @('--project', $proj, '--startup-project', $StartupProject, '--no-build', '--verbose')
 }
 
 function Run-Ef([string[]] $cmdArgs) {
@@ -248,10 +248,22 @@ function Export-DbContextScript() {
   Write-Info "Export DbContext SQL Script ($script:DbContext)"
   Ensure-DotNetTools
   Ensure-Path $OutputDirectory
-  $scriptPath = Join-Path $OutputDirectory "$script:Module-$script:DbContext-schema.sql"
-  $efArgs = Build-EfArgs @('dbcontext', 'script', '--context', $script:DbContext, '--output', $scriptPath)
+  # $outPath = Join-Path $OutputDirectory "$script:Module-$script:DbContext-schema.sql"
+  $outPath = Join-Path $OutputDirectory "efscript_$script:Module.sql"
+  $efArgs = Build-EfArgs @('migrations', 'script', '--context', $script:DbContext, '--output', $outPath, '--idempotent')
   Run-Ef $efArgs
-  Write-Info "Script written: $scriptPath"
+  Write-Info "Script written: $outPath"
+}
+
+function Export-DbContextBundle() {
+  Write-Info "Export DbContext Bundle ($script:DbContext)"
+  Ensure-DotNetTools
+  Ensure-Path $OutputDirectory
+  # $outPath = Join-Path $OutputDirectory "$script:Module-$script:DbContext-schema.exe"
+  $outPath = Join-Path $OutputDirectory "efbundle_$script:Module.exe"
+  $efArgs = Build-EfArgs @('migrations', 'bundle', '--context', $script:DbContext, '--output', $outPath)
+  Run-Ef $efArgs
+  Write-Info "Script written: $outPath"
 }
 
 function RemoveAll-Migrations() {
@@ -328,6 +340,7 @@ switch ($Command.ToLower()) {
   'status' { Show-MigrationStatus }
   'reset' { Reset-Migrations }
   'script' { Export-DbContextScript }
+  'bundle' { Export-DbContextBundle }
   'help' { Help }
   default { Write-Error "Unknown command '$Command'"; Help; exit 1 }
 }

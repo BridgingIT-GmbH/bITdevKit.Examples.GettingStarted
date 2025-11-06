@@ -5,7 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 
-using BridgingIT.DevKit.Application.JobScheduling;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation.Web;
 using Microsoft.AspNetCore.Builder;
@@ -14,7 +13,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-public class CoreModule() : WebModuleBase(nameof(CoreModule).ToLower())
+public class CoreModuleModule() : WebModuleBase("CoreModule")
 {
     /// <summary>
     /// Registers the core module's services, database context, repositories, and endpoints with the specified service
@@ -34,28 +33,26 @@ public class CoreModule() : WebModuleBase(nameof(CoreModule).ToLower())
 
         // startup tasks setup
         services.AddStartupTasks(o => o
-            /*.StartupDelay(moduleConfiguration.SeederTaskStartupDelay)*/) // wait some time before starting the tasks
+            .StartupDelay(moduleConfiguration.SeederTaskStartupDelay)) // wait some time before starting the tasks
             .WithTask<CoreModuleDomainSeederTask>(o => o
                 .Enabled(environment.IsLocalDevelopment() || environment.IsContainerized()));
 
         // job scheduling setup
         services.AddJobScheduling(o => o
-            .StartupDelay(configuration["JobScheduling:StartupDelay"]), configuration) // wait some time before starting the scheduler
-            .WithSqlServerStore(configuration["JobScheduling:Quartz:quartz.dataSource.default.connectionString"])
-            .WithBehavior<ModuleScopeJobSchedulingBehavior>()
-            .WithJob<CustomerExportJob>()
-                .Cron(CronExpressions.Every30Minutes)
-                .Named(nameof(CustomerExportJob)).RegisterScoped();
+           .StartupDelay(configuration["JobScheduling:StartupDelay"]), configuration) // wait some time before starting the scheduler
+           .WithJob<CustomerExportJob>()
+               .Cron(CronExpressions.EveryMinute)
+               .Named($"{this.Name}_{nameof(CustomerExportJob)}").RegisterScoped();
 
-        // entity framework setup
+        // // entity framework setup
         services.AddSqlServerDbContext<CoreModuleDbContext>(o => o
                 .UseConnectionString(moduleConfiguration.ConnectionStrings["Default"])
                 .UseLogger(true, true) // TODO: does not work together with a ModuleDbContextBase
                 /*.UseSimpleLogger()*/)
             .WithSequenceNumberGenerator()
             .WithDatabaseMigratorService(o => o // create the database and apply existing migrations
-                .Enabled(environment.IsLocalDevelopment() || environment.IsContainerized())
-                .DeleteOnStartup(environment.IsLocalDevelopment() || environment.IsContainerized()))
+                .Enabled(environment.IsLocalDevelopment() || environment.IsContainerized()))
+                //.DeleteOnStartup(environment.IsLocalDevelopment() || environment.IsContainerized()))
             .WithOutboxDomainEventService(o => o
                 .ProcessingInterval("00:00:30")
                 .ProcessingModeImmediate() // forwards the outbox event, through a queue, to the outbox worker

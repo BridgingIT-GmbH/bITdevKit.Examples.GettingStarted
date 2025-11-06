@@ -8,6 +8,7 @@
     <File Path=".azure/azure-pipelines.yml" />
     <File Path=".config/dotnet-tools.json" />
     <File Path=".editorconfig" />
+    <File Path=".env" />
     <File Path=".gitignore" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
@@ -18,7 +19,7 @@
     <File Path="README.md" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/Presentation.Web.Server/Presentation.Web.Server.csproj" DefaultStartup="true" />
+    <Project Path="src/Presentation.Web.Server/Presentation.Web.Server.csproj" />
   </Folder>
   <Folder Name="/src/Modules/" />
   <Folder Name="/src/Modules/CoreModule/">

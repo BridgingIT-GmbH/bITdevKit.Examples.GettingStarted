@@ -42,6 +42,17 @@
       "replaces": "core"
     }
   },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "exclude": [
+            "**/*g.cs"
+          ]
+        }
+      ]
+    }
+  ],
   "primaryOutputs": [
     {
       "path": "CoreModule.Application.csproj"
@@ -64,7 +75,7 @@
   ],
   "postActions": [
     {
-      "description": "Add module projects and files to solution",
+      "description": "Post action for BridgingIT.DevKit Module template.",
       "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
       "manualInstructions": [
         {

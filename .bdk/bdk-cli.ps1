@@ -91,6 +91,7 @@ $tasks = [ordered]@{
   'ef-status'                   = @{ Label = 'EF Status'; Desc = 'Migrations status'; Script = { Invoke-Ef 'status' } }
   'ef-reset'                    = @{ Label = 'EF Reset'; Desc = 'Squash migrations'; Script = { Invoke-Ef 'reset' } }
   'ef-script'                   = @{ Label = 'EF Script'; Desc = 'Export SQL script'; Script = { Invoke-Ef 'script' } }
+  'ef-bundle'                   = @{ Label = 'EF Bundle'; Desc = 'Export Bundle'; Script = { Invoke-Ef 'bundle' } }
   'docker-build-run'            = @{ Label = 'Docker Build Run'; Desc = 'Build image & run'; Script = { Invoke-Docker 'docker-build-run' } }
   'docker-build-debug'          = @{ Label = 'Docker Build (Debug)'; Desc = 'Debug image build'; Script = { Invoke-Docker 'docker-build-debug' } }
   'docker-build-release'        = @{ Label = 'Docker Build (Release)'; Desc = 'Release image build'; Script = { Invoke-Docker 'docker-build-release' } }
@@ -160,7 +161,7 @@ function Format-TaskDisplay([hashtable]$t) {
 $categories = [ordered]@{
   'Build & Maintenance'       = @('clean', 'restore', 'build', 'server-run-dev', 'server-watch', 'build-release', 'build-nr', 'pack', 'pack-projects', 'update-packages', 'update-packages-devkit', 'tool-restore', 'format-check', 'format-apply', 'analyzers', 'analyzers-export', 'server-build', 'server-publish', 'server-publish-release', 'server-publish-sc' )
   'Testing & Quality'         = @('test-unit', 'test-int', 'test-unit-all', 'test-int-all', 'coverage', 'coverage-html', 'roslynator-analyze', 'roslynator-loc', 'roslynator-lloc')
-  'EF & Persistence'          = @('ef-info', 'ef-list', 'ef-add', 'ef-remove', 'ef-removeall', 'ef-apply', 'ef-update', 'ef-recreate', 'ef-undo', 'ef-status', 'ef-reset', 'ef-script')
+  'EF & Persistence'          = @('ef-info', 'ef-list', 'ef-add', 'ef-remove', 'ef-removeall', 'ef-apply', 'ef-update', 'ef-recreate', 'ef-undo', 'ef-status', 'ef-reset', 'ef-script', 'ef-bundle')
   'Publishing & Packaging'    = @('server-publish', 'server-publish-release', 'server-publish-sc', 'pack', 'pack-projects')
   'Docker & Containers'       = @('docker-build-run', 'docker-build-debug', 'docker-build-release', 'docker-run', 'docker-stop', 'docker-remove', 'docker-remove-image', 'compose-up', 'compose-up-pull', 'compose-recreate', 'compose-down', 'compose-down-clean')
   'Performance & Diagnostics' = @('bench', 'bench-select', 'trace-flame', 'trace-cpu', 'trace-gc', 'dump-heap', 'gc-stats', 'aspnet-metrics', 'diag-quick', 'speedscope-view')

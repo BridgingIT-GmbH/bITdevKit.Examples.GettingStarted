@@ -3,6 +3,7 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
+using BridgingIT.DevKit.Application.JobScheduling;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 using Hellang.Middleware.ProblemDetails;
 
@@ -15,12 +16,12 @@ builder.Services.AddConsoleCommandsInteractive();
 // ===============================================================================================
 // Configure the modules
 builder.Services.AddModules(builder.Configuration, builder.Environment)
-    .WithModule<CoreModule>()
+    .WithModule<CoreModuleModule>()
     .WithModuleContextAccessors()
     .WithRequestModuleContextAccessors();
 
 // ===============================================================================================
-// Configure the services
+// Configure the requester and notifier services
 builder.Services.AddRequester()
     .AddHandlers()
     .WithBehavior(typeof(TracingBehavior<,>))
@@ -35,6 +36,13 @@ builder.Services.AddNotifier()
     .WithBehavior(typeof(ValidationPipelineBehavior<,>))
     .WithBehavior(typeof(RetryPipelineBehavior<,>))
     .WithBehavior(typeof(TimeoutPipelineBehavior<,>));
+
+// ===============================================================================================
+// Configure the job scheduling service
+builder.Services.AddJobScheduling(o => o
+    .StartupDelay(builder.Configuration["JobScheduling:StartupDelay"]), builder.Configuration) // wait some time before starting the scheduler
+    .WithSqlServerStore(builder.Configuration["JobScheduling:Quartz:quartz.dataSource.default.connectionString"])
+    .WithBehavior<ModuleScopeJobSchedulingBehavior>();
 
 builder.Services.ConfigureJson(); // configure the json serializer options
 builder.Services.AddEndpoints<SystemEndpoints>(builder.Environment.IsLocalDevelopment() || builder.Environment.IsContainerized());
