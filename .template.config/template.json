@@ -80,6 +80,7 @@
             ".gitignore",
             ".gitattributes",
             ".azure/azure-pipelines-template.yml",
+            "**/*g.cs",
             "BridgingIT.DevKit.Templates.csproj",
             "README-template.md"
           ]
