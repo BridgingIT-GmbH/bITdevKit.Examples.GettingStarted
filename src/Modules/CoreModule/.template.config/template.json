@@ -2,11 +2,12 @@
   "$schema": "https://www.schemastore.org/template.json",
   "author": "BridgingIT GmbH",
   "classifications": [
-    "Module"
+    "Module", "Web", "ASP.NET"
   ],
   "name": "bITdevKit Module",
   "identity": "BridgingIT.DevKit.Module.Template",
   "shortName": "bdkmodule",
+  "description": "TODO",
   "tags": {
     "language": "C#",
     "type": "item"
@@ -20,7 +21,8 @@
       "isRequired": true,
       "defaultValue": "Core",
       "replaces": "CoreModule",
-      "fileRename": "CoreModule"
+      "fileRename": "CoreModule",
+      "description": "Primary module name; replaces CoreModule tokens and renames folders."
     },
     "ModuleNameLower": {
       "type": "generated",
@@ -29,7 +31,8 @@
         "source": "ModuleName",
         "casing": "lowerCase"
       },
-      "replaces": "coremodule"
+      "replaces": "coremodule",
+      "description": "Lowercase variant of ModuleName replacing coremodule in tokens."
     },
     "ModuleNameLowerShort": {
       "type": "generated",
@@ -39,7 +42,8 @@
         "casing": "lowerCase",
         "value": "${ModuleName}"
       },
-      "replaces": "core"
+      "replaces": "core",
+      "description": "Lowercase short form of ModuleName replacing core (used for short identifiers)."
     }
   },
   "sources": [

@@ -2,11 +2,12 @@
   "$schema": "https://www.schemastore.org/template.json",
   "author": "BridgingIT GmbH",
   "classifications": [
-    "Solution"
+    "Solution", "Web", "ASP.NET"
   ],
   "name": "bITdevKit Solution",
   "identity": "BridgingIT.DevKit.Solution.Template",
   "shortName": "bdksolution",
+  "description": "TODO",
   "tags": {
     "language": "C#",
     "type": "solution"
@@ -19,7 +20,18 @@
       "isRequired": true,
       "defaultValue": "BridgingIT.DevKit.Examples.GettingStarted",
       "replaces": "BridgingIT.DevKit.Examples.GettingStarted",
-      "fileRename": "BridgingIT.DevKit.Examples.GettingStarted"
+      "fileRename": "BridgingIT.DevKit.Examples.GettingStarted",
+      "description": "Primary solution name used for replacement and directory rename."
+    },
+    "SolutionNameFileReplacement": {
+      "type": "generated",
+      "generator": "regex",
+      "parameters": {
+        "source": "SolutionName",
+        "steps": []
+      },
+      "fileRename": "bITdevKit.Examples.GettingStarted",
+      "description": "Primary solution for relacement bITdevKit.Examples.GettingStarted in directories."
     },
     "SolutionNameUnderscore": {
       "type": "generated",
@@ -32,7 +44,8 @@
             "replacement": "_"
           }
         ]
-      }
+      },
+      "description": "Transforms SolutionName by replacing dots with underscores for alt casing."
     },
     "SolutionNameAlt": {
       "type": "generated",
@@ -42,14 +55,16 @@
         "casing": "lowerCase"
       },
       "replaces": "bit_devkit_gettingstarted",
-      "fileRename": "bit_devkit_gettingstarted"
+      "fileRename": "bit_devkit_gettingstarted",
+      "description": "Lowercase underscore variant of solution name replacing bit_devkit_gettingstarted."
     },
     "ModuleName": {
       "type": "parameter",
       "datatype": "string",
       "defaultValue": "Core",
       "replaces": "CoreModule",
-      "fileRename": "CoreModule"
+      "fileRename": "CoreModule",
+      "description": "Base module name; replaces CoreModule and renames its folder."
     },
     "ModuleNameLower": {
       "type": "generated",
@@ -58,7 +73,8 @@
         "source": "ModuleName",
         "casing": "lowerCase"
       },
-      "replaces": "coremodule"
+      "replaces": "coremodule",
+      "description": "Lowercase variant of ModuleName replacing coremodule."
     },
     "ModuleNameLowerShort": {
       "type": "generated",
@@ -68,7 +84,8 @@
         "casing": "lowerCase",
         "value": "${ModuleName}"
       },
-      "replaces": "core"
+      "replaces": "core",
+      "description": "Lowercase short variant replacing core (used in short tokens or ids)."
     }
   },
   "sources": [

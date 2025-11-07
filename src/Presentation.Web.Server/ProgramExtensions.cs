@@ -28,10 +28,37 @@ public static class ProgramExtensions
     //}
 
     /// <summary>
+    /// Configure default pipeline behaviors for requester/notifier.
+    /// </summary>
+    public static RequesterBuilder WithDefaultBehaviors(this RequesterBuilder builder)
+    {
+        return builder // https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-requester-notifier.md#part-3-pipeline-behaviors
+            .WithBehavior(typeof(TracingBehavior<,>))
+            .WithBehavior(typeof(ModuleScopeBehavior<,>))
+            .WithBehavior(typeof(ValidationPipelineBehavior<,>))
+            .WithBehavior(typeof(RetryPipelineBehavior<,>))
+            .WithBehavior(typeof(TimeoutPipelineBehavior<,>));
+    }
+
+    /// <summary>
+    /// Configure default pipeline behaviors for requester/notifier.
+    /// </summary>
+    public static NotifierBuilder WithDefaultBehaviors(this NotifierBuilder builder)
+    {
+        return builder // https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-requester-notifier.md#part-3-pipeline-behaviors
+            .WithBehavior(typeof(TracingBehavior<,>))
+            .WithBehavior(typeof(ModuleScopeBehavior<,>))
+            .WithBehavior(typeof(ValidationPipelineBehavior<,>))
+            .WithBehavior(typeof(RetryPipelineBehavior<,>))
+            .WithBehavior(typeof(TimeoutPipelineBehavior<,>));
+    }
+
+    /// <summary>
     /// Configure the internal oauth identity provider middleware with its endpoints and signin page.
     /// </summary>
     public static IServiceCollection AddAppIdentityProvider(this IServiceCollection services, bool enabled, IConfiguration configuration)
     {
+        // https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-identityprovider.md
         return services.AddFakeIdentityProvider(o => o // configures the internal oauth identity provider with its endpoints and signin page
             .Enabled(enabled)
             .WithIssuer(configuration["Authentication:Authority"]) //
@@ -45,12 +72,11 @@ public static class ProgramExtensions
     }
 
     /// <summary>
-    /// Configure OpenAPI generation (openapi.json)
+    /// Configure OpenAPI generation (openapi.json).
     /// </summary>
     public static IServiceCollection AddAppOpenApi(this IServiceCollection services)
     {
-        // ===============================================================================================
-        // Configure OpenAPI generation (openapi.json)
+        // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/aspnetcore-openapi
         return services.AddOpenApi(o =>
         {
             o.AddDocumentTransformer<DiagnosticDocumentTransformer>()
@@ -70,8 +96,7 @@ public static class ProgramExtensions
     /// </summary>
     public static IServiceCollection AddAppCors(this IServiceCollection services)
     {
-        // ===============================================================================================
-        // Configure CORS
+        // https://learn.microsoft.com/en-us/aspnet/core/security/cors
         return services.AddCors(o =>
         {
             o.AddDefaultPolicy(p =>
@@ -89,12 +114,12 @@ public static class ProgramExtensions
     /// </summary>
     public static IServiceCollection AddHealthChecks(this IServiceCollection services, IConfiguration configuration)
     {
-        // readiness checks
+        // https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/health-checks
         services.AddHealthChecks()
-         .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy()); // liveness
-        // .AddSqlServer(configuration.GetConnectionString("Default"),
-        // name: "sql", failureStatus: HealthStatus.Unhealthy, timeout: TimeSpan.FromSeconds(2))
-        // .AddRedis(configuration.GetConnectionString("Redis"), "redis")
+            .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy()); // liveness
+            // .AddSqlServer(configuration.GetConnectionString("Default"),
+            // name: "sql", failureStatus: HealthStatus.Unhealthy, timeout: TimeSpan.FromSeconds(2))
+            // .AddRedis(configuration.GetConnectionString("Redis"), "redis")
 
         return services;
     }
@@ -104,39 +129,38 @@ public static class ProgramExtensions
     /// </summary>
     public static IServiceCollection AddOpenTelemetry(this IServiceCollection services, WebApplicationBuilder builder)
     {
-        // https://learn.microsoft.com/en-us/dotnet/core/diagnostics/observability-otlp-example
-        // https://datalust.co/docs/opentelemetry-net-sdk-traces
-        var otel = builder.Services.AddOpenTelemetry()
-         .ConfigureResource(r => r.AddService(builder.Configuration["OpenTelemetry:ServiceName"]))
-         .WithMetrics(metrics =>
-         {
-             metrics.AddAspNetCoreInstrumentation();
-             metrics.AddMeter("Microsoft.AspNetCore.Hosting");
-             metrics.AddMeter("Microsoft.AspNetCore.Server.Kestrel");
-         })
-         .WithTracing(tracing =>
-         {
-             if (builder.Environment.IsLocalDevelopment())
-             {
-                 tracing.SetSampler(new AlwaysOnSampler());
-             }
+        // https://learn.microsoft.com/en-us/dotnet/core/diagnostics/observability-with-otel
+        builder.Services.AddOpenTelemetry()
+            .ConfigureResource(r => r.AddService(builder.Configuration["OpenTelemetry:ServiceName"]))
+            .WithMetrics(metrics =>
+            {
+                metrics.AddAspNetCoreInstrumentation();
+                metrics.AddMeter("Microsoft.AspNetCore.Hosting");
+                metrics.AddMeter("Microsoft.AspNetCore.Server.Kestrel");
+            })
+            .WithTracing(tracing =>
+            {
+                if (builder.Environment.IsLocalDevelopment())
+                {
+                    tracing.SetSampler(new AlwaysOnSampler());
+                }
 
-             tracing.AddAspNetCoreInstrumentation();
-             tracing.AddHttpClientInstrumentation();
-             tracing.AddSqlClientInstrumentation();
-             //tracing.AddConsoleExporter();
+                tracing.AddAspNetCoreInstrumentation();
+                tracing.AddHttpClientInstrumentation();
+                tracing.AddSqlClientInstrumentation();
+                //tracing.AddConsoleExporter();
 
-             var otlpEndpoint = builder.Configuration["OpenTelemetry:ExporterEndpoint"];
-             if (otlpEndpoint != null)
-             {
-                 Serilog.Log.Information("Configuring OpenTelemetry OTLP Exporter with endpoint: {OtlpEndpoint}", otlpEndpoint);
-                 tracing.AddOtlpExporter(opt =>
-                 {
-                     opt.Endpoint = new Uri(otlpEndpoint);
-                     opt.Protocol = OtlpExportProtocol.HttpProtobuf;
-                 });
-             }
-         });
+                var otlpEndpoint = builder.Configuration["OpenTelemetry:ExporterEndpoint"];
+                if (otlpEndpoint != null)
+                {
+                    Serilog.Log.Information("Configuring OpenTelemetry OTLP Exporter with endpoint: {OtlpEndpoint}", otlpEndpoint);
+                    tracing.AddOtlpExporter(opt =>
+                    {
+                        opt.Endpoint = new Uri(otlpEndpoint);
+                        opt.Protocol = OtlpExportProtocol.HttpProtobuf;
+                    });
+                }
+            });
 
         return services;
     }

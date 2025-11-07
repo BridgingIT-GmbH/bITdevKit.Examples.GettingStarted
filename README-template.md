@@ -230,7 +230,7 @@ For developers who want to test templates locally from source:
 ```bash
 # Clone the repository
 git clone https://github.com/bridgingIT/bIT.devkit-examples-gettingstarted.git
-cd bIT.devkit-examples-gettingstarted
+cd bIT.bITdevKit.GettingStarted
 
 # Reinstall templates from local source
 dotnet new uninstall . | dotnet new install .

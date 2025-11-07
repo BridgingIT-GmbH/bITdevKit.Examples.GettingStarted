@@ -10,18 +10,21 @@ $ErrorActionPreference = "Stop"
 $moduleFull = (Resolve-Path -LiteralPath $modulePath).Path
 $moduleDir = [System.IO.DirectoryInfo]$moduleFull
 $moduleName = $moduleDir.Name
-Write-Host "Module: $moduleName"
-Write-Host "Module folder: $moduleFull"
+Write-Output "Module: $moduleName"
+Write-Output "Module folder: $moduleFull"
 
 # 1) Repo root = three parents up (…/…/..): <repo>/src/Modules/<ModuleName> -> <repo>
 $repoRoot = $moduleDir.Parent.Parent.Parent.FullName
+$webServerCsproj = Join-Path $repoRoot "src/Presentation.Web.Server/Presentation.Web.Server.csproj"
 if (-not (Test-Path -LiteralPath $repoRoot)) { throw "Repo root not found: $repoRoot" }
-Write-Host "Repo root: $repoRoot"
+if (-not (Test-Path -LiteralPath $webServerCsproj)) { throw "Web.Server project not found: $webServerCsproj" }
+Write-Output "Repo root: $repoRoot"
+Write-Output "Web.Server project: $webServerCsproj"
 
 # 2) Solution (.slnx) at repo root
 $slnx = Get-ChildItem -LiteralPath $repoRoot -Filter *.slnx -File -ErrorAction Stop | Select-Object -First 1
 $solutionPath = $slnx.FullName
-Write-Host "Solution (.slnx): $solutionPath"
+Write-Output "Solution (.slnx): $solutionPath"
 
 # 3) Project paths
 $srcModulesDir = [System.IO.Path]::Combine($repoRoot, "src", "Modules", $moduleName)
@@ -37,6 +40,11 @@ $srcProjects = @(
 $testProjects = @(
   [System.IO.Path]::Combine($testsModulesDir, "$moduleName.IntegrationTests", "$moduleName.IntegrationTests.csproj"),
   [System.IO.Path]::Combine($testsModulesDir, "$moduleName.UnitTests", "$moduleName.UnitTests.csproj")
+) | Where-Object { Test-Path -LiteralPath $_ }
+
+$serverReferenceProjects = @(
+  [System.IO.Path]::Combine($srcModulesDir, "$moduleName.Infrastructure", "$moduleName.Infrastructure.csproj"),
+  [System.IO.Path]::Combine($srcModulesDir, "$moduleName.Presentation", "$moduleName.Presentation.csproj")
 ) | Where-Object { Test-Path -LiteralPath $_ }
 
 $allProjects = $srcProjects + $testProjects
@@ -118,3 +126,20 @@ foreach ($f in $files) {
 
 $xml.Save((Resolve-Path -LiteralPath $solutionPath))
 Write-Host "SLNX updated."
+
+# 6) Add ProjectReferences from Presentation.Web.Server to module Infrastructure and Presentation
+$refs = @(
+  Join-Path $srcModulesDir "..\Modules\$moduleName.Infrastructure\$moduleName.Infrastructure.csproj",
+  Join-Path $srcModulesDir "..\Modules\$moduleName.Presentation\$moduleName.Presentation.csproj"
+)
+
+Write-Output "Adding ProjectReferences to $serverReferenceProjects"
+# if ((Test-Path -LiteralPath $webServerCsproj)) {
+  foreach ($r in $serverReferenceProjects) {
+    Write-Host "dotnet add $webServerCsproj reference $r"
+    & dotnet add $webServerCsproj reference $r
+    # if ($LASTEXITCODE -ne 0) {
+    #   Write-Warning "dotnet add reference failed for $r (exit $LASTEXITCODE)."
+    # }
+  }
+# }

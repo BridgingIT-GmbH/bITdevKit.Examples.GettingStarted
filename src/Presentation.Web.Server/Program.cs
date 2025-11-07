@@ -4,7 +4,6 @@
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
 using BridgingIT.DevKit.Application.JobScheduling;
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 using Hellang.Middleware.ProblemDetails;
 
 // ===============================================================================================
@@ -14,40 +13,32 @@ builder.Host.ConfigureLogging();
 builder.Services.AddConsoleCommandsInteractive();
 
 // ===============================================================================================
-// Configure the modules
+// Configure the modules. https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-modules.md
 builder.Services.AddModules(builder.Configuration, builder.Environment)
     .WithModule<CoreModuleModule>()
     .WithModuleContextAccessors()
     .WithRequestModuleContextAccessors();
 
 // ===============================================================================================
-// Configure the requester and notifier services
+// Configure the requester and notifier services. https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-requester-notifier.md
 builder.Services.AddRequester()
-    .AddHandlers()
-    .WithBehavior(typeof(TracingBehavior<,>))
-    .WithBehavior(typeof(ModuleScopeBehavior<,>))
-    .WithBehavior(typeof(ValidationPipelineBehavior<,>))
-    .WithBehavior(typeof(RetryPipelineBehavior<,>))
-    .WithBehavior(typeof(TimeoutPipelineBehavior<,>));
+    .AddHandlers().WithDefaultBehaviors();
 builder.Services.AddNotifier()
-    .AddHandlers()
-    .WithBehavior(typeof(TracingBehavior<,>))
-    .WithBehavior(typeof(ModuleScopeBehavior<,>))
-    .WithBehavior(typeof(ValidationPipelineBehavior<,>))
-    .WithBehavior(typeof(RetryPipelineBehavior<,>))
-    .WithBehavior(typeof(TimeoutPipelineBehavior<,>));
+    .AddHandlers().WithDefaultBehaviors();
 
 // ===============================================================================================
-// Configure the job scheduling service
+// Configure the job scheduling service. https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-jobscheduling.md
 builder.Services.AddJobScheduling(o => o
     .StartupDelay(builder.Configuration["JobScheduling:StartupDelay"]), builder.Configuration) // wait some time before starting the scheduler
     .WithSqlServerStore(builder.Configuration["JobScheduling:Quartz:quartz.dataSource.default.connectionString"])
     .WithBehavior<ModuleScopeJobSchedulingBehavior>();
 
-builder.Services.ConfigureJson(); // configure the json serializer options
+// ===============================================================================================
+// Configure the application endpoints. https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-presentation-endpoints.md
 builder.Services.AddEndpoints<SystemEndpoints>(builder.Environment.IsLocalDevelopment() || builder.Environment.IsContainerized());
-builder.Services.AddHttpContextAccessor();
 
+builder.Services.ConfigureJson(); // Configures the ASP.NET JSON serializer options
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers(); // TODO: needed for openapi gen, even with no controllers
 #pragma warning disable CS0618 // Type or member is obsolete
 builder.Services.AddProblemDetails(o => Configure.ProblemDetails(o, true));
