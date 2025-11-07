@@ -186,12 +186,12 @@ if ($Task) { Run-Task $Task; exit $LASTEXITCODE }
 $repoName = Split-Path $root -Leaf
 if ($env:VSCODE_PID -or $env:TERM_PROGRAM -eq 'vscode') {
   $message = "              $repoName`n
-              ██████╗ ██████╗ ██╗  ██╗
-              ██╔══██╗██╔══██╗██║ ██╔╝
-    █████╗    ██████╔╝██║  ██║█████╔╝     █████╗
-    ╚════╝    ██╔══██╗██║  ██║██╔═██╗     ╚════╝
-              ██████╔╝██████╔╝██║  ██╗
-              ╚═════╝ ╚═════╝ ╚═╝  ╚═╝
+     ██╗      ██████╗ ██████╗ ██╗  ██╗
+     ╚██╗     ██╔══██╗██╔══██╗██║ ██╔╝
+      ╚██╗    ██████╔╝██║  ██║█████╔╝
+      ██╔╝    ██╔══██╗██║  ██║██╔═██╗
+     ██╔╝     ██████╔╝██████╔╝██║  ██╗
+     ╚═╝      ╚═════╝ ╚═════╝ ╚═╝  ╚═╝
   "
   $message | Format-SpectrePadded -Padding 0 | Format-SpectrePanel -Expand -Border "Double" -Color "DeepSkyBlue3"
 }
