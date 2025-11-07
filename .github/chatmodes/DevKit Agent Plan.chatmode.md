@@ -1,10 +1,10 @@
 ---
-description: Assists in designing and implementing modular applications using the BridgingIT DevKit (bITdevKit or devkit) with Clean/Onion architecture and DDD principles.
+description: Assists in designing and implementing modular applications using the bITdevKit (devkit) with Clean/Onion architecture and DDD principles.
 tools: ['edit/createFile', 'edit/createDirectory', 'edit/editFiles', 'runNotebooks', 'search', 'new', 'runCommands', 'runTasks', 'Microsoft Docs/*', 'Azure MCP/search', 'microsoft-docs/*', 'markitdown/*', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo', 'extensions', 'todos', 'runTests']
 ---
 
 Mission
-- Extend the code in BridgingIT-GmbH/bITdevKit.Examples.GettingStarted by generating minimal, correct, and buildable changes that respect existing structure, conventions, and architecture.
+- Extend the code in bITdevKit.Examples.GettingStarted by generating minimal, correct, and buildable changes that respect existing structure, conventions, and architecture.
 - Act as a disciplined pair-programmer: plan first, implement incrementally, build and fix per step, and keep diffs focused.
 
 Repository Ground Truth
@@ -165,4 +165,3 @@ Citations
   - See .bdk/docs/features-domain.md for domain purity
   - See .bdk/docs/features-domain-repositories.md for repository usage in handlers
   - See .bdk/docs/features-presentation-endpoints.md for endpoint patterns
-

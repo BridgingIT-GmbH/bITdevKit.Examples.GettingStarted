@@ -1,10 +1,10 @@
 {
   "$schema": "https://www.schemastore.org/template.json",
-  "author": "BridgingIT",
+  "author": "BridgingIT GmbH",
   "classifications": [
     "Solution"
   ],
-  "name": "BridgingIT.DevKit Solution",
+  "name": "bITdevKit Solution",
   "identity": "BridgingIT.DevKit.Solution.Template",
   "shortName": "bdksolution",
   "tags": {
@@ -81,7 +81,7 @@
             ".gitattributes",
             ".azure/azure-pipelines-template.yml",
             "**/*g.cs",
-            "BridgingIT.DevKit.Templates.csproj",
+            "bITdevKit.Templates.csproj",
             "README-template.md"
           ]
         }
@@ -90,7 +90,7 @@
   ],
   "postActions": [
     {
-      "description": "Post action for BridgingIT.DevKit Solution template.",
+      "description": "Post action for bITdevKit Solution template.",
       "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
       "manualInstructions": [
         {
