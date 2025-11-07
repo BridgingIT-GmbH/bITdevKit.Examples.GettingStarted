@@ -41,10 +41,7 @@ public static class ProgramExtensions
             //    "blazor-wasm",
             //    $"{builder.Configuration["Authentication:Authority"]}/authentication/login-callback", $"{builder.Configuration["Authentication:Authority"]}/authentication/logout-callback")
             .WithClient("test", "test-client")
-            .WithClient(
-                "Scalar",
-                "scalar",
-                $"{configuration["Authentication:Authority"]}/scalar/")); // trailing slash is needed for login popup to close!?
+            .WithClient("Scalar", "scalar", $"{configuration["Authentication:Authority"]}/scalar/")); // trailing slash is needed for login popup to close!?
     }
 
     /// <summary>
