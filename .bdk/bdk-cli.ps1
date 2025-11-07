@@ -184,19 +184,19 @@ function Run-Task([string]$key) {
 if ($Task) { Run-Task $Task; exit $LASTEXITCODE }
 
 $repoName = Split-Path $root -Leaf
-$message = "    $repoName`n
-  ░▒▓███████▓▒░░▒▓███████▓▒░░▒▓█▓▒░░▒▓█▓▒░
-  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
-  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
-  ░▒▓███████▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓███████▓▒░
-  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
-  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
-  ░▒▓███████▓▒░░▒▓███████▓▒░░▒▓█▓▒░░▒▓█▓▒░
-"
 if ($env:VSCODE_PID -or $env:TERM_PROGRAM -eq 'vscode') {
+  $message = "              $repoName`n
+              ██████╗ ██████╗ ██╗  ██╗
+              ██╔══██╗██╔══██╗██║ ██╔╝
+    █████╗    ██████╔╝██║  ██║█████╔╝     █████╗
+    ╚════╝    ██╔══██╗██║  ██║██╔═██╗     ╚════╝
+              ██████╔╝██████╔╝██║  ██╗
+              ╚═════╝ ╚═════╝ ╚═╝  ╚═╝
+  "
   $message | Format-SpectrePadded -Padding 0 | Format-SpectrePanel -Expand -Border "Double" -Color "DeepSkyBlue3"
 }
 else {
+  $message = "$repoName"
   try {
     $image = Get-SpectreImage -ImagePath "bITDevKit_Logo_dark.png" -MaxWidth 30
     @($message, $image) | Format-SpectreRows | Format-SpectrePanel -Expand -Border "Double" -Color "DeepSkyBlue3"
