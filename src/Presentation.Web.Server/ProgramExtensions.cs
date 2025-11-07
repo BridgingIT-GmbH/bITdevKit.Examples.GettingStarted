@@ -83,29 +83,11 @@ public static class ProgramExtensions
              .AddDocumentTransformer(
                 new DocumentInfoTransformer(new DocumentInfoOptions
                 {
-                    Title = "GettingsStarted API",
+                    Title = "BridgingIT.DevKit.Examples.GettingStarted API",
                 }))
              .AddSchemaTransformer<DiagnosticSchemaTransformer>()
              .AddSchemaTransformer<ResultProblemDetailsSchemaTransformer>()
              .AddDocumentTransformer<BearerSecurityRequirementDocumentTransformer>();
-        });
-    }
-
-    /// <summary>
-    /// Configure CORS policies
-    /// </summary>
-    public static IServiceCollection AddAppCors(this IServiceCollection services)
-    {
-        // https://learn.microsoft.com/en-us/aspnet/core/security/cors
-        return services.AddCors(o =>
-        {
-            o.AddDefaultPolicy(p =>
-            {
-                p.WithOrigins()
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
-            });
         });
     }
 
@@ -137,10 +119,11 @@ public static class ProgramExtensions
                 metrics.AddAspNetCoreInstrumentation();
                 metrics.AddMeter("Microsoft.AspNetCore.Hosting");
                 metrics.AddMeter("Microsoft.AspNetCore.Server.Kestrel");
+                // TODO: allow for extra meters via configuration
             })
             .WithTracing(tracing =>
             {
-                if (builder.Environment.IsLocalDevelopment())
+                if (builder.Environment.IsLocalDevelopment()) // TODO: make configurable via configuration also the samplers
                 {
                     tracing.SetSampler(new AlwaysOnSampler());
                 }
@@ -148,7 +131,7 @@ public static class ProgramExtensions
                 tracing.AddAspNetCoreInstrumentation();
                 tracing.AddHttpClientInstrumentation();
                 tracing.AddSqlClientInstrumentation();
-                //tracing.AddConsoleExporter();
+                //tracing.AddConsoleExporter(); // TODO: enable via configuration
 
                 var otlpEndpoint = builder.Configuration["OpenTelemetry:ExporterEndpoint"];
                 if (otlpEndpoint != null)
@@ -176,14 +159,14 @@ public static class ProgramExtensions
             o.WithTitle("Web API")
              .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
              .AddPreferredSecuritySchemes(JwtBearerDefaults.AuthenticationScheme)
-             .AddAuthorizationCodeFlow(JwtBearerDefaults.AuthenticationScheme, flow =>
+             .AddAuthorizationCodeFlow(JwtBearerDefaults.AuthenticationScheme, f =>
              {
                  var idpOptions = app.Services.GetService<FakeIdentityProviderEndpointsOptions>();
                  var idpClient = idpOptions?.Clients?.FirstOrDefault(c => string.Equals(c.Name, "Scalar", StringComparison.OrdinalIgnoreCase));
-                 flow.ClientId = idpClient?.ClientId;
-                 flow.AuthorizationUrl = $"{idpOptions?.Issuer}/api/_system/identity/connect/authorize";
-                 flow.TokenUrl = $"{idpOptions?.Issuer}/api/_system/identity/connect/token";
-                 flow.RedirectUri = idpClient?.RedirectUris?.FirstOrDefault();
+                 f.ClientId = idpClient?.ClientId;
+                 f.AuthorizationUrl = $"{idpOptions?.Issuer}/api/_system/identity/connect/authorize";
+                 f.TokenUrl = $"{idpOptions?.Issuer}/api/_system/identity/connect/token";
+                 f.RedirectUri = idpClient?.RedirectUris?.FirstOrDefault();
              });
         });
 

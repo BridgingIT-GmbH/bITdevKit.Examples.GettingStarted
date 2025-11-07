@@ -5,6 +5,7 @@
 
 using BridgingIT.DevKit.Application.JobScheduling;
 using Hellang.Middleware.ProblemDetails;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 
 // ===============================================================================================
 // Configure the host
@@ -51,7 +52,7 @@ builder.Services.AddAppOpenApi();
 
 // ===============================================================================================
 // Configure CORS
-builder.Services.AddAppCors(); // TODO: not needed for pure APIs
+builder.Services.AddCors(builder.Configuration);
 
 // ===============================================================================================
 // Configure API Authentication/Authorization
@@ -84,7 +85,7 @@ app.UseRequestCorrelation();
 app.UseRequestModuleContext();
 app.UseRequestLogging();
 
-app.UseCors();
+app.UseCors(builder.Configuration);
 app.UseProblemDetails();
 app.UseHttpsRedirection();
 
