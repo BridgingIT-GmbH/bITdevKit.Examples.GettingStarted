@@ -1,6 +1,6 @@
 # Copilot / LLM Project Instructions
 
-These instructions guide AI contributions to the BridgingIT DevKit GettingStarted Example project. They cover architecture, coding standards, naming conventions, layering rules, and best practices to ensure high-quality, maintainable code.
+These instructions guide AI contributions to the bITdevKit GettingStarted Example project. They cover architecture, coding standards, naming conventions, layering rules, and best practices to ensure high-quality, maintainable code.
 
 ## Code Style and Structure
 - Write concise, idiomatic C# code.
@@ -45,8 +45,8 @@ These instructions guide AI contributions to the BridgingIT DevKit GettingStarte
 
 ---
 ## 1. Project Identity
-- **Name**: BridgingIT DevKit GettingStarted Example
-- **Purpose**: Demonstrates a modular, Domain-Driven Design (DDD) application using the BridgingIT DevKit (bITdevKit) on .NET 9.
+- **Name**: bITdevKit GettingStarted Example
+- **Purpose**: Demonstrates a modular, Domain-Driven Design (DDD) application using the bITdevKit (bITdevKit) on .NET 9.
 - **Primary Domain Concept**: Customer management lifecycle (create, update, list, delete, export job).
 - **Architecture Style**: Onion / Clean Architecture + Modular (Module = vertical slice: Domain, Application, Infrastructure, Presentation, Tests).
 

@@ -1,6 +1,6 @@
-# BridgingIT DevKit Templates
+# bITdevKit Templates
 
-This repository contains custom .NET templates based on BridgingIT DevKit (bIT DevKit) that follows the Onion Architecture principles. These templates help you quickly scaffold new solutions and modules following this architecture approach.
+This repository contains custom .NET templates based on bITdevKit (bIT DevKit) that follows the Onion Architecture principles. These templates help you quickly scaffold new solutions and modules following this architecture approach.
 
 ## Templates Overview
 
@@ -46,8 +46,8 @@ dotnet new list
 You should see:
 
 ```text
-BridgingIT.DevKit Solution  bdksolution  [C#]     Solution
-BridgingIT.DevKit Module    bdkmodule    [C#]     Module
+bITdevKit Solution  bdksolution  [C#]     Solution
+bITdevKit Module    bdkmodule    [C#]     Module
 ```
 
 ### Update Templates
@@ -146,8 +146,8 @@ SolutionName/
 
 | Template Name | Short Name | Description |
 |---------------|------------|-------------|
-| BridgingIT.DevKit Solution | `bdksolution` | Creates a complete solution with initial module following Onion Architecture |
-| BridgingIT.DevKit Module   | `bdkmodule`   | Adds a new module to an existing solution |
+| bITdevKit Solution | `bdksolution` | Creates a complete solution with initial module following Onion Architecture |
+| bITdevKit Module   | `bdkmodule`   | Adds a new module to an existing solution |
 
 ## Troubleshooting
 
@@ -258,7 +258,7 @@ For more information about .NET template development:
 
 - **GitHub Issues**: [Report issues or request features](https://github.com/BridgingIT-GmbH/bITdevKit/issues)
 - **NuGet Package**: [BridgingIT.DevKit.Templates on NuGet.org](https://www.nuget.org/packages/BridgingIT.DevKit.Templates)
-- **Documentation**: [BridgingIT DevKit Documentation](https://github.com/BridgingIT-GmbH/bITdevKit)
+- **Documentation**: [bITdevKit Documentation](https://github.com/BridgingIT-GmbH/bITdevKit)
 
 ---
 

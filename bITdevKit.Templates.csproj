@@ -12,20 +12,30 @@
     <NoDefaultExcludes>true</NoDefaultExcludes>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <DevelopmentDependency>true</DevelopmentDependency>
+    <LocalizeTemplates>false</LocalizeTemplates>
 
     <!-- Package-Metadaten -->
     <PackageId>BridgingIT.DevKit.Templates</PackageId>
-    <Title>BridgingIT.DevKit Solution Templates</Title>
-    <Authors>BridgingIT</Authors>
-    <Description>BridgingIT.DevKit Solution Templates für die schnelle Erstellung von modularen .NET Anwendungen mit Clean Architecture Prinzipien</Description>
-    <Copyright>Copyright (c) 2024 BridgingIT</Copyright>
-    <PackageTags>bridgingit;devkit;template;dotnet;clean-architecture;solution;cqrs;ddd</PackageTags>
-    <RepositoryUrl>https://github.com/bridgingIT/bIT.devkit-examples-gettingstarted</RepositoryUrl>
+    <Title>BridgingIT.DevKit Templates</Title>
+    <Authors>BridgingIT GmbH</Authors>
+    <Icon>icon.png</Icon>
+    <Description>
+      bITdevKit: Empowering developers with modular components for modern application
+      development, centered around Domain-Driven Design principles. Our goal is to empower
+      developers by offering modular components that can be easily integrated into your projects.
+      Whether you're working with repositories, commands, queries, or other components, the
+      bITDevKit provides flexible solutions that can adapt to your specific needs.
+    </Description>
+    <Copyright>Copyright 2025 (c) BridgingIT GmbH. All rights reserved.</Copyright>
+    <PackageTags>bridgingit;devkit;bitdevkit;template;dotnet;clean-architecture;solution;cqrs;ddd</PackageTags>
+    <RepositoryUrl>https://github.com/BridgingIT-GmbH/bITdevKit.Examples.GettingStarted</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/BridgingIT-GmbH/bITdevKit.Examples.GettingStarted</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/bridgingIT/bIT.devkit-examples-gettingstarted</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Initial release of BridgingIT.DevKit Solution Templates</PackageReleaseNotes>
+    <PackageReadmeFile>README-template.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReleaseNotes>RELEASES.md</PackageReleaseNotes>
 
     <!-- Versions-Informationen -->
     <Version>1.0.0</Version>
@@ -33,20 +43,13 @@
     <FileVersion>1.0.0.0</FileVersion>
     <PackageVersion>1.0.0</PackageVersion>
 
-    <!-- Template-spezifische Eigenschaften -->
-    <LocalizeTemplates>false</LocalizeTemplates>
-
-    <!-- Readme Datei -->
-    <PackageReadmeFile>README-template.md</PackageReadmeFile>
-
-    <!-- Icon Datei -->
-    <PackageIcon>bITDevKit_Logo.png</PackageIcon>
   </PropertyGroup>
 
   <!-- Template-Inhalt für Multi-Template Package -->
   <ItemGroup>
     <!-- Source Verzeichnis komplett mit Struktur -->
-    <Content Include="src\**\*" Exclude="src\**\bin\**\*;src\**\obj\**\*" Pack="true" PackagePath="content/src/" />
+    <Content Include="src\**\*" Exclude="src\**\bin\**\*;src\**\obj\**\*" Pack="true"
+      PackagePath="content/src/" />
 
     <!-- Solution Template Konfigurationsdateien -->
     <Content Include="global.json" Pack="true" PackagePath="content/" />
@@ -54,54 +57,39 @@
     <Content Include=".azure\azure-pipelines.yml" Pack="true" PackagePath="content/" />
     <Content Include="Directory.Build.props" Pack="true" PackagePath="content/" />
     <Content Include="Directory.Packages.props" Pack="true" PackagePath="content/" />
-    <Content Include="BridgingIT.DevKit.Examples.GettingStarted.slnx" Pack="true" PackagePath="content/" />
+    <Content Include="bITdevKit.Examples.GettingStarted.slnx" Pack="true" PackagePath="content/" />
     <Content Include="CODE_OF_CONDUCT.md" Pack="true" PackagePath="content/" />
     <Content Include="README.md" Pack="true" PackagePath="content/" />
     <Content Include="LICENSE" Pack="true" PackagePath="content/" />
     <Content Include="GlobalSuppressions.cs" Pack="true" PackagePath="content/" />
-    <None Include="docker-compose.yml" Pack="true" PackagePath="content/" />
-    <None Include=".editorconfig" Pack="true" PackagePath="content/" />
     <Content Include=".vscode\**\*" Pack="true" PackagePath="content/.vscode/" />
     <Content Include="assets\**\*" Pack="true" PackagePath="content/assets/" />
 
-    <!-- Solution Template Config -->
-    <None Include=".template.config\template.json" Pack="true" PackagePath="content/.template.config/" />
-
-    <!-- Package README -->
+    <None Include="docker-compose.yml" Pack="true" PackagePath="content/" />
+    <None Include=".editorconfig" Pack="true" PackagePath="content/" />
+    <None Include=".template.config\template.json" Pack="true"
+      PackagePath="content/.template.config/" />
     <None Include="README-template.md" Pack="true" PackagePath="\" />
-
-    <!-- Package Icon -->
-    <None Include="bITDevKit_Logo.png" Pack="true" PackagePath="\" />
+    <None Include="icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
-  <!-- Explizite Ausschlüsse -->
   <ItemGroup>
-    <!-- Build-Ausgaben -->
     <Content Remove="bin\**\*" />
     <Content Remove="obj\**\*" />
     <Content Remove="src\**\bin\**\*" />
     <Content Remove="src\**\obj\**\*" />
-	  <Content Remove=".tmp\**\*" />
-
-    <!-- IDE-Dateien -->
+    <Content Remove=".tmp\**\*" />
     <Content Remove=".vs\**\*" />
     <Content Remove=".idea\**\*" />
     <Content Remove="**\*.user" />
     <Content Remove="**\*.suo" />
     <Content Remove="**\*.cache" />
-
-    <!-- Git -->
     <Content Remove=".git\**\*" />
-
-    <!-- Bereits erstellte NuGet-Packages -->
     <Content Remove="nupkg\**\*" />
     <Content Remove="**\*.nupkg" />
-
-    <!-- Diese .csproj-Datei selbst -->
-    <Content Remove="BridgingIT.DevKit.Templates.csproj" />
+    <Content Remove="bITdevKit.Templates.csproj" />
   </ItemGroup>
 
-  <!-- Alle Compile-Aktionen entfernen -->
   <ItemGroup>
     <Compile Remove="**\*" />
     <EmbeddedResource Remove="**\*" />

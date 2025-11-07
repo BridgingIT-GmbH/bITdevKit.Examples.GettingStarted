@@ -1,8 +1,8 @@
-# BridgingIT DevKit GettingStarted Example
+# bITdevKit GettingStarted Example
 
 ![bITDevKit](https://raw.githubusercontent.com/bridgingIT/bITdevKit.Examples.GettingStarted/main/bITDevKit_Logo.png)
 
-An application built using .NET 9 and following a Domain-Driven Design (DDD) approach by using the BridgingIT DevKit (bIT DevKit).
+An application built using .NET 9 and following a Domain-Driven Design (DDD) approach by using the bITdevKit (bIT DevKit).
 
 ## Features
 - Modular architecture with CoreModule as an example. [Modules](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-modules.md)
@@ -55,7 +55,7 @@ The GettingStarted project follows Clean/Onion Architecture principles, powered 
 ### Solution Structure
 
 ```
-BridgingIT.DevKit.Examples.GettingStarted.slnx
+bITdevKit.Examples.GettingStarted.slnx
 ├── src
 │   ├── Modules
 │   │   └── CoreModule
