@@ -109,11 +109,18 @@ switch ($Command.ToLowerInvariant()) {
   'tool-restore' { Invoke-Dotnet @('tool', 'restore') }
   'vulnerabilities' { Invoke-Dotnet @('list', $SolutionPath, 'package', '--vulnerable') }
   'vulnerabilities-deep' { Invoke-Dotnet @('list', $SolutionPath, 'package', '--vulnerable', '--include-transitive') }
-  'outdated' { Invoke-Dotnet @('list', $SolutionPath, 'package', '--outdated') }
+  'outdated' {
+    Ensure-DotNetTools
+    Ensure-DotNetRestore $SolutionPath
+    Invoke-Dotnet @('list', $SolutionPath, 'package', '--outdated')
+  }
   'outdated-json' {
     Ensure-DotNetTools
+    Ensure-DotNetRestore $SolutionPath
     $OutputDirectoryCompliance = Join-Path (Join-Path $OutputDirectory 'compliance')
-    if (-not (Test-Path $OutputDirectoryCompliance)) { New-Item -ItemType Directory -Force -Path $OutputDirectoryCompliance | Out-Null }
+    if (-not (Test-Path $OutputDirectoryCompliance)) {
+      New-Item -ItemType Directory -Force -Path $OutputDirectoryCompliance | Out-Null
+    }
     $outFile = Join-Path $OutputDirectoryCompliance ("outdated_" + (Get-Date -Format 'yyyyMMdd_HHmmss') + '.json')
     Write-Step "Collecting outdated packages (JSON) -> $outFile"
     Write-Debug "dotnet list $SolutionPath package --outdated"
@@ -143,7 +150,7 @@ switch ($Command.ToLowerInvariant()) {
     Write-Step 'Running dotnet-outdated (auto upgrade devkit within constraints)...'
     Write-Debug "dotnet outdated $SolutionPath --upgrade -inc 'BridgingIT.DevKit'"
     & dotnet outdated $SolutionPath --upgrade -inc 'BridgingIT.DevKit'
-    if ($LASTEXITCODE -ne 0) { Write-Error 'dotnet-outdated reported issues or applied updates with non-zero exit code.'  }
+    if ($LASTEXITCODE -ne 0) { Write-Error 'dotnet-outdated reported issues or applied updates with non-zero exit code.' }
     Write-Info 'dotnet-outdated execution complete.'
   }
   'analyzers' { Invoke-Dotnet @('build', $SolutionPath, '-warnaserror', '/p:RunAnalyzers=true', '/p:EnableNETAnalyzers=true', '/p:AnalysisLevel=latest') }

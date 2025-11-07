@@ -131,7 +131,15 @@ function Ensure-DotNetTools {
   Write-Step "Restoring dotnet tools"
   dotnet tool restore | Out-Null
   if ($LASTEXITCODE -ne 0) {
-    throw "Restore failed (exit code: $LASTEXITCODE)"
+    throw "Tools restore failed (exit code: $LASTEXITCODE)"
+  }
+}
+
+function Ensure-DotNetRestore([string] $SolutionPath) {
+  Write-Step "Restoring packages"
+  dotnet restore $SolutionPath | Out-Null
+  if ($LASTEXITCODE -ne 0) {
+    throw "Packages restore failed (exit code: $LASTEXITCODE)"
   }
 }
 
