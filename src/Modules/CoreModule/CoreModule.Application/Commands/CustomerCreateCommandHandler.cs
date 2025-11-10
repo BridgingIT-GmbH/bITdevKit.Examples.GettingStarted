@@ -15,6 +15,7 @@ using System;
 /// </summary>
 //[HandlerRetry(2, 100)]
 //[HandlerTimeout(500)]
+//[HandlerDatabaseTransactionAttribute<CoreDbContext>] TODO: not possible due to CoreDbContext defined in Infrastructure
 public class CustomerCreateCommandHandler(
     ILogger<CustomerCreateCommandHandler> logger,
     IMapper mapper,
