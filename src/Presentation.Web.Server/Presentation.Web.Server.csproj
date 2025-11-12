@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server</AssemblyName>
     <RootNamespace>BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -11,12 +11,12 @@
 
   <!-- OpenAPI build-time generation configuration -->
   <PropertyGroup>
-    <OpenApiGenerateDocuments>true</OpenApiGenerateDocuments>
+    <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
     <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/wwwroot</OpenApiDocumentsDirectory>
     <OpenApiGenerateDocumentsOptions>--file-name openapi</OpenApiGenerateDocumentsOptions>
   </PropertyGroup>
   <!-- OpenAPI generate document after build -->
-  <Target Name="GenerateOpenApiAfterBuild" AfterTargets="Build" DependsOnTargets="GenerateOpenApiDocuments" />
+  <Target Name="GenerateOpenApiAfterBuild" AfterTargets="Build" DependsOnTargets="GenerateOpenApiDocuments" Condition="'$(OpenApiGenerateDocuments)' == 'true'" />
 
   <ItemGroup>
     <PackageReference Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" />
@@ -28,8 +28,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" />
-    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="OpenTelemetry.Exporter.Console" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" />

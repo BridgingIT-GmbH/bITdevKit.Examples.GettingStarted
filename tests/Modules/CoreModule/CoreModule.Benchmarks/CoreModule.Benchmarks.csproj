@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <ModuleName>CoreModule</ModuleName>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <!--<AssemblyName>BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Benchmarks</AssemblyName>-->
     <RootNamespace>BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Benchmarks</RootNamespace>
     <OutputType>Exe</OutputType>
