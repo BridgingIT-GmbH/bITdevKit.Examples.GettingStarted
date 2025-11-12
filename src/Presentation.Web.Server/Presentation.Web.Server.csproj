@@ -19,6 +19,13 @@
   <Target Name="GenerateOpenApiAfterBuild" AfterTargets="Build" DependsOnTargets="GenerateOpenApiDocuments" Condition="'$(OpenApiGenerateDocuments)' == 'true'" />
 
   <ItemGroup>
+    <Compile Remove="logs\**" />
+    <Content Remove="logs\**" />
+    <EmbeddedResource Remove="logs\**" />
+    <None Remove="logs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" />
     <PackageReference Include="BridgingIT.DevKit.Presentation.Web" />
     <PackageReference Include="BridgingIT.DevKit.Presentation.Serilog" />
