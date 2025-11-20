@@ -32,6 +32,7 @@
     <PackageReference Include="NetArchTest.eNhancedEdition" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="Shouldly" />
+    <PackageReference Include="Testcontainers.MsSql" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -45,6 +46,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\Presentation.Web.Server\Presentation.Web.Server.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Modules\CoreModule\CoreModule.Application\CoreModule.Application.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Modules\CoreModule\CoreModule.Domain\CoreModule.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Modules\CoreModule\CoreModule.Infrastructure\CoreModule.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\..\src\Modules\CoreModule\CoreModule.Presentation\CoreModule.Presentation.csproj" />
   </ItemGroup>
 </Project>

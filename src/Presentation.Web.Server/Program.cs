@@ -5,7 +5,6 @@
 
 using BridgingIT.DevKit.Application.JobScheduling;
 using Hellang.Middleware.ProblemDetails;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 
 // ===============================================================================================
 // Configure the host

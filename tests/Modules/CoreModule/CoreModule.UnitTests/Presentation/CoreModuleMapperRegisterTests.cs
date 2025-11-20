@@ -5,8 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Presentation;
 
-using Microsoft.Extensions.Time.Testing;
-
 [UnitTest("Presentation")]
 public class CoreModuleMapperRegisterTests
 {

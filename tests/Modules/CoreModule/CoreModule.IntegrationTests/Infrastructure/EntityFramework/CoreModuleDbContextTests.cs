@@ -1,60 +1,79 @@
-﻿// // MIT-License
-// // Copyright BridgingIT GmbH - All Rights Reserved
-// // Use of this source code is governed by an MIT-style license that can be
-// // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
+﻿// MIT-License
+// Copyright BridgingIT GmbH - All Rights Reserved
+// Use of this source code is governed by an MIT-style license that can be
+// found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-// namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.IntegrationTests.Infrastructure.EntityFramework;
+namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.IntegrationTests.Infrastructure.EntityFramework;
 
-// using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
-// using Microsoft.Data.SqlClient;
-// using Microsoft.EntityFrameworkCore;
-// using System.Threading.Tasks;
-// using Xunit;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
+using Microsoft.EntityFrameworkCore;
 
-// public class CoreModuleDbContextTests
-// {
-//     private const string Conn =
-//         //"Server=127.0.0.1,14339;Database=bit_devkit_gettingstarted;User=sa;Password=Abcd1234!;Trusted_Connection=False;TrustServerCertificate=True;MultipleActiveResultSets=true;Encrypt=False;";
-//         "Server=(localdb)\\MSSQLLocalDB;Database=bit_devkit_gettingstarted;Trusted_Connection=True;MultipleActiveResultSets=true";
+[IntegrationTest("Infrastructure.EntityFramework")]
+[Collection(nameof(SqlServerTestContainerCollection))]
+public class CoreModuleDbContextTests
+{
+    private readonly SqlServerTestFixture fixture;
+    private readonly ITestOutputHelper output;
 
-//     private static DbContextOptions<CoreModuleDbContext> BuildOptions()
-//     {
-//         return new DbContextOptionsBuilder<CoreModuleDbContext>()
-//             .UseSqlServer(
-//                 Conn,
-//                 sql => sql.EnableRetryOnFailure(
-//                     maxRetryCount: 3,
-//                     maxRetryDelay: TimeSpan.FromSeconds(1),
-//                     errorNumbersToAdd: null))
-//             .Options;
-//     }
+    public CoreModuleDbContextTests(SqlServerTestFixture fixture, ITestOutputHelper output)
+    {
+        this.fixture = fixture;
+        this.output = output;
+        this.fixture.Attach(output);
+    }
 
-//     [Fact] // or ClassFixture ctor
-//     public async Task EnsureSqlReadyAsync()
-//     {
-//         using var con = new SqlConnection(Conn);
-//         await con.OpenAsync();
+    /// <summary>
+    /// Performs a persistence round-trip for a Customer aggregate including value objects.
+    /// </summary>
+    [Fact]
+    public async Task Customer_RoundTrip_PersistsEntity()
+    {
+        this.fixture.SkipIfUnavailable();
 
-//         var dbName = "bit_devkit_gettingstarted";
-//         using var cmd = new SqlCommand($@"
-// IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = @db)
-// BEGIN
-//     DECLARE @sql nvarchar(max) = 'CREATE DATABASE [' + @db + ']';
-//     EXEC (@sql);
-// END", con);
-//         cmd.Parameters.AddWithValue("@db", dbName);
-//         await cmd.ExecuteNonQueryAsync();
-//     }
+        // Arrange
+        await using var ctx = new CoreModuleDbContext(this.fixture.Options);
+        var numberResult = CustomerNumber.Create("CUS-2026-100000");
+        var number = numberResult.Value;
+        var customerResult = Customer.Create("John", "Doe", "john.doe@example.com", number);
+        this.output.WriteLine($"[Arrange] Entity create result success={customerResult.IsSuccess}");
+        var customer = customerResult.Value;
 
-//     [Fact]
-//     public async Task Can_Query_Empty_Customers_Table()
-//     {
-//         await using var ctx = new CoreModuleDbContext(BuildOptions());
+        // Act
+        ctx.Customers.Add(customer);
+        await ctx.SaveChangesAsync();
+        this.output.WriteLine($"[Act] Entity saved with Id={customer.Id}");
+        var loaded = await ctx.Customers.AsNoTracking().FirstAsync(c => c.Id == customer.Id);
+        this.output.WriteLine("[Act] Entity reloaded from DB");
 
-//         var canConnect = await ctx.Database.CanConnectAsync();
-//         Assert.True(canConnect);
+        // Assert
+        loaded.Email.Value.ShouldBe("john.doe@example.com");
+        loaded.Number.Value.ShouldBe("CUS-2026-100000");
+        loaded.FirstName.ShouldBe("John");
+        loaded.LastName.ShouldBe("Doe");
+    }
 
-//         // Minimal query; replace with something that matches your current schema
-//         _ = await ctx.Database.ExecuteSqlRawAsync("SELECT 1");
-//     }
-// }
+    /// <summary>
+    /// Validates the customer number sequence exists in the EF model with expected start value.
+    /// </summary>
+    [Fact]
+    public async Task Customer_NumbersSequence_Exists()
+    {
+        this.fixture.SkipIfUnavailable();
+
+        // Arrange
+        await using var ctx = new CoreModuleDbContext(this.fixture.Options);
+        this.output.WriteLine("[Arrange] DbContext created");
+
+        // Act
+        var sequence = ctx.Model.FindSequence(CodeModuleConstants.CustomerNumberSequenceName);
+        this.output.WriteLine(sequence is null
+            ? "[Act] Sequence NOT found"
+            : $"[Act] Sequence found Name={sequence.Name} StartValue={sequence.StartValue}");
+
+        // Assert
+        sequence.ShouldNotBeNull();
+        sequence.StartValue.ShouldBe(100000);
+    }
+}

@@ -16,7 +16,8 @@
 ##  -concurrencyVersion The concurrency version of the existing customer                     ##
 ##                                                                                           ##
 ## ----------------------------------------------------------------------------------------- ##
-## Use in Visual Studio: https://learn.microsoft.com/en-us/aspnet/core/test/http-files       ##
+## Use in Visual Studio:https://learn.microsoft.com/en-us/aspnet/core/test/http-files/       ##
+## Use in VS Code:      https://marketplace.visualstudio.com/items?itemName=humao.rest-client##
 ###############################################################################################
 
 #############################################

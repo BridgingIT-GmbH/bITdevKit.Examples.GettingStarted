@@ -14,6 +14,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
 /// Configured via <see cref="DbContextOptions{AppDbContext}"/> dependency injection.
 /// </remarks>
 /// <param name="options">The database context options (provider, connection string, etc.).</param>
+[ExcludeFromCodeCoverage]
 public class CoreModuleDbContext(DbContextOptions<CoreModuleDbContext> options) : ModuleDbContextBase(options), IOutboxDomainEventContext
 {
     /// <summary>
