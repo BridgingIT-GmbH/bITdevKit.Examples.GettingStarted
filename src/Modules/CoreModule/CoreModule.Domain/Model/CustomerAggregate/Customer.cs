@@ -5,6 +5,8 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
+using BridgingIT.DevKit.Domain;
+
 /// <summary>
 /// Represents a customer aggregate root with personal details, email address, and lead/status information.
 /// Supports auditing and concurrency handling.
@@ -192,6 +194,9 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
 
         this.DomainEvents.Register(
             new CustomerUpdatedDomainEvent(this), true);
+
+        this.DomainEvents.Register(
+            new EntityUpdatedDomainEvent<Customer>(this), true);
 
         return this;
     }

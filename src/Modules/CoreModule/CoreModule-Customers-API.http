@@ -86,6 +86,7 @@ Content-Type: application/json
   "firstName": "John{{$randomInt 1000 9999}}Changed",
   "lastName": "Doe{{$randomInt 1000 9999}}Changed",
   "email": "john.doe{{$randomInt 1000 9999}}changed@example.com",
+  "number": "CUS-2026-{{$randomInt 100000 999999}}",
   "status": 1,
   "concurrencyVersion": "{{concurrencyVersion}}"
 }
@@ -136,6 +137,7 @@ Content-Type: application/json
   "firstName": "John{{$randomInt 1000 9999}}Changed",
   "lastName": "Doe{{$randomInt 1000 9999}}Changed",
   "email": "john.doe{{$randomInt 1000 9999}}changed@example.com",
+  "number": "CUS-2026-{{$randomInt 100000 999999}}",
   "status": 1,
   "concurrencyVersion": "00000000-0000-0000-0000-000000000001"
 }

@@ -32,6 +32,14 @@ public class CoreModuleMapperRegister : IRegister
         config.NewConfig<string, EmailAddress>()
             .MapWith(src => EmailAddress.Create(src).Value);
 
+        // Map EmailAddress -> string (for persistence/DTO output)
+        config.NewConfig<CustomerNumber, string>()
+            .MapWith(src => src.Value);
+
+        // Map string -> EmailAddress (for reconstructing value object on input)
+        config.NewConfig<string, CustomerNumber>()
+            .MapWith(src => CustomerNumber.Create(src));
+
         // ----------------------------
         // Enumeration conversions
         // ----------------------------

@@ -105,12 +105,3 @@ app.UseConsoleCommandsInteractiveStats();
 app.UseConsoleCommandsInteractive();
 
 app.Run();
-
-namespace BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server
-{
-    public partial class Program // TODO: dotnet 10 has a fix for this see https://learn.microsoft.com/en-us/aspnet/core/release-notes/aspnetcore-10.0?view=aspnetcore-9.0#better-support-for-testing-apps-with-top-level-statements
-    {
-        // this partial class is needed to set the accessibilty for the Program class to public
-        // needed for endpoint testing when using the webapplicationfactory  https://learn.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-7.0#basic-tests-with-the-default-webapplicationfactory
-    }
-}

@@ -5,11 +5,12 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
-using System.Threading;
-using System.Threading.Tasks;
 using BridgingIT.DevKit.Domain;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Events;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using Microsoft.Extensions.Logging;
+using System.Threading;
+using System.Threading.Tasks;
 
 /// <summary>
 /// Handles <see cref="CustomerUpdatedDomainEvent"/> notifications.
@@ -34,6 +35,23 @@ public class CustomerUpdatedDomainEventHandler(ILoggerFactory loggerFactory)
     /// Add custom logic here (e.g., start workflows, send welcome mails).
     /// </summary>
     public override Task Process(CustomerUpdatedDomainEvent notification, CancellationToken cancellationToken)
+    {
+        // implement event reaction logic (audit, notify, etc.)
+        this.Logger.LogInformation("CustomerUpdatedDomainEvent handled in Application");
+
+        return Task.CompletedTask;
+    }
+}
+
+public class CustomerUpdatedDomainEventHandler2(ILoggerFactory loggerFactory)
+    : DomainEventHandlerBase<EntityUpdatedDomainEvent<Customer>>(loggerFactory)
+{
+    public override bool CanHandle(EntityUpdatedDomainEvent<Customer> notification)
+    {
+        return true;
+    }
+
+    public override Task Process(EntityUpdatedDomainEvent<Customer> notification, CancellationToken cancellationToken)
     {
         // implement event reaction logic (audit, notify, etc.)
         this.Logger.LogInformation("CustomerUpdatedDomainEvent handled in Application");
