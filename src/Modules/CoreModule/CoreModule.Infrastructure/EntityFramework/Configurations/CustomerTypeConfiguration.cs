@@ -43,7 +43,7 @@ public class CustomerTypeConfiguration : IEntityTypeConfiguration<Customer>
             .IsRequired()
             .HasConversion(
                 number => number.Value,                  // when saving
-                value => CustomerNumber.Create(value)) // when loading
+                value => CustomerNumber.Create(value).Value) // when loading
             .HasMaxLength(256);
 
         // Last name is required with max length 512

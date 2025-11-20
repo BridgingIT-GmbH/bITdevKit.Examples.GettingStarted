@@ -5,6 +5,8 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Presentation;
 
+using Microsoft.Extensions.Time.Testing;
+
 [UnitTest("Presentation")]
 public class CoreModuleMapperRegisterTests
 {
@@ -21,7 +23,8 @@ public class CoreModuleMapperRegisterTests
     {
         // Arrange
         var customerId = Guid.NewGuid();
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create(DateTime.Now, 100000)).Value;
+        var customerNumber = CustomerNumber.Create("CUS-2026-100000").Value;
+        var customer = Customer.Create("John", "Doe", "john.doe@example.com", customerNumber).Value;
         customer.ChangeStatus(CustomerStatus.Active);
         customer.Id = CustomerId.Create(customerId);
         customer.ConcurrencyVersion = Guid.NewGuid();
@@ -35,6 +38,7 @@ public class CoreModuleMapperRegisterTests
         model.FirstName.ShouldBe("John");
         model.LastName.ShouldBe("Doe");
         model.Email.ShouldBe("john.doe@example.com");
+        model.Number.ShouldBe(customerNumber);
         model.Status.ShouldBe(CustomerStatus.Active.Id);
         model.ConcurrencyVersion.ShouldBe(customer.ConcurrencyVersion.ToString());
     }
@@ -51,6 +55,7 @@ public class CoreModuleMapperRegisterTests
             FirstName = "Jane",
             LastName = "Smith",
             Email = "jane.smith@example.com",
+            Number = "CUS-2026-100000",
             Status = CustomerStatus.Active.Id,
             ConcurrencyVersion = concurrencyVersion
         };
@@ -64,6 +69,7 @@ public class CoreModuleMapperRegisterTests
         customer.FirstName.ShouldBe("Jane");
         customer.LastName.ShouldBe("Smith");
         customer.Email.Value.ShouldBe("jane.smith@example.com");
+        customer.Number.Value.ShouldBe("CUS-2026-100000");
         customer.Status.ShouldBe(CustomerStatus.Active);
         customer.ConcurrencyVersion.ShouldBe(Guid.Parse(concurrencyVersion));
     }
@@ -93,6 +99,33 @@ public class CoreModuleMapperRegisterTests
         // Assert
         result.ShouldNotBeNull();
         result.Value.ShouldBe("test@example.com");
+    }
+
+    [Fact]
+    public void CustomerNumberToString_MapsCorrectly()
+    {
+        // Arrange
+        var email = CustomerNumber.Create("CUS-2026-100000").Value;
+
+        // Act
+        var result = email.Adapt<string>(this.config);
+
+        // Assert
+        result.ShouldBe("CUS-2026-100000");
+    }
+
+    [Fact]
+    public void StringToCustomerNumber_MapsCorrectly()
+    {
+        // Arrange
+        const string customerNumber = "CUS-2026-100000";
+
+        // Act
+        var result = customerNumber.Adapt<CustomerNumber>(this.config);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.Value.ShouldBe("CUS-2026-100000");
     }
 
     [Fact]
@@ -127,11 +160,6 @@ public class CoreModuleMapperRegisterTests
         // Arrange
         var model = new CustomerModel
         {
-            Id = Guid.NewGuid().ToString(),
-            FirstName = "Jane",
-            LastName = "Smith",
-            Email = "jane.smith@example.com",
-            Status = CustomerStatus.Active.Id,
             ConcurrencyVersion = null
         };
 

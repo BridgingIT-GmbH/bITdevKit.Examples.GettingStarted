@@ -17,7 +17,7 @@ public static class CoreModuleSeedEntities
     public static Customer[] CreateCustomer() => [
         ..new[]
             {
-                Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create(DateTime.Now.AddYears(-1), 100000)).Value,
-                Customer.Create("Mary", "Jane", "mary.jane@example.com", CustomerNumber.Create(DateTime.Now.AddYears(-1), 100001)).Value
+                Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create(DateTime.Now.AddYears(-1), 100000).Value).Value,
+                Customer.Create("Mary", "Jane", "mary.jane@example.com", CustomerNumber.Create(DateTime.Now.AddYears(-1), 100001).Value).Value
          }.ForEach(e => e.Id = GuidGenerator.Create($"Customer_{e.Email.Value}"))];
 }

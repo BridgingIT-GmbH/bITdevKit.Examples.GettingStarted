@@ -38,7 +38,7 @@ public class CoreModuleMapperRegister : IRegister
 
         // Map string -> EmailAddress (for reconstructing value object on input)
         config.NewConfig<string, CustomerNumber>()
-            .MapWith(src => CustomerNumber.Create(src));
+            .MapWith(src => CustomerNumber.Create(src).Value);
 
         // ----------------------------
         // Enumeration conversions

@@ -78,7 +78,7 @@ public class CustomerCreateCommandHandler(
 
     private CustomerCreateContext CaptureNumber(CustomerCreateContext ctx, long seq)
     {
-        ctx.Number = CustomerNumber.Create(timeProvider.GetUtcNow().UtcDateTime, seq);
+        ctx.Number = CustomerNumber.Create(timeProvider.GetUtcNow().UtcDateTime, seq).Value;
         return ctx;
     }
 

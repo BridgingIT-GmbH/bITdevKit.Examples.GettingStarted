@@ -13,6 +13,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Ev
 /// - Published by the <see cref="Customer"/> aggregate (e.g., in  <c>ChangeName</c>, <c>ChangeEmail</c>, <c>ChangeStatus</c>).
 /// - Consumed by one or more <see cref="DomainEventHandlerBase{TEvent}"/>
 ///   implementations to trigger side effects such as creating projections, sending notifications or audit logging.
+[ExcludeFromCodeCoverage]
 public partial class CustomerCreatedDomainEvent(Customer model) : DomainEventBase
 {
     /// <summary>

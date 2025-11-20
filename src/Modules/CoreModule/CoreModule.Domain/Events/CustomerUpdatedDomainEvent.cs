@@ -14,6 +14,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Ev
 /// - Consumed by one or more <see cref="DomainEventHandlerBase{TEvent}"/>
 ///   implementations to trigger side effects such as updating projections, sending notifications or audit logging.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public partial class CustomerUpdatedDomainEvent(Customer model) : DomainEventBase
 {
     /// <summary>

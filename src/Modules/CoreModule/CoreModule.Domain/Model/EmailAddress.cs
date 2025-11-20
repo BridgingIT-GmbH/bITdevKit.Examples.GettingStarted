@@ -40,6 +40,24 @@ public class EmailAddress : ValueObject
     public static implicit operator string(EmailAddress email) => email.Value;
 
     /// <summary>
+    /// Implicitly converts a <see cref="string"/> to an <see cref="EmailAddress"/> instance.
+    /// Performs the same validation as <see cref="Create(string)"/> and throws a <see cref="ResultException"/> on failure.
+    /// </summary>
+    /// <param name="value">The raw email address string.</param>
+    /// <exception cref="RuleException">Thrown when the provided value is not a valid email format.</exception>
+    public static implicit operator EmailAddress(string value)
+    {
+        var result = Create(value);
+        if (result.IsFailure)
+        {
+            var message = string.Join("; ", result.Messages ?? []);
+            throw new ResultException(string.IsNullOrWhiteSpace(message) ? "Invalid email address." : message);
+        }
+
+        return result.Value;
+    }
+
+    /// <summary>
     /// Creates a new <see cref="EmailAddress"/> instance after validating the input string.
     /// Normalizes the string to lowercase and trims whitespace.
     /// </summary>
