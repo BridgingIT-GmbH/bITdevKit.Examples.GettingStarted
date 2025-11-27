@@ -5,15 +5,15 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.6" />
-    <PackageVersion Include="BridgingIT.DevKit.Application.JobScheduling" Version="10.0.1-preview.0.16" />
-    <PackageVersion Include="BridgingIT.DevKit.Common.Mapping" Version="10.0.1-preview.0.16" />
-    <PackageVersion Include="BridgingIT.DevKit.Common.Utilities.Xunit" Version="10.0.1-preview.0.16" />
-    <PackageVersion Include="BridgingIT.DevKit.Domain" Version="10.0.1-preview.0.16" />
-    <PackageVersion Include="BridgingIT.DevKit.Domain.CodeGen" Version="10.0.1-preview.0.16" />
-    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework" Version="9.0.26" />
-    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" Version="10.0.1-preview.0.16" />
-    <PackageVersion Include="BridgingIT.DevKit.Presentation.Web" Version="10.0.1-preview.0.16" />
-    <PackageVersion Include="BridgingIT.DevKit.Presentation.Serilog" Version="10.0.1-preview.0.16" />
+    <PackageVersion Include="BridgingIT.DevKit.Application.JobScheduling" Version="10.0.2-preview.0.3" />
+    <PackageVersion Include="BridgingIT.DevKit.Common.Mapping" Version="10.0.2-preview.0.3" />
+    <PackageVersion Include="BridgingIT.DevKit.Common.Utilities.Xunit" Version="10.0.2-preview.0.3" />
+    <PackageVersion Include="BridgingIT.DevKit.Domain" Version="10.0.2-preview.0.3" />
+    <PackageVersion Include="BridgingIT.DevKit.Domain.CodeGen" Version="10.0.2-preview.0.3" />
+    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework" Version="10.0.2-preview.0.3" />
+    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" Version="10.0.2-preview.0.3" />
+    <PackageVersion Include="BridgingIT.DevKit.Presentation.Web" Version="10.0.2-preview.0.3" />
+    <PackageVersion Include="BridgingIT.DevKit.Presentation.Serilog" Version="10.0.2-preview.0.3" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Dumpify" Version="0.6.6" />
     <PackageVersion Include="FluentAssertions.Web" Version="1.9.5" />
@@ -38,7 +38,7 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.14.0-beta.1" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.10.3" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.11.0" />
     <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageVersion Include="Serilog.Enrichers.ShortTypeName" Version="1.1.0" />
     <PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
@@ -46,7 +46,7 @@
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageVersion Include="Serilog.Sinks.Seq" Version="9.0.0" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
-    <PackageVersion Include="Testcontainers.MsSql" Version="4.8.1" />
+    <PackageVersion Include="Testcontainers.MsSql" Version="4.9.0" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
