@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This document provides GitHub Copilot (and other AI agents) with concise, high-signal context about this repository to produce high-quality, maintainable code and helpful developer assistance. It complements `.github/copilot-instructions.md` with a broader perspective on architecture, workflows, and conventions. The project heavily uses the bITdevKit — refer to the official docs: [bITdevKit Documentation](https://github.com/BridgingIT-GmbH/bITdevKit/tree/main/docs).
+This document provides AI agents with concise, high-signal context about this repository to produce high-quality, maintainable code and helpful developer assistance. It complements `.github/copilot-instructions.md` with a broader perspective on architecture, patterns, workflows, and conventions. The project heavily uses the bITdevKit — refer to the official docs: [bITdevKit Documentation](https://github.com/BridgingIT-GmbH/bITdevKit/tree/main/docs).
 
 ## Project Overview
 
@@ -22,6 +22,7 @@ This document provides GitHub Copilot (and other AI agents) with concise, high-s
 
 ## Coding Standards
 
+- Please follow the rules in [.editorconfig](./.editorconfig).
 - **Language**: C# 10+; file-scoped namespaces.
 - **Style**: Follow C# Coding Conventions; descriptive names; expressive syntax (null-conditional, string interpolation).
 - **Types**: Use `var` when type is obvious; prefer records, pattern matching, null-coalescing assignment.
@@ -153,6 +154,7 @@ Example prompt:
 ```text
 / (root)
   .github/copilot-instructions.md
+  .editorconfig
   README.md
   src/
     Modules/CoreModule/
@@ -160,6 +162,7 @@ Example prompt:
       CoreModule.Application/
       CoreModule.Infrastructure/
       CoreModule.Presentation/
+      CoreModule-README.md
     Presentation.Web.Server/
   tests/
     UnitTests/
@@ -168,7 +171,7 @@ Example prompt:
 
 ## Quick Commands (PowerShell)
 
-Use workspace tasks when possible; for ad-hoc commands:
+Use workspace tasks when possible or dotnet tools; for ad-hoc commands:
 
 ```powershell
 # Build
@@ -176,9 +179,6 @@ pwsh -NoProfile -File .\bdk.ps1 -Task build
 
 # Unit tests
 pwsh -NoProfile -File .\bdk.ps1 -Task test-unit-all
-
-# Integration tests
-pwsh -NoProfile -File .\bdk.ps1 -Task test-int-all
 
 # Apply EF migrations
 pwsh -NoProfile -File .\bdk.ps1 -Task ef-apply
@@ -190,4 +190,4 @@ This AGENTS.md reinforces and summarizes the rules found in `.github/copilot-ins
 
 ---
 
-By following this guidance, Copilot can generate precise, maintainable code that fits the project’s modular DDD architecture and established workflows.
+By following this guidance, Agents can generate precise, maintainable code that fits the project’s modular DDD architecture and established patterns and workflows.
