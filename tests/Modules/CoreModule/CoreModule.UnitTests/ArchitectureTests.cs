@@ -11,6 +11,8 @@ using NetArchTest.Rules;
 public class TypesFixture
 {
     public Types Types { get; } = Types.FromPath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+
+    public string BaseNamespace { get; } = "BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule";
 }
 
 [UnitTest("Architecture")]
@@ -25,38 +27,13 @@ public class ArchitectureTests : IClassFixture<TypesFixture>
         this.fixture = fixture;
     }
 
-    //[Fact]
-    //public void ApplicationCommand_Should_ResideInApplication()
-    //{
-    //    var result = this.fixture.Types
-    //        .That().HaveNameStartingWith("BridgingIT.DevKit.Examples.GettingStarted").And()
-    //            .ImplementInterface(typeof(ICommandRequest<>)).And().DoNotResideInNamespace("BridgingIT.DevKit.Application")
-    //        .Should().ResideInNamespaceContaining(
-    //            "BridgingIT.DevKit.Examples.GettingStarted.Application").GetResult();
-
-    //    result.IsSuccessful.ShouldBeTrue("Application command should reside in Application.\n" + result.FailingTypes.DumpText());
-    //}
-
-    //[Fact]
-    //public void ApplicationQuery_Should_ResideInApplication()
-    //{
-    //    var result = this.fixture.Types
-    //        .That().HaveNameStartingWith("BridgingIT.DevKit.Examples.GettingStarted").And()
-    //            .ImplementInterface(typeof(IQueryRequest<>)).And().DoNotResideInNamespace("BridgingIT.DevKit.Application")
-    //        .Should().ResideInNamespaceContaining(
-    //            "BridgingIT.DevKit.Examples.GettingStarted.Application").GetResult();
-
-    //    result.IsSuccessful.ShouldBeTrue("Application query should reside in Application.\n" + result.FailingTypes.DumpText());
-    //}
-
     [Fact]
     public void Application_ShouldNot_HaveDependencyOnInfrastructure()
     {
         var result = this.fixture.Types
-            .That().HaveNameStartingWith("BridgingIT.DevKit.Examples.GettingStarted").And()
-                .ResideInNamespace("BridgingIT.DevKit.Examples.GettingStarted.Application")
+            .That().ResideInNamespaceContaining($"{this.fixture.BaseNamespace}.Application")
             .ShouldNot().HaveDependencyOnAny(
-                "BridgingIT.DevKit.Examples.GettingStarted.Infrastructure").GetResult();
+                $"{this.fixture.BaseNamespace}.Infrastructure").GetResult();
 
         result.IsSuccessful.ShouldBeTrue("Domain layer has not allowed dependencies.\n" + result.FailingTypes.DumpText());
     }
@@ -65,10 +42,9 @@ public class ArchitectureTests : IClassFixture<TypesFixture>
     public void Application_ShouldNot_HaveDependencyOnPresentation()
     {
         var result = this.fixture.Types
-            .That().HaveNameStartingWith("BridgingIT.DevKit.Examples.GettingStarted").And()
-                .ResideInNamespace("BridgingIT.DevKit.Examples.GettingStarted.Application")
+            .That().ResideInNamespaceContaining($"{this.fixture.BaseNamespace}.Application")
             .ShouldNot().HaveDependencyOnAny(
-                "BridgingIT.DevKit.Examples.GettingStarted.Presentation").GetResult();
+                $"{this.fixture.BaseNamespace}.Presentation").GetResult();
 
         result.IsSuccessful.ShouldBeTrue("Domain layer has not allowed dependencies.\n" + result.FailingTypes.DumpText());
     }
@@ -77,10 +53,9 @@ public class ArchitectureTests : IClassFixture<TypesFixture>
     public void Domain_ShouldNot_HaveDependencyOnApplication()
     {
         var result = this.fixture.Types
-            .That().HaveNameStartingWith("BridgingIT.DevKit.Examples.GettingStarted").And()
-                .ResideInNamespace("BridgingIT.DevKit.Examples.GettingStarted.Domain")
+            .That().ResideInNamespaceContaining($"{this.fixture.BaseNamespace}.Domain")
             .ShouldNot().HaveDependencyOnAny(
-                "BridgingIT.DevKit.Examples.GettingStarted.Application").GetResult();
+                $"{this.fixture.BaseNamespace}.Application").GetResult();
 
         result.IsSuccessful.ShouldBeTrue("Domain layer has not allowed dependencies.\n" + result.FailingTypes.DumpText());
     }
@@ -89,10 +64,9 @@ public class ArchitectureTests : IClassFixture<TypesFixture>
     public void Domain_ShouldNot_HaveDependencyOnInfrastructure()
     {
         var result = this.fixture.Types
-            .That().HaveNameStartingWith("BridgingIT.DevKit.Examples.GettingStarted").And()
-                .ResideInNamespace("BridgingIT.DevKit.Examples.GettingStarted.Domain")
+            .That().ResideInNamespaceContaining($"{this.fixture.BaseNamespace}.Domain")
             .ShouldNot().HaveDependencyOnAny(
-                "BridgingIT.DevKit.Examples.GettingStarted.Infrastructure").GetResult();
+                $"{this.fixture.BaseNamespace}.Infrastructure").GetResult();
 
         result.IsSuccessful.ShouldBeTrue("Domain layer has not allowed dependencies.\n" + result.FailingTypes.DumpText());
     }
@@ -101,10 +75,9 @@ public class ArchitectureTests : IClassFixture<TypesFixture>
     public void Domain_ShouldNot_HaveDependencyOnPresentation()
     {
         var result = this.fixture.Types
-            .That().HaveNameStartingWith("BridgingIT.DevKit.Examples.GettingStarted").And()
-                .ResideInNamespace("BridgingIT.DevKit.Examples.GettingStarted.Domain")
+            .That().ResideInNamespaceContaining($"{this.fixture.BaseNamespace}.Domain")
             .ShouldNot().HaveDependencyOnAny(
-                "BridgingIT.DevKit.Examples.GettingStarted.Presentation").GetResult();
+                $"{this.fixture.BaseNamespace}.Presentation").GetResult();
 
         result.IsSuccessful.ShouldBeTrue("Domain layer has not allowed dependencies.\n" + result.FailingTypes.DumpText());
     }
@@ -113,10 +86,9 @@ public class ArchitectureTests : IClassFixture<TypesFixture>
     public void Infrastructure_ShouldNot_HaveDependencyOnPresentation()
     {
         var result = this.fixture.Types
-            .That().HaveNameStartingWith("BridgingIT.DevKit.Examples.GettingStarted").And()
-                .ResideInNamespace("BridgingIT.DevKit.Examples.GettingStarted.Infrastructure")
+            .That().ResideInNamespaceContaining($"{this.fixture.BaseNamespace}.Infrastructure")
             .ShouldNot().HaveDependencyOnAny(
-                "BridgingIT.DevKit.Examples.GettingStarted.Presentation").GetResult();
+                $"{this.fixture.BaseNamespace}.Presentation").GetResult();
 
         result.IsSuccessful.ShouldBeTrue("Domain layer has not allowed dependencies.\n" + result.FailingTypes.DumpText());
     }
@@ -125,7 +97,7 @@ public class ArchitectureTests : IClassFixture<TypesFixture>
     public void DomainEntity_ShouldNot_HavePublicConstructor()
     {
         var result = this.fixture.Types
-            .That().HaveNameStartingWith("BridgingIT.DevKit.Examples.GettingStarted").And()
+            .That().ResideInNamespaceContaining(this.fixture.BaseNamespace).And()
                 .ImplementInterface<IEntity>()
             .ShouldNot().HavePublicConstructor().GetResult();
 
@@ -136,7 +108,7 @@ public class ArchitectureTests : IClassFixture<TypesFixture>
     public void DomainEntity_Should_HaveParameterlessConstructor()
     {
         var result = this.fixture.Types
-            .That().HaveNameStartingWith("BridgingIT.DevKit.Examples.GettingStarted").And()
+            .That().ResideInNamespaceContaining(this.fixture.BaseNamespace).And()
                 .ImplementInterface<IEntity>()
             .Should().HaveParameterlessConstructor().GetResult();
 
@@ -147,7 +119,7 @@ public class ArchitectureTests : IClassFixture<TypesFixture>
     public void DomainValueObject_ShouldNot_HavePublicConstructor()
     {
         var result = this.fixture.Types
-            .That().HaveNameStartingWith("BridgingIT.DevKit.Examples.GettingStarted").And()
+            .That().ResideInNamespaceContaining(this.fixture.BaseNamespace).And()
                 .Inherit<ValueObject>()
             .ShouldNot().HavePublicConstructor().GetResult();
 
@@ -158,7 +130,7 @@ public class ArchitectureTests : IClassFixture<TypesFixture>
     public void DomainValueObject_Should_HaveParameterlessConstructor()
     {
         var result = this.fixture.Types
-            .That().HaveNameStartingWith("BridgingIT.DevKit.Examples.GettingStarted").And()
+            .That().ResideInNamespaceContaining(this.fixture.BaseNamespace).And()
                 .Inherit<ValueObject>()
             .Should().HaveParameterlessConstructor().GetResult();
 
@@ -169,7 +141,7 @@ public class ArchitectureTests : IClassFixture<TypesFixture>
     //{
     //    var result = fixture.Types.InCurrentDomain()
     //              .Slice()
-    //              .ByNamespacePrefix("BridgingIT.DevKit.Examples.GettingStarted")
+    //              .ByNamespacePrefix(this.fixture.BaseNamespace)
     //              .Should()
     //              .NotHaveDependenciesBetweenSlices()
     //              .GetResult();
