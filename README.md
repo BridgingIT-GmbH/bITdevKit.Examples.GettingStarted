@@ -55,17 +55,21 @@ The GettingStarted project follows Clean/Onion Architecture principles, powered 
 ### Solution Structure
 
 ```
-bITdevKit.Examples.GettingStarted.slnx
 ├── src
 │   ├── Modules
 │   │   └── CoreModule
 │   │       ├── CoreModule.Application
+│   │       ├── CoreModule.Contracts
 │   │       ├── CoreModule.Domain
 │   │       ├── CoreModule.Infrastructure
-│   │       ├── CoreModule.Presentation
-│   │       ├── CoreModule.UnitTests
-│   │       └── CoreModule.IntegrationTests
+│   │       └── CoreModule.Presentation
 │   └── Presentation.Web.Server
+├── tests
+│   └── Modules
+│       ├── CoreModule.UnitTests
+│       └── CoreModule.IntegrationTests
+│
+│   bITdevKit.Examples.GettingStarted.slnx
 └── docker-compose.yml
 ```
 

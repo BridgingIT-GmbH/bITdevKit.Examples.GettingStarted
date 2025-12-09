@@ -1,6 +1,6 @@
 # CoreModule Module Overview
 
-The CoreModule showcases how bITdevKit modules encapsulate a vertical slice: domain model, application workflows, persistence, and presentation endpoints that expose customer management capabilities.
+The CoreModule showcases how bITdevKit modules encapsulate a vertical slice: domain model, application workflows, persistence and presentation endpoints that expose customer management capabilities.
 
 ## Table of Contents
 
@@ -8,7 +8,7 @@ The CoreModule showcases how bITdevKit modules encapsulate a vertical slice: dom
   - [Table of Contents](#table-of-contents)
   - [Overview](#overview)
   - [Architecture](#architecture)
-  - [Customer Lifecycle Flow](#customer-lifecycle-flow)
+  - [Entity Lifecycle Flow](#customer-lifecycle-flow)
   - [Key Building Blocks](#key-building-blocks)
   - [Configuration And Runtime Services](#configuration-and-runtime-services)
   - [Request Walkthrough](#request-walkthrough)
@@ -18,15 +18,15 @@ The CoreModule showcases how bITdevKit modules encapsulate a vertical slice: dom
 ## Overview
 
 - Demonstrates a complete DDD slice for customer lifecycle management (create, update, delete, query).
-- Exercises bITdevKit requester/notifier pipeline behaviors, repository abstractions, and startup/job infrastructure.
-- Provides a blueprint for additional modules that follow the layering and configuration patterns described in the root `README.md`.
+- Exercises bITdevKit requester/notifier pipeline behaviors, repository abstractions and startup/job infrastructure.
+- Provides a blueprint for additional modules that follow the layering and configuration patterns described in the root [README.md](../../../README.md).
 
 ## Architecture
 
 ```mermaid
 flowchart LR
  subgraph Presentation
-  endpoints[CustomerEndpoints\n(Presentation)]
+  endpoints[CustomerEndpoints]
  end
  subgraph Application
   requester[IRequester]
@@ -53,7 +53,7 @@ flowchart LR
  dbcontext -->|EF Core| storage[(SQL Server)]
 ```
 
-## Customer Lifecycle Flow
+## Entity Lifecycle Flow
 
 ```mermaid
 sequenceDiagram
@@ -78,9 +78,9 @@ sequenceDiagram
 ## Key Building Blocks
 
 - **Domain (`CoreModule.Domain`)**: `Customer` aggregate maintains invariants with value objects (`EmailAddress`, `CustomerNumber`) and emits `CustomerCreatedDomainEvent` and `CustomerUpdatedDomainEvent`. Guards prevent invalid transitions and register events whenever meaningful changes occur.
-- **Application (`CoreModule.Application`)**: Command/query records (`CustomerCreateCommand`, `CustomerFindAllQuery`) include nested FluentValidation validators. Handlers (for example `CustomerCreateCommandHandler`) orchestrate rule checks, sequence generation, repository operations, and mapping back to `CustomerModel`.
-- **Infrastructure (`CoreModule.Infrastructure`)**: `CoreModuleDbContext` extends `ModuleDbContextBase`, registers the `CustomerNumbers` sequence, and exposes `DbSet<Customer>`. Repository behaviors (tracing, logging, audit state, outbox) are chained when the module registers `AddEntityFrameworkRepository<Customer, CoreModuleDbContext>()` inside `CoreModuleModule`.
-- **Presentation (`CoreModule.Presentation`)**: Minimal API endpoints in `Web/Endpoints/CustomerEndpoints.cs` secure the route group `api/coremodule/customers`, map request DTOs, and delegate to the requester. `CoreModuleMapperRegister` wires Mapster conversions between domain types and DTOs.
+- **Application (`CoreModule.Application`)**: Command/query records (`CustomerCreateCommand`, `CustomerFindAllQuery`) include nested FluentValidation validators. Handlers (for example `CustomerCreateCommandHandler`) orchestrate rule checks, sequence generation, repository operations and mapping back to `CustomerModel`.
+- **Infrastructure (`CoreModule.Infrastructure`)**: `CoreModuleDbContext` extends `ModuleDbContextBase`, registers the `CustomerNumbers` sequence and exposes `DbSet<Customer>`. Repository behaviors (tracing, logging, audit state, outbox) are chained when the module registers `AddEntityFrameworkRepository<Customer, CoreModuleDbContext>()` inside `CoreModuleModule`.
+- **Presentation (`CoreModule.Presentation`)**: Minimal API endpoints in `Web/Endpoints/CustomerEndpoints.cs` secure the route group `api/coremodule/customers`, map request DTOs and delegate to the requester. `CoreModuleMapperRegister` wires Mapster conversions between domain types and DTOs.
 
 ## Configuration And Runtime Services
 
@@ -88,8 +88,8 @@ sequenceDiagram
 - `CoreModuleModule.Register()` wires:
   - Startup tasks via `CoreModuleDomainSeederTask`, launching after the configured delay once the database is ready.
   - Job scheduling with Quartz, registering `CustomerExportJob` on `CronExpressions.EveryMinute`.
-  - SQL Server `CoreModuleDbContext` setup with logging, migrations, sequence number generator, and outbox processing (30 second interval, 15 second startup delay).
-  - Repository behaviors, Mapster mappings, and `CustomerEndpoints`.
+  - SQL Server `CoreModuleDbContext` setup with logging, migrations, sequence number generator and outbox processing (30 second interval, 15 second startup delay).
+  - Repository behaviors, Mapster mappings and `CustomerEndpoints`.
 
 ## Request Walkthrough
 
@@ -114,7 +114,7 @@ protected override async Task<Result<CustomerModel>> HandleAsync(
    .Map(this.ToModel);
 ```
 
-- The handler builds a context, runs business rules (including `EmailShouldBeUniqueRule`), generates a sequence via `ISequenceNumberGenerator`, constructs the aggregate, persists it through `IGenericRepository<Customer>`, and maps back to `CustomerModel`.
+- The handler builds a context, runs business rules (including `EmailShouldBeUniqueRule`), generates a sequence via `ISequenceNumberGenerator`, constructs the aggregate, persists it through `IGenericRepository<Customer>` and maps back to `CustomerModel`.
 - Pipeline behaviors (validation, retry, timeout) configured at the requester level wrap the handler to provide cross-cutting concerns.
 
 Endpoints project the same workflow to HTTP:
@@ -153,11 +153,11 @@ public class CoreModuleDbContext(DbContextOptions<CoreModuleDbContext> options)
 }
 ```
 
-- Entity configuration lives under `CoreModule.Infrastructure/EntityFramework/Configurations`, mapping value objects, enumerations, audit state, and concurrency tokens.
+- Entity configuration lives under `CoreModule.Infrastructure/EntityFramework/Configurations`, mapping value objects, enumerations, audit state and concurrency tokens.
 - The outbox table enables reliable event delivery when the module is hosted with an outbox worker.
 
 ## Testing And Developer Utilities
 
-- Unit tests: see `tests/Modules/CoreModule/CoreModule.UnitTests` for handler, rule, and architecture coverage.
+- Unit tests: see `tests/Modules/CoreModule/CoreModule.UnitTests` tests and architecture coverage.
 - Integration tests: `tests/Modules/CoreModule/CoreModule.IntegrationTests` exercise HTTP endpoints and persistence.
-- HTTP playground: use `CoreModule-Customers-API.http` for manual testing of requests showcased above.
+- HTTP playground: use [CoreModule-Customers-API.http](CoreModule-Customers-API.http) for manual testing of requests showcased above.
