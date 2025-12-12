@@ -10,6 +10,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
 /// such as Entity Framework Core migrations. Extends the generic factory to provide SQL Server-specific configuration
 /// for the CoreModule, using a convention-based connection string key.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class CoreModuleDbContextFactory : SqlServerModuleDbContextFactory<CoreModuleDbContext>
 {
     /// <summary>
