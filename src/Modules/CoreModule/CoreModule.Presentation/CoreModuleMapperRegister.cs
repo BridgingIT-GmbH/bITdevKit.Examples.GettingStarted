@@ -21,6 +21,21 @@ public class CoreModuleMapperRegister : IRegister
     public void Register(TypeAdapterConfig config)
     {
         // ----------------------------
+        // Aggregate ↔ DTO mappings
+        // ----------------------------
+
+        // Customer -> CustomerModel
+        config.ForType<Customer, CustomerModel>() // Map concurrency token (Guid in domain -> string in DTO)
+            .Map(dest => dest.ConcurrencyVersion, src => src.ConcurrencyVersion.ToString())
+            .IgnoreNullValues(true); // don't overwrite existing values with null
+
+        // CustomerModel -> Customer
+        config.ForType<CustomerModel, Customer>() // Convert string back to Guid for concurrency token
+            .Map(dest => dest.ConcurrencyVersion,
+                 src => src.ConcurrencyVersion != null ? Guid.Parse(src.ConcurrencyVersion) : Guid.Empty)
+            .IgnoreNullValues(true);
+
+        // ----------------------------
         // Value object conversions
         // ----------------------------
 
@@ -44,21 +59,6 @@ public class CoreModuleMapperRegister : IRegister
         // Enumeration conversions
         // ----------------------------
         RegisterConverter<CustomerStatus>(config);
-
-        // ----------------------------
-        // Aggregate ↔ DTO mappings
-        // ----------------------------
-
-        // Customer -> CustomerModel
-        config.ForType<Customer, CustomerModel>() // Map concurrency token (Guid in domain -> string in DTO)
-            .Map(dest => dest.ConcurrencyVersion, src => src.ConcurrencyVersion.ToString())
-            .IgnoreNullValues(true); // don't overwrite existing values with null
-
-        // CustomerModel -> Customer
-        config.ForType<CustomerModel, Customer>() // Convert string back to Guid for concurrency token
-            .Map(dest => dest.ConcurrencyVersion,
-                 src => src.ConcurrencyVersion != null ? Guid.Parse(src.ConcurrencyVersion) : Guid.Empty)
-            .IgnoreNullValues(true);
     }
 
     /// <summary>
