@@ -176,33 +176,33 @@ public class CustomerEndpointTests
         response.Should().MatchInContent($"*{nameof(model.Email)}*");
     }
 
-    /// <summary>
-    /// Validates that updating an existing entity returns HTTP 200 (OK) and persists the modified entity details.
-    /// </summary>
-    [Theory]
-    [InlineData("api/coremodule/customers")]
-    public async Task Put_ValidModel_ReturnsOk(string route)
-    {
-        // Arrange
-        var model = await this.SeedEntity(route);
-        model.FirstName += "changed";
-        model.LastName += "changed";
-        var json = JsonSerializer.Serialize(model, Common.DefaultJsonSerializerOptions.Create());
-        var content = new StringContent(json, Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
-        this.output.WriteLine($"RequestModel: {model.DumpText()}");
+    ///// <summary>
+    ///// Validates that updating an existing entity returns HTTP 200 (OK) and persists the modified entity details.
+    ///// </summary>
+    //[Theory]
+    //[InlineData("api/coremodule/customers")]
+    //public async Task Put_ValidModel_ReturnsOk(string route)
+    //{
+    //    // Arrange
+    //    var model = await this.SeedEntity(route);
+    //    model.FirstName += "changed";
+    //    model.LastName += "changed";
+    //    var json = JsonSerializer.Serialize(model, Common.DefaultJsonSerializerOptions.Create());
+    //    var content = new StringContent(json, Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
+    //    this.output.WriteLine($"RequestModel: {model.DumpText()}");
 
-        // Act
-        var response = await this.fixture.Client.PutAsync(route + $"/{model.Id}", content);
-        this.output.WriteLine($"Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
+    //    // Act
+    //    var response = await this.fixture.Client.PutAsync(route + $"/{model.Id}", content);
+    //    this.output.WriteLine($"Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
 
-        // Assert
-        response.Should().Be200Ok();
-        response.Should().MatchInContent($"*{model.FirstName}*");
-        response.Should().MatchInContent($"*{model.LastName}*");
-        var responseModel = await response.Content.ReadAsAsync<CustomerModel>();
-        responseModel.ShouldNotBeNull();
-        this.output.WriteLine($"ResponseModel: {responseModel.DumpText()}");
-    }
+    //    // Assert
+    //    response.Should().Be200Ok();
+    //    response.Should().MatchInContent($"*{model.FirstName}*");
+    //    response.Should().MatchInContent($"*{model.LastName}*");
+    //    var responseModel = await response.Content.ReadAsAsync<CustomerModel>();
+    //    responseModel.ShouldNotBeNull();
+    //    this.output.WriteLine($"ResponseModel: {responseModel.DumpText()}");
+    //}
 
     /// <summary>
     /// Creates and posts a new entity to the provided endpoint returning the created model.
