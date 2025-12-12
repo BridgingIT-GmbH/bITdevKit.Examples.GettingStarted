@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+
+          <!-- Only include the solution assemblies -->
+          <Include>
+            <ModulePath>.*BridgingIT.DevKit.Examples.GettingStarted.*.dll</ModulePath>
+          </Include>
+
+          <!-- Exclude test assemblies -->
+          <Exclude>
+            <ModulePath>.*\.UnitTests.*\.dll</ModulePath>
+            <ModulePath>.*\.IntegrationTests.*\.dll</ModulePath>
+            <ModulePath>.*\.Benchmarks.*\.dll</ModulePath>
+          </Exclude>
+
+          <!-- Respect code-level exclusions -->
+          <ExcludeByAttribute>
+            ExcludeFromCodeCoverageAttribute
+            CompilerGeneratedAttribute
+            GeneratedCodeAttribute
+          </ExcludeByAttribute>
+
+          <!-- Generated / infrastructure noise -->
+          <ExcludeByFile>
+            **/*Migrations/*.cs
+            **/*Generated*.cs
+            **/*OpenApi*.cs
+            **/Program.cs
+            **/ProgramExtensions.cs
+          </ExcludeByFile>
+
+          <SkipAutoProps>true</SkipAutoProps>
+
+          <Verbose>true</Verbose>
+
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
