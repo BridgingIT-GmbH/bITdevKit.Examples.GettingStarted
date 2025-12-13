@@ -118,17 +118,5 @@ public class CustomerEndpoints : EndpointsBase
             .Produces(StatusCodes.Status401Unauthorized)
             .ProducesResultProblem(StatusCodes.Status400BadRequest)
             .ProducesResultProblem(StatusCodes.Status500InternalServerError);
-
-        group.MapDelete("/exception",
-            async (CancellationToken ct) =>
-                   {
-                       await Task.Delay(0, ct); // to make method async
-                       throw new ApplicationException("Deliberate exception for testing purposes.");
-                   })
-            .WithName("CoreModule.Customers.Delete2")
-            .WithDescription("Endpoint that always throws an exception for testing purposes.")
-            .Produces(StatusCodes.Status401Unauthorized)
-            .ProducesResultProblem(StatusCodes.Status400BadRequest)
-            .ProducesResultProblem(StatusCodes.Status500InternalServerError);
     }
 }

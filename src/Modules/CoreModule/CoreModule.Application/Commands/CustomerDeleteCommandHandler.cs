@@ -45,7 +45,7 @@ public class CustomerDeleteCommandHandler(
         CancellationToken cancellationToken) =>
             // STEP 1 - Load existing entity
             await repository.FindOneResultAsync(CustomerId.Create(request.Id), cancellationToken: cancellationToken)
-            .Unless((e) => !e?.AuditState?.IsDeleted() == true,
+            .Unless((e) => e?.AuditState?.IsDeleted() == true,
                 new NotFoundError("Entity already deleted"))
 
             // STEP 2 - Register domain event

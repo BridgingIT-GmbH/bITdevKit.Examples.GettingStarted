@@ -42,6 +42,7 @@ public class CustomerEndpointTests
         var model = await this.SeedEntity(route);
 
         // Act
+        this.output.WriteLine($"Request: method=GET, url={route + $"/{model.Id}"}");
         var response = await this.fixture.Client.GetAsync(route + $"/{model.Id}");
         this.output.WriteLine($"Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
 
@@ -64,8 +65,12 @@ public class CustomerEndpointTests
     [InlineData("api/coremodule/customers")]
     public async Task Get_SingleNotExisting_ReturnsNotFound(string route)
     {
+        // Arrange
+        var id = Guid.NewGuid();
+
         // Act
-        var response = await this.fixture.Client.GetAsync(route + $"/{Guid.NewGuid()}");
+        this.output.WriteLine($"Request: method=GET, url={route + $"/{id}"}");
+        var response = await this.fixture.Client.GetAsync(route + $"/{id}");
         this.output.WriteLine($"Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
 
         // Assert
@@ -83,6 +88,7 @@ public class CustomerEndpointTests
         var model = await this.SeedEntity(route);
 
         // Act
+        this.output.WriteLine($"Request: method=GET, url={route}");
         var response = await this.fixture.Client.GetAsync(route);
         this.output.WriteLine($"Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
 
@@ -114,6 +120,7 @@ public class CustomerEndpointTests
         this.output.WriteLine($"RequestModel: {model.DumpText()}");
 
         // Act
+        this.output.WriteLine($"Request: method=POST, url={route + "/search"}, body={filterJson}");
         var response = await this.fixture.Client.PostAsync(route + "/search", content);
         this.output.WriteLine($"Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
 
@@ -141,6 +148,7 @@ public class CustomerEndpointTests
         this.output.WriteLine($"RequestModel: {model.DumpText()}");
 
         // Act
+        this.output.WriteLine($"Request: method=POST, url={route}, body={json}");
         var response = await this.fixture.Client.PostAsync(route, content);
         this.output.WriteLine($"Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
 
@@ -165,6 +173,7 @@ public class CustomerEndpointTests
         this.output.WriteLine($"RequestModel: {model.DumpText()}");
 
         // Act
+        this.output.WriteLine($"Request: method=POST, url={route}, body={json}");
         var response = await this.fixture.Client.PostAsync(route, content);
         this.output.WriteLine($"Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
 
@@ -192,6 +201,7 @@ public class CustomerEndpointTests
         this.output.WriteLine($"RequestModel: {model.DumpText()}");
 
         // Act
+        this.output.WriteLine($"Request: method=PUT, url={route + $"/{model.Id}"}, body={json}");
         var response = await this.fixture.Client.PutAsync(route + $"/{model.Id}", content);
         this.output.WriteLine($"Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
 
@@ -202,6 +212,25 @@ public class CustomerEndpointTests
         var responseModel = await response.Content.ReadAsAsync<CustomerModel>();
         responseModel.ShouldNotBeNull();
         this.output.WriteLine($"ResponseModel: {responseModel.DumpText()}");
+    }
+
+    /// <summary>
+    /// Validates that updating an existing entity returns HTTP 200 (OK) and persists the modified entity details.
+    /// </summary>
+    [Theory]
+    [InlineData("api/coremodule/customers")]
+    public async Task Delete_SingleExisting_ReturnsOk(string route)
+    {
+        // Arrange
+        var model = await this.SeedEntity(route);
+
+        // Act
+        this.output.WriteLine($"Request: method=DELETE, url={route + $"/{model.Id}"}");
+        var response = await this.fixture.Client.DeleteAsync(route + $"/{model.Id}");
+        this.output.WriteLine($"Response: status={(int)response.StatusCode}");
+
+        // Assert
+        response.Should().Be204NoContent();
     }
 
     /// <summary>

@@ -31,7 +31,9 @@ builder.Services.AddNotifier()
 builder.Services.AddJobScheduling(o => o
     .StartupDelay(builder.Configuration["JobScheduling:StartupDelay"]), builder.Configuration) // wait some time before starting the scheduler
     .WithSqlServerStore(builder.Configuration["JobScheduling:Quartz:quartz.dataSource.default.connectionString"])
-    .WithBehavior<ModuleScopeJobSchedulingBehavior>();
+    .WithBehavior<ModuleScopeJobSchedulingBehavior>()
+    .AddEndpoints()
+    .AddConsoleCommands();
 
 // ===============================================================================================
 // Configure the application endpoints. https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-presentation-endpoints.md
