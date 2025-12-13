@@ -5,15 +5,15 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
-    <PackageVersion Include="BridgingIT.DevKit.Application.JobScheduling" Version="10.0.2-preview.0.11" />
-    <PackageVersion Include="BridgingIT.DevKit.Common.Mapping" Version="10.0.2-preview.0.11" />
-    <PackageVersion Include="BridgingIT.DevKit.Common.Utilities.Xunit" Version="10.0.2-preview.0.11" />
-    <PackageVersion Include="BridgingIT.DevKit.Domain" Version="10.0.2-preview.0.11" />
-    <PackageVersion Include="BridgingIT.DevKit.Domain.CodeGen" Version="10.0.2-preview.0.11" />
+    <PackageVersion Include="BridgingIT.DevKit.Application.JobScheduling" Version="10.0.2-preview.0.12" />
+    <PackageVersion Include="BridgingIT.DevKit.Common.Mapping" Version="10.0.2-preview.0.12" />
+    <PackageVersion Include="BridgingIT.DevKit.Common.Utilities.Xunit" Version="10.0.2-preview.0.12" />
+    <PackageVersion Include="BridgingIT.DevKit.Domain" Version="10.0.2-preview.0.12" />
+    <PackageVersion Include="BridgingIT.DevKit.Domain.CodeGen" Version="10.0.2-preview.0.12" />
     <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework" Version="10.0.2-preview.0.11" />
-    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" Version="10.0.2-preview.0.11" />
-    <PackageVersion Include="BridgingIT.DevKit.Presentation.Web" Version="10.0.2-preview.0.11" />
-    <PackageVersion Include="BridgingIT.DevKit.Presentation.Serilog" Version="10.0.2-preview.0.11" />
+    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" Version="10.0.2-preview.0.12" />
+    <PackageVersion Include="BridgingIT.DevKit.Presentation.Web" Version="10.0.2-preview.0.12" />
+    <PackageVersion Include="BridgingIT.DevKit.Presentation.Serilog" Version="10.0.2-preview.0.12" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Dumpify" Version="0.6.6" />
     <PackageVersion Include="FluentAssertions.Web" Version="1.9.5" />
