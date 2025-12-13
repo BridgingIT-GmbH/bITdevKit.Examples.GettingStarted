@@ -5,9 +5,9 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.IntegrationTests.Presentation.Web;
 
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 using System.Text;
 using System.Text.Json;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
 [IntegrationTest("Presentation.Web")]
 [Collection(nameof(EndpointCollection))]

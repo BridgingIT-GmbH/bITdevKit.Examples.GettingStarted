@@ -5,10 +5,10 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.IntegrationTests.Presentation.Web;
 
-using BridgingIT.DevKit.Domain.Repositories;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using BridgingIT.DevKit.Domain.Repositories;
 
 [CollectionDefinition(nameof(EndpointCollection))]
 public class EndpointCollection : ICollectionFixture<EndpointTestFixture<Program>>
