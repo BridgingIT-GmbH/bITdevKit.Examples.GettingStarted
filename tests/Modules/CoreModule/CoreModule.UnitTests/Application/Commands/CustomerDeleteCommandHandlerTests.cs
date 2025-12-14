@@ -5,9 +5,14 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Commands;
 
+/// <summary>
+/// Tests for <see cref="CustomerDeleteCommandHandler"/> validating customer deletion scenarios
+/// including successful deletion, invalid IDs, and non-existent customers.
+/// </summary>
 [UnitTest("Application")]
 public class CustomerDeleteCommandHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
+    /// <summary>Verifies successful deletion of an existing customer.</summary>
     [Fact]
     public async Task Process_ValidRequest_SuccessResult()
     {
@@ -30,6 +35,7 @@ public class CustomerDeleteCommandHandlerTests(ITestOutputHelper output) : CoreM
         deletedCustomer.ShouldBeNull();
     }
 
+    /// <summary>Verifies validation error for malformed GUID.</summary>
     [Fact]
     public async Task Process_InvalidId_FailureResult()
     {
@@ -44,6 +50,7 @@ public class CustomerDeleteCommandHandlerTests(ITestOutputHelper output) : CoreM
         response.ShouldBeFailure();
     }
 
+    /// <summary>Verifies failure when attempting to delete non-existent customer.</summary>
     [Fact]
     public async Task Process_NonExistentCustomer_FailureResult()
     {

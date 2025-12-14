@@ -7,11 +7,16 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests
 
 using FluentValidation.TestHelper;
 
+/// <summary>
+/// Tests for <see cref="CustomerDeleteCommand.Validator"/> validating delete command input validation
+/// including GUID format checks and null handling.
+/// </summary>
 [UnitTest("Application")]
 public class CustomerDeleteCommandValidatorTests
 {
     private readonly CustomerDeleteCommand.Validator validator = new();
 
+    /// <summary>Verifies validator accepts valid GUID format.</summary>
     [Fact]
     public void Validate_ValidGuid_ShouldNotHaveValidationError()
     {
@@ -25,6 +30,7 @@ public class CustomerDeleteCommandValidatorTests
         result.ShouldNotHaveAnyValidationErrors();
     }
 
+    /// <summary>Verifies validation error for invalid GUID format.</summary>
     [Fact]
     public void Validate_InvalidGuid_ShouldHaveValidationError()
     {
@@ -38,6 +44,7 @@ public class CustomerDeleteCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Id);
     }
 
+    /// <summary>Verifies validator accepts empty GUID as valid format.</summary>
     [Fact]
     public void Validate_EmptyGuid_ShouldNotHaveValidationError()
     {
@@ -51,6 +58,7 @@ public class CustomerDeleteCommandValidatorTests
         result.ShouldNotHaveAnyValidationErrors();
     }
 
+    /// <summary>Verifies validation error for null ID.</summary>
     [Fact]
     public void Validate_NullId_ShouldHaveValidationError()
     {
@@ -64,6 +72,7 @@ public class CustomerDeleteCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Id);
     }
 
+    /// <summary>Verifies validation error for empty string ID.</summary>
     [Fact]
     public void Validate_EmptyStringId_ShouldHaveValidationError()
     {
@@ -77,3 +86,4 @@ public class CustomerDeleteCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Id);
     }
 }
+

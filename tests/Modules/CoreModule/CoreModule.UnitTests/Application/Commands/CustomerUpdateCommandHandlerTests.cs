@@ -5,9 +5,14 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Commands;
 
+/// <summary>
+/// Tests for <see cref="CustomerUpdateCommandHandler"/> validating customer update scenarios
+/// including field updates, validation failures, concurrency conflicts, and business rules.
+/// </summary>
 [UnitTest("Application")]
 public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
+    /// <summary>Verifies successful update of customer with valid data and concurrency token.</summary>
     [Fact]
     public async Task Process_ValidRequest_SuccessResult()
     {
@@ -39,6 +44,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         response.Value.Email.ShouldBe("jane.smith@example.com");
     }
 
+    /// <summary>Verifies validation error for empty first name.</summary>
     [Fact]
     public async Task Process_EmptyFirstName_FailureResult()
     {
@@ -66,6 +72,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         response.Errors.ShouldNotBeEmpty();
     }
 
+    /// <summary>Verifies business rule failure for disallowed last name.</summary>
     [Fact]
     public async Task Process_NotAllowedLastName_FailureResult()
     {
@@ -93,6 +100,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         response.ShouldBeFailure();
     }
 
+    /// <summary>Verifies validation error for empty last name.</summary>
     [Fact]
     public async Task Process_EmptyLastName_FailureResult()
     {
@@ -121,6 +129,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         response.Errors.ShouldNotBeEmpty();
     }
 
+    /// <summary>Verifies that update with non-existent ID creates new customer entity.</summary>
     [Fact]
     public async Task Process_NonExistentCustomer_CreatesNewCustomer()
     {
@@ -147,6 +156,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         response.Value.LastName.ShouldBe("Doe");
     }
 
+    /// <summary>Verifies validation error for null model.</summary>
     [Fact]
     public async Task Process_NullModel_FailureResult()
     {
@@ -161,6 +171,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         response.ShouldBeFailure();
     }
 
+    /// <summary>Verifies that update with empty GUID creates customer entity.</summary>
     [Fact]
     public async Task Process_EmptyGuidCustomerId_CreatesWithEmptyId()
     {
@@ -184,6 +195,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         response.Value.FirstName.ShouldBe("Jane");
     }
 
+    /// <summary>Verifies failure when concurrency version token mismatches.</summary>
     [Fact]
     public async Task Process_ConcurrencyConflict_FailureResult()
     {
@@ -212,6 +224,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         response.Errors.ShouldNotBeEmpty();
     }
 
+    /// <summary>Verifies successful email address update.</summary>
     [Fact]
     public async Task Process_UpdateEmailAddress_SuccessResult()
     {
@@ -240,6 +253,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         response.Value.Email.ShouldBe("john.newemail@example.com");
     }
 
+    /// <summary>Verifies successful update of multiple customer fields simultaneously.</summary>
     [Fact]
     public async Task Process_UpdateMultipleFields_SuccessResult()
     {

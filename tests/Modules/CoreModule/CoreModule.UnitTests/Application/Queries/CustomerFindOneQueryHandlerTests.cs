@@ -5,9 +5,14 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Queries;
 
+/// <summary>
+/// Tests for <see cref="CustomerFindOneQueryHandler"/> validating single customer retrieval scenarios
+/// including successful lookups and error handling for missing customers.
+/// </summary>
 [UnitTest("Application")]
 public class CustomerFindOneQueryHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
+    /// <summary>Verifies successful retrieval of existing customer by ID.</summary>
     [Fact]
     public async Task Process_ValidRequest_SuccessResult()
     {
@@ -32,6 +37,7 @@ public class CustomerFindOneQueryHandlerTests(ITestOutputHelper output) : CoreMo
         response.Value.Email.ShouldBe("john.findone@example.com");
     }
 
+    /// <summary>Verifies failure when customer ID does not exist.</summary>
     [Fact]
     public async Task Process_NonExistentCustomer_FailureResult()
     {
@@ -47,6 +53,7 @@ public class CustomerFindOneQueryHandlerTests(ITestOutputHelper output) : CoreMo
         response.Errors.ShouldNotBeEmpty();
     }
 
+    /// <summary>Verifies failure when customer ID is empty.</summary>
     [Fact]
     public async Task Process_EmptyCustomerId_FailureResult()
     {

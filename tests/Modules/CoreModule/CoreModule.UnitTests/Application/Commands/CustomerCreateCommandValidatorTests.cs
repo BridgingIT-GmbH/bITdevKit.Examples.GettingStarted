@@ -7,11 +7,16 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests
 
 using FluentValidation.TestHelper;
 
+/// <summary>
+/// Tests for <see cref="CustomerCreateCommand.Validator"/> validating command input validation
+/// including required fields, email format, and null checks.
+/// </summary>
 [UnitTest("Application")]
 public class CustomerCreateCommandValidatorTests
 {
     private readonly CustomerCreateCommand.Validator validator = new();
 
+    /// <summary>Verifies validator accepts valid customer creation command.</summary>
     [Fact]
     public void Validate_ValidCommand_ShouldNotHaveValidationError()
     {
@@ -31,6 +36,7 @@ public class CustomerCreateCommandValidatorTests
         result.ShouldNotHaveAnyValidationErrors();
     }
 
+    /// <summary>Verifies validator throws exception for null model.</summary>
     [Fact]
     public void Validate_NullModel_ThrowsException()
     {
@@ -41,6 +47,7 @@ public class CustomerCreateCommandValidatorTests
         Should.Throw<NullReferenceException>(() => this.validator.TestValidate(command));
     }
 
+    /// <summary>Verifies validation error for empty first name.</summary>
     [Fact]
     public void Validate_EmptyFirstName_ShouldHaveValidationError()
     {
@@ -60,6 +67,7 @@ public class CustomerCreateCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Model.FirstName);
     }
 
+    /// <summary>Verifies validation error for null first name.</summary>
     [Fact]
     public void Validate_NullFirstName_ShouldHaveValidationError()
     {
@@ -79,6 +87,7 @@ public class CustomerCreateCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Model.FirstName);
     }
 
+    /// <summary>Verifies validation error for empty last name.</summary>
     [Fact]
     public void Validate_EmptyLastName_ShouldHaveValidationError()
     {
@@ -98,6 +107,7 @@ public class CustomerCreateCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Model.LastName);
     }
 
+    /// <summary>Verifies validation error for null last name.</summary>
     [Fact]
     public void Validate_NullLastName_ShouldHaveValidationError()
     {
@@ -117,6 +127,7 @@ public class CustomerCreateCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Model.LastName);
     }
 
+    /// <summary>Verifies validation error for empty email.</summary>
     [Fact]
     public void Validate_EmptyEmail_ShouldHaveValidationError()
     {
@@ -136,6 +147,7 @@ public class CustomerCreateCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Model.Email);
     }
 
+    /// <summary>Verifies validation error for null email.</summary>
     [Fact]
     public void Validate_NullEmail_ShouldHaveValidationError()
     {
@@ -155,6 +167,7 @@ public class CustomerCreateCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Model.Email);
     }
 
+    /// <summary>Verifies validator accepts valid email format.</summary>
     [Fact]
     public void Validate_ValidEmailWithAtSymbol_ShouldNotHaveValidationError()
     {

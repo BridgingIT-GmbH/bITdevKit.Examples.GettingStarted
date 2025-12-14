@@ -7,11 +7,16 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests
 
 using FluentValidation.TestHelper;
 
+/// <summary>
+/// Tests for <see cref="CustomerUpdateCommand.Validator"/> validating update command input validation
+/// including ID format, required fields, and null checks.
+/// </summary>
 [UnitTest("Application")]
 public class CustomerUpdateCommandValidatorTests
 {
     private readonly CustomerUpdateCommand.Validator validator = new();
 
+    /// <summary>Verifies validator accepts valid customer update command.</summary>
     [Fact]
     public void Validate_ValidCommand_ShouldNotHaveValidationError()
     {
@@ -32,6 +37,7 @@ public class CustomerUpdateCommandValidatorTests
         result.ShouldNotHaveAnyValidationErrors();
     }
 
+    /// <summary>Verifies validator throws exception for null model.</summary>
     [Fact]
     public void Validate_NullModel_ThrowsException()
     {
@@ -42,6 +48,7 @@ public class CustomerUpdateCommandValidatorTests
         Should.Throw<NullReferenceException>(() => this.validator.TestValidate(command));
     }
 
+    /// <summary>Verifies validation error for empty GUID ID.</summary>
     [Fact]
     public void Validate_EmptyGuidId_ShouldHaveValidationError()
     {
@@ -62,6 +69,7 @@ public class CustomerUpdateCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Model.Id);
     }
 
+    /// <summary>Verifies validation error for null ID.</summary>
     [Fact]
     public void Validate_NullId_ShouldHaveValidationError()
     {
@@ -82,6 +90,7 @@ public class CustomerUpdateCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Model.Id);
     }
 
+    /// <summary>Verifies validation error for empty first name.</summary>
     [Fact]
     public void Validate_EmptyFirstName_ShouldHaveValidationError()
     {
@@ -102,6 +111,7 @@ public class CustomerUpdateCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Model.FirstName);
     }
 
+    /// <summary>Verifies validation error for empty last name.</summary>
     [Fact]
     public void Validate_EmptyLastName_ShouldHaveValidationError()
     {
@@ -122,6 +132,7 @@ public class CustomerUpdateCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Model.LastName);
     }
 
+    /// <summary>Verifies validation error for empty email.</summary>
     [Fact]
     public void Validate_EmptyEmail_ShouldHaveValidationError()
     {
@@ -142,3 +153,4 @@ public class CustomerUpdateCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Model.Email);
     }
 }
+

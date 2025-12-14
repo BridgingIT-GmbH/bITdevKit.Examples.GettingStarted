@@ -7,11 +7,16 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests
 
 using FluentValidation.TestHelper;
 
+/// <summary>
+/// Tests for <see cref="CustomerFindOneQuery.Validator"/> validating query input validation
+/// including customer ID format and null checks.
+/// </summary>
 [UnitTest("Application")]
 public class CustomerFindOneQueryValidatorTests
 {
     private readonly CustomerFindOneQuery.Validator validator = new();
 
+    /// <summary>Verifies validator accepts valid customer ID.</summary>
     [Fact]
     public void Validate_ValidCustomerId_ShouldNotHaveValidationError()
     {
@@ -25,6 +30,7 @@ public class CustomerFindOneQueryValidatorTests
         result.ShouldNotHaveAnyValidationErrors();
     }
 
+    /// <summary>Verifies validation error for null customer ID.</summary>
     [Fact]
     public void Validate_NullCustomerId_ShouldHaveValidationError()
     {
@@ -38,6 +44,7 @@ public class CustomerFindOneQueryValidatorTests
         result.ShouldHaveValidationErrorFor(q => q.CustomerId);
     }
 
+    /// <summary>Verifies validation error for empty customer ID.</summary>
     [Fact]
     public void Validate_EmptyCustomerId_ShouldHaveValidationError()
     {
@@ -51,6 +58,7 @@ public class CustomerFindOneQueryValidatorTests
         result.ShouldHaveValidationErrorFor(q => q.CustomerId);
     }
 
+    /// <summary>Verifies validation error for whitespace-only customer ID.</summary>
     [Fact]
     public void Validate_WhitespaceCustomerId_ShouldHaveValidationError()
     {
@@ -64,3 +72,4 @@ public class CustomerFindOneQueryValidatorTests
         result.ShouldHaveValidationErrorFor(q => q.CustomerId);
     }
 }
+

@@ -10,9 +10,14 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Quartz;
 
+/// <summary>
+/// Tests for <see cref="CustomerExportJob"/> validating background job execution scenarios
+/// including export operations and retry configuration.
+/// </summary>
 [UnitTest("Application")]
 public class CustomerExportJobTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
+    /// <summary>Verifies successful export job execution with customer data.</summary>
     [Fact]
     public async Task Process_WithCustomers_ExportsSuccessfully()
     {
@@ -37,6 +42,7 @@ public class CustomerExportJobTests(ITestOutputHelper output) : CoreModuleTestsB
         customers.Count().ShouldBeGreaterThanOrEqualTo(2);
     }
 
+    /// <summary>Verifies successful job completion when no customers exist.</summary>
     [Fact]
     public async Task Process_NoCustomers_CompletesSuccessfully()
     {

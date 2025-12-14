@@ -8,9 +8,14 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Events;
 using Microsoft.Extensions.Logging;
 
+/// <summary>
+/// Tests for <see cref="CustomerCreatedDomainEventHandler"/> validating domain event handling
+/// for customer creation events.
+/// </summary>
 [UnitTest("Application")]
 public class CustomerCreatedDomainEventHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
+    /// <summary>Verifies successful processing of customer created event.</summary>
     [Fact]
     public async Task Process_ValidEvent_HandlesSuccessfully()
     {
@@ -29,6 +34,7 @@ public class CustomerCreatedDomainEventHandlerTests(ITestOutputHelper output) : 
         canHandle.ShouldBeTrue();
     }
 
+    /// <summary>Verifies handler accepts customer created events.</summary>
     [Fact]
     public void CanHandle_ValidEvent_ReturnsTrue()
     {

@@ -5,9 +5,13 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Queries;
 
+/// <summary>
+/// Tests for <see cref="CustomerFindAllQueryHandler"/> validating customer retrieval scenarios.
+/// </summary>
 [UnitTest("Application")]
 public class CustomerFindAllQueryHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
+    /// <summary>Verifies successful retrieval of all customers.</summary>
     [Fact]
     public async Task Process_ValidQuery_ReturnsSuccessResultWithCustomers()
     {

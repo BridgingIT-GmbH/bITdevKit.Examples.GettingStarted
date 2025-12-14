@@ -8,9 +8,14 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Events;
 using Microsoft.Extensions.Logging;
 
+/// <summary>
+/// Tests for <see cref="CustomerUpdatedDomainEventHandler"/> validating domain event handling
+/// for customer update events.
+/// </summary>
 [UnitTest("Application")]
 public class CustomerUpdatedDomainEventHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
+    /// <summary>Verifies successful processing of customer updated event.</summary>
     [Fact]
     public async Task Process_ValidEvent_HandlesSuccessfully()
     {
@@ -29,6 +34,7 @@ public class CustomerUpdatedDomainEventHandlerTests(ITestOutputHelper output) : 
         canHandle.ShouldBeTrue();
     }
 
+    /// <summary>Verifies handler accepts customer updated events.</summary>
     [Fact]
     public void CanHandle_ValidEvent_ReturnsTrue()
     {
@@ -47,9 +53,13 @@ public class CustomerUpdatedDomainEventHandlerTests(ITestOutputHelper output) : 
     }
 }
 
+/// <summary>
+/// Tests for <see cref="CustomerUpdatedDomainEventHandler2"/> validating generic entity updated event handling.
+/// </summary>
 [UnitTest("Application")]
 public class CustomerUpdatedDomainEventHandler2Tests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
+    /// <summary>Verifies successful processing of generic entity updated event.</summary>
     [Fact]
     public async Task Process_EntityUpdatedEvent_HandlesSuccessfully()
     {
@@ -68,6 +78,7 @@ public class CustomerUpdatedDomainEventHandler2Tests(ITestOutputHelper output) :
         canHandle.ShouldBeTrue();
     }
 
+    /// <summary>Verifies handler accepts generic entity updated events.</summary>
     [Fact]
     public void CanHandle_EntityUpdatedEvent_ReturnsTrue()
     {
