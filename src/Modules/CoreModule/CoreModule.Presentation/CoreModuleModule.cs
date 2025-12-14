@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 
+[ExcludeFromCodeCoverage]
 public class CoreModuleModule() : WebModuleBase("CoreModule")
 {
     /// <summary>
