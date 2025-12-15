@@ -15,9 +15,7 @@ builder.Services.AddConsoleCommandsInteractive();
 // ===============================================================================================
 // Configure the modules. https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-modules.md
 builder.Services.AddModules(builder.Configuration, builder.Environment)
-    .WithModule<CoreModuleModule>()
-    .WithModuleContextAccessors()
-    .WithRequestModuleContextAccessors();
+    .WithModule<CoreModuleModule>();
 
 // ===============================================================================================
 // Configure the requester and notifier services. https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-requester-notifier.md

@@ -1,4 +1,4 @@
-## Release 9.0.0 [25.04.24]
+## Release 10.0.0 [01.12.25]
 
 - [N] Initial release
 
