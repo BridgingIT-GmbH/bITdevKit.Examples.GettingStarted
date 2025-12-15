@@ -48,8 +48,8 @@
   <!-- Template-Inhalt für Multi-Template Package -->
   <ItemGroup>
     <!-- Source Verzeichnis komplett mit Struktur -->
-    <Content Include="src\**\*" Exclude="src\**\bin\**\*;src\**\obj\**\*" Pack="true"
-      PackagePath="content/src/" />
+    <Content Include="src\**\*" Exclude="src\**\bin\**\*;src\**\obj\**\*" Pack="true" PackagePath="content/src/" />
+    <Content Include=".bdk\**\*" Pack="true" PackagePath="content/.bdk/" />
 
     <!-- Solution Template Konfigurationsdateien -->
     <Content Include="global.json" Pack="true" PackagePath="content/" />
