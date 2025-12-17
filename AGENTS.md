@@ -187,7 +187,3 @@ pwsh -NoProfile -File .\bdk.ps1 -Task ef-apply
 ## Alignment with `.github/copilot-instructions.md`
 
 This AGENTS.md reinforces and summarizes the rules found in `.github/copilot-instructions.md`. Copilot should treat that file as authoritative for architectural boundaries, naming, and module practices.
-
----
-
-By following this guidance, Agents can generate precise, maintainable code that fits the project’s modular DDD architecture and established patterns and workflows.
