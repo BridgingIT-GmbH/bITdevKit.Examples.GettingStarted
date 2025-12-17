@@ -194,6 +194,9 @@ dotnet_diagnostic.ide0055.severity = suggestion
 # SA1408: Conditional Expressions Must Declare Precedence
 dotnet_diagnostic.sa1408.severity = none
 
+# CA1873: Avoid potentially expensive logging
+dotnet_diagnostic.ca1873.severity = none
+
 # Microsoft .NET properties
 dotnet_diagnostic.IDE0161.severity = error
 dotnet_naming_rule.private_constants_rule.severity = warning

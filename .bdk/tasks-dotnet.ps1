@@ -294,7 +294,7 @@ switch ($Command.ToLowerInvariant()) {
     Write-Step "Running tests with coverage -> $runDir"
 
     try {
-      Invoke-Dotnet @('test', $SolutionPath, '--collect:"XPlat Code Coverage"', '--results-directory', $runDir, '--settings:.runsettings')
+      Invoke-Dotnet @('test', $SolutionPath, '--collect:XPlat Code Coverage', '--results-directory', $runDir, '--settings:coverlet.runsettings')
     }
     catch {
       Write-Error 'dotnet test failed.'
@@ -315,7 +315,7 @@ switch ($Command.ToLowerInvariant()) {
     Write-Step "Running tests with coverage -> $runDir"
 
     try {
-      Invoke-Dotnet @('test', $SolutionPath, '--collect:"XPlat Code Coverage"', '--results-directory', $runDir, '--settings:.runsettings')
+      Invoke-Dotnet @('test', $SolutionPath, '--collect:XPlat Code Coverage', '--results-directory', $runDir, '--settings:coverlet.runsettings')
     }
     catch {
       Write-Error 'dotnet test failed.'

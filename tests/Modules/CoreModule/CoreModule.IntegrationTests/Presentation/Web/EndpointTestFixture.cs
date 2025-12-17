@@ -7,6 +7,8 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Integrati
 
 using System.Text;
 using System.Text.Json;
+using System.Threading;
+using BridgingIT.DevKit.Domain.Repositories;
 
 [CollectionDefinition(nameof(EndpointCollection))]
 public class EndpointCollection : ICollectionFixture<EndpointTestFixture<Program>>
@@ -75,6 +77,10 @@ public class EndpointTestFixture<TProgram> : IAsyncLifetime where TProgram : cla
         this.Client = this.factory.CreateClient();
         this.Log("HttpClient created from WebApplicationFactory.");
         this.initialized = true;
+
+        this.Log("Waiting for database readiness...");
+        var databaseReadyService = this.factory.ServiceProvider.GetRequiredService<IDatabaseReadyService>();
+        await databaseReadyService?.WaitForReadyAsync();
 
         if (this.optionsConfigured)
         {

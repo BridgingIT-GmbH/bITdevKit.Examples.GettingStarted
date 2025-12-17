@@ -15,9 +15,7 @@ builder.Services.AddConsoleCommandsInteractive();
 // ===============================================================================================
 // Configure the modules. https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-modules.md
 builder.Services.AddModules(builder.Configuration, builder.Environment)
-    .WithModule<CoreModuleModule>()
-    .WithModuleContextAccessors()
-    .WithRequestModuleContextAccessors();
+    .WithModule<CoreModuleModule>();
 
 // ===============================================================================================
 // Configure the requester and notifier services. https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-requester-notifier.md
@@ -31,7 +29,9 @@ builder.Services.AddNotifier()
 builder.Services.AddJobScheduling(o => o
     .StartupDelay(builder.Configuration["JobScheduling:StartupDelay"]), builder.Configuration) // wait some time before starting the scheduler
     .WithSqlServerStore(builder.Configuration["JobScheduling:Quartz:quartz.dataSource.default.connectionString"])
-    .WithBehavior<ModuleScopeJobSchedulingBehavior>();
+    .WithBehavior<ModuleScopeJobSchedulingBehavior>()
+    .AddEndpoints()
+    .AddConsoleCommands();
 
 // ===============================================================================================
 // Configure the application endpoints. https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-presentation-endpoints.md

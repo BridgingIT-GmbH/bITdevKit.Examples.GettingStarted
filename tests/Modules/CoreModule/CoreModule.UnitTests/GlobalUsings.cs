@@ -5,6 +5,7 @@
 
 global using System;
 global using System.Reflection;
+global using BridgingIT.DevKit.Domain;
 global using BridgingIT.DevKit.Domain.Model;
 global using BridgingIT.DevKit.Domain.Repositories;
 global using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;

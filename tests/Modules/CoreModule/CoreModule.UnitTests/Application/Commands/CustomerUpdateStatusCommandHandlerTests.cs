@@ -5,9 +5,14 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Commands;
 
+/// <summary>
+/// Tests for <see cref="CustomerUpdateStatusCommandHandler"/> validating status update scenarios
+/// including valid status transitions and business rule enforcement.
+/// </summary>
 [UnitTest("Application")]
 public class CustomerUpdateStatusCommandHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
+    /// <summary>Verifies successful status transition from Lead to Active.</summary>
     [Fact]
     public async Task ChangeStatus_FromLeadToActive_SetsActive()
     {

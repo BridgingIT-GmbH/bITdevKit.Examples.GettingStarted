@@ -5,9 +5,13 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Queries;
 
+/// <summary>
+/// Tests for <see cref="CustomerFindAllQueryHandler"/> validating customer retrieval scenarios.
+/// </summary>
 [UnitTest("Application")]
 public class CustomerFindAllQueryHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
+    /// <summary>Verifies successful retrieval of all customers.</summary>
     [Fact]
     public async Task Process_ValidQuery_ReturnsSuccessResultWithCustomers()
     {
@@ -15,6 +19,7 @@ public class CustomerFindAllQueryHandlerTests(ITestOutputHelper output) : CoreMo
         var timeProvider = this.ServiceProvider.GetService<TimeProvider>();
         var requester = this.ServiceProvider.GetService<IRequester>();
         var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
+
         await repository.InsertAsync(Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create(timeProvider.GetUtcNow(), 100000).Value).Value);
         await repository.InsertAsync(Customer.Create("Mary", "Jane", "mary.jane@example.com", CustomerNumber.Create(timeProvider.GetUtcNow(), 100001).Value).Value);
         var query = new CustomerFindAllQuery();

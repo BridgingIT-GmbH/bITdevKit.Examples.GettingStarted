@@ -48,8 +48,10 @@
   <!-- Template-Inhalt für Multi-Template Package -->
   <ItemGroup>
     <!-- Source Verzeichnis komplett mit Struktur -->
-    <Content Include="src\**\*" Exclude="src\**\bin\**\*;src\**\obj\**\*" Pack="true"
-      PackagePath="content/src/" />
+    <Content Include="src\**\*" Exclude="src\**\bin\**\*;src\**\obj\**\*" Pack="true" PackagePath="content/src/" />
+
+    <Content Include=".bdk\**\*" Pack="true" PackagePath="content/.bdk/" />
+    <Content Include="bdk*" Pack="true" PackagePath="content/" />
 
     <!-- Solution Template Konfigurationsdateien -->
     <Content Include="global.json" Pack="true" PackagePath="content/" />
@@ -64,11 +66,18 @@
     <Content Include="GlobalSuppressions.cs" Pack="true" PackagePath="content/" />
     <Content Include=".vscode\**\*" Pack="true" PackagePath="content/.vscode/" />
     <Content Include="assets\**\*" Pack="true" PackagePath="content/assets/" />
+    <Content Include=".github\**\*" Pack="true" PackagePath="content/.github/" />
 
+    <None Include="AGENTS.md" Pack="true" PackagePath="content/" />
     <None Include="docker-compose.yml" Pack="true" PackagePath="content/" />
     <None Include=".editorconfig" Pack="true" PackagePath="content/" />
-    <None Include=".template.config\template.json" Pack="true"
-      PackagePath="content/.template.config/" />
+    <None Include=".env" Pack="true" PackagePath="content/" />
+    <None Include=".gitattributes" Pack="true" PackagePath="content/" />
+    <None Include=".gitignore" Pack="true" PackagePath="content/" />
+    <None Include=".spectral.yaml" Pack="true" PackagePath="content/" />
+    <None Include="coverlet.runsettings" Pack="true" PackagePath="content/" />
+    <None Include="http-client.env.json" Pack="true" PackagePath="content/" />
+    <None Include=".template.config\template.json" Pack="true" PackagePath="content/.template.config/" />
     <None Include="README-template.md" Pack="true" PackagePath="\" />
     <None Include="icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>

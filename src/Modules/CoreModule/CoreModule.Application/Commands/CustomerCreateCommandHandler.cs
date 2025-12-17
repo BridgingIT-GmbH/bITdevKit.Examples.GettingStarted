@@ -5,9 +5,9 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
+using System;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using Microsoft.Extensions.Logging;
-using System;
 
 /// <summary>
 /// Handler for <see cref="CustomerCreateCommand"/> that performs business validation,
