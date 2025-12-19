@@ -7,6 +7,7 @@
 The `Requester` and `Notifier` systems form a robust framework designed to streamline the handling of requests (commands and queries) and notifications in modern applications. These systems provide structured approaches to dispatching messages to their respective handlers through a customizable pipeline of behaviors, allowing developers to address cross-cutting concerns like validation, retries, and timeouts without altering core business logic. By enforcing consistent and type-safe mechanisms for message processing, the systems ensure predictability and maintainability in complex applications. They share a set of extensible pipeline behaviors, ensuring consistency across different types of message handling.
 
 Two kinds of messages are supported:
+
 - **Request/Response Messages** (via `Requester`): Dispatched to a single handler, typically for commands (actions that modify state) or queries (requests that retrieve data).
 - **Notification Messages** (via `Notifier`): Dispatched to multiple handlers in a publish/subscribe (pub/sub) model, typically for domain events where multiple components need to react to an event (e.g., user registration, system updates).
 
@@ -194,6 +195,8 @@ classDiagram
   - Logging domain events to multiple destinations (database, file, external service).
   - Updating caches in a fire-and-forget manner after data changes.
   - Broadcasting system events to multiple subscribers (e.g., audit logging, metrics collection).
+
+---
 
 ## Part 1: Requester
 
@@ -410,6 +413,7 @@ var result = await requester.SendAsync(new CancelableCommand { TaskId = Guid.New
 #### Best Practices
 
 1. **Early Returns**: Check `result.IsSuccess` early to avoid unnecessary processing.
+
    ```csharp
    var result = await requester.SendAsync(request);
    if (result.IsFailure)
@@ -419,11 +423,13 @@ var result = await requester.SendAsync(new CancelableCommand { TaskId = Guid.New
    ```
 
 2. **Meaningful Messages**: Include context in error messages for better debugging.
+
    ```csharp
    return Result<Unit>.Failure($"Failed to process task {request.TaskId}: Invalid input");
    ```
 
 3. **Order Behaviors**: Place critical behaviors (e.g., validation, transactions) early in the pipeline.
+
    ```csharp
    services.AddRequester()
        .AddHandlers()
@@ -529,6 +535,8 @@ else
 }
 ```
 
+---
+
 ## Part 2: Notifier
 
 ### Overview
@@ -536,19 +544,23 @@ else
 The `Notifier` system complements the `Requester` by providing a publish/subscribe (pub/sub) model for handling notifications. Unlike requests, which are dispatched to a single handler, notifications are dispatched to multiple handlers, enabling scenarios where multiple components need to react to a domain event (e.g., user registration, system updates). The `Notifier` shares the same pipeline behaviors as the `Requester`, ensuring consistency in cross-cutting concerns like validation and retries. It supports configurable execution modes (sequential, concurrent, fire-and-forget) to control how handlers are invoked, and it returns a non-generic `Result` to aggregate outcomes from all handlers.
 
 #### Challenges Addressed by Notifier
+
 - **Multiple Handler Coordination**: Coordinating multiple handlers for a single notification, with options for sequential, concurrent, or fire-and-forget execution.
 - **Consistent Error Handling**: Aggregating errors from multiple handlers into a single `Result` while preserving context.
 - **Execution Flexibility**: Allowing different execution modes to suit various use cases (e.g., ordered processing, parallel execution, non-blocking dispatch).
 - **Shared Behaviors**: Reusing the same pipeline behaviors as the `Requester` for consistency (e.g., validation, retries).
 
 #### Solution
+
 The `Notifier` system addresses these challenges by:
+
 1. Providing a central `INotifier` interface for publishing notifications to multiple handlers.
 2. Aggregating handler outcomes into a non-generic `Result`, indicating overall success or failure.
 3. Supporting three execution modes (sequential, concurrent, fire-and-forget) configurable via `PublishOptions`.
 4. Reusing the `Requester`’s pipeline behaviors for consistency in cross-cutting concerns.
 
 #### Key Features Specific to Notifier
+
 - **Pub/Sub Model**: Dispatches notifications to multiple handlers.
 - **Execution Modes**:
   - **Sequential**: Handlers run one after another, stopping on the first failure (default).
@@ -626,10 +638,10 @@ public class LogUserRegistrationHandler : NotificationHandlerBase<UserRegistered
 }
 
 // Dispatching the notification
-var result = await notifier.PublishAsync(new UserRegisteredNotification 
-{ 
-    UserId = Guid.NewGuid(), 
-    Email = "user@example.com" 
+var result = await notifier.PublishAsync(new UserRegisteredNotification
+{
+    UserId = Guid.NewGuid(),
+    Email = "user@example.com"
 });
 
 if (result.IsSuccess)
@@ -716,6 +728,7 @@ var result = await notifier.PublishAsync(new SystemEventNotification { EventType
    - Use `Sequential` for ordered processing where one handler’s failure should stop others.
    - Use `Concurrent` for performance when handlers can run independently.
    - Use `FireAndForget` for non-critical tasks where immediate return is needed.
+
    ```csharp
    var options = new PublishOptions { ExecutionMode = ExecutionMode.Concurrent };
    var result = await notifier.PublishAsync(notification, options);
@@ -723,6 +736,7 @@ var result = await notifier.PublishAsync(new SystemEventNotification { EventType
 
 2. **Error Aggregation**:
    - Check `result.Errors` to handle failures from multiple handlers.
+
    ```csharp
    if (result.IsFailure)
    {
@@ -734,6 +748,7 @@ var result = await notifier.PublishAsync(new SystemEventNotification { EventType
    ```
 
 3. **Order Behaviors**: Ensure critical behaviors (e.g., validation) run early, as with the `Requester`.
+
    ```csharp
    services.AddNotifier()
        .AddHandlers()
@@ -788,10 +803,10 @@ services.AddNotifier()
     .AddHandlers()
     .WithBehavior<ValidationPipelineBehavior<,>>();
 
-var notification = new UserRegisteredNotification 
-{ 
-    UserId = Guid.NewGuid(), 
-    Email = "user@example.com" 
+var notification = new UserRegisteredNotification
+{
+    UserId = Guid.NewGuid(),
+    Email = "user@example.com"
 };
 var result = await notifier.PublishAsync(notification);
 
@@ -810,10 +825,10 @@ else
 ```csharp
 // Using the same UserRegisteredNotification as above
 var options = new PublishOptions { ExecutionMode = ExecutionMode.Concurrent };
-var result = await notifier.PublishAsync(new UserRegisteredNotification 
-{ 
-    UserId = Guid.NewGuid(), 
-    Email = "user@example.com" 
+var result = await notifier.PublishAsync(new UserRegisteredNotification
+{
+    UserId = Guid.NewGuid(),
+    Email = "user@example.com"
 }, options);
 
 if (result.IsSuccess)
@@ -845,13 +860,15 @@ public class CacheUpdaterHandler : NotificationHandlerBase<CacheUpdateNotificati
 }
 
 var options = new PublishOptions { ExecutionMode = ExecutionMode.FireAndForget };
-var result = await notifier.PublishAsync(new CacheUpdateNotification 
-{ 
-    EntityId = Guid.NewGuid() 
+var result = await notifier.PublishAsync(new CacheUpdateNotification
+{
+    EntityId = Guid.NewGuid()
 }, options);
 
 Console.WriteLine("Notification dispatched in fire-and-forget mode.");
 ```
+
+---
 
 ## Part 3: Pipeline Behaviors
 
@@ -943,10 +960,17 @@ var options = new SendOptions
 var result = await requester.SendAsync(new LongRunningCommand(), options);
 ```
 
-#### TransactionPipelineBehavior
+#### DatabaseTransactionPipelineBehavior
 
 - Wraps message handling in a database transaction to ensure data consistency.
 - Configured with `HandlerDatabaseTransactionAttribute` to specify isolation level, rollback behavior, and the `DbContext` type.
+
+```csharp
+// Register the behavior
+builder.Services.AddRequester()
+    .AddHandlers()
+    .WithBehavior(typeof(DatabaseTransactionPipelineBehavior<,>));
+```
 
 ```csharp
 // Command to update a user
@@ -965,7 +989,8 @@ public class UpdateUserCommand : RequestBase<Unit>
     }
 }
 
-[HandlerDatabaseTransactionAttribute<MyDbContext>(IsolationLevel.ReadCommitted, true)]
+[HandlerDatabaseTransaction(contextName: "Core")]   // Uses "Core" DbContext
+// or [HandlerDatabaseTransaction<CoreDbContext>()] // Often not usable as Application layer does not know about DbContext types in the Infrastructure layer
 public class UpdateUserCommandHandler : RequestHandlerBase<UpdateUserCommand, Unit>
 {
     private readonly IGenericRepository<User> userRepository;
@@ -1071,6 +1096,62 @@ services.AddRequester()
     .WithBehavior<CacheInvalidatePipelineBehavior<,>>();
 ```
 
+#### AuthorizationPolicyPipelineBehavior
+
+- Enforces named authorization policies before handler execution.
+- Configured with `HandlerAuthorizePolicyAttribute` on the handler class; all listed policies must succeed.
+
+```csharp
+// Require both policies to pass before executing the handler
+[HandlerAuthorizePolicy("Customers.Write", "Audited")]
+public class CreateCustomerCommandHandler
+    : RequestHandlerBase<CreateCustomerCommand, Unit>
+{
+    protected override async Task<Result<Unit>> HandleAsync(
+        CreateCustomerCommand request,
+        SendOptions options,
+        CancellationToken cancellationToken)
+    {
+        // Handler logic only runs if policies succeed
+        return Result<Unit>.Success(Unit.Value);
+    }
+}
+
+// Register the behavior early (before retry/timeout)
+services.AddRequester()
+    .AddHandlers()
+    .WithBehavior<AuthorizationPolicyPipelineBehavior<,>>()
+```
+
+#### AuthorizationRolesPipelineBehavior
+
+- Enforces role-based authorization (OR semantics) before handler execution.
+- Configured with `HandlerAuthorizeRolesAttribute` on the handler class; user must be in at least one of the specified roles.
+
+```csharp
+// Allow either Admin or Manager to execute the handler
+[HandlerAuthorizeRoles("Admin", "Manager")]
+public class DeleteCustomerCommandHandler
+    : RequestHandlerBase<DeleteCustomerCommand, Unit>
+{
+    protected override async Task<Result<Unit>> HandleAsync(
+        DeleteCustomerCommand request,
+        SendOptions options,
+        CancellationToken cancellationToken)
+    {
+        // Handler logic only runs if the user has one of the roles
+        return Result<Unit>.Success(Unit.Value);
+    }
+}
+
+// Register the behavior early (before retry/timeout)
+services.AddRequester()
+    .AddHandlers()
+    .WithBehavior<AuthorizationRolesPipelineBehavior<,>>()
+```
+
+---
+
 ## Appendix A: CQS Pattern
 
 The Command-Query Separation (CQS) pattern is a design principle that separates operations into two distinct categories: commands and queries. Introduced by Bertrand Meyer as part of his work on the Eiffel programming language, CQS aims to improve code clarity, maintainability, and predictability by enforcing a clear distinction between operations that modify state and those that retrieve data.
@@ -1078,14 +1159,17 @@ The Command-Query Separation (CQS) pattern is a design principle that separates 
 ### General Pattern
 
 In the CQS pattern:
+
 - **Commands**: Operations that modify the state of the system but do not return a value. Commands are responsible for performing actions, such as updating a database, sending an email, or changing an object's state. For example, a method like `UpdateUser(userId, newName)` would be a command because it modifies the user’s name but does not return a result.
 - **Queries**: Operations that retrieve data from the system without modifying its state. Queries are responsible for fetching information, such as retrieving a user’s details or calculating a total. For example, a method like `GetUser(userId)` would be a query because it returns the user’s data without altering the system.
 
 The key principle of CQS is that a method should either be a command or a query, but not both. This separation ensures that:
+
 - **Commands do not return values**: They focus solely on state modification, making their intent clear.
 - **Queries do not have side effects**: They are safe to call without worrying about unintended state changes.
 
 This distinction leads to several benefits:
+
 - **Predictability**: Developers can easily understand whether a method will change the system’s state or simply return data, reducing the risk of unexpected side effects.
 - **Testability**: Queries, being side-effect-free, are easier to test because their output depends only on their input and the system’s state. Commands can be tested by verifying state changes.
 - **Maintainability**: Separating concerns makes the codebase easier to navigate and modify, as commands and queries have distinct roles.
@@ -1096,15 +1180,19 @@ This distinction leads to several benefits:
 In practice, adhering strictly to CQS can sometimes be challenging, especially in scenarios where a command might need to return a value (e.g., the ID of a newly created resource). To address this, variations like Command-Query Responsibility Segregation (CQRS) extend CQS by allowing commands to return minimal data (e.g., a success status or identifier) while maintaining separation between state-changing and data-retrieving operations.
 
 The `Requester` feature aligns with the CQS pattern by providing a structured way to handle commands and queries:
+
 - **Commands**: Represented as requests that return `Result<Unit>`, focusing on state modification without returning meaningful data. For example, a `CreateUserCommand` might update a database and return `Result<Unit>.Success(Unit.Value)` to indicate success.
 - **Queries**: Represented as requests that return `Result<TValue>`, focusing on data retrieval without modifying state. For example, a `GetUserQuery` might return `Result<User>` with the user’s details.
 
 This alignment offers several benefits:
+
 - **Clarity**: Commands and queries have distinct roles, making the code easier to understand and maintain.
 - **Predictability**: Commands modify state without returning data, while queries return data without modifying state, reducing side effects.
 - **Scalability**: Separating concerns allows for better optimization, such as caching query results or applying different behaviors to commands and queries.
 
 By using the `Requester` feature, you can enforce CQS principles, ensuring a clean and predictable request-handling architecture. For example, pipeline behaviors like `ValidationPipelineBehavior` can be applied to both commands and queries, while `RetryPipelineBehavior` might be more relevant for commands that interact with external systems.
+
+---
 
 ## Appendix B: Comparison with MediatR
 
@@ -1121,6 +1209,8 @@ The `Requester` and `Notifier` systems share similarities with the popular **Med
   - **Result Type**: `Requester` uses `Result<TValue>` and `Notifier` uses `Result` for consistent error handling, while MediatR allows handlers to return any type, leaving error handling to the user.
   - **Metadata**: `RequestBase<TValue>` and `NotificationBase` include built-in metadata (`RequestId`, `NotificationId`, timestamps), which MediatR lacks by default.
 
+---
+
 # Appendix C: Generic Handlers in Requester and Notifier
 
 ## Overview
@@ -1128,12 +1218,14 @@ The `Requester` and `Notifier` systems share similarities with the popular **Med
 Generic handlers in the `Requester` and `Notifier` systems enable handling of generic request/notification types (e.g., `GenericRequest<TData>`, `GenericNotification<TData>`) with a single handler, reducing code duplication. They are registered using `AddGenericHandlers`, which discovers open generic handlers, validates constraints, and registers closed handlers (e.g., `GenericDataProcessor<UserData>`).
 
 ## Key Features
+
 - **Automatic Discovery**: `AddGenericHandlers` scans assemblies for open generic handlers and discovers type arguments based on constraints.
 - **Constraint Validation**: Ensures type arguments meet constraints (e.g., `where TData : class, IDataItem`).
 
 ## Setup with `AddGenericHandlers`
 
 ### Requester
+
 ```csharp
 services.AddRequester()
     .AddHandlers()
@@ -1142,6 +1234,7 @@ services.AddRequester()
 ```
 
 ### Notifier
+
 ```csharp
 services.AddNotifier()
     .AddHandlers()
@@ -1154,6 +1247,7 @@ services.AddNotifier()
 ## Examples
 
 ### Generic Request Handler (Requester)
+
 ```csharp
 public class ProcessDataRequest<TData> : RequestBase<string>
     where TData : class, IDataItem
@@ -1190,6 +1284,7 @@ var result = await requester.SendAsync(userRequest); // "Processed: user123"
 ```
 
 ### Generic Notification Handler (Notifier)
+
 ```csharp
 public class GenericNotification<TData> : NotificationBase
     where TData : class, IDataItem
