@@ -6,40 +6,80 @@ An application built using .NET 10 and following a Domain-Driven Design (DDD) ap
 
 ## Table of Contents
 
-- [Features](#features)
-- [Frameworks and Libraries](#frameworks-and-libraries)
-- [Getting Started](#getting-started)
-  - [Running the Application](#running-the-application)
-- [Architecture Deep Dive](#architecture-deep-dive)
-  - [Clean Architecture Overview](#clean-architecture-overview)
-  - [Layer Responsibilities](#layer-responsibilities)
-  - [Dependency Rules](#dependency-rules)
-  - [Request Processing Flow](#request-processing-flow)
-  - [Modular Monolith Structure](#modular-monolith-structure)
-- [Core Patterns](#core-patterns)
-  - [Result Pattern (Railway-Oriented Programming)](#result-pattern-railway-oriented-programming)
-  - [Requester/Notifier Pattern (Mediator)](#requesternotifier-pattern-mediator)
-  - [Repository with Behaviors Pattern (Decorator)](#repository-with-behaviors-pattern-decorator)
-  - [Module System (Vertical Slices)](#module-system-vertical-slices)
-- [Application Bootstrap](#application-bootstrap)
-  - [Configuration Stages](#configuration-stages)
-  - [Step-by-Step Breakdown](#step-by-step-breakdown)
-  - [Middleware Pipeline Configuration](#middleware-pipeline-configuration)
-  - [Complete Request Flow](#complete-request-flow)
-- [Solution Structure](#solution-structure)
-- [Quick Code Examples](#quick-code-examples)
-  - [Commands](#commands)
-  - [Queries](#queries)
-  - [Domain Aggregates](#domain-aggregates)
-  - [Value Objects](#value-objects)
-  - [Enumerations](#enumerations)
-  - [Domain Events](#domain-events)
-  - [Infrastructure](#infrastructure)
-  - [Presentation](#presentation)
-  - [Testing](#testing)
-- [Appendix A: Docker & Local Registry Usage](#appendix-a-docker--local-registry-usage)
-- [Appendix B: OpenAPI Specification and API Clients](#appendix-b-openapi-specification-and-api-clients)
-- [License](#license)
+- [bITdevKit GettingStarted Example](#bitdevkit-gettingstarted-example)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Frameworks and Libraries](#frameworks-and-libraries)
+  - [Getting Started](#getting-started)
+    - [Running the Application](#running-the-application)
+  - [Architecture Deep Dive](#architecture-deep-dive)
+    - [Clean Architecture Overview](#clean-architecture-overview)
+    - [Layer Responsibilities](#layer-responsibilities)
+      - [Domain Layer (Core)](#domain-layer-core)
+      - [Application Layer](#application-layer)
+      - [Infrastructure Layer](#infrastructure-layer)
+      - [Presentation Layer](#presentation-layer)
+    - [Dependency Rules](#dependency-rules)
+    - [Request Processing Flow](#request-processing-flow)
+    - [Modular Monolith Structure](#modular-monolith-structure)
+  - [Core Patterns](#core-patterns)
+    - [Result Pattern (Railway-Oriented Programming)](#result-pattern-railway-oriented-programming)
+      - [Railway-Oriented Programming Diagram](#railway-oriented-programming-diagram)
+      - [Result Type Structure](#result-type-structure)
+      - [Result Pattern Methods](#result-pattern-methods)
+    - [Requester/Notifier Pattern (Mediator)](#requesternotifier-pattern-mediator)
+      - [Architecture Diagram](#architecture-diagram)
+      - [Pipeline Behaviors](#pipeline-behaviors)
+      - [Setup in Program.cs](#setup-in-programcs)
+    - [Repository with Behaviors Pattern (Decorator)](#repository-with-behaviors-pattern-decorator)
+      - [Behavior Chain Diagram](#behavior-chain-diagram)
+      - [Behavior Implementations](#behavior-implementations)
+      - [Configuration in Module](#configuration-in-module)
+    - [Module System (Vertical Slices)](#module-system-vertical-slices)
+      - [Module Structure](#module-structure)
+      - [Module Registration in Program.cs](#module-registration-in-programcs)
+  - [Application Bootstrap](#application-bootstrap)
+    - [Configuration Stages](#configuration-stages)
+    - [Step-by-Step Breakdown](#step-by-step-breakdown)
+      - [Step 1: Create Builder and Configure Logging](#step-1-create-builder-and-configure-logging)
+      - [Step 2: Register Modules](#step-2-register-modules)
+      - [Step 3: Register Requester and Notifier](#step-3-register-requester-and-notifier)
+      - [Step 4: Configure Job Scheduling](#step-4-configure-job-scheduling)
+      - [Step 5. Register Application Endpoints](#step-5-register-application-endpoints)
+      - [Step 6. Configure JSON Serialization](#step-6-configure-json-serialization)
+      - [Step 7. Configure OpenAPI](#step-7-configure-openapi)
+      - [Step 8. Configure CORS](#step-8-configure-cors)
+      - [Step 9. Configure Authentication/Authorization](#step-9-configure-authenticationauthorization)
+      - [Step 10. Configure Health Checks](#step-10-configure-health-checks)
+      - [Step 11. Configure Observability (OpenTelemetry)](#step-11-configure-observability-opentelemetry)
+    - [Middleware Pipeline Configuration](#middleware-pipeline-configuration)
+    - [Complete Request Flow](#complete-request-flow)
+  - [Solution Structure](#solution-structure)
+  - [Quick Code Examples](#quick-code-examples)
+    - [Commands](#commands)
+    - [Queries](#queries)
+    - [Domain Aggregates](#domain-aggregates)
+    - [Value Objects](#value-objects)
+    - [Enumerations](#enumerations)
+    - [Domain Events](#domain-events)
+    - [Infrastructure](#infrastructure)
+    - [Presentation](#presentation)
+    - [Testing](#testing)
+  - [Appendix A: Docker \& Local Registry Usage](#appendix-a-docker--local-registry-usage)
+    - [Prerequisites](#prerequisites)
+    - [Build Image](#build-image)
+    - [Tag For Local Registry](#tag-for-local-registry)
+    - [Push To Local Registry](#push-to-local-registry)
+    - [Run Container](#run-container)
+  - [Appendix B: OpenAPI Specification and API Clients](#appendix-b-openapi-specification-and-api-clients)
+    - [OpenAPI Document Generation](#openapi-document-generation)
+    - [Generating API Clients with Kiota](#generating-api-clients-with-kiota)
+      - [Installing Kiota](#installing-kiota)
+      - [Generating C# Client](#generating-c-client)
+      - [Using the Generated Client](#using-the-generated-client)
+      - [Generating TypeScript Client](#generating-typescript-client)
+    - [Resources](#resources)
+  - [License](#license)
 
 ## Features
 
@@ -77,6 +117,7 @@ An application built using .NET 10 and following a Domain-Driven Design (DDD) ap
 5. Run with `CTRL+F5` to start the host at [https://localhost:5001](https://localhost:5001).
 
 Access points:
+
 - **Scalar UI**: [https://localhost:5001/scalar](https://localhost:5001/scalar)
 - **OpenAPI Spec**: [https://localhost:5001/openapi.json](https://localhost:5001/openapi.json)
 - **Health Checks**: [https://localhost:5001/health](https://localhost:5001/health)
@@ -101,20 +142,20 @@ graph TB
         DB[Entity Framework<br/>SQL Server]
         EXT[External Services<br/>Email, Payment, etc.]
     end
-    
+
     subgraph "Application Layer"
         CMD[Commands & Queries]
         HAND[Handlers]
         BEHAV[Pipeline Behaviors]
     end
-    
+
     subgraph "Inner Core: Domain"
         AGG[Aggregates<br/>Customer]
         VO[Value Objects<br/>EmailAddress, CustomerNumber]
         EVENTS[Domain Events<br/>CustomerCreated]
         RULES[Business Rules<br/>EmailShouldBeUnique]
     end
-    
+
     UI --> CMD
     CMD --> HAND
     HAND --> AGG
@@ -122,7 +163,7 @@ graph TB
     AGG --> VO
     AGG --> EVENTS
     HAND --> RULES
-    
+
     style AGG fill:#4CAF50
     style VO fill:#4CAF50
     style EVENTS fill:#4CAF50
@@ -135,6 +176,7 @@ graph TB
 **Location**: `src/Modules/CoreModule/CoreModule.Domain`
 
 **Responsibilities**:
+
 - Pure business logic and domain rules
 - Aggregates, Entities (e.g., `Customer`)
 - Value Objects (e.g., `EmailAddress`, `CustomerNumber`)
@@ -150,6 +192,7 @@ graph TB
 **Location**: `src/Modules/CoreModule/CoreModule.Application`
 
 **Responsibilities**:
+
 - Use cases orchestration via Commands and Queries
 - Request/Response DTOs (`CustomerModel`)
 - Handlers that coordinate domain operations
@@ -165,6 +208,7 @@ graph TB
 **Location**: `src/Modules/CoreModule/CoreModule.Infrastructure`
 
 **Responsibilities**:
+
 - Database context and EF Core configurations
 - Repository implementations
 - External service integrations
@@ -179,6 +223,7 @@ graph TB
 **Location**: `src/Modules/CoreModule/CoreModule.Presentation`
 
 **Responsibilities**:
+
 - HTTP endpoints (Minimal APIs)
 - Module registration and configuration
 - DTO mapping (Mapster)
@@ -215,40 +260,40 @@ sequenceDiagram
     participant RepoBehaviors as Repository Behaviors
     participant DbCtx as CoreModuleDbContext<br/>(Infrastructure)
     participant DB as SQL Server Database
-    
+
     Client->>Endpoint: POST /api/coremodule/customers<br/>{firstName, lastName, email}
     Endpoint->>Req: SendAsync(CustomerCreateCommand)
-    
+
     Req->>Pipeline: Process request
     Note over Pipeline: 1. Module Scope<br/>2. Validation<br/>3. Retry<br/>4. Timeout
-    
+
     Pipeline->>Handler: HandleAsync(command)
-    
+
     Handler->>Handler: Create context
     Handler->>Handler: Validate rules
     Note over Handler: EmailShouldBeUniqueRule<br/>FirstName not empty
-    
+
     Handler->>Domain: Customer.Create(...)
     Domain->>Domain: Validate invariants
     Domain->>Domain: Register CustomerCreatedDomainEvent
     Domain-->>Handler: Result<Customer>
-    
+
     Handler->>Repo: InsertResultAsync(customer)
     Repo->>RepoBehaviors: Execute behavior chain
     Note over RepoBehaviors: 1. Tracing<br/>2. Logging<br/>3. Audit State<br/>4. Outbox Events
-    
+
     RepoBehaviors->>DbCtx: SaveChangesAsync()
     DbCtx->>DB: INSERT INTO Customers
     DB-->>DbCtx: Success
     DbCtx-->>RepoBehaviors: Saved entity
     RepoBehaviors-->>Repo: Result<Customer>
     Repo-->>Handler: Result<Customer>
-    
+
     Handler->>Handler: Map to CustomerModel
     Handler-->>Pipeline: Result<CustomerModel>
     Pipeline-->>Req: Result<CustomerModel>
     Req-->>Endpoint: Result<CustomerModel>
-    
+
     Endpoint->>Endpoint: MapHttpCreated()
     Endpoint-->>Client: 201 Created<br/>Location: /api/coremodule/customers/{id}
 ```
@@ -276,11 +321,13 @@ src/Modules/CoreModule/
 ```
 
 **Module Characteristics**:
+
 - **Self-contained**: Each module has its own DbContext, endpoints, and domain model
 - **Loosely coupled**: Modules communicate through contracts or integration events
 - **Independently deployable**: Modules can be extracted into microservices if needed
 
 **Module Boundary Rules** (enforced by architecture tests):
+
 - Modules **cannot** directly reference other modules' internal layers
 - Modules **can** reference other modules' `.Contracts` assemblies
 - Cross-module communication via integration events or public APIs
@@ -309,7 +356,7 @@ graph LR
     Step3 -->|Success| Step4[Step 4<br/>Mapping]
     Step3 -->|Failure| Failure
     Step4 --> Success([Success Path])
-    
+
     style Success fill:#4CAF50
     style Failure fill:#f44336
 ```
@@ -332,18 +379,22 @@ public class Result<T>
 #### Result Pattern Methods
 
 **Transformation Methods**:
+
 - **`Bind()`**: Transform success value
 - **`BindAsync()`**: Async transformation
 - **`BindResult()`**: Chain operations that return Results
 
 **Validation Methods**:
+
 - **`Ensure()`**: Inline validation
 - **`Unless()` / `UnlessAsync()`**: Business rule checking
 
 **Mapping Methods**:
+
 - **`Map()`**: Transform to different type
 
 **Side Effect Methods**:
+
 - **`Tap()`**: Execute action without changing result
 - **`Log()`**: bITdevKit logging extension
 
@@ -360,23 +411,23 @@ graph TB
     subgraph "Client Code (Endpoint)"
         Client[CustomerEndpoints]
     end
-    
+
     subgraph "Mediator (IRequester)"
         Req[IRequester.SendAsync]
         Pipeline[Pipeline Behaviors]
     end
-    
+
     subgraph "Handler"
         Handler[CustomerCreateCommandHandler]
     end
-    
+
     subgraph "Cross-Cutting Behaviors"
         B1[ModuleScopeBehavior]
         B2[ValidationBehavior]
         B3[RetryBehavior]
         B4[TimeoutBehavior]
     end
-    
+
     Client -->|CustomerCreateCommand| Req
     Req --> B1
     B1 --> B2
@@ -389,7 +440,7 @@ graph TB
     B2 --> B1
     B1 --> Req
     Req -->|Result<CustomerModel>| Client
-    
+
     style Handler fill:#4CAF50
     style Pipeline fill:#2196F3
 ```
@@ -429,7 +480,7 @@ graph LR
     Audit --> Outbox[OutboxDomainEventBehavior]
     Outbox --> Repo[EntityFrameworkRepository]
     Repo --> DB[(Database)]
-    
+
     style Tracing fill:#2196F3
     style Logging fill:#2196F3
     style Audit fill:#2196F3
@@ -515,7 +566,7 @@ graph TD
     L --> M[Configure Middleware Pipeline]
     M --> N[Map Endpoints]
     N --> O[Run Application]
-    
+
     style A fill:#4CAF50
     style L fill:#4CAF50
     style O fill:#4CAF50
@@ -562,7 +613,7 @@ builder.Services.AddNotifier()
 
 ```csharp
 builder.Services.AddJobScheduling(o => o
-    .StartupDelay(builder.Configuration["JobScheduling:StartupDelay"]), 
+    .StartupDelay(builder.Configuration["JobScheduling:StartupDelay"]),
     builder.Configuration)
     .WithSqlServerStore(builder.Configuration["JobScheduling:Quartz:..."])
     .WithBehavior<ModuleScopeJobSchedulingBehavior>();
@@ -570,15 +621,19 @@ builder.Services.AddJobScheduling(o => o
 
 **What happens**: Configures Quartz.NET with SQL Server persistence for background jobs.
 
-#### Additional Steps
+#### Step 5. Register Application Endpoints
 
-5. Register Application Endpoints
-6. Configure JSON Serialization
-7. Configure OpenAPI
-8. Configure CORS
-9. Configure Authentication/Authorization
-10. Configure Health Checks
-11. Configure Observability (OpenTelemetry)
+#### Step 6. Configure JSON Serialization
+
+#### Step 7. Configure OpenAPI
+
+#### Step 8. Configure CORS
+
+#### Step 9. Configure Authentication/Authorization
+
+#### Step 10. Configure Health Checks
+
+#### Step 11. Configure Observability (OpenTelemetry)
 
 ### Middleware Pipeline Configuration
 
@@ -608,12 +663,13 @@ graph TD
     Controllers --> Endpoints[MapEndpoints]
     Endpoints --> Console[UseConsoleCommandsInteractive]
     Console --> Response[HTTP Response]
-    
+
     style Request fill:#4CAF50
     style Response fill:#4CAF50
 ```
 
 **Key middleware**:
+
 - **UseRequestCorrelation**: Assigns unique correlation ID
 - **UseRequestModuleContext**: Determines handling module
 - **UseProblemDetails**: RFC 7807 error responses
@@ -621,7 +677,7 @@ graph TD
 
 ### Complete Request Flow
 
-```
+```text
 1. HTTO Request: POST /api/coremodule/customers
 2. UseHttpsRedirection → Ensure HTTPS
 3. UseRequestCorrelation → Assign correlation ID
@@ -644,7 +700,7 @@ graph TD
 
 ## Solution Structure
 
-```
+```text
 ├── src
 │   ├── Modules
 │   │   └── CoreModule
@@ -714,9 +770,9 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     public CustomerStatus Status { get; private set; } = CustomerStatus.Lead;
 
     public static Result<Customer> Create(
-        string firstName, 
-        string lastName, 
-        string email, 
+        string firstName,
+        string lastName,
+        string email,
         CustomerNumber number)
     {
         var emailResult = EmailAddress.Create(email);
@@ -725,7 +781,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
 
         var customer = new Customer(firstName, lastName, emailResult.Value, number);
         customer.DomainEvents.Register(new CustomerCreatedDomainEvent(customer));
-        
+
         return customer;
     }
 
@@ -752,7 +808,7 @@ public class EmailAddress : ValueObject
     public static Result<EmailAddress> Create(string value)
     {
         value = value?.Trim()?.ToLowerInvariant();
-        
+
         if (string.IsNullOrEmpty(value))
             return Result<EmailAddress>.Failure()
                 .WithError(new ValidationError("Email cannot be empty"));
@@ -782,7 +838,7 @@ public class CustomerStatus : Enumeration
     public static readonly CustomerStatus Active = new(2, nameof(Active), "Active customer");
     public static readonly CustomerStatus Retired = new(3, nameof(Retired), "Retired customer");
 
-    private CustomerStatus(int id, string name, string description = null) 
+    private CustomerStatus(int id, string name, string description = null)
         : base(id, name)
     {
         this.Description = description;
@@ -808,7 +864,7 @@ public partial class CustomerCreatedDomainEvent(Customer model) : DomainEventBas
 ([CoreModuleDbContext.cs](./src/Modules/CoreModule/CoreModule.Infrastructure/EntityFramework/CoreModuleDbContext.cs))
 
 ```csharp
-public class CoreModuleDbContext(DbContextOptions<CoreModuleDbContext> options) 
+public class CoreModuleDbContext(DbContextOptions<CoreModuleDbContext> options)
     : ModuleDbContextBase(options), IOutboxDomainEventContext
 {
     public DbSet<Customer> Customers { get; set; }
@@ -868,6 +924,7 @@ public async Task Process_ValidRequest_SuccessResult()
 ```
 
 For detailed implementation guidance, see:
+
 - [CoreModule README](src/Modules/CoreModule/CoreModule-README.md) - Module-specific patterns and workflows
 - [Architecture Tests](tests/Modules/CoreModule/CoreModule.UnitTests/ArchitectureTests.cs) - Boundary enforcement
 
@@ -878,25 +935,30 @@ For detailed implementation guidance, see:
 This appendix documents building, tagging, pushing, pulling and running the `Presentation.Web.Server` container image with the local registry (`registry` service in `docker-compose.yml` on port `5500`).
 
 ### Prerequisites
+
 - Docker installed (Desktop or Engine)
 - Local registry running: `docker compose up -d`
 
 ### Build Image
+
 ```pwsh
 docker build -t bit_devkit_gettingstarted-web:latest -f src/Presentation.Web.Server/Dockerfile .
 ```
 
 ### Tag For Local Registry
+
 ```pwsh
 docker tag bit_devkit_gettingstarted-web:latest localhost:5500/bit_devkit_gettingstarted-web:latest
 ```
 
 ### Push To Local Registry
+
 ```pwsh
 docker push localhost:5500/bit_devkit_gettingstarted-web:latest
 ```
 
 ### Run Container
+
 ```pwsh
 docker run `
   -d `
@@ -909,6 +971,7 @@ docker run `
 ```
 
 **Test Running Container**:
+
 ```pwsh
 curl http://localhost:8080/api/_system/info -v
 ```
@@ -922,6 +985,7 @@ The project uses **build-time OpenAPI** document generation with **Kiota** for c
 ### OpenAPI Document Generation
 
 The OpenAPI specification is generated automatically during compilation:
+
 - **On build**: OpenAPI spec generated to `wwwroot/openapi.json`
 - **At runtime**: Served as static file at `/openapi.json`
 - **UI**: Scalar UI available at `/scalar` (Development/Container only)
@@ -954,7 +1018,7 @@ using var httpClient = new HttpClient();
 httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer YOUR_JWT_TOKEN");
 
 var requestAdapter = new HttpClientRequestAdapter(
-    new AnonymousAuthenticationProvider(), 
+    new AnonymousAuthenticationProvider(),
     httpClient: httpClient);
 
 var client = new GettingStartedApiClient(requestAdapter);
