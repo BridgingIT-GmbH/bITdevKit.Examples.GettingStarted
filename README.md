@@ -85,13 +85,13 @@ An application built using .NET 10 and following a Domain-Driven Design (DDD) ap
 
 - Modular architecture with CoreModule as an example. [Modules](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-modules.md)
 - Application layer with Commands (e.g., CustomerCreateCommand) and Queries (e.g., CustomerFindAllQuery, CustomerFindOneQuery) using IRequester. [Requester](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-requester-notifier.md), [Commands and Queries](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-application-commands-queries.md)
-- Domain layer with Aggregates (Customer), Value Objects (EmailAddress, CustomerId), Enumerations (CustomerStatus), Domain Events (CustomerCreatedDomainEvent, CustomerUpdatedDomainEvent), and Business Rules (e.g., EmailShouldBeUniqueRule). [Domain](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-domain-models.md), [DomainEvents](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-domain-events.md), [Rules](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-rules.md)
+- Domain layer with Aggregates (Customer), Value Objects (EmailAddress, CustomerId), Enumerations (CustomerStatus), Domain Events (CustomerCreatedDomainEvent, CustomerUpdatedDomainEvent) and Business Rules (e.g., EmailShouldBeUniqueRule). [Domain](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-domain-models.md), [DomainEvents](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-domain-events.md), [Rules](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-rules.md)
 - Infrastructure layer with Entity Framework Core (CoreModuleDbContext, migrations, configurations) and Generic Repositories with behaviors (tracing, logging, audit, outbox domain event publishing). [Repositories](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-domain-repositories.md)
 - Presentation layer with Web API Endpoints for CRUD operations on Customers, using minimal API-style routing. [Endpoints](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-presentation-endpoints.md)
 - Startup tasks for seeding domain data (CoreModuleDomainSeederTask). [StartupTasks](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-startuptasks.md)
 - Job scheduling with Quartz (e.g., CustomerExportJob in Application layer). [JobScheduling](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-jobscheduling.md)
 - Comprehensive testing: Unit tests (command/query handlers, architecture rules), Integration tests (endpoints, persistence), Architecture tests (boundary enforcement).
-- Build-time OpenAPI generation with Kiota client support for C#, TypeScript, and Python.
+- Build-time OpenAPI generation with Kiota client support for C#, TypeScript and Python.
 
 ## Frameworks and Libraries
 
@@ -129,7 +129,7 @@ The application will automatically migrate the database on startup (via Database
 
 ## Architecture Deep Dive
 
-The bITdevKit GettingStarted project implements **Clean/Onion Architecture** principles combined with **Domain-Driven Design (DDD)** and a **Modular Monolith** approach. This section explains the architectural decisions, layer responsibilities, and how components interact.
+The bITdevKit GettingStarted project implements **Clean/Onion Architecture** principles combined with **Domain-Driven Design (DDD)** and a **Modular Monolith** approach. This section explains the architectural decisions, layer responsibilities and how components interact.
 
 ### Clean Architecture Overview
 
@@ -312,7 +312,7 @@ sequenceDiagram
 
 The application follows a **Modular Monolith** pattern where each module is a **vertical slice** containing all layers:
 
-```
+```text
 src/Modules/CoreModule/
 ├── CoreModule.Domain/              (Business logic)
 ├── CoreModule.Application/         (Use cases)
@@ -322,15 +322,15 @@ src/Modules/CoreModule/
 
 **Module Characteristics**:
 
-- **Self-contained**: Each module has its own DbContext, endpoints, and domain model
-- **Loosely coupled**: Modules communicate through contracts or integration events
+- **Self-contained**: Each module has its own DbContext, endpoints and domain model
+- **Loosely coupled**: Modules communicate through contracts (sync) or integration events (async)
 - **Independently deployable**: Modules can be extracted into microservices if needed
 
 **Module Boundary Rules** (enforced by architecture tests):
 
 - Modules **cannot** directly reference other modules' internal layers
-- Modules **can** reference other modules' `.Contracts` assemblies
-- Cross-module communication via integration events or public APIs
+- Modules **can** reference other modules' `.Contracts` projects
+- Cross-module communication via integration events (async) or public APIs (sync)
 
 See [CoreModule README](src/Modules/CoreModule/CoreModule-README.md) for module-specific implementation details.
 
@@ -338,7 +338,7 @@ See [CoreModule README](src/Modules/CoreModule/CoreModule-README.md) for module-
 
 ## Core Patterns
 
-The bITdevKit GettingStarted application is built on several key design patterns that work together to create a robust, maintainable, and testable architecture.
+The bITdevKit GettingStarted application is built on several key design patterns that work together to create a robust, maintainable and testable architecture.
 
 ### Result Pattern (Railway-Oriented Programming)
 
@@ -361,7 +361,7 @@ graph LR
     style Failure fill:#f44336
 ```
 
-**Key Concept**: Once a step fails, all subsequent steps are skipped, and the failure flows directly to the end.
+**Key Concept**: Once a step fails, all subsequent steps are skipped and the failure flows directly to the end.
 
 #### Result Type Structure
 
@@ -546,7 +546,7 @@ builder.Services.AddModules(builder.Configuration, builder.Environment)
 
 ## Application Bootstrap
 
-The `Program.cs` file is the **composition root** where all services, middleware, and modules are configured. Understanding this file is crucial for grasping how the application starts and how components wire together.
+The `Program.cs` file is the **composition root** where all services, middleware and modules are configured. Understanding this file is crucial for grasping how the application starts and how components wire together.
 
 ### Configuration Stages
 
@@ -582,7 +582,7 @@ builder.Host.ConfigureLogging();
 builder.Services.AddConsoleCommandsInteractive();
 ```
 
-**What happens**: Creates `WebApplicationBuilder` with configuration from `appsettings.json`, environment variables, and command-line args. Configures Serilog for structured logging.
+**What happens**: Creates `WebApplicationBuilder` with configuration from `appsettings.json`, environment variables and command-line args. Configures Serilog for structured logging.
 
 #### Step 2: Register Modules
 
