@@ -79,7 +79,10 @@ if (app.Environment.IsLocalDevelopment() || app.Environment.IsContainerized())
 app.UseRuleLogger();
 app.UseResultLogger();
 
-app.UseDefaultFiles();
+if (app.Environment.IsLocalDevelopment())
+{
+    app.UseDefaultFiles();
+}
 app.UseStaticFiles();
 app.UseRequestCorrelation();
 app.UseRequestModuleContext();
@@ -100,6 +103,7 @@ app.MapHealthChecks();
 app.MapModules();
 app.MapControllers();
 app.MapEndpoints();
+app.MapReadme();
 
 app.UseConsoleCommandsInteractiveStats();
 app.UseConsoleCommandsInteractive();

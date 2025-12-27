@@ -1,4 +1,4 @@
-﻿// MIT-License
+// MIT-License
 // Copyright BridgingIT GmbH - All Rights Reserved
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
@@ -193,6 +193,31 @@ public static class ProgramExtensions
         });
 
         app.MapHealthChecks("/health");
+
+        return app;
+    }
+
+    /// <summary>
+    /// Map README endpoint for local development only
+    /// </summary>
+    public static WebApplication MapReadme(this WebApplication app)
+    {
+        if (app.Environment.IsLocalDevelopment())
+        {
+            app.MapGet("/readme", async (IWebHostEnvironment env) =>
+            {
+                var readmePath = Path.Combine(env.ContentRootPath, "..", "..", "README.md");
+                if (!File.Exists(readmePath))
+                {
+                    return Results.NotFound("README.md not found");
+                }
+                var content = await File.ReadAllTextAsync(readmePath);
+                return Results.Text(content, "text/markdown");
+            })
+            .ExcludeFromDescription()
+            .WithName("GetReadme")
+            .WithTags("Documentation");
+        }
 
         return app;
     }
