@@ -1,4 +1,4 @@
-﻿// MIT-License
+// MIT-License
 // Copyright BridgingIT GmbH - All Rights Reserved
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
@@ -142,5 +142,183 @@ public class CustomerNumberTests
         // Act / Assert
         first.ShouldBe(second);
         (first == second).ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Verifies inequality of two CustomerNumber instances with different values.
+    /// </summary>
+    [Fact]
+    public void Equality_TwoDifferentValues_AreNotEqual()
+    {
+        // Arrange
+        var first = CustomerNumber.Create("CUS-2026-100000").Value;
+        var second = CustomerNumber.Create("CUS-2026-100001").Value;
+
+        // Act / Assert
+        first.ShouldNotBe(second);
+        (first != second).ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Tests GetHashCode consistency for equal objects.
+    /// </summary>
+    [Fact]
+    public void GetHashCode_TwoEqualValues_HaveSameHashCode()
+    {
+        // Arrange
+        var first = CustomerNumber.Create("CUS-2026-100000").Value;
+        var second = CustomerNumber.Create("CUS-2026-100000").Value;
+
+        // Act / Assert
+        first.GetHashCode().ShouldBe(second.GetHashCode());
+    }
+
+    /// <summary>
+    /// Verifies ToString returns the value.
+    /// </summary>
+    [Fact]
+    public void ToString_ReturnsValue()
+    {
+        // Arrange
+        var number = CustomerNumber.Create("CUS-2026-100000").Value;
+
+        // Act
+        var result = number.ToString();
+
+        // Assert
+        result.ShouldBe("CUS-2026-100000");
+    }
+
+    /// <summary>
+    /// Tests implicit conversion to string.
+    /// </summary>
+    [Fact]
+    public void ImplicitConversion_ToString_ReturnsValue()
+    {
+        // Arrange
+        var number = CustomerNumber.Create("CUS-2026-100000").Value;
+
+        // Act
+        string value = number; // implicit conversion
+
+        // Assert
+        value.ShouldBe("CUS-2026-100000");
+    }
+
+    /// <summary>
+    /// Tests null value handling.
+    /// </summary>
+    [Fact]
+    public void Create_WithNull_ReturnsFailureResult()
+    {
+        // Act
+        var result = CustomerNumber.Create(null);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Verifies Create with DateTimeOffset uses correct year.
+    /// </summary>
+    [Fact]
+    public void Create_WithDateTimeOffset_ReturnsSuccessResult()
+    {
+        // Arrange
+        var date = new DateTimeOffset(2025, 6, 15, 0, 0, 0, TimeSpan.Zero);
+        const long sequence = 100000L;
+
+        // Act
+        var result = CustomerNumber.Create(date, sequence);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.Value.ShouldBe("CUS-2025-100000");
+    }
+
+    /// <summary>
+    /// Verifies edge case for minimum valid sequence.
+    /// </summary>
+    [Fact]
+    public void Create_WithMinimumSequence_ReturnsSuccessResult()
+    {
+        // Arrange
+        const int year = 2026;
+        const long sequence = 100000L;
+
+        // Act
+        var result = CustomerNumber.Create(year, sequence);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.Value.ShouldBe("CUS-2026-100000");
+    }
+
+    /// <summary>
+    /// Verifies edge case for maximum valid sequence.
+    /// </summary>
+    [Fact]
+    public void Create_WithMaximumSequence_ReturnsSuccessResult()
+    {
+        // Arrange
+        const int year = 2026;
+        const long sequence = 999999L;
+
+        // Act
+        var result = CustomerNumber.Create(year, sequence);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.Value.ShouldBe("CUS-2026-999999");
+    }
+
+    /// <summary>
+    /// Verifies edge case for current year plus one.
+    /// </summary>
+    [Fact]
+    public void Create_WithCurrentYearPlusOne_ReturnsSuccessResult()
+    {
+        // Arrange
+        var year = this.timeProvider.GetUtcNow().Year + 1; // 2027
+        const long sequence = 100000L;
+
+        // Act
+        var result = CustomerNumber.Create(year, sequence);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.Value.ShouldBe("CUS-2027-100000");
+    }
+
+    /// <summary>
+    /// Verifies case insensitive matching for lowercase input.
+    /// </summary>
+    [Fact]
+    public void Create_WithLowercaseString_ReturnsUppercaseNormalized()
+    {
+        // Act
+        var result = CustomerNumber.Create("cus-2026-100000");
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.Value.ShouldBe("CUS-2026-100000");
+    }
+
+    /// <summary>
+    /// Verifies additional invalid format variations.
+    /// </summary>
+    [Theory]
+    [InlineData("CUS2026100000")] // no separators
+    [InlineData("CUS_2026_100000")] // wrong separator
+    [InlineData("CUS-2026-1000000")] // sequence too long
+    [InlineData("CUS-26-100000")] // year too short
+    [InlineData("CUSTOMER-2026-100000")] // wrong prefix
+    public void Create_WithVariousInvalidFormats_ReturnsFailureResult(string value)
+    {
+        // Act
+        var result = CustomerNumber.Create(value);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
     }
 }

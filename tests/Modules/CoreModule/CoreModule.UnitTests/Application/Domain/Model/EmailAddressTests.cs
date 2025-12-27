@@ -104,4 +104,96 @@ public class EmailAddressTests
         first.ShouldBe(second);
         (first == second).ShouldBeTrue();
     }
+
+    /// <summary>
+    /// Verifies inequality of two EmailAddress instances with different values.
+    /// </summary>
+    [Fact]
+    public void Equality_TwoDifferentValues_AreNotEqual()
+    {
+        // Arrange
+        var first = EmailAddress.Create("john.doe@example.com").Value;
+        var second = EmailAddress.Create("jane.doe@example.com").Value;
+
+        // Act / Assert
+        first.ShouldNotBe(second);
+        (first != second).ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Tests GetHashCode consistency for equal objects.
+    /// </summary>
+    [Fact]
+    public void GetHashCode_TwoEqualValues_HaveSameHashCode()
+    {
+        // Arrange
+        var first = EmailAddress.Create("john.doe@example.com").Value;
+        var second = EmailAddress.Create("john.doe@example.com").Value;
+
+        // Act / Assert
+        first.GetHashCode().ShouldBe(second.GetHashCode());
+    }
+
+    /// <summary>
+    /// Verifies Value property returns the normalized value.
+    /// </summary>
+    [Fact]
+    public void Value_ReturnsNormalizedValue()
+    {
+        // Arrange
+        var email = EmailAddress.Create("John.Doe@Example.Com").Value;
+
+        // Act
+        var result = email.Value;
+
+        // Assert
+        result.ShouldBe("john.doe@example.com");
+    }
+
+    /// <summary>
+    /// Tests null value handling.
+    /// </summary>
+    [Fact]
+    public void Create_WithNull_ReturnsFailureResult()
+    {
+        // Act
+        var result = EmailAddress.Create(null);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Verifies additional valid email formats.
+    /// </summary>
+    [Theory]
+    [InlineData("user+tag@example.com")]
+    [InlineData("user_name@example.com")]
+    [InlineData("user.name@sub.example.com")]
+    [InlineData("123@example.com")]
+    public void Create_WithVariousValidFormats_ReturnsSuccessResult(string email)
+    {
+        // Act
+        var result = EmailAddress.Create(email);
+
+        // Assert
+        result.IsSuccess.ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Verifies additional invalid email formats.
+    /// </summary>
+    [Theory]
+    [InlineData("user@")]
+    [InlineData("@domain.com")]
+    [InlineData("user domain@example.com")]
+    [InlineData("user@@example.com")]
+    public void Create_WithVariousInvalidFormats_ReturnsFailureResult(string email)
+    {
+        // Act
+        var result = EmailAddress.Create(email);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
 }
