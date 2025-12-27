@@ -19,5 +19,10 @@ public class CustomerUpdateStatusRequestModel
         this.Status = status;
     }
 
+    /// <summary>
+    /// Gets or sets the new status value for the customer.
+    /// Valid values: 1 = Lead, 2 = Active, 3 = Retired. See CustomerStatus enumeration for details.
+    /// </summary>
+    /// <example>2</example>
     public int Status { get; set; }
 }

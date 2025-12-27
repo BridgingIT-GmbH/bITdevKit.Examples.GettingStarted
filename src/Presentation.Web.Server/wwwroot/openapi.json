@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.1.1",
   "info": {
     "title": "BridgingIT.DevKit.Examples.GettingStarted API",
     "version": "v1.0"
@@ -10,7 +10,8 @@
         "tags": [
           "CoreModule.Customers"
         ],
-        "description": "Gets a customer by its unique identifier.",
+        "summary": "Get customer by ID",
+        "description": "Retrieves a single customer by their unique identifier. Returns 404 if the customer is not found.",
         "operationId": "CoreModule.Customers.GetById",
         "parameters": [
           {
@@ -73,7 +74,8 @@
         "tags": [
           "CoreModule.Customers"
         ],
-        "description": "Updates the details of an existing customer identified by its unique identifier.",
+        "summary": "Update an existing customer",
+        "description": "Updates all details of an existing customer. Requires the customer ID in both the route and the request body. The concurrencyVersion must match to prevent conflicting updates (optimistic concurrency). Returns 409 Conflict if the version doesn't match.",
         "operationId": "CoreModule.Customers.Update",
         "parameters": [
           {
@@ -107,7 +109,14 @@
             }
           },
           "404": {
-            "description": "Not Found"
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad Request",
@@ -148,7 +157,8 @@
         "tags": [
           "CoreModule.Customers"
         ],
-        "description": "Deletes an existing customer identified by its unique identifier.",
+        "summary": "Delete a customer",
+        "description": "Permanently deletes an existing customer identified by its unique identifier. This operation cannot be undone. Returns 204 No Content on success.",
         "operationId": "CoreModule.Customers.Delete",
         "parameters": [
           {
@@ -166,7 +176,14 @@
             "description": "No Content"
           },
           "404": {
-            "description": "Not Found"
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad Request",
@@ -199,7 +216,8 @@
         "tags": [
           "CoreModule.Customers"
         ],
-        "description": "Gets all customers matching the specified filter criteria.",
+        "summary": "Get all customers",
+        "description": "Retrieves all customers matching the specified filter criteria. Supports pagination (page, pageSize), sorting (orderings), and filtering.",
         "operationId": "CoreModule.Customers.GetAll",
         "parameters": [
           {
@@ -253,7 +271,8 @@
         "tags": [
           "CoreModule.Customers"
         ],
-        "description": "Creates a new customer with the provided details.",
+        "summary": "Create a new customer",
+        "description": "Creates a new customer with the provided details. The customer number is automatically generated. Returns the created customer with a Location header pointing to the new resource.",
         "operationId": "CoreModule.Customers.Create",
         "requestBody": {
           "content": {
@@ -306,7 +325,8 @@
         "tags": [
           "CoreModule.Customers"
         ],
-        "description": "Searches for customers matching the specified filter criteria.",
+        "summary": "Search customers with filters",
+        "description": "Searches for customers matching the specified filter criteria provided in the request body. Use this endpoint for complex filter combinations that don't fit in query strings. Supports pagination, sorting, and filtering.",
         "operationId": "CoreModule.Customers.Search",
         "requestBody": {
           "content": {
@@ -362,7 +382,8 @@
         "tags": [
           "CoreModule.Customers"
         ],
-        "description": "Updates the status of an existing customer identified by its unique identifier.",
+        "summary": "Update customer status",
+        "description": "Updates only the status of an existing customer (e.g., Lead, Active, Retired). This is a partial update operation that modifies only the status field. Valid status values: 1 = Lead, 2 = Active, 3 = Retired.",
         "operationId": "CoreModule.Customers.UpdateStatus",
         "parameters": [
           {
@@ -396,7 +417,14 @@
             }
           },
           "404": {
-            "description": "Not Found"
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad Request",
@@ -434,26 +462,23 @@
         }
       }
     },
-    "/api/coremodule/customers/exception": {
-      "delete": {
+    "/api/_system/jobs": {
+      "get": {
         "tags": [
-          "CoreModule.Customers"
+          "_system/jobs"
         ],
-        "description": "Endpoint that always throws an exception for testing purposes.",
-        "operationId": "CoreModule.Customers.Delete2",
+        "description": "Retrieves a list of all scheduled jobs.",
+        "operationId": "GetJobs",
         "responses": {
           "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "400": {
-            "description": "Bad Request",
+            "description": "OK",
             "content": {
-              "application/problem+json": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ResultProblemDetails"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/JobInfo"
+                  }
                 }
               }
             }
@@ -461,9 +486,598 @@
           "500": {
             "description": "Internal Server Error",
             "content": {
-              "application/problem+json": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ResultProblemDetails"
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/_system/jobs/{jobName}/{jobGroup}": {
+      "get": {
+        "tags": [
+          "_system/jobs"
+        ],
+        "description": "Retrieves details for a specific job.",
+        "operationId": "GetJob",
+        "parameters": [
+          {
+            "name": "jobName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "jobGroup",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobInfo"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/_system/jobs/{jobName}/{jobGroup}/runs": {
+      "get": {
+        "tags": [
+          "_system/jobs"
+        ],
+        "description": "Retrieves execution history for a specific job with optional filters.",
+        "operationId": "GetJobRuns",
+        "parameters": [
+          {
+            "name": "jobName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "jobGroup",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "instanceName",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resultContains",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "take",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/JobRun"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "_system/jobs"
+        ],
+        "description": "Purges job run history older than a specified date.",
+        "operationId": "PurgeJobRuns",
+        "parameters": [
+          {
+            "name": "jobName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "jobGroup",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "olderThan",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/_system/jobs/{jobName}/{jobGroup}/stats": {
+      "get": {
+        "tags": [
+          "_system/jobs"
+        ],
+        "description": "Retrieves aggregated statistics for a job’s execution history.",
+        "operationId": "GetJobRunStats",
+        "parameters": [
+          {
+            "name": "jobName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "jobGroup",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobRunStats"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/_system/jobs/{jobName}/{jobGroup}/triggers": {
+      "get": {
+        "tags": [
+          "_system/jobs"
+        ],
+        "description": "Retrieves all triggers associated with a specific job.",
+        "operationId": "GetJobTriggers",
+        "parameters": [
+          {
+            "name": "jobName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "jobGroup",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TriggerInfo"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/_system/jobs/{jobName}/{jobGroup}/trigger": {
+      "post": {
+        "tags": [
+          "_system/jobs"
+        ],
+        "description": "Triggers a job to run immediately with optional data.",
+        "operationId": "TriggerJob",
+        "parameters": [
+          {
+            "name": "jobName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "jobGroup",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "object"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/_system/jobs/{jobName}/{jobGroup}/pause": {
+      "post": {
+        "tags": [
+          "_system/jobs"
+        ],
+        "description": "Pauses the execution of a specific job.",
+        "operationId": "PauseJob",
+        "parameters": [
+          {
+            "name": "jobName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "jobGroup",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/_system/jobs/{jobName}/{jobGroup}/resume": {
+      "post": {
+        "tags": [
+          "_system/jobs"
+        ],
+        "description": "Resumes the execution of a paused job.",
+        "operationId": "ResumeJob",
+        "parameters": [
+          {
+            "name": "jobName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "jobGroup",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/_system/jobs/{jobName}/{jobGroup}/interrupt": {
+      "post": {
+        "tags": [
+          "_system/jobs"
+        ],
+        "description": "Interrupts the execution of a currently running job.",
+        "operationId": "InterruptJob",
+        "parameters": [
+          {
+            "name": "jobName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "jobGroup",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -794,8 +1408,7 @@
                     "type": "object",
                     "properties": {
                       "client_secret": {
-                        "type": "string",
-                        "default": null
+                        "type": "string"
                       }
                     }
                   },
@@ -803,8 +1416,7 @@
                     "type": "object",
                     "properties": {
                       "code": {
-                        "type": "string",
-                        "default": null
+                        "type": "string"
                       }
                     }
                   },
@@ -812,8 +1424,7 @@
                     "type": "object",
                     "properties": {
                       "redirect_uri": {
-                        "type": "string",
-                        "default": null
+                        "type": "string"
                       }
                     }
                   },
@@ -821,8 +1432,7 @@
                     "type": "object",
                     "properties": {
                       "refresh_token": {
-                        "type": "string",
-                        "default": null
+                        "type": "string"
                       }
                     }
                   },
@@ -830,8 +1440,7 @@
                     "type": "object",
                     "properties": {
                       "username": {
-                        "type": "string",
-                        "default": null
+                        "type": "string"
                       }
                     }
                   },
@@ -839,8 +1448,7 @@
                     "type": "object",
                     "properties": {
                       "password": {
-                        "type": "string",
-                        "default": null
+                        "type": "string"
                       }
                     }
                   },
@@ -848,8 +1456,7 @@
                     "type": "object",
                     "properties": {
                       "scope": {
-                        "type": "string",
-                        "default": null
+                        "type": "string"
                       }
                     }
                   }
@@ -982,52 +1589,88 @@
         "type": "object",
         "properties": {
           "nodes": {
-            "type": "array",
-            "nullable": true
+            "type": [
+              "null",
+              "array"
+            ]
           }
-        },
-        "nullable": true
+        }
       },
       "CustomerModel": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets or sets the unique identifier of the customer as a string (Guid).\r\nThis value is generated by the domain and serves as the primary key.",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
           },
           "firstName": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets or sets the customer's first name.\r\nRequired and limited to 128 characters in persistence.",
+            "example": "John"
           },
           "lastName": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets or sets the customer's last name.\r\nRequired and limited to 512 characters in persistence.",
+            "example": "Doe"
           },
           "number": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets or sets the customer number in format CUS-YYYY-NNNNNN (e.g., CUS-2024-100000).\r\nThis is a system-generated sequential identifier unique per year.",
+            "example": "CUS-2024-100000"
           },
           "dateOfBirth": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets or sets the date of birth of the customer (optional).\r\nStored in ISO 8601 date format (YYYY-MM-DD).",
             "format": "date",
-            "nullable": true
+            "example": "1990-05-15"
           },
           "email": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets or sets the customer's email address.\r\nStored in normalized lowercase form and validated against domain rules.\r\nMust be unique across all customers.",
+            "example": "john.doe@example.com"
           },
           "status": {
             "type": "integer",
-            "format": "int32"
+            "description": "Gets or sets the current status of the customer as an enumeration identifier.\r\n1 = Lead, 2 = Active, 3 = Retired. See CustomerStatus enumeration for valid values.",
+            "format": "int32",
+            "example": 2
           },
           "statusEnum": {
+            "description": "Gets or sets the customer status as an enum value.\r\nThis is a sample representation for demonstration purposes.",
+            "examples": [
+              "Active"
+            ],
             "$ref": "#/components/schemas/CustomerStatusSample"
           },
           "concurrencyVersion": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets or sets the concurrency version token (as a string Guid).\r\nUsed for optimistic concurrency control to prevent conflicting updates.\r\nMust be provided when updating to ensure the entity hasn't been modified by another operation.",
+            "example": "8f7a9b2c-3d4e-5f6a-7b8c-9d0e1f2a3b4c"
           }
-        }
+        },
+        "description": "Data transfer object (DTO) representing a Customer.\r\nUsed by the application and presentation layers to expose Customers to clients.\r\nMirrors key domain properties in a JSON‑friendly / client‑friendly format."
       },
       "CustomerStatusSample": {
         "enum": [
@@ -1035,41 +1678,53 @@
           "Active",
           "Inactive",
           "Suspended"
-        ]
+        ],
+        "description": "Sample enum representing possible customer states (for demonstration)."
       },
       "CustomerUpdateStatusRequestModel": {
         "type": "object",
         "properties": {
           "status": {
             "type": "integer",
-            "format": "int32"
+            "description": "Gets or sets the new status value for the customer.\r\nValid values: 1 = Lead, 2 = Active, 3 = Retired. See CustomerStatus enumeration for details.",
+            "format": "int32",
+            "example": 2
           }
-        }
+        },
+        "description": "Request body for changing customer status."
       },
       "DebugInfoResponse": {
         "type": "object",
         "properties": {
           "tokenIssuer": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "tokenProvider": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "configuredClients": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "$ref": "#/components/schemas/DevClientDebugInfo"
-            },
-            "nullable": true
+            }
           },
           "configuredUsers": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "$ref": "#/components/schemas/UserDebugInfo"
-            },
-            "nullable": true
+            }
           },
           "endpoints": {
             "$ref": "#/components/schemas/EndpointDebugInfo"
@@ -1080,26 +1735,34 @@
         "type": "object",
         "properties": {
           "clientId": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "redirectUris": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "string"
-            },
-            "nullable": true
+            }
           },
           "allowedScopes": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "string"
-            },
-            "nullable": true
+            }
           }
         }
       },
@@ -1107,27 +1770,32 @@
         "type": "object",
         "properties": {
           "authorization": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "token": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "userInfo": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "logout": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           }
-        },
-        "nullable": true
+        }
       },
-      "FilterCriteria": {
-        "nullable": true
-      },
+      "FilterCriteria": { },
       "FilterModel": {
         "type": "object",
         "properties": {
@@ -1143,26 +1811,34 @@
             "type": "boolean"
           },
           "orderings": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "$ref": "#/components/schemas/FilterOrderCriteria"
-            },
-            "nullable": true
+            }
           },
           "filters": {
-            "type": "array",
-            "nullable": true
+            "type": [
+              "null",
+              "array"
+            ]
           },
           "includes": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "string"
-            },
-            "nullable": true
+            }
           },
           "hierarchy": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "hierarchyMaxDepth": {
             "type": "integer",
@@ -1183,11 +1859,267 @@
         "type": "object",
         "properties": {
           "field": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "direction": {
             "$ref": "#/components/schemas/OrderDirection"
+          }
+        }
+      },
+      "JobInfo": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "group": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "type": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "triggerCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lastRun": {
+            "$ref": "#/components/schemas/JobRun"
+          },
+          "isRunning": {
+            "type": "boolean"
+          },
+          "lastRunStats": {
+            "$ref": "#/components/schemas/JobRunStats"
+          },
+          "category": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "triggers": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/TriggerInfo"
+            }
+          },
+          "runs": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/JobRun"
+            }
+          }
+        }
+      },
+      "JobRun": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "jobName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "jobGroup": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "triggerName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "triggerGroup": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "startTimeText": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "endTime": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "endTimeText": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "scheduledTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "durationMs": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int64"
+          },
+          "durationText": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isRunning": {
+            "type": "boolean"
+          },
+          "errorMessage": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "data": {
+            "type": [
+              "null",
+              "object"
+            ]
+          },
+          "instanceName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "priority": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "result": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "retryCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "category": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "JobRunStats": {
+        "type": "object",
+        "properties": {
+          "totalRuns": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "successCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "failureCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "interruptCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "avgRunDurationMs": {
+            "type": "number",
+            "format": "double"
+          },
+          "avgRunDurationText": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "maxRunDurationMs": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "maxRunDurationText": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "minRunDurationMs": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "minRunDurationText": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -1195,16 +2127,22 @@
         "type": "object",
         "properties": {
           "error": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "error_description": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "error_uri": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -1212,66 +2150,88 @@
         "type": "object",
         "properties": {
           "issuer": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "authorization_endpoint": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "token_endpoint": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "userinfo_endpoint": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "end_session_endpoint": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "grant_types_supported": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "string"
-            },
-            "nullable": true
+            }
           },
           "response_types_supported": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "string"
-            },
-            "nullable": true
+            }
           },
           "response_modes_supported": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "string"
-            },
-            "nullable": true
+            }
           },
           "scopes_supported": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "string"
-            },
-            "nullable": true
+            }
           },
           "claims_supported": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "string"
-            },
-            "nullable": true
+            }
           },
           "token_endpoint_auth_methods_supported": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "string"
-            },
-            "nullable": true
+            }
           }
         }
       },
@@ -1280,25 +2240,35 @@
         "type": "object",
         "properties": {
           "type": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "title": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "status": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
           },
           "detail": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "instance": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -1314,46 +2284,57 @@
             "$ref": "#/components/schemas/ResultProblemResult"
           },
           "errors": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "$ref": "#/components/schemas/ProblemError"
             },
-            "description": "Collection of additional errors outside the result object",
-            "nullable": true
+            "description": "Collection of additional errors outside the result object"
           }
         },
         "additionalProperties": { },
-        "description": "Data section included within a problem details response",
-        "nullable": true
+        "description": "Data section included within a problem details response"
       },
       "ResultProblemDetails": {
         "type": "object",
         "properties": {
           "type": {
-            "type": "string",
-            "description": "A URI reference that identifies the problem type",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "A URI reference that identifies the problem type"
           },
           "title": {
-            "type": "string",
-            "description": "A short, human-readable summary of the problem",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "A short, human-readable summary of the problem"
           },
           "status": {
-            "type": "integer",
+            "type": [
+              "null",
+              "integer"
+            ],
             "description": "The HTTP status code",
-            "format": "int32",
-            "nullable": true
+            "format": "int32"
           },
           "detail": {
-            "type": "string",
-            "description": "A human-readable explanation specific to this occurrence",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "A human-readable explanation specific to this occurrence"
           },
           "instance": {
-            "type": "string",
-            "description": "A URI reference that identifies the specific occurrence of the problem",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "A URI reference that identifies the specific occurrence of the problem"
           },
           "data": {
             "$ref": "#/components/schemas/ResultProblemData"
@@ -1366,9 +2347,11 @@
         "type": "object",
         "properties": {
           "message": {
-            "type": "string",
-            "description": "Human-readable error message",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Human-readable error message"
           }
         },
         "additionalProperties": { },
@@ -1382,67 +2365,80 @@
             "description": "Indicates whether the operation completed successfully"
           },
           "messages": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "string"
             },
-            "description": "Collection of informational or diagnostic messages from the operation",
-            "nullable": true
+            "description": "Collection of informational or diagnostic messages from the operation"
           },
           "errors": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "$ref": "#/components/schemas/ResultProblemError"
             },
-            "description": "Collection of domain or technical errors encountered during the operation",
-            "nullable": true
+            "description": "Collection of domain or technical errors encountered during the operation"
           }
         },
         "additionalProperties": { },
-        "description": "Represents the operation outcome with success status, messages, and errors",
-        "nullable": true
+        "description": "Represents the operation outcome with success status, messages, and errors"
       },
-      "SpecificationNode": {
-        "nullable": true
-      },
+      "SpecificationNode": { },
       "SystemInfo": {
         "type": "object",
         "properties": {
           "request": {
-            "type": "object",
-            "nullable": true
+            "type": [
+              "null",
+              "object"
+            ]
           },
           "runtime": {
-            "type": "object",
+            "type": [
+              "null",
+              "object"
+            ],
             "additionalProperties": {
               "type": "string"
-            },
-            "nullable": true
+            }
           },
           "memory": {
-            "type": "object",
+            "type": [
+              "null",
+              "object"
+            ],
             "additionalProperties": {
               "type": "string"
-            },
-            "nullable": true
+            }
           },
           "configuration": {
-            "type": "object",
+            "type": [
+              "null",
+              "object"
+            ],
             "additionalProperties": {
               "type": "string"
-            },
-            "nullable": true
+            }
           },
           "customMetadata": {
-            "type": "object",
+            "type": [
+              "null",
+              "object"
+            ],
             "additionalProperties": {
               "type": "string"
-            },
-            "nullable": true
+            }
           },
           "uptime": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -1450,8 +2446,10 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "enabled": {
             "type": "boolean"
@@ -1469,12 +2467,16 @@
         "type": "object",
         "properties": {
           "access_token": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "refresh_token": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "expires_in": {
             "type": "integer",
@@ -1485,20 +2487,89 @@
             "format": "int32"
           },
           "token_type": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "id_token": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "session_state": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "scope": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "TriggerInfo": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "group": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cronExpression": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nextFireTime": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "nextFireTimeText": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "previousFireTime": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "previousFireTimeText": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -1506,23 +2577,31 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "email": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "roles": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "string"
-            },
-            "nullable": true
+            }
           },
           "isDefault": {
             "type": "boolean"
@@ -1533,38 +2612,52 @@
         "type": "object",
         "properties": {
           "sub": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "name": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "given_name": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "family_name": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "preferred_username": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "email": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "email_verified": {
             "type": "boolean"
           },
           "roles": {
-            "type": "array",
+            "type": [
+              "null",
+              "array"
+            ],
             "items": {
               "type": "string"
-            },
-            "nullable": true
+            }
           }
         }
       }
@@ -1572,7 +2665,7 @@
     "securitySchemes": {
       "Bearer": {
         "type": "oauth2",
-        "description": "JWT Bearer token authentication using OAuth 2.0"
+        "description": "The JWT token in the format: Bearer {token}"
       }
     }
   },
@@ -1584,6 +2677,9 @@
   "tags": [
     {
       "name": "CoreModule.Customers"
+    },
+    {
+      "name": "_system/jobs"
     },
     {
       "name": "_system"

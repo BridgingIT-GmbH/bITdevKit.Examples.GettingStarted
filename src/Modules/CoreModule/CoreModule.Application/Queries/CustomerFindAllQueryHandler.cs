@@ -1,4 +1,4 @@
-﻿// MIT-License
+// MIT-License
 // Copyright BridgingIT GmbH - All Rights Reserved
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
@@ -37,8 +37,8 @@ public class CustomerFindAllQueryHandler(
     /// <param name="options">Request send options (retry handling, pipeline context).</param>
     /// <param name="cancellationToken">Cancellation token for async workflow.</param>
     /// <returns>
-    /// A <see cref="Result{IEnumerable{CustomerModel}}"/> containing the mapped set
-    /// of all customers found, or a failure result in case of an error.
+    /// A Result containing an enumerable of CustomerModel instances representing
+    /// all customers found, or a failure result in case of an error.
     /// </returns>
     protected override async Task<Result<IEnumerable<CustomerModel>>> HandleAsync(
         CustomerFindAllQuery request,
@@ -46,13 +46,13 @@ public class CustomerFindAllQueryHandler(
         CancellationToken cancellationToken)
     {
         // Load all matching customers from repository
-        return await repository.FindAllResultAsync(request.Filter, cancellationToken: cancellationToken)
+        return await repository.FindAllResultAsync(request.Filter, cancellationToken: cancellationToken) // TODO: use paging -> FindAllResultPagedAsync
 
-        // Side-effect: audit, logging, telemetry, etc.
-        .Tap(_ => Console.WriteLine("AUDIT"))
+            // Side-effect: audit, logging, telemetry, etc.
+            .Tap(_ => Console.WriteLine("AUDIT"))
 
-        // Map domain entities -> DTOs result
-        .Map(mapper.Map<Customer, CustomerModel>);
+            // Map domain entities -> DTOs result
+            .Map(mapper.Map<Customer, CustomerModel>);
     }
     //TODO: .MapResult<Customer, CustomerModel>(mapper) for collections not yet supported
 }
