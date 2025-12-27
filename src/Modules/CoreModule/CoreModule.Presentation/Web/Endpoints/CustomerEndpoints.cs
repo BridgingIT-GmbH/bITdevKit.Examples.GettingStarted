@@ -69,7 +69,7 @@ public class CustomerEndpoints : EndpointsBase
                    [FromBody] CustomerModel model, CancellationToken ct)
                    => (await requester
                     .SendAsync(new CustomerCreateCommand(model), cancellationToken: ct))
-                    .MapHttpCreated(v => $"/api/core/customers/{v.Id}"))
+                    .MapHttpCreated(v => $"/api/coremodule/customers/{v.Id}"))
             .WithName("CoreModule.Customers.Create")
             .WithDescription("Creates a new customer with the provided details.")
             .Produces(StatusCodes.Status401Unauthorized)
