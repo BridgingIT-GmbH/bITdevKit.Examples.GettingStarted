@@ -6,6 +6,7 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Handler for processing <see cref="CustomerFindOneQuery"/>.
@@ -18,38 +19,33 @@ using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 /// - Uses <see cref="IGenericRepository{Customer}"/> and domain-specific <see cref="CustomerId"/> value object
 ///   to perform the lookup.
 /// </remarks>
-[HandlerRetry(2, 100)]   // retry twice, wait 100ms between retries
-[HandlerTimeout(500)]    // timeout after 500ms execution
+// [HandlerRetry(2, 100)]   // retry twice, wait 100ms between retries
+// [HandlerTimeout(500)]    // timeout after 500ms execution
 public class CustomerFindOneQueryHandler(
+    ILogger<CustomerFindOneQueryHandler> logger,
     IMapper mapper,
     IGenericRepository<Customer> repository)
     : RequestHandlerBase<CustomerFindOneQuery, CustomerModel>
 {
     /// <summary>
-    /// Handles the <see cref="CustomerFindOneQuery"/> request. Steps:
-    /// 1. Convert the incoming ID string into a <see cref="CustomerId"/> value object.
-    /// 2. Query repository for that customer.
-    /// 3. Perform audit/logging side-effect.
-    /// 4. Map the domain <see cref="Customer"/> into a <see cref="CustomerModel"/> DTO for return.
+    /// Handles the <see cref="CustomerFindOneQuery"/> request.
     /// </summary>
-    /// <param name="request">The incoming query containing the Customer ID.</param>
+    /// <param name="request">The incoming query containing the Aggregate ID.</param>
     /// <param name="options">Pipeline send options (retries, context).</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>
-    /// A <see cref="Result{CustomerModel}"/> containing the mapped customer
-    /// if found, or an error result if the entity does not exist.
+    /// A <see cref="Result{CustomerModel}"/> containing the mapped aggregate  if found, or an error result if the aggregate does not exist.
     /// </returns>
     protected override async Task<Result<CustomerModel>> HandleAsync(
         CustomerFindOneQuery request,
         SendOptions options,
         CancellationToken cancellationToken) =>
             // Load the customer from the repository by ID
-            await repository.FindOneResultAsync(CustomerId.Create(request.CustomerId), cancellationToken: cancellationToken)
+            await repository.FindOneResultAsync(CustomerId.Create(request.Id), cancellationToken: cancellationToken)
 
-            // Side-effect: audit/logging/telemetry etc.
-            .Tap(_ => Console.WriteLine("AUDIT"))
+            // Side effects (audit/logging)
+            .Log(logger, "AUDIT - Customer {CustomerId} retrieved", r => [r.Value.Id])
 
-            // Map domain entity -> DTO result
+            // Map retrieved Aggregate → Model
             .MapResult<Customer, CustomerModel>(mapper);
-            //.Map(mapper.Map<Customer, CustomerModel>);
 }

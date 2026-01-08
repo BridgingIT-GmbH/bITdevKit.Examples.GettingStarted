@@ -68,7 +68,7 @@ public class CustomerCreateCommandHandler(
 
                 // STEP 8 — Map new Aggregate → Model
                 .Map(this.ToModel)
-                .Log(logger, "Mapped to {@Model}", r => [r.Value]);
+                .Log(logger, "Entity mapped to {@Model}", r => [r.Value]);
 
     private async Task<Result<long>> GenerateSequenceAsync(CustomerCreateContext ctx, CancellationToken ct)
     {

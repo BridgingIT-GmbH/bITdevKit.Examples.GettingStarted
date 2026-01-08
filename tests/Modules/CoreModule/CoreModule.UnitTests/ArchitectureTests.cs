@@ -3,12 +3,12 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests;
+namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.ArchitectureTests;
 
 using Dumpify;
 using NetArchTest.Rules;
 
-public class TypesFixture
+public class ArchitectureFixture
 {
     public Types Types { get; } = Types.FromPath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
 
@@ -45,12 +45,12 @@ public class TypesFixture
 /// </para>
 /// </summary>
 [UnitTest("Architecture")]
-public class ArchitectureTests : IClassFixture<TypesFixture>
+public class ArchitectureTests : IClassFixture<ArchitectureFixture>
 {
     private readonly ITestOutputHelper output;
-    private readonly TypesFixture fixture;
+    private readonly ArchitectureFixture fixture;
 
-    public ArchitectureTests(ITestOutputHelper output, TypesFixture fixture)
+    public ArchitectureTests(ITestOutputHelper output, ArchitectureFixture fixture)
     {
         this.output = output;
         this.fixture = fixture;

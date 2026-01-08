@@ -3,7 +3,7 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Commands;
+namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application;
 
 using FluentValidation.TestHelper;
 
@@ -20,10 +20,8 @@ public class CustomerUpdateStatusCommandValidatorTests
     [Fact]
     public void Validate_ValidCommand_ShouldNotHaveValidationError()
     {
-        // Arrange - Status 2 = Active
-        var command = new CustomerUpdateStatusCommand(
-            Guid.NewGuid().ToString(),
-            2);
+        // Arrange
+        var command = new CustomerUpdateStatusCommand(Guid.NewGuid().ToString(), 2);
 
         // Act
         var result = this.validator.TestValidate(command);
@@ -43,7 +41,7 @@ public class CustomerUpdateStatusCommandValidatorTests
         var result = this.validator.TestValidate(command);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(c => c.CustomerId);
+        result.ShouldHaveValidationErrorFor(c => c.Id);
     }
 
     /// <summary>Verifies validation error for empty customer ID.</summary>
@@ -57,7 +55,7 @@ public class CustomerUpdateStatusCommandValidatorTests
         var result = this.validator.TestValidate(command);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(c => c.CustomerId);
+        result.ShouldHaveValidationErrorFor(c => c.Id);
     }
 
     /// <summary>Verifies validation error for empty GUID customer ID.</summary>
@@ -71,7 +69,7 @@ public class CustomerUpdateStatusCommandValidatorTests
         var result = this.validator.TestValidate(command);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(c => c.CustomerId);
+        result.ShouldHaveValidationErrorFor(c => c.Id);
     }
 
     /// <summary>Verifies validation error for zero status value.</summary>
@@ -144,4 +142,3 @@ public class CustomerUpdateStatusCommandValidatorTests
         result.ShouldNotHaveAnyValidationErrors();
     }
 }
-

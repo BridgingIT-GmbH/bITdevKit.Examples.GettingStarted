@@ -27,8 +27,6 @@ public class CustomerDeleteCommandHandler(
     INotifier notifier)
     : RequestHandlerBase<CustomerDeleteCommand, Unit>
 {
-    private readonly INotifier notifier = notifier;
-
     /// <summary>
     /// Handles the <see cref="CustomerDeleteCommand"/> request.
     /// Deletes the <see cref="Customer"/> with the given Id if it exists.
@@ -57,10 +55,10 @@ public class CustomerDeleteCommandHandler(
 
             // STEP 4 - Publish domain events
             .TapAsync(async (e, ct) =>
-                await e.entity.DomainEvents.PublishAsync(this.notifier, ct), cancellationToken: cancellationToken)
+                await e.entity.DomainEvents.PublishAsync(notifier, ct), cancellationToken: cancellationToken)
 
-            // STEP 5 - Side-effect: log/audit
-            .Tap(_ => Console.WriteLine("AUDIT"))
+            // STEP 5 - Side effects (audit/logging)
+            .Log(logger, "AUDIT - Customer {Id} deleted", r => [r.Value.entity.Id])
 
             // STEP 6 - Finish and return
             .Log(logger, "Entity deleted")

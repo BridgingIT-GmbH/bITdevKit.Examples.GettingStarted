@@ -7,8 +7,6 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Mo
 
 /// <summary>
 /// Represents the status of a <see cref="Customer"/> in the domain.
-/// Inherits from <see cref="Enumeration"/> to provide strongly typed
-/// enumeration behavior with additional properties (description, enabled flag).
 /// </summary>
 [DebuggerDisplay("Id={Id}, Value={Value}")]
 public partial class CustomerStatus : Enumeration
@@ -22,13 +20,9 @@ public partial class CustomerStatus : Enumeration
     /// <summary>Status indicating that a customer is retired and no longer active. </summary>
     public static readonly CustomerStatus Retired = new(3, nameof(Retired), true, "Retired customer");
 
-    /// <summary>
-    /// Gets a flag indicating whether the status is enabled.
-    /// </summary>
+    /// <summary>Gets a flag indicating whether the status is enabled.</summary>
     public bool Enabled { get; }
 
-    /// <summary>
-    /// Gets the description of this status.
-    /// </summary>
+    /// <summary>Gets the description of this status.</summary>
     public string Description { get; }
 }

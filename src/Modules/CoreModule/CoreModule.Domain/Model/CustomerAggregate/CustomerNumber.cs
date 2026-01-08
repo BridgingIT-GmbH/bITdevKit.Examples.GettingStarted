@@ -5,6 +5,9 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
+/// <summary>
+/// Represents a unique customer number in the format CUS-YYYY-NNNNNN.
+/// </summary>
 [DebuggerDisplay("Value={Value}")]
 public class CustomerNumber : ValueObject // TODO: refactor to use Result<CustomerNumber> for the create methods
 {
@@ -12,8 +15,7 @@ public class CustomerNumber : ValueObject // TODO: refactor to use Result<Custom
         new(@"^CUS-(\d{4})-(\d{6})$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private CustomerNumber()
-    {
-    }
+    { }
 
     private CustomerNumber(string value) => this.Value = value;
 

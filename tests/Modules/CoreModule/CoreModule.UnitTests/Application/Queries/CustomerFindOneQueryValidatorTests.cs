@@ -3,7 +3,7 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Queries;
+namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application;
 
 using FluentValidation.TestHelper;
 
@@ -41,7 +41,7 @@ public class CustomerFindOneQueryValidatorTests
         var result = this.validator.TestValidate(query);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(q => q.CustomerId);
+        result.ShouldHaveValidationErrorFor(q => q.Id);
     }
 
     /// <summary>Verifies validation error for empty customer ID.</summary>
@@ -55,7 +55,7 @@ public class CustomerFindOneQueryValidatorTests
         var result = this.validator.TestValidate(query);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(q => q.CustomerId);
+        result.ShouldHaveValidationErrorFor(q => q.Id);
     }
 
     /// <summary>Verifies validation error for whitespace-only customer ID.</summary>
@@ -69,7 +69,6 @@ public class CustomerFindOneQueryValidatorTests
         var result = this.validator.TestValidate(query);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(q => q.CustomerId);
+        result.ShouldHaveValidationErrorFor(q => q.Id);
     }
 }
-

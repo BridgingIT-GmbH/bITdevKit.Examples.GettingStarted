@@ -8,27 +8,21 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Applicati
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
 /// <summary>
-/// Query for retrieving a single <see cref="Customer"/> by its unique identifier.
-/// Returns a <see cref="CustomerModel"/> if found, otherwise may result in a failure.
+/// Query for retrieving a single <see cref="Customer"/> Aggregate by its unique identifier.
 /// </summary>
-/// <param name="customerId">The identifier of the customer to retrieve (GUID string).</param>
-public class CustomerFindOneQuery(string customerId) : RequestBase<CustomerModel>
+/// <param name="id">The string representation of the Aggregate's identifier.</param>
+public class CustomerFindOneQuery(string id) : RequestBase<CustomerModel>
 {
-    /// <summary>
-    /// Gets the customer ID to look up as a string (expected to be a valid GUID).
-    /// </summary>
-    public string CustomerId { get; } = customerId;
+    /// <summary>Gets or sets the Aggregate id.</summary>
+    public string Id { get; } = id;
 
-    /// <summary>
-    /// Validation rules for <see cref="CustomerFindOneQuery"/>.
-    /// </summary>
+    /// <summary>Validation rules for <see cref="CustomerFindOneQuery"/>.</summary>
     public class Validator : AbstractValidator<CustomerFindOneQuery>
     {
         public Validator()
         {
-            this.RuleFor(c => c.CustomerId)
-                .NotNull().NotEmpty()
-                .WithMessage("Must not be empty.");
+            this.RuleFor(c => c.Id).MustNotBeDefaultOrEmptyGuid()
+                .WithMessage("Invalid guid.");
         }
     }
 }

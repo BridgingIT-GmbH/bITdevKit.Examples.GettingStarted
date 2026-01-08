@@ -8,29 +8,22 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Applicati
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
 /// <summary>
-/// Command to update an existing <see cref="Customer"/> aggregate.
-/// Contains a <see cref="CustomerModel"/> with updated properties.
-/// Expects the provided Id to already exist.
+/// Command to update an existing <see cref="Customer"/> Aggregate.
 /// </summary>
 public class CustomerUpdateCommand(CustomerModel model) : RequestBase<CustomerModel>
 {
-    /// <summary>
-    /// Gets or sets the incoming DTO (<see cref="CustomerModel"/>) representing the updated state of a customer.
-    /// Must include a valid non-empty Id.
-    /// </summary>
+    /// <summary>Gets or sets the Model (<see cref="CustomerModel"/>) that contains data for the Aggregate to update.</summary>
     public CustomerModel Model { get; set; } = model;
 
-    /// <summary>
-    /// Validation rules for <see cref="CustomerUpdateCommand"/>.
-    /// </summary>
+    /// <summary>Validation rules for <see cref="CustomerUpdateCommand"/>.</summary>
     public class Validator : AbstractValidator<CustomerUpdateCommand>
     {
         public Validator()
         {
             this.RuleFor(c => c.Model).NotNull();
 
-            // Id must be set to a non-empty Guid (unlike CreateCommand where it's empty)
-            this.RuleFor(c => c.Model.Id).MustNotBeDefaultOrEmptyGuid();
+            this.RuleFor(c => c.Model.Id).MustNotBeDefaultOrEmptyGuid()
+                .WithMessage("Invalid guid.");
 
             this.RuleFor(c => c.Model.FirstName)
                 .NotNull().NotEmpty().WithMessage("Must not be empty.");

@@ -3,7 +3,7 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Commands;
+namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application;
 
 using FluentValidation.TestHelper;
 
@@ -153,4 +153,3 @@ public class CustomerUpdateCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Model.Email);
     }
 }
-

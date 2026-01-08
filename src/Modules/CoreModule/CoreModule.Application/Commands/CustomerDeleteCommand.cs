@@ -8,29 +8,21 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Applicati
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
 /// <summary>
-/// Command to delete an existing <see cref="Customer"/> aggregate
-/// by its unique identifier.
-/// Implements <see cref="RequestBase{TResponse}"/> with a <see cref="Unit"/> response,
-/// indicating no return payload when successful.
+/// Command to delete an existing <see cref="Customer"/> Aggregate by its unique identifier.
 /// </summary>
-/// <param name="id">The string representation of the Customer's identifier (GUID).</param>
+/// <param name="id">The string representation of the Aggregate's identifier.</param>
 public class CustomerDeleteCommand(string id) : RequestBase<Unit>
 {
-    /// <summary>
-    /// Gets the Customer identifier as a string.
-    /// Will be validated as a <see cref="Guid"/> by the <see cref="Validator"/>.
-    /// </summary>
+    /// <summary>Gets or sets the Aggregate id.</summary>
     public string Id { get; } = id;
 
-    /// <summary>
-    /// Validation rules for <see cref="CustomerDeleteCommand"/> using FluentValidation.
-    /// </summary>
+    /// <summary>Validation rules for <see cref="CustomerDeleteCommand"/> using FluentValidation.</summary>
     public class Validator : AbstractValidator<CustomerDeleteCommand>
     {
         public Validator()
         {
-            this.RuleFor(c => c.Id)
-                .MustBeValidGuid().WithMessage("Invalid guid.");
+            this.RuleFor(c => c.Id).MustNotBeDefaultOrEmptyGuid()
+                .WithMessage("Invalid guid.");
         }
     }
 }

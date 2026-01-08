@@ -3,7 +3,7 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Events;
+namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application;
 
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Events;
 using Microsoft.Extensions.Logging;
@@ -22,7 +22,7 @@ public class CustomerCreatedDomainEventHandlerTests(ITestOutputHelper output) : 
         // Arrange
         var loggerFactory = this.ServiceProvider.GetService<ILoggerFactory>();
         var handler = new CustomerCreatedDomainEventHandler(loggerFactory);
-        
+
         var customer = Customer.Create("John", "Doe", "john.event@example.com", CustomerNumber.Create("CN-100005").Value).Value;
         var domainEvent = new CustomerCreatedDomainEvent(customer);
 
@@ -41,7 +41,7 @@ public class CustomerCreatedDomainEventHandlerTests(ITestOutputHelper output) : 
         // Arrange
         var loggerFactory = this.ServiceProvider.GetService<ILoggerFactory>();
         var handler = new CustomerCreatedDomainEventHandler(loggerFactory);
-        
+
         var customer = Customer.Create("Jane", "Doe", "jane.event@example.com", CustomerNumber.Create("CN-100006").Value).Value;
         var domainEvent = new CustomerCreatedDomainEvent(customer);
 

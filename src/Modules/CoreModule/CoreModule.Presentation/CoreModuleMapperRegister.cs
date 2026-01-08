@@ -58,7 +58,7 @@ public class CoreModuleMapperRegister : IRegister
         // ----------------------------
         // Enumeration conversions
         // ----------------------------
-        RegisterConverter<CustomerStatus>(config);
+        RegisterConverter<Domain.Model.CustomerStatus>(config);
     }
 
     /// <summary>

@@ -3,7 +3,7 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Commands;
+namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application;
 
 using FluentValidation.TestHelper;
 
@@ -44,18 +44,18 @@ public class CustomerDeleteCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Id);
     }
 
-    /// <summary>Verifies validator accepts empty GUID as valid format.</summary>
+    /// <summary>Verifies validation error for empty customer ID.</summary>
     [Fact]
-    public void Validate_EmptyGuid_ShouldNotHaveValidationError()
+    public void Validate_EmptyCustomerId_ShouldHaveValidationError()
     {
-        // Arrange - Empty GUID is still a valid GUID format
-        var command = new CustomerDeleteCommand(Guid.Empty.ToString());
+        // Arrange
+            var command = new CustomerDeleteCommand("");
 
         // Act
         var result = this.validator.TestValidate(command);
 
-        // Assert - The validator only checks if it's a valid GUID, not if it's non-empty
-        result.ShouldNotHaveAnyValidationErrors();
+        // Assert
+        result.ShouldHaveValidationErrorFor(c => c.Id);
     }
 
     /// <summary>Verifies validation error for null ID.</summary>
@@ -86,4 +86,3 @@ public class CustomerDeleteCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Id);
     }
 }
-

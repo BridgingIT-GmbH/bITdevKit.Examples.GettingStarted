@@ -7,6 +7,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Applicati
 
 using System.Collections.Generic;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Handler for processing <see cref="CustomerFindAllQuery"/>.
@@ -20,25 +21,22 @@ using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 /// - Uses <see cref="IGenericRepository{Customer}"/> for persistence access.
 /// - Uses <see cref="IMapper"/> (Mapster abstraction) for domain → DTO transformations.
 /// </remarks>
-[HandlerRetry(2, 100)]   // retry twice with 100ms delay between retries
-[HandlerTimeout(500)]    // enforce max 500ms execution per request
+// [HandlerRetry(2, 100)]   // retry twice with 100ms delay between retries
+// [HandlerTimeout(500)]    // enforce max 500ms execution per request
 public class CustomerFindAllQueryHandler(
+    ILogger<CustomerFindAllQueryHandler> logger,
     IMapper mapper,
     IGenericRepository<Customer> repository)
     : RequestHandlerBase<CustomerFindAllQuery, IEnumerable<CustomerModel>>()
 {
     /// <summary>
-    /// Handles the <see cref="CustomerFindAllQuery"/> asynchronously. Steps:
-    /// 1. Query repository for all matching customers using the provided <see cref="FilterModel"/>.
-    /// 2. Perform audit/logging side-effect.
-    /// 3. Map domain entities (<see cref="Customer"/>) to DTOs (<see cref="CustomerModel"/>).
+    /// Handles the <see cref="CustomerFindAllQuery"/> asynchronously.
     /// </summary>
     /// <param name="request">The incoming query containing filter settings (can be null).</param>
     /// <param name="options">Request send options (retry handling, pipeline context).</param>
     /// <param name="cancellationToken">Cancellation token for async workflow.</param>
     /// <returns>
-    /// A Result containing an enumerable of CustomerModel instances representing
-    /// all customers found, or a failure result in case of an error.
+    /// A Result containing an enumerable of model instances representing all aggregates found, or a failure result in case of an error.
     /// </returns>
     protected override async Task<Result<IEnumerable<CustomerModel>>> HandleAsync(
         CustomerFindAllQuery request,
@@ -48,11 +46,10 @@ public class CustomerFindAllQueryHandler(
         // Load all matching customers from repository
         return await repository.FindAllResultAsync(request.Filter, cancellationToken: cancellationToken) // TODO: use paging -> FindAllResultPagedAsync
 
-            // Side-effect: audit, logging, telemetry, etc.
-            .Tap(_ => Console.WriteLine("AUDIT"))
+            // Side effects (audit/logging)
+            .Log(logger, "AUDIT - Customers retrieved (count: {Count}, filter: {@Filter})", r => [r.Value.Count(), request.Filter])
 
-            // Map domain entities -> DTOs result
+            // Map retrieved Aggregates → Models
             .Map(mapper.Map<Customer, CustomerModel>);
     }
-    //TODO: .MapResult<Customer, CustomerModel>(mapper) for collections not yet supported
 }

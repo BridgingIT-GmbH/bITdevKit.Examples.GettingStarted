@@ -3,7 +3,7 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Domain.Model;
+namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Domain.Model;
 
 [UnitTest("Domain")]
 public class CustomerTests
@@ -27,7 +27,7 @@ public class CustomerTests
         customer.LastName.ShouldBe("Doe");
         customer.Email.Value.ShouldBe("john.doe@example.com");
         customer.Number.Value.ShouldBe("CUS-2026-100000");
-        customer.Status.ShouldBe(CustomerStatus.Lead);
+        customer.Status.ShouldBe(CoreModule.Domain.Model.CustomerStatus.Lead);
     }
 
     /// <summary>
@@ -174,8 +174,8 @@ public class CustomerTests
         var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
         var status = statusName switch
         {
-            nameof(CustomerStatus.Active) => CustomerStatus.Active,
-            nameof(CustomerStatus.Retired) => CustomerStatus.Retired,
+            nameof(CoreModule.Domain.Model.CustomerStatus.Active) => CoreModule.Domain.Model.CustomerStatus.Active,
+            nameof(CoreModule.Domain.Model.CustomerStatus.Retired) => CoreModule.Domain.Model.CustomerStatus.Retired,
             _ => throw new ArgumentOutOfRangeException(statusName)
         };
 

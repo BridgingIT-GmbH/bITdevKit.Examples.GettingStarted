@@ -17,6 +17,9 @@ public class Benchmarks
     private SHA256 sha256 = SHA256.Create();
     private byte[] data;
 
+    /// <summary>
+    /// Setup method to initialize data before running benchmarks.
+    /// </summary>
     [GlobalSetup]
     public void Setup()
     {
@@ -24,6 +27,9 @@ public class Benchmarks
         new Random(42).NextBytes(this.data);
     }
 
+    /// <summary>
+    ///  Benchmark method that computes the SHA256 hash of a byte array.
+    /// </summary>
     [Benchmark]
     public byte[] Sha256()
     {

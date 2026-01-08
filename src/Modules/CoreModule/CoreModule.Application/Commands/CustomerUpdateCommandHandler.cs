@@ -7,6 +7,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Applicati
 
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Events;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Handler for <see cref="CustomerUpdateCommand"/>.
@@ -21,6 +22,7 @@ using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 //[HandlerRetry(2, 100)]   // retry on transient failures
 //[HandlerTimeout(500)]    // max execution 500ms
 public class CustomerUpdateCommandHandler(
+    ILogger<CustomerUpdateCommandHandler> logger,
     IMapper mapper,
     IGenericRepository<Customer> repository)
     : RequestHandlerBase<CustomerUpdateCommand, CustomerModel>
@@ -37,30 +39,29 @@ public class CustomerUpdateCommandHandler(
         CustomerUpdateCommand request,
         SendOptions options,
         CancellationToken cancellationToken) =>
-            // Map from DTO -> domain entity
+            // STEP 1 — Map Model -> Aggregate
             await mapper.MapResult<CustomerModel, Customer>(request.Model)
 
-            // Run some business rules
+            // STEP 2 — Validate model
             .UnlessAsync(async (e, ct) => await Rule
                 .Add(RuleSet.IsNotEmpty(e.FirstName))
                 .Add(RuleSet.IsNotEmpty(e.LastName))
                 .Add(RuleSet.NotEqual(e.LastName, "notallowed"))
                 // TODO: Check unique email excluding the current entity (currently disabled)
                 //.Add(new EmailShouldBeUniqueRule(customer.Email, repository))
-
                 .CheckAsync(cancellationToken), cancellationToken: cancellationToken)
 
-            // Register domain event
+            // STEP 3 — Register domain event
             .Tap(e => e.DomainEvents.Register(new CustomerUpdatedDomainEvent(e)))
 
-            // Update in repository
+            // STEP 4 — Save updated Aggregate to repository
             .BindAsync(async (e, ct) =>
                 await repository.UpdateResultAsync(e, ct), cancellationToken)
 
-            // Side-effect (audit or logging)
-            .Tap(_ => Console.WriteLine("AUDIT"))
+            // STEP 5 — Side effects (audit/logging)
+            .Log(logger, "AUDIT - Customer {Id} updated for {Email}", r => [r.Value.Id, r.Value.Email.Value])
 
-            // Map domain entity -> DTO result
-            .MapResult<Customer, CustomerModel>(mapper);
-            //.Map(mapper.Map<Customer, CustomerModel>);
+            // STEP 6 — Map updated Aggregate → Model
+            .MapResult<Customer, CustomerModel>(mapper)
+            .Log(logger, "Entity mapped to {@Model}", r => [r.Value]);
 }

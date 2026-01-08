@@ -66,7 +66,7 @@ public class CustomerTypeConfiguration : IEntityTypeConfiguration<Customer>
 
         // Map CustomerStatus enumeration → int in database using custom converter
         builder.Property(x => x.Status)
-            .HasConversion(new EnumerationConverter<CustomerStatus>())
+            .HasConversion(new EnumerationConverter<Domain.Model.CustomerStatus>())
             .IsRequired();
 
         // Map auditing properties (e.g. CreatedAt, ModifiedAt) via shared extension method

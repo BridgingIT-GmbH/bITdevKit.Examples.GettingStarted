@@ -9,7 +9,6 @@ using BridgingIT.DevKit.Domain;
 
 /// <summary>
 /// Represents a customer aggregate root with personal details, email address, and lead/status information.
-/// Supports auditing and concurrency handling.
 /// </summary>
 [DebuggerDisplay("Id={Id}, Name={FirstName} {LastName}, Status={Status}")]
 [TypedEntityId<Guid>]
@@ -17,11 +16,9 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Customer"/> class.
-    /// Private constructor required by ORM frameworks (e.g. EF Core) or serializers.
     /// </summary>
-    public Customer() // TODO: should be private, but Mapster needs it for mapping and creating a new instance
-    {
-    }
+    public Customer() // WARN: should be private (EF Core), but Mapster needs a public ctor when creating a new instance
+    { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Customer"/> class with the specified name and email address.

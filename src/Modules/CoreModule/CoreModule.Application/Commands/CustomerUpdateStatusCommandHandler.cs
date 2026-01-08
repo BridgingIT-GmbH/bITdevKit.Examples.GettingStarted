@@ -6,6 +6,7 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Handler for <see cref="CustomerUpdateStatusCommand"/>. Loads the customer, changes status, persists and returns updated DTO.
@@ -13,6 +14,7 @@ using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 //[HandlerRetry(2, 100)]
 //[HandlerTimeout(500)]
 public class CustomerUpdateStatusCommandHandler(
+    ILogger<CustomerUpdateStatusCommandHandler> logger,
     IMapper mapper,
     IGenericRepository<Customer> repository)
     : RequestHandlerBase<CustomerUpdateStatusCommand, CustomerModel>
@@ -21,20 +23,19 @@ public class CustomerUpdateStatusCommandHandler(
         CustomerUpdateStatusCommand request,
         SendOptions options,
         CancellationToken cancellationToken) =>
-            // Load existing entity
-            await repository.FindOneResultAsync(CustomerId.Create(request.CustomerId), cancellationToken: cancellationToken)
+            // STEP 1 - Load existing entity
+            await repository.FindOneResultAsync(CustomerId.Create(request.Id), cancellationToken: cancellationToken)
 
-            // Change status (idempotent if same)
+            // STEP 2 - Change status (idempotent if same)
             .Bind(e => e.ChangeStatus(request.Status))
 
-            // Update in repository
+            // STEP 3 - Update in repository
             .BindAsync(async (e, ct) =>
                 await repository.UpdateResultAsync(e, ct), cancellationToken)
 
-            // Side-effect: audit/logging/telemetry etc.
-            .Tap(_ => Console.WriteLine("AUDIT"))
+            // STEP 4 — Side effects (audit/logging)
+            .Log(logger, "AUDIT - Customer {Id} status updated for {Email}", r => [r.Value.Id, r.Value.Email.Value])
 
-            // Map domain entity -> DTO result
+            // STEP 5 — Map updated Aggregate → Model
             .MapResult<Customer, CustomerModel>(mapper);
-            //.Map(mapper.Map<Customer, CustomerModel>);
 }

@@ -3,7 +3,7 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application.Commands;
+namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application;
 
 /// <summary>
 /// Tests for <see cref="CustomerUpdateStatusCommandHandler"/> validating status update scenarios
@@ -16,6 +16,7 @@ public class CustomerUpdateStatusCommandHandlerTests(ITestOutputHelper output) :
     [Fact]
     public async Task ChangeStatus_FromLeadToActive_SetsActive()
     {
+        // Arrange
         var requester = this.ServiceProvider.GetService<IRequester>();
         var sequenceNumberGenerator = this.ServiceProvider.GetService<ISequenceNumberGenerator>();
         var i = await sequenceNumberGenerator.GetNextAsync(CodeModuleConstants.CustomerNumberSequenceName);
@@ -27,16 +28,20 @@ public class CustomerUpdateStatusCommandHandlerTests(ITestOutputHelper output) :
         }), null, CancellationToken.None);
         created.ShouldBeSuccess();
 
+        // Act
         var result = await requester.SendAsync(
             new CustomerUpdateStatusCommand(created.Value.Id, CustomerStatus.Active.Id), null, CancellationToken.None);
 
+        // Assert
         result.ShouldBeSuccess();
         result.Value.Status.ShouldBe(CustomerStatus.Active.Id);
     }
 
+    /// <summary>Verifies successful status transition to Retired.</summary>
     [Fact]
     public async Task ChangeStatus_ToRetired_SetsRetired()
     {
+        // Arrange
         var requester = this.ServiceProvider.GetService<IRequester>();
         var created = await requester.SendAsync(new CustomerCreateCommand(new CustomerModel
         {
@@ -46,9 +51,11 @@ public class CustomerUpdateStatusCommandHandlerTests(ITestOutputHelper output) :
         }), null, CancellationToken.None);
         created.ShouldBeSuccess();
 
+        // Act
         var result = await requester.SendAsync(
             new CustomerUpdateStatusCommand(created.Value.Id, CustomerStatus.Retired.Id), null, CancellationToken.None);
 
+        // Assert
         result.ShouldBeSuccess();
         result.Value.Status.ShouldBe(CustomerStatus.Retired.Id);
     }
