@@ -1,12 +1,12 @@
 ---
-description: 'Generic code review instructions that can be customized for any project using GitHub Copilot'
+description: 'C# and .NET code review instructions using GitHub Copilot'
 applyTo: '**'
 excludeAgent: ["coding-agent"]
 ---
 
-# Generic Code Review Instructions
+# C# and .NET Code Review Instructions
 
-Comprehensive code review guidelines for GitHub Copilot that can be adapted to any project. These instructions follow best practices from prompt engineering and provide a structured approach to code quality, security, testing, and architecture review.
+Comprehensive code review guidelines for GitHub Copilot focused on C# and .NET development. These instructions follow best practices and provide a structured approach to code quality, security, testing, and architecture review.
 
 ## Review Priorities
 
@@ -14,21 +14,24 @@ When performing a code review, prioritize issues in the following order:
 
 ### 🔴 CRITICAL (Block merge)
 - **Security**: Vulnerabilities, exposed secrets, authentication/authorization issues
-- **Correctness**: Logic errors, data corruption risks, race conditions
-- **Breaking Changes**: API contract changes without versioning
+- **Correctness**: Logic errors, data corruption risks, race conditions, null reference exceptions
+- **Breaking Changes**: API contract changes without versioning, public interface modifications
 - **Data Loss**: Risk of data loss or corruption
+- **Resource Management**: Undisposed IDisposable objects, memory leaks in long-running processes
 
 ### 🟡 IMPORTANT (Requires discussion)
 - **Code Quality**: Severe violations of SOLID principles, excessive duplication
 - **Test Coverage**: Missing tests for critical paths or new functionality
-- **Performance**: Obvious performance bottlenecks (N+1 queries, memory leaks)
-- **Architecture**: Significant deviations from established patterns
+- **Performance**: Obvious performance bottlenecks (synchronous I/O, boxing/unboxing)
+- **Architecture**: Violations of layer boundaries, cross-layer dependencies
+- **Async/Await**: Blocking on async code (`.Result`, `.Wait()`), missing async propagation
 
 ### 🟢 SUGGESTION (Non-blocking improvements)
-- **Readability**: Poor naming, complex logic that could be simplified
-- **Optimization**: Performance improvements without functional impact
-- **Best Practices**: Minor deviations from conventions
-- **Documentation**: Missing or incomplete comments/documentation
+- **Readability**: Poor naming, complex expressions that could be simplified
+- **Optimization**: Opportunities for Span<T>, ValueTask<T>, or collection expressions
+- **Best Practices**: Minor deviations from C# conventions or .NET idioms
+- **Documentation**: Missing XML documentation comments for public APIs
+- **Modern C#**: Opportunities to use pattern matching, records, file-scoped namespaces
 
 ## General Review Principles
 
@@ -47,96 +50,190 @@ When performing a code review, follow these principles:
 When performing a code review, check for:
 
 ### Clean Code
-- Descriptive and meaningful names for variables, functions, and classes
-- Single Responsibility Principle: each function/class does one thing well
+- Descriptive and meaningful names following C# conventions (PascalCase for classes/methods/properties, camelCase for parameters/locals)
+- Single Responsibility Principle: each class/method does one thing well
 - DRY (Don't Repeat Yourself): no code duplication
-- Functions should be small and focused (ideally < 20-30 lines)
-- Avoid deeply nested code (max 3-4 levels)
-- Avoid magic numbers and strings (use constants)
-- Code should be self-documenting; comments only when necessary
+- Methods should be small and focused (ideally < 20-30 lines)
+- Avoid deeply nested code (max 3-4 levels); use guard clauses and early returns
+- Avoid magic numbers and strings (use `const` or `readonly` fields)
+- Use expression-bodied members for accessors and properties (per .editorconfig)
+- **Mandatory**: File-scoped namespaces (per .editorconfig: `csharp_style_namespace_declarations = file_scoped:error`)
+- **Mandatory**: Using directives inside namespace (per .editorconfig: `csharp_using_directive_placement = inside_namespace:error`)
+- **Mandatory**: Use `var` for all variable declarations (per .editorconfig: `csharp_style_var_*:error`)
+- Code should be self-documenting; XML comments required for all public APIs
+- No double empty lines; single empty line between methods and logical sections
 
-### Examples
-```javascript
-// ❌ BAD: Poor naming and magic numbers
-function calc(x, y) {
-    if (x > 100) return y * 0.15;
-    return y * 0.10;
+### Example
+```csharp
+// ❌ BAD: Block-scoped namespace, poor naming, magic numbers, no XML comments
+namespace MyApp.Services {
+    public class Calc {
+        public decimal Do(decimal x, decimal y) {
+            if (x > 100) return y * 0.15m;
+            return y * 0.10m;
+        }
+    }
 }
 
-// ✅ GOOD: Clear naming and constants
-const PREMIUM_THRESHOLD = 100;
-const PREMIUM_DISCOUNT_RATE = 0.15;
-const STANDARD_DISCOUNT_RATE = 0.10;
+// ✅ GOOD: File-scoped namespace, clear naming, constants, XML comments, var usage, pattern matching
+namespace MyApp.Services;
 
-function calculateDiscount(orderTotal, itemPrice) {
-    const isPremiumOrder = orderTotal > PREMIUM_THRESHOLD;
-    const discountRate = isPremiumOrder ? PREMIUM_DISCOUNT_RATE : STANDARD_DISCOUNT_RATE;
-    return itemPrice * discountRate;
+/// <summary>
+/// Provides discount calculation services.
+/// </summary>
+public class DiscountCalculator
+{
+    private const decimal PremiumThreshold = 100m;
+    private const decimal PremiumDiscountRate = 0.15m;
+    private const decimal StandardDiscountRate = 0.10m;
+
+    /// <summary>
+    /// Calculates the discount amount based on order total and item price.
+    /// </summary>
+    /// <param name="orderTotal">The total amount of the order.</param>
+    /// <param name="itemPrice">The price of the individual item.</param>
+    /// <returns>The calculated discount amount.</returns>
+    public decimal CalculateDiscount(decimal orderTotal, decimal itemPrice) =>
+        orderTotal switch
+        {
+            > PremiumThreshold => itemPrice * PremiumDiscountRate,
+            _ => itemPrice * StandardDiscountRate
+        };
 }
 ```
 
+### C# Language Features and .editorconfig Compliance
+- Adhere to .editorconfig rules for C# coding style
+- **Mandatory**: File-scoped namespaces
+- **Mandatory**: Using directives inside namespace
+- **Mandatory**: Use `var` for all local variables
+- Prefer pattern matching over type checks and casts
+- Use collection expressions (C# 12+) where appropriate: `[1, 2, 3]`
+- Leverage records for immutable data types
+- Use primary constructors (C# 12+) for simple classes
+- Prefer `string.IsNullOrWhiteSpace()` over `string.IsNullOrEmpty()`
+- Use null-conditional (`?.`) and null-coalescing (`??`, `??=`) operators
+- Prefer `is` pattern matching over equality checks for null: `if (obj is null)`
+- Use `this.` qualifier for fields, methods, properties, and events (per .editorconfig suggestion)
+- Prefer simple using statements, declarations (C# 8+) for IDisposable objects
+
 ### Error Handling
-- Proper error handling at appropriate levels
-- Meaningful error messages
-- No silent failures or ignored exceptions
-- Fail fast: validate inputs early
-- Use appropriate error types/exceptions
+- Use specific exception types, not generic `Exception`
+- Validate inputs early using guard clauses
+- Never catch and swallow exceptions without logging
+- In async code, avoid catching and re-throwing without preserving stack trace
+- Dispose resources properly using `using` statements or declarations
 
-### Examples
-```python
-# ❌ BAD: Silent failure and generic error
-def process_user(user_id):
-    try:
-        user = db.get(user_id)
-        user.process()
-    except:
-        pass
+### Example
+```csharp
+// ❌ BAD: Silent failure, catching all exceptions, no XML comments
+public void ProcessData(int id)
+{
+    try
+    {
+        var data = this.Load(id);
+        data.Process();
+    }
+    catch
+    {
+        // Silent failure
+    }
+}
 
-# ✅ GOOD: Explicit error handling
-def process_user(user_id):
-    if not user_id or user_id <= 0:
-        raise ValueError(f"Invalid user_id: {user_id}")
+// ✅ GOOD: Explicit error handling with XML comments
+namespace MyApp.Services;
 
-    try:
-        user = db.get(user_id)
-    except UserNotFoundError:
-        raise UserNotFoundError(f"User {user_id} not found in database")
-    except DatabaseError as e:
-        raise ProcessingError(f"Failed to retrieve user {user_id}: {e}")
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
-    return user.process()
+/// <summary>
+/// Processes data operations.
+/// </summary>
+public class DataProcessor
+{
+    private readonly IDataStore store;
+    private readonly ILogger<DataProcessor> logger;
+
+    /// <summary>
+    /// Processes data by identifier.
+    /// </summary>
+    /// <param name="id">The data identifier.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>True if processing succeeded; otherwise, false.</returns>
+    /// <exception cref="ArgumentException">Thrown when id is invalid.</exception>
+    public async Task<bool> ProcessDataAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        if (id == Guid.Empty)
+        {
+            throw new ArgumentException("ID cannot be empty", nameof(id));
+        }
+
+        var data = await this.store.LoadAsync(id, cancellationToken);
+        if (data is null)
+        {
+            this.logger.LogWarning("Data {Id} not found", id);
+            return false;
+        }
+
+        try
+        {
+            await data.ProcessAsync(cancellationToken);
+            return true;
+        }
+        catch (InvalidOperationException ex)
+        {
+            this.logger.LogWarning(ex, "Processing failed for data {Id}", id);
+            return false;
+        }
+    }
+}
 ```
 
 ## Security Review
 
 When performing a code review, check for security issues:
 
-- **Sensitive Data**: No passwords, API keys, tokens, or PII in code or logs
-- **Input Validation**: All user inputs are validated and sanitized
-- **SQL Injection**: Use parameterized queries, never string concatenation
-- **Authentication**: Proper authentication checks before accessing resources
-- **Authorization**: Verify user has permission to perform action
-- **Cryptography**: Use established libraries, never roll your own crypto
-- **Dependency Security**: Check for known vulnerabilities in dependencies
+- **Sensitive Data**: No passwords, API keys, connection strings, tokens, or PII in code or logs
+- **Configuration**: Use configuration systems for sensitive data (not hardcoded values)
+- **Input Validation**: All user inputs must be validated
+- **SQL Injection**: Always use parameterized queries (never string concatenation)
+- **Cryptography**: Use System.Security.Cryptography APIs, never roll your own
+- **Dependency Security**: Check NuGet packages for known vulnerabilities using `dotnet list package --vulnerable`
 
-### Examples
-```java
-// ❌ BAD: SQL injection vulnerability
-String query = "SELECT * FROM users WHERE email = '" + email + "'";
-
-// ✅ GOOD: Parameterized query
-PreparedStatement stmt = conn.prepareStatement(
-    "SELECT * FROM users WHERE email = ?"
-);
-stmt.setString(1, email);
-```
-
-```javascript
+### Example
+```csharp
 // ❌ BAD: Exposed secret in code
-const API_KEY = "sk_live_abc123xyz789";
+namespace MyApp.Services;
 
-// ✅ GOOD: Use environment variables
-const API_KEY = process.env.API_KEY;
+public class ApiClient
+{
+    private const string ApiKey = "sk_live_abc123xyz789"; // NEVER DO THIS!
+}
+
+// ✅ GOOD: Use configuration with XML comments
+namespace MyApp.Services;
+
+using Microsoft.Extensions.Configuration;
+
+/// <summary>
+/// Client for external API communication.
+/// </summary>
+public class ApiClient
+{
+    private readonly string apiKey;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ApiClient"/> class.
+    /// </summary>
+    /// <param name="configuration">The configuration instance.</param>
+    /// <exception cref="InvalidOperationException">Thrown when API key is not configured.</exception>
+    public ApiClient(IConfiguration configuration)
+    {
+        this.apiKey = configuration["ExternalApi:ApiKey"]
+            ?? throw new InvalidOperationException("API key not configured");
+    }
+}
 ```
 
 ## Testing Standards
@@ -144,54 +241,113 @@ const API_KEY = process.env.API_KEY;
 When performing a code review, verify test quality:
 
 - **Coverage**: Critical paths and new functionality must have tests
-- **Test Names**: Descriptive names that explain what is being tested
-- **Test Structure**: Clear Arrange-Act-Assert or Given-When-Then pattern
-- **Independence**: Tests should not depend on each other or external state
-- **Assertions**: Use specific assertions, avoid generic assertTrue/assertFalse
-- **Edge Cases**: Test boundary conditions, null values, empty collections
-- **Mock Appropriately**: Mock external dependencies, not domain logic
+- **Test Names**: Descriptive names using clear naming conventions (e.g., `Should_ExpectedBehavior_When_Condition`)
+- **Test Structure**: Clear Arrange-Act-Assert pattern
+- **Independence**: Tests should not depend on each other or shared mutable state
+- **Assertions**: Use specific assertions from xUnit or assertion libraries
+- **Edge Cases**: Test boundary conditions, null values, empty collections, Guid.Empty
+- **Mock Appropriately**: Mock external dependencies, not the code under test
+- **Async Tests**: All async tests should use `async Task` and properly await
 
-### Examples
-```typescript
-// ❌ BAD: Vague name and assertion
-test('test1', () => {
-    const result = calc(5, 10);
-    expect(result).toBeTruthy();
-});
+### Example
+```csharp
+// ❌ BAD: Vague name, generic assertion
+[Fact]
+public void Test1()
+{
+    var result = Calculate(5, 10);
+    Assert.True(result > 0);
+}
 
-// ✅ GOOD: Descriptive name and specific assertion
-test('should calculate 10% discount for orders under $100', () => {
-    const orderTotal = 50;
-    const itemPrice = 20;
+// ✅ GOOD: Clear naming, specific assertions, AAA pattern
+namespace MyApp.Tests;
 
-    const discount = calculateDiscount(orderTotal, itemPrice);
+using Xunit;
 
-    expect(discount).toBe(2.00);
-});
+public class DiscountCalculatorTests
+{
+    [Fact]
+    public void CalculateDiscount_Should_ApplyTenPercentDiscount_When_OrderTotalIsUnder100()
+    {
+        // Arrange
+        var calculator = new DiscountCalculator();
+        var orderTotal = 50m;
+        var itemPrice = 20m;
+
+        // Act
+        var discount = calculator.CalculateDiscount(orderTotal, itemPrice);
+
+        // Assert
+        Assert.Equal(2.00m, discount);
+    }
+
+    [Theory]
+    [InlineData(50, 20, 2.00)]
+    [InlineData(101, 20, 3.00)]
+    public void CalculateDiscount_Should_ApplyCorrectRate_When_GivenVariousOrderTotals(
+        decimal orderTotal,
+        decimal itemPrice,
+        decimal expectedDiscount)
+    {
+        // Arrange
+        var calculator = new DiscountCalculator();
+
+        // Act
+        var discount = calculator.CalculateDiscount(orderTotal, itemPrice);
+
+        // Assert
+        Assert.Equal(expectedDiscount, discount);
+    }
+}
 ```
 
 ## Performance Considerations
 
 When performing a code review, check for performance issues:
 
-- **Database Queries**: Avoid N+1 queries, use proper indexing
+- **Async/Await**: Use async methods for I/O operations; avoid blocking with `.Result` or `.Wait()`
 - **Algorithms**: Appropriate time/space complexity for the use case
-- **Caching**: Utilize caching for expensive or repeated operations
-- **Resource Management**: Proper cleanup of connections, files, streams
-- **Pagination**: Large result sets should be paginated
-- **Lazy Loading**: Load data only when needed
+- **Resource Management**: Proper disposal of IDisposable objects
+- **String Operations**: Use StringBuilder for concatenation in loops
+- **Collections**: Use appropriate collection types (`List<T>`, `HashSet<T>`, `Dictionary<TKey, TValue>`)
+- **Boxing**: Avoid unnecessary boxing/unboxing of value types
+- **Span<T>**: Use Span<T> and Memory<T> for high-performance scenarios
 
-### Examples
-```python
-# ❌ BAD: N+1 query problem
-users = User.query.all()
-for user in users:
-    orders = Order.query.filter_by(user_id=user.id).all()  # N+1!
+### Example
+```csharp
+// ❌ BAD: Blocking on async code
+public void ProcessOrder(Guid orderId)
+{
+    var order = this.repository.GetAsync(orderId).Result; // BLOCKS THREAD!
+    order.Process();
+}
 
-# ✅ GOOD: Use JOIN or eager loading
-users = User.query.options(joinedload(User.orders)).all()
-for user in users:
-    orders = user.orders
+// ✅ GOOD: Proper async/await
+namespace MyApp.Services;
+
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+/// <summary>
+/// Service for processing orders.
+/// </summary>
+public class OrderService
+{
+    private readonly IOrderRepository repository;
+
+    /// <summary>
+    /// Processes an order asynchronously.
+    /// </summary>
+    /// <param name="orderId">The order identifier.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task ProcessOrderAsync(Guid orderId, CancellationToken cancellationToken = default)
+    {
+        var order = await this.repository.GetAsync(orderId, cancellationToken);
+        await order.ProcessAsync(cancellationToken);
+    }
+}
 ```
 
 ## Architecture and Design
@@ -199,21 +355,70 @@ for user in users:
 When performing a code review, verify architectural principles:
 
 - **Separation of Concerns**: Clear boundaries between layers/modules
-- **Dependency Direction**: High-level modules don't depend on low-level details
-- **Interface Segregation**: Prefer small, focused interfaces
-- **Loose Coupling**: Components should be independently testable
+- **Dependency Direction**: Dependencies flow from high-level to low-level abstractions
+- **Interface Segregation**: Prefer small, focused interfaces; avoid god interfaces
+- **Loose Coupling**: Components should be independently testable via interfaces
 - **High Cohesion**: Related functionality grouped together
 - **Consistent Patterns**: Follow established patterns in the codebase
+- **No Circular References**: Modules and layers must not have circular dependencies
 
 ## Documentation Standards
 
 When performing a code review, check documentation:
 
-- **API Documentation**: Public APIs must be documented (purpose, parameters, returns)
-- **Complex Logic**: Non-obvious logic should have explanatory comments
-- **README Updates**: Update README when adding features or changing setup
-- **Breaking Changes**: Document any breaking changes clearly
-- **Examples**: Provide usage examples for complex features
+- **Public APIs**: All public classes, methods, and properties must have XML documentation comments
+- **Complex Logic**: Non-obvious algorithms should have explanatory comments
+- **README Updates**: Update README.md when adding features or changing setup
+- **Breaking Changes**: Document any breaking changes clearly in comments and commit messages
+- **Param/Returns**: Document all parameters and return values using `<param>` and `<returns>` tags
+- **Exceptions**: Document exceptions that may be thrown using `<exception>` tags
+- **Summary**: Every public member should have a `<summary>` tag
+
+### Example
+```csharp
+// ❌ BAD: No documentation on public API
+namespace MyApp.Services;
+
+public class PaymentService
+{
+    public async Task<bool> ProcessAsync(PaymentRequest request)
+    {
+        // Implementation
+    }
+}
+
+// ✅ GOOD: Comprehensive XML documentation
+namespace MyApp.Services;
+
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+/// <summary>
+/// Provides payment processing operations.
+/// </summary>
+public class PaymentService
+{
+    private readonly IPaymentGateway gateway;
+    private readonly ILogger<PaymentService> logger;
+
+    /// <summary>
+    /// Processes a payment request asynchronously.
+    /// </summary>
+    /// <param name="request">The payment request containing transaction details.</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
+    /// <returns>True if the payment was processed successfully; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is null.</exception>
+    /// <remarks>
+    /// This method validates the payment request before submitting to the gateway.
+    /// </remarks>
+    public async Task<bool> ProcessAsync(PaymentRequest request, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        // Implementation
+    }
+}
+```
 
 ## Comment Format Template
 
@@ -230,131 +435,168 @@ Explanation of the impact or reason for the suggestion.
 **Suggested fix:**
 [code example if applicable]
 
-**Reference:** [link to relevant documentation or standard]
+**Reference:** [link to .editorconfig rule, documentation, or standard]
 ```
 
 ### Example Comments
 
 #### Critical Issue
 ```markdown
-**🔴 CRITICAL - Security: SQL Injection Vulnerability**
+**🔴 CRITICAL - Security: Sensitive Data Exposed**
 
-The query on line 45 concatenates user input directly into the SQL string,
-creating a SQL injection vulnerability.
+The connection string on line 45 in `DatabaseService.cs` contains a password
+hardcoded directly in the source code.
 
 **Why this matters:**
-An attacker could manipulate the email parameter to execute arbitrary SQL commands,
-potentially exposing or deleting all database data.
+Anyone with access to the repository can see credentials, creating a significant
+security vulnerability.
 
 **Suggested fix:**
-```sql
--- Instead of:
-query = "SELECT * FROM users WHERE email = '" + email + "'"
+```csharp
+// Instead of:
+private const string ConnectionString = "Server=db;User=sa;Password=Secret123!";
 
--- Use:
-PreparedStatement stmt = conn.prepareStatement(
-    "SELECT * FROM users WHERE email = ?"
-);
-stmt.setString(1, email);
+// Use configuration:
+public class DatabaseService
+{
+    private readonly string connectionString;
+
+    public DatabaseService(IConfiguration configuration)
+    {
+        this.connectionString = configuration.GetConnectionString("Default")
+            ?? throw new InvalidOperationException("Connection string not configured");
+    }
+}
 ```
 
-**Reference:** OWASP SQL Injection Prevention Cheat Sheet
+**Reference:** [.NET Configuration](https://learn.microsoft.com/en-us/dotnet/core/extensions/configuration)
 ```
 
 #### Important Issue
 ```markdown
-**🟡 IMPORTANT - Testing: Missing test coverage for critical path**
+**🟡 IMPORTANT - .editorconfig: Missing file-scoped namespace declaration**
 
-The `processPayment()` function handles financial transactions but has no tests
-for the refund scenario.
+The namespace declaration in `PaymentService.cs` uses block-scoped syntax instead
+of file-scoped, violating the .editorconfig rule.
 
 **Why this matters:**
-Refunds involve money movement and should be thoroughly tested to prevent
-financial errors or data inconsistencies.
+The .editorconfig specifies `csharp_style_namespace_declarations = file_scoped:error`,
+which is a mandatory rule for consistency across the codebase.
 
 **Suggested fix:**
-Add test case:
-```javascript
-test('should process full refund when order is cancelled', () => {
-    const order = createOrder({ total: 100, status: 'cancelled' });
+```csharp
+// Instead of:
+namespace MyApp.Services {
+    public class PaymentService { }
+}
 
-    const result = processPayment(order, { type: 'refund' });
+// Use file-scoped namespace:
+namespace MyApp.Services;
 
-    expect(result.refundAmount).toBe(100);
-    expect(result.status).toBe('refunded');
-});
+public class PaymentService { }
 ```
+
+**Reference:** .editorconfig line 125: `csharp_style_namespace_declarations = file_scoped:error`
 ```
 
 #### Suggestion
 ```markdown
 **🟢 SUGGESTION - Readability: Simplify nested conditionals**
 
-The nested if statements on lines 30-40 make the logic hard to follow.
+The nested if statements on lines 30-45 in `OrderValidator.cs` make the control
+flow hard to follow.
 
 **Why this matters:**
-Simpler code is easier to maintain, debug, and test.
+Guard clauses with early returns improve readability and reduce cognitive complexity.
 
 **Suggested fix:**
-```javascript
+```csharp
 // Instead of nested ifs:
-if (user) {
-    if (user.isActive) {
-        if (user.hasPermission('write')) {
-            // do something
+public bool Validate(Order order)
+{
+    if (order is not null)
+    {
+        if (order.Items.Count > 0)
+        {
+            if (order.Total > 0)
+            {
+                return true;
+            }
         }
     }
+    return false;
 }
 
-// Consider guard clauses:
-if (!user || !user.isActive || !user.hasPermission('write')) {
-    return;
+// Use guard clauses:
+public bool Validate(Order order)
+{
+    if (order is null)
+        return false;
+
+    if (order.Items.Count == 0)
+        return false;
+
+    if (order.Total <= 0)
+        return false;
+
+    return true;
 }
-// do something
 ```
+
+**Reference:** [C# Coding Conventions](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/coding-style/coding-conventions)
 ```
 
 ## Review Checklist
 
 When performing a code review, systematically verify:
 
-### Code Quality
-- [ ] Code follows consistent style and conventions
-- [ ] Names are descriptive and follow naming conventions
-- [ ] Functions/methods are small and focused
-- [ ] No code duplication
-- [ ] Complex logic is broken into simpler parts
-- [ ] Error handling is appropriate
-- [ ] No commented-out code or TODO without tickets
+### Code Quality (C#/.NET)
+- [ ] Code follows .editorconfig rules (file-scoped namespaces, var usage, using placement)
+- [ ] Names follow C# naming conventions (PascalCase for types/methods, camelCase for parameters/locals)
+- [ ] All public APIs have XML documentation comments (`<summary>`, `<param>`, `<returns>`)
+- [ ] Methods are small and focused (< 30 lines ideally)
+- [ ] No code duplication (DRY principle)
+- [ ] Complex logic is broken into smaller, testable methods
+- [ ] Error handling uses appropriate exception types
+- [ ] No commented-out code or TODO without issue references
+- [ ] Proper use of modern C# features (pattern matching, collection expressions)
+- [ ] IDisposable objects are properly disposed (using statements/declarations)
 
-### Security
-- [ ] No sensitive data in code or logs
-- [ ] Input validation on all user inputs
-- [ ] No SQL injection vulnerabilities
-- [ ] Authentication and authorization properly implemented
-- [ ] Dependencies are up-to-date and secure
+### Security (.NET)
+- [ ] No sensitive data (passwords, API keys, connection strings) in code or logs
+- [ ] Input validation implemented on all user inputs
+- [ ] No SQL injection vulnerabilities (parameterized queries only)
+- [ ] Configuration systems used for sensitive data, not hardcoded values
+- [ ] Dependencies are up-to-date and have no known vulnerabilities
+- [ ] Cryptography uses System.Security.Cryptography APIs
 
 ### Testing
-- [ ] New code has appropriate test coverage
-- [ ] Tests are well-named and focused
-- [ ] Tests cover edge cases and error scenarios
-- [ ] Tests are independent and deterministic
+- [ ] New functionality has corresponding unit tests
+- [ ] Tests follow clear naming conventions (e.g., `Should_ExpectedBehavior_When_Condition`)
+- [ ] Tests use clear Arrange-Act-Assert structure
+- [ ] Tests cover edge cases (null, empty, Guid.Empty, boundary conditions)
+- [ ] Tests are independent and don't rely on shared mutable state
+- [ ] Assertions are specific and meaningful
+- [ ] External dependencies are mocked appropriately
 - [ ] No tests that always pass or are commented out
 
-### Performance
-- [ ] No obvious performance issues (N+1, memory leaks)
-- [ ] Appropriate use of caching
-- [ ] Efficient algorithms and data structures
-- [ ] Proper resource cleanup
+### Performance (.NET)
+- [ ] Async/await used for I/O operations; no blocking with `.Result` or `.Wait()`
+- [ ] String operations use efficient methods (StringBuilder for loops, string.Join)
+- [ ] CancellationToken passed through async call chains
+- [ ] Proper disposal of resources (streams, connections)
+- [ ] No obvious performance issues (excessive allocations, boxing)
 
 ### Architecture
-- [ ] Follows established patterns and conventions
-- [ ] Proper separation of concerns
-- [ ] No architectural violations
-- [ ] Dependencies flow in correct direction
+- [ ] Follows established layer boundaries and separation of concerns
+- [ ] No circular references between modules or layers
+- [ ] Dependencies flow from high-level to low-level abstractions
+- [ ] Consistent use of patterns established in the codebase
+- [ ] Interfaces are small and focused (Interface Segregation)
 
-### Documentation
-- [ ] Public APIs are documented
-- [ ] Complex logic has explanatory comments
-- [ ] README is updated if needed
-- [ ] Breaking changes are documented
+### Documentation (XML Comments)
+- [ ] Public APIs have complete XML documentation
+- [ ] Complex algorithms have explanatory comments
+- [ ] Exceptions documented with `<exception>` tags
+- [ ] README files updated for new features or setup changes
+- [ ] Breaking changes clearly documented

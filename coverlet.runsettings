@@ -32,6 +32,7 @@
             **/Migrations/*.cs,
             **/Designer.cs,
             **/*Generated*.cs,
+            **/*Resources*.cs,
             **/*generated*.cs,
             **/*.g.cs,
             **/*OpenApi*.cs,
