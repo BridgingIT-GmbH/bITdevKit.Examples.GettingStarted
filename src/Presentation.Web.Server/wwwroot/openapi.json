@@ -1663,7 +1663,7 @@
             "example": "8f7a9b2c-3d4e-5f6a-7b8c-9d0e1f2a3b4c"
           }
         },
-        "description": "Data transfer object (DTO) representing a Customer.\r\nUsed by the application and presentation layers to expose Customers to clients.\r\nMirrors key domain properties in a JSON‑friendly / client‑friendly format."
+        "description": "Data transfer object (DTO) representing a Customer.\r\nUsed by the application and presentation layers to expose Aggregate to clients."
       },
       "CustomerUpdateStatusRequestModel": {
         "type": "object",

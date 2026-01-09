@@ -14,10 +14,7 @@ using BridgingIT.DevKit.Domain;
 [TypedEntityId<Guid>]
 public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Customer"/> class.
-    /// </summary>
-    public Customer() // WARN: should be private (EF Core), but Mapster needs a public ctor when creating a new instance
+    private Customer()
     { }
 
     /// <summary>

@@ -158,6 +158,11 @@ public class CoreModuleMapperRegisterTests
         // Arrange
         var model = new CustomerModel
         {
+            FirstName = "Jane",
+            LastName = "Smith",
+            Email = "jane.smith@example.com",
+            Number = "CUS-2026-100000",
+            Status = CustomerStatus.Active.Id,
             ConcurrencyVersion = null
         };
 

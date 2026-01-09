@@ -30,6 +30,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
                 FirstName = "Jane",
                 LastName = "Smith",
                 Email = "jane.smith@example.com",
+                Number = "CUS-2026-100000",
                 ConcurrencyVersion = inserted.ConcurrencyVersion.ToString()
             });
 
@@ -143,7 +144,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
                 FirstName = "Jane",
                 LastName = "Doe",
                 Email = "jane.new@example.com",
-                Number = "CN-100099",
+                Number = "CUS-2026-100000",
                 ConcurrencyVersion = Guid.NewGuid().ToString()
             });
 
@@ -184,7 +185,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
                 FirstName = "Jane",
                 LastName = "Doe",
                 Email = "jane.empty@example.com",
-                Number = "CN-100098"
+                Number = "CUS-2026-100000",
             });
 
         // Act
@@ -242,6 +243,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
                 FirstName = "John",
                 LastName = "Doe",
                 Email = "john.newemail@example.com",
+                Number = "CUS-2026-100000",
                 ConcurrencyVersion = inserted.ConcurrencyVersion.ToString()
             });
 
@@ -271,6 +273,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
                 FirstName = "Jonathan",
                 LastName = "Johnson",
                 Email = "jonathan.johnson@example.com",
+                Number = "CUS-2026-100000",
                 ConcurrencyVersion = inserted.ConcurrencyVersion.ToString()
             });
 

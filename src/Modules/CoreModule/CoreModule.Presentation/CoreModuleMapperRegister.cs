@@ -25,13 +25,19 @@ public class CoreModuleMapperRegister : IRegister
         // ----------------------------
 
         // Customer -> CustomerModel
-        config.ForType<Customer, CustomerModel>() // Map concurrency token (Guid in domain -> string in DTO)
-            .Map(dest => dest.ConcurrencyVersion, src => src.ConcurrencyVersion.ToString())
-            .IgnoreNullValues(true); // don't overwrite existing values with null
+        config.ForType<Customer, CustomerModel>()
+            .Map(dest => dest.ConcurrencyVersion, // Map concurrency token (Guid in domain -> string in DTO)
+                 src => src.ConcurrencyVersion.ToString())
+            .IgnoreNullValues(true);
 
         // CustomerModel -> Customer
-        config.ForType<CustomerModel, Customer>() // Convert string back to Guid for concurrency token
-            .Map(dest => dest.ConcurrencyVersion,
+        config.ForType<CustomerModel, Customer>()
+            .ConstructUsing(src => Customer.Create( // Reconstruct Customer aggregate from model properties
+                src.FirstName,
+                src.LastName,
+                src.Email,
+                src.Number).Value)
+            .Map(dest => dest.ConcurrencyVersion, // Convert string back to Guid for concurrency token
                  src => src.ConcurrencyVersion != null ? Guid.Parse(src.ConcurrencyVersion) : Guid.Empty)
             .IgnoreNullValues(true);
 
@@ -58,7 +64,7 @@ public class CoreModuleMapperRegister : IRegister
         // ----------------------------
         // Enumeration conversions
         // ----------------------------
-        RegisterConverter<Domain.Model.CustomerStatus>(config);
+        RegisterConverter<CustomerStatus>(config);
     }
 
     /// <summary>
