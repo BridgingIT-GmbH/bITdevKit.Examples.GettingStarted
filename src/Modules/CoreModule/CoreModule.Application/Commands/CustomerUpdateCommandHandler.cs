@@ -54,9 +54,8 @@ public class CustomerUpdateCommandHandler(
             // STEP 3 - Apply changes to Aggregate
             .Bind(e => e.ChangeName(request.Model.FirstName, request.Model.LastName))
             .Bind(e => e.ChangeEmail(request.Model.Email))
+            .Bind(e => e.ChangeBirthDate(request.Model.DateOfBirth))
             .Bind(e => e.ChangeStatus(request.Model.Status))
-            .When(request.Model.DateOfBirth.HasValue, r => r
-                .Bind(e => e.ChangeBirthDate(request.Model.DateOfBirth)))
             .Tap(e => // set concurrency version for optimistic concurrency check
             {
                 e.ConcurrencyVersion = Guid.Parse(request.Model.ConcurrencyVersion);

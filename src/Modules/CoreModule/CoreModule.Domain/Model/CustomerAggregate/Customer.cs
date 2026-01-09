@@ -77,7 +77,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <param name="email">The email address of the customer.</param>
     /// <param name="number">The number of the customer.</param>
     /// <returns>A new <see cref="Customer"/> instance.</returns>
-    public static Result<Customer> Create(string firstName, string lastName, string email, CustomerNumber number)
+    public static Result<Customer> Create(string firstName, string lastName, string email, CustomerNumber number) // TODO: the email could be EmailAddress type directly
     {
         var emailAddressResult = EmailAddress.Create(email);
         if (emailAddressResult.IsFailure)
@@ -143,10 +143,10 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
         var currentDate = TimeProviderAccessor.Current.GetUtcNow().ToDateOnly();
 
         return this.Change()
+            .When(_ => dateOfBirth.HasValue)
             .Ensure(_ => dateOfBirth <= currentDate, "Invalid date of birth: cannot be in the future")
             .Ensure(_ => dateOfBirth >= currentDate.AddYears(-150), "Invalid date of birth: age exceeds maximum")
             .Set(c => c.DateOfBirth, dateOfBirth)
-            .When(_ => dateOfBirth.HasValue)
             .Register(c => new CustomerUpdatedDomainEvent(c))
             .Apply();
     }
@@ -160,8 +160,8 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     public Result<Customer> ChangeStatus(CustomerStatus status)
     {
         return this.Change()
-            .Set(c => c.Status, status)
             .When(_ => status != null)
+            .Set(c => c.Status, status)
             .Register(c => new CustomerUpdatedDomainEvent(c))
             .Apply();
     }
