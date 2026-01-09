@@ -20,7 +20,7 @@ public class CustomerDeleteCommandHandlerTests(ITestOutputHelper output) : CoreM
         var requester = this.ServiceProvider.GetService<IRequester>();
         var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
 
-        var customer = Customer.Create("John", "Doe", "john.delete@example.com", CustomerNumber.Create("CN-100001").Value).Value;
+        var customer = Customer.Create("John", "Doe", "john.delete@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
         await repository.InsertAsync(customer, CancellationToken.None);
 
         var command = new CustomerDeleteCommand(customer.Id.Value.ToString());

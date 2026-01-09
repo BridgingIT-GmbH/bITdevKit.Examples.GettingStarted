@@ -1,4 +1,4 @@
-﻿using BridgingIT.DevKit.Infrastructure.EntityFramework;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable

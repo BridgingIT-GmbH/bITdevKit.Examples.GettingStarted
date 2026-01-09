@@ -191,7 +191,7 @@ public class CustomerTests
     /// Ensures status change fails when null is provided.
     /// </summary>
     [Fact]
-    public void ChangeStatus_WithNullStatus_ReturnsFailureResult()
+    public void ChangeStatus_WithNullStatus_DoesNotChange()
     {
         // Arrange
         var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
@@ -200,7 +200,8 @@ public class CustomerTests
         var result = customer.ChangeStatus(null);
 
         // Assert
-        result.IsFailure.ShouldBeTrue();
+        result.IsSuccess.ShouldBeTrue();
+        customer.Status.ShouldBe(CustomerStatus.Lead); // remains unchanged (default)
     }
 
     /// <summary>

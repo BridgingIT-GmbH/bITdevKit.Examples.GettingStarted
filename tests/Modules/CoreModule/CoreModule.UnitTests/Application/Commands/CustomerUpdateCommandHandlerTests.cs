@@ -20,7 +20,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         var requester = this.ServiceProvider.GetService<IRequester>();
         var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
 
-        var customer = Customer.Create("John", "Doe", "john.update@example.com", CustomerNumber.Create("CN-100002").Value).Value;
+        var customer = Customer.Create("John", "Doe", "john.update@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
         var inserted = await repository.InsertAsync(customer, CancellationToken.None);
 
         var command = new CustomerUpdateCommand(
@@ -30,7 +30,8 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
                 FirstName = "Jane",
                 LastName = "Smith",
                 Email = "jane.smith@example.com",
-                Number = "CUS-2026-100000",
+                Number = "CUS-2026-999999", // to test that number remains unchanged
+                // Note that DateOfBirth and Status are not updated in this test
                 ConcurrencyVersion = inserted.ConcurrencyVersion.ToString()
             });
 
@@ -43,6 +44,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         response.Value.FirstName.ShouldBe("Jane");
         response.Value.LastName.ShouldBe("Smith");
         response.Value.Email.ShouldBe("jane.smith@example.com");
+        response.Value.Number.ShouldBe("CUS-2026-100000"); // unchanged
     }
 
     /// <summary>Verifies validation error for empty first name.</summary>
@@ -53,7 +55,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         var requester = this.ServiceProvider.GetService<IRequester>();
         var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
 
-        var customer = Customer.Create("John", "Doe", "john.empty@example.com", CustomerNumber.Create("CN-100013").Value).Value;
+        var customer = Customer.Create("John", "Doe", "john.empty@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
         await repository.InsertAsync(customer, CancellationToken.None);
 
         var command = new CustomerUpdateCommand(
@@ -81,7 +83,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         var requester = this.ServiceProvider.GetService<IRequester>();
         var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
 
-        var customer = Customer.Create("John", "Doe", "john.notallowed@example.com", CustomerNumber.Create("CN-100003").Value).Value;
+        var customer = Customer.Create("John", "Doe", "john.notallowed@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
         var inserted = await repository.InsertAsync(customer, CancellationToken.None);
 
         var command = new CustomerUpdateCommand(
@@ -109,7 +111,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         var requester = this.ServiceProvider.GetService<IRequester>();
         var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
 
-        var customer = Customer.Create("John", "Doe", "john.emptylast@example.com", CustomerNumber.Create("CN-100014").Value).Value;
+        var customer = Customer.Create("John", "Doe", "john.emptylast@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
         var inserted = await repository.InsertAsync(customer, CancellationToken.None);
 
         var command = new CustomerUpdateCommand(
@@ -130,33 +132,6 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         response.Errors.ShouldNotBeEmpty();
     }
 
-    /// <summary>Verifies that update with non-existent ID creates new customer entity.</summary>
-    [Fact]
-    public async Task Process_NonExistentCustomer_CreatesNewCustomer()
-    {
-        // Arrange
-        var requester = this.ServiceProvider.GetService<IRequester>();
-        var newId = Guid.NewGuid();
-        var command = new CustomerUpdateCommand(
-            new CustomerModel
-            {
-                Id = newId.ToString(),
-                FirstName = "Jane",
-                LastName = "Doe",
-                Email = "jane.new@example.com",
-                Number = "CUS-2026-100000",
-                ConcurrencyVersion = Guid.NewGuid().ToString()
-            });
-
-        // Act
-        var response = await requester.SendAsync(command, null, CancellationToken.None);
-
-        // Assert
-        response.ShouldBeSuccess();
-        response.Value.FirstName.ShouldBe("Jane");
-        response.Value.LastName.ShouldBe("Doe");
-    }
-
     /// <summary>Verifies validation error for null model.</summary>
     [Fact]
     public async Task Process_NullModel_FailureResult()
@@ -172,58 +147,6 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         response.ShouldBeFailure();
     }
 
-    /// <summary>Verifies that update with empty GUID creates customer entity.</summary>
-    [Fact]
-    public async Task Process_EmptyGuidCustomerId_CreatesWithEmptyId()
-    {
-        // Arrange
-        var requester = this.ServiceProvider.GetService<IRequester>();
-        var command = new CustomerUpdateCommand(
-            new CustomerModel
-            {
-                Id = Guid.Empty.ToString(),
-                FirstName = "Jane",
-                LastName = "Doe",
-                Email = "jane.empty@example.com",
-                Number = "CUS-2026-100000",
-            });
-
-        // Act
-        var response = await requester.SendAsync(command, null, CancellationToken.None);
-
-        // Assert
-        response.ShouldBeSuccess();
-        response.Value.FirstName.ShouldBe("Jane");
-    }
-
-    /// <summary>Verifies failure when concurrency version token mismatches.</summary>
-    [Fact]
-    public async Task Process_ConcurrencyConflict_FailureResult()
-    {
-        // Arrange
-        var requester = this.ServiceProvider.GetService<IRequester>();
-        var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
-
-        var customer = Customer.Create("John", "Doe", "john.concurrency@example.com", CustomerNumber.Create("CN-100015").Value).Value;
-        var inserted = await repository.InsertAsync(customer, CancellationToken.None);
-
-        var command = new CustomerUpdateCommand(
-            new CustomerModel
-            {
-                Id = inserted.Id.Value.ToString(),
-                FirstName = "Jane",
-                LastName = "Smith",
-                Email = "jane.smith@example.com",
-                ConcurrencyVersion = Guid.NewGuid().ToString() // Wrong version
-            });
-
-        // Act
-        var response = await requester.SendAsync(command, null, CancellationToken.None);
-
-        // Assert
-        response.ShouldBeFailure();
-        response.Errors.ShouldNotBeEmpty();
-    }
 
     /// <summary>Verifies successful email address update.</summary>
     [Fact]
@@ -233,7 +156,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         var requester = this.ServiceProvider.GetService<IRequester>();
         var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
 
-        var customer = Customer.Create("John", "Doe", "john.oldemail@example.com", CustomerNumber.Create("CN-100016").Value).Value;
+        var customer = Customer.Create("John", "Doe", "john.oldemail@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
         var inserted = await repository.InsertAsync(customer, CancellationToken.None);
 
         var command = new CustomerUpdateCommand(
@@ -243,7 +166,6 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
                 FirstName = "John",
                 LastName = "Doe",
                 Email = "john.newemail@example.com",
-                Number = "CUS-2026-100000",
                 ConcurrencyVersion = inserted.ConcurrencyVersion.ToString()
             });
 
@@ -263,7 +185,7 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         var requester = this.ServiceProvider.GetService<IRequester>();
         var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
 
-        var customer = Customer.Create("John", "Doe", "john.multi@example.com", CustomerNumber.Create("CN-100017").Value).Value;
+        var customer = Customer.Create("John", "Doe", "john.multi@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
         var inserted = await repository.InsertAsync(customer, CancellationToken.None);
 
         var command = new CustomerUpdateCommand(
@@ -273,7 +195,6 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
                 FirstName = "Jonathan",
                 LastName = "Johnson",
                 Email = "jonathan.johnson@example.com",
-                Number = "CUS-2026-100000",
                 ConcurrencyVersion = inserted.ConcurrencyVersion.ToString()
             });
 

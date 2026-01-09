@@ -49,7 +49,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
                     Number = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     DateOfBirth = table.Column<DateTime>(type: "date", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: true),
                     ConcurrencyVersion = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AuditState_CreatedBy = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     AuditState_CreatedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),

@@ -239,7 +239,7 @@ public class CustomerEndpointTests
     private async Task<CustomerModel> SeedEntity(string route)
     {
         var ticks = DateTime.UtcNow.Ticks;
-        var model = new CustomerModel { FirstName = $"John{ticks}", LastName = $"Doe{ticks}", Email = $"john.doe{ticks}@example.com" };
+        var model = new CustomerModel { FirstName = $"John{ticks}", LastName = $"Doe{ticks}", Email = $"john.doe{ticks}@example.com", Number = $"CUS-2026-{ticks % 1000000:D6}"};
         var json = JsonSerializer.Serialize(model, Common.DefaultJsonSerializerOptions.Create());
         var content = new StringContent(json, Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
         var response = await this.fixture.Client.PostAsync(route, content);

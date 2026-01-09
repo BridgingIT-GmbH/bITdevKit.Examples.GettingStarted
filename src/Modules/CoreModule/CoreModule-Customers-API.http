@@ -73,7 +73,7 @@ Content-Type: application/json
   "firstName": "John{{$randomInt 1000 9999}}",
   "lastName": "Doe{{$randomInt 1000 9999}}",
   "email": "john.doe{{$randomInt 1000 9999}}@example.com",
-  "status": 1
+  "status": "Lead"
 }
 
 ###############################################################################################
@@ -88,7 +88,7 @@ Content-Type: application/json
   "lastName": "Doe{{$randomInt 1000 9999}}Changed",
   "email": "john.doe{{$randomInt 1000 9999}}changed@example.com",
   "number": "CUS-2026-{{$randomInt 100000 999999}}",
-  "status": 1,
+  "status": "Lead",
   "concurrencyVersion": "{{concurrencyVersion}}"
 }
 
@@ -99,7 +99,7 @@ Authorization: Bearer {{login.response.body.$.access_token}}
 Content-Type: application/json
 
 {
-  "status": 2
+  "status": "Active"
 }
 
 ###############################################################################################
@@ -122,7 +122,7 @@ Content-Type: application/json
   "firstName": "",
   "lastName": "",
   "email": "john.doe{{$randomInt 1000 9999}}@example.com",
-  "status": 1
+  "status": "Lead"
 }
 
 ###############################################################################################
@@ -139,7 +139,7 @@ Content-Type: application/json
   "lastName": "Doe{{$randomInt 1000 9999}}Changed",
   "email": "john.doe{{$randomInt 1000 9999}}changed@example.com",
   "number": "CUS-2026-{{$randomInt 100000 999999}}",
-  "status": 1,
+  "status": "Lead",
   "concurrencyVersion": "00000000-0000-0000-0000-000000000001"
 }
 
@@ -160,7 +160,7 @@ Authorization: Bearer {{login.response.body.$.access_token}}
 Content-Type: application/json
 
 {
-  "status": 99
+  "status": "InvalidStatus"
 }
 
 ###############################################################################################

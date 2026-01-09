@@ -56,18 +56,18 @@ public class CoreModuleModule() : WebModuleBase("CoreModule")
                 //.DeleteOnStartup(environment.IsLocalDevelopment() || environment.IsContainerized()))
             .WithOutboxDomainEventService(o => o
                 .ProcessingInterval("00:00:30")
-                .ProcessingModeImmediate() // forwards the outbox event, through a queue, to the outbox worker
+                .ProcessingModeImmediate() // forwards the outbox event, through a queue, directly to the outbox worker
                 .StartupDelay("00:00:15")
                 .PurgeOnStartup());
 
         // repository setup
         services.AddEntityFrameworkRepository<Customer, CoreModuleDbContext>()
-            .WithBehavior<RepositoryTracingBehavior<Customer>>()
-            .WithBehavior<RepositoryLoggingBehavior<Customer>>()
-            .WithBehavior<RepositoryAuditStateBehavior<Customer>>()
-            .WithBehavior<RepositoryOutboxDomainEventBehavior<Customer, CoreModuleDbContext>>();
-            //.WithBehavior<RepositoryDomainEventPublisherBehavior<Customer>>();
-        services.AddScoped(_ => new RepositoryAuditStateBehaviorOptions { SoftDeleteEnabled = false });
+            .WithBehavior<RepositoryTracingBehavior<Customer>>() // tracing of repository operations
+            .WithBehavior<RepositoryLoggingBehavior<Customer>>() // logging of repository operations
+            .WithBehavior<RepositoryAuditStateBehavior<Customer>>() // audit state (created/modified/deleted) and soft delete
+            .WithBehavior<RepositoryOutboxDomainEventBehavior<Customer, CoreModuleDbContext>>(); // outbox pattern for domain events
+            //.WithBehavior<RepositoryDomainEventPublisherBehavior<Customer>>(); // direct publishing of domain events
+        services.AddScoped(_ => new RepositoryAuditStateBehaviorOptions { SoftDeleteEnabled = false }); // disable soft delete for Customer
 
         // mapping setup
         services.AddMapping()

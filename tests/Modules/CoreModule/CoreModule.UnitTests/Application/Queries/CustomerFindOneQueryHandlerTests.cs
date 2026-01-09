@@ -20,7 +20,7 @@ public class CustomerFindOneQueryHandlerTests(ITestOutputHelper output) : CoreMo
         var requester = this.ServiceProvider.GetService<IRequester>();
         var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
 
-        var customer = Customer.Create("John", "Doe", "john.findone@example.com", CustomerNumber.Create("CN-100004").Value).Value;
+        var customer = Customer.Create("John", "Doe", "john.findone@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
         await repository.InsertAsync(customer, CancellationToken.None);
 
         var query = new CustomerFindOneQuery(customer.Id.Value.ToString());

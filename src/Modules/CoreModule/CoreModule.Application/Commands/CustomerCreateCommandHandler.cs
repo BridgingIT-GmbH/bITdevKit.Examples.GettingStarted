@@ -57,7 +57,7 @@ public class CustomerCreateCommandHandler(
 
                 .Log(logger, "Customer number created{@Number}", r => [r.Value.Number])
 
-                // STEP 4 — Create new Aggregate
+                // STEP 4 — Create new Aggregate from request model
                 .Bind(this.CreateEntity)
 
                 // STEP 6 — Save new Aggregate to repository
@@ -84,14 +84,19 @@ public class CustomerCreateCommandHandler(
 
     private Result<CustomerCreateContext> CreateEntity(CustomerCreateContext ctx)
     {
-        var createResult = Customer.Create(ctx.Model.FirstName, ctx.Model.LastName, ctx.Model.Email, ctx.Number);
-        if (createResult.IsFailure)
-        {
-            return createResult.Unwrap();
-        }
-
-        ctx.Entity = createResult.Value;
-        return ctx;
+        return Customer
+            .Create(ctx.Model.FirstName, ctx.Model.LastName, ctx.Model.Email, ctx.Number)
+            // Apply additional properties
+            .When(ctx.Model.Status != null, r => r
+                .Bind(customer => customer.ChangeStatus(ctx.Model.Status)))
+            .When(ctx.Model.DateOfBirth.HasValue, r => r
+                .Bind(customer => customer.ChangeBirthDate(ctx.Model.DateOfBirth.Value)))
+            // Capture in context
+            .Map(customer =>
+            {
+                ctx.Entity = customer;
+                return ctx;
+            });
     }
 
     private async Task<Result<Customer>> PersistEntityAsync(CustomerCreateContext ctx, CancellationToken ct)

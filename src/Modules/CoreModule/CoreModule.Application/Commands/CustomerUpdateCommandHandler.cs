@@ -39,20 +39,28 @@ public class CustomerUpdateCommandHandler(
         CustomerUpdateCommand request,
         SendOptions options,
         CancellationToken cancellationToken) =>
-            // STEP 1 — Map Model -> Aggregate
-            await mapper.MapResult<CustomerModel, Customer>(request.Model)
+            // STEP 1 - Load existing entity
+            await repository.FindOneResultAsync(CustomerId.Create(request.Model.Id), cancellationToken: cancellationToken)
+            //.Unless((e) => e?.AuditState?.IsDeleted() == true, new NotFoundError("Entity already deleted"))
 
-            // STEP 2 — Validate model
+            // STEP 2 — Validate request model
             .UnlessAsync(async (e, ct) => await Rule
-                .Add(RuleSet.IsNotEmpty(e.FirstName))
-                .Add(RuleSet.IsNotEmpty(e.LastName))
-                .Add(RuleSet.NotEqual(e.LastName, "notallowed"))
-                // TODO: Check unique email excluding the current entity (currently disabled)
-                //.Add(new EmailShouldBeUniqueRule(customer.Email, repository))
+                .Add(RuleSet.IsNotEmpty(e.FirstName)) // also validated in domain
+                .Add(RuleSet.IsNotEmpty(e.LastName)) // also validated in domain
+                .Add(RuleSet.NotEqual(e.LastName, "notallowed")) // also validated in domain
+                //.Add(new EmailShouldBeUniqueRule(e.Email, repository)) // TODO: Check unique email excluding the current entity (currently disabled)
                 .CheckAsync(cancellationToken), cancellationToken: cancellationToken)
 
-            // STEP 3 — Register domain event
-            .Tap(e => e.DomainEvents.Register(new CustomerUpdatedDomainEvent(e)))
+            // STEP 3 - Apply changes to Aggregate
+            .Bind(e => e.ChangeName(request.Model.FirstName, request.Model.LastName))
+            .Bind(e => e.ChangeEmail(request.Model.Email))
+            .Bind(e => e.ChangeStatus(request.Model.Status))
+            .When(request.Model.DateOfBirth.HasValue, r => r
+                .Bind(e => e.ChangeBirthDate(request.Model.DateOfBirth)))
+            .Tap(e => // set concurrency version for optimistic concurrency check
+            {
+                e.ConcurrencyVersion = Guid.Parse(request.Model.ConcurrencyVersion);
+            })
 
             // STEP 4 — Save updated Aggregate to repository
             .BindAsync(async (e, ct) =>

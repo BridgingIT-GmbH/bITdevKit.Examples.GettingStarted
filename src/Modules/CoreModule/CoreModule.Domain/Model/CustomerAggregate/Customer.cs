@@ -85,17 +85,23 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
             return emailAddressResult.Unwrap();
         }
 
+        if (number == null)
+        {
+            return Result<Customer>.Failure()
+                .WithError(new ValidationError("Customer number cannot be null."));
+        }
+
         var customer = new Customer(firstName, lastName, emailAddressResult.Value, number);
 
-        customer.DomainEvents.Register(
-            new CustomerCreatedDomainEvent(customer));
+        customer.DomainEvents
+            .Register(new CustomerCreatedDomainEvent(customer))
+            .Register(new EntityCreatedDomainEvent<Customer>(customer));
 
         return customer;
     }
 
     /// <summary>
-    /// Changes the name of the customer if different from the current value.
-    /// At least one parameter must be provided.
+    /// Changes the name of the customer if different from the current value. At least one parameter must be provided.
     /// Registers a <see cref="CustomerUpdatedDomainEvent"/> if changed.
     /// </summary>
     /// <param name="firstName">The new first name (optional).</param>
@@ -103,14 +109,12 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
     public Result<Customer> ChangeName(string firstName, string lastName)
     {
-        if (string.IsNullOrEmpty(firstName) &&
-            string.IsNullOrEmpty(lastName))
-        {
-            return Result<Customer>.Failure(this, "Invalid name");
-        }
-
-        return this.ApplyChange(this.FirstName, firstName, v => this.FirstName = v)
-            .Bind(c => c.ApplyChange(this.LastName, lastName, v => this.LastName = v));
+        return this.Change()
+            .Ensure(_ => !string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName), "Invalid name: both first and last name must be provided")
+            .Ensure(_ => lastName != "notallowed", "Invalid last name: 'notallowed' is not permitted")
+            .Set(c => c.FirstName, firstName).Set(c => c.LastName, lastName)
+            .Register(c => new CustomerUpdatedDomainEvent(c))
+            .Apply();
     }
 
     /// <summary>
@@ -121,34 +125,30 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
     public Result<Customer> ChangeEmail(string email)
     {
-        if (string.IsNullOrEmpty(email))
-        {
-            return Result<Customer>.Failure(this, "Invalid email");
-        }
-
-        var emailResult = EmailAddress.Create(email);
-        if (emailResult.IsFailure)
-        {
-            return emailResult.Unwrap();
-        }
-
-        return this.ApplyChange(this.Email, emailResult.Value, v => this.Email = v);
+        return this.Change()
+            .Set(c => c.Email, EmailAddress.Create(email)) // Implicit guard inside Set()
+            .Register(c => new CustomerUpdatedDomainEvent(c))
+            .Apply();
     }
 
     /// <summary>
     /// Changes the date of birth of the customer if different from the current value.
-    /// Registers a <see cref="CustomerUpdatedDomainEvent"/> if changed.
+    /// Checks validation rules regarding future dates and maximum age.
+    /// Registers a <see cref="EntityUpdatedDomainEvent{Customer}"/> if changed.
     /// </summary>
     /// <param name="dateOfBirth">The new date of birth.</param>
     /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
-    public Result<Customer> ChangeBirthDate(DateOnly dateOfBirth)
+    public Result<Customer> ChangeBirthDate(DateOnly? dateOfBirth)
     {
-        if (dateOfBirth > TimeProviderAccessor.Current.GetUtcNow().ToDateOnly())
-        {
-            return Result<Customer>.Failure(this, "Invalid dateOfBirth");
-        }
+        var currentDate = TimeProviderAccessor.Current.GetUtcNow().ToDateOnly();
 
-        return this.ApplyChange(this.DateOfBirth, dateOfBirth, v => this.DateOfBirth = v);
+        return this.Change()
+            .Ensure(_ => dateOfBirth <= currentDate, "Invalid date of birth: cannot be in the future")
+            .Ensure(_ => dateOfBirth >= currentDate.AddYears(-150), "Invalid date of birth: age exceeds maximum")
+            .Set(c => c.DateOfBirth, dateOfBirth)
+            .When(_ => dateOfBirth.HasValue)
+            .Register(c => new CustomerUpdatedDomainEvent(c))
+            .Apply();
     }
 
     /// <summary>
@@ -159,39 +159,10 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
     public Result<Customer> ChangeStatus(CustomerStatus status)
     {
-        if (status == null)
-        {
-            return Result<Customer>.Failure(this, "Invalid status");
-        }
-
-        return this.ApplyChange(this.Status, status, v => this.Status = v);
-    }
-
-    /// <summary>
-    /// Generic helper method to apply a change only if the new value
-    /// differs from the current one. Registers a
-    /// <see cref="CustomerUpdatedDomainEvent"/> when the value changes.
-    /// </summary>
-    /// <typeparam name="T">The type of the property being changed.</typeparam>
-    /// <param name="currentValue">The current value of the property.</param>
-    /// <param name="newValue">The new value to apply.</param>
-    /// <param name="action">The assignment action if a change occurs.</param>
-    /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
-    private Result<Customer> ApplyChange<T>(T currentValue, T newValue, Action<T> action)
-    {
-        if (EqualityComparer<T>.Default.Equals(currentValue, newValue))
-        {
-            return Result<Customer>.Success(this); // nothing to do, keep current
-        }
-
-        action(newValue);
-
-        this.DomainEvents.Register(
-            new CustomerUpdatedDomainEvent(this), true);
-
-        this.DomainEvents.Register(
-            new EntityUpdatedDomainEvent<Customer>(this), true);
-
-        return this;
+        return this.Change()
+            .Set(c => c.Status, status)
+            .When(_ => status != null)
+            .Register(c => new CustomerUpdatedDomainEvent(c))
+            .Apply();
     }
 }

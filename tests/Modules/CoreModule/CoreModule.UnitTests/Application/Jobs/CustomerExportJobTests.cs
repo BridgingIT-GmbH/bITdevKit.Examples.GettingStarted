@@ -26,8 +26,8 @@ public class CustomerExportJobTests(ITestOutputHelper output) : CoreModuleTestsB
         var scopeFactory = this.ServiceProvider.GetService<IServiceScopeFactory>();
         var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
 
-        var customer1 = Customer.Create("John", "Doe", "john.export@example.com", CustomerNumber.Create("CN-100011").Value).Value;
-        var customer2 = Customer.Create("Jane", "Smith", "jane.export@example.com", CustomerNumber.Create("CN-100012").Value).Value;
+        var customer1 = Customer.Create("John", "Doe", "john.export@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var customer2 = Customer.Create("Jane", "Smith", "jane.export@example.com", CustomerNumber.Create("CUS-2026-100001").Value).Value;
         await repository.InsertAsync(customer1, CancellationToken.None);
         await repository.InsertAsync(customer2, CancellationToken.None);
 

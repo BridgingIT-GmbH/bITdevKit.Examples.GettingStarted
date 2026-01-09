@@ -18,7 +18,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("core")
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "10.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -59,7 +59,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<int>("Status")
+                    b.Property<int?>("Status")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

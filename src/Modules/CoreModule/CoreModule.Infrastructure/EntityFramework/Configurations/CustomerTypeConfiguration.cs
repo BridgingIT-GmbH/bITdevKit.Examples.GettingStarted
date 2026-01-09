@@ -26,7 +26,7 @@ public class CustomerTypeConfiguration : IEntityTypeConfiguration<Customer>
             .IsConcurrencyToken()
             .ValueGeneratedNever(); // EF won't generate this value, it must come from the app layer
 
-        // Configure CustomerId value object → Guid in database
+        // Configure CustomerId value object -> Guid in database
         builder.Property(e => e.Id)
             .ValueGeneratedOnAdd() // Guid is generated on insert
             .HasConversion(
@@ -38,7 +38,7 @@ public class CustomerTypeConfiguration : IEntityTypeConfiguration<Customer>
             .IsRequired()
             .HasMaxLength(128);
 
-        // Map CustomerNumber value object → string in database
+        // Map CustomerNumber value object -> string in database
         builder.Property(d => d.Number)
             .IsRequired()
             .HasConversion(
@@ -51,12 +51,8 @@ public class CustomerTypeConfiguration : IEntityTypeConfiguration<Customer>
             .IsRequired()
             .HasMaxLength(512);
 
-        builder.Property(d => d.DateOfBirth)
-            .IsRequired(false)
-            .HasConversion<DateOnlyConverter, DateOnlyComparer>()
-            .HasColumnType("date");
 
-        // Map EmailAddress value object → string in database
+        // Map EmailAddress value object -> string in database
         builder.Property(x => x.Email)
             .IsRequired()
             .HasConversion(
@@ -64,10 +60,15 @@ public class CustomerTypeConfiguration : IEntityTypeConfiguration<Customer>
                 value => EmailAddress.Create(value).Value) // when loading
             .HasMaxLength(256);
 
-        // Map CustomerStatus enumeration → int in database using custom converter
+        builder.Property(d => d.DateOfBirth)
+            .IsRequired(false)
+            .HasConversion<DateOnlyConverter, DateOnlyComparer>()
+            .HasColumnType("date");
+
+        // Map CustomerStatus enumeration -> int in database using enumeration converter
         builder.Property(x => x.Status)
-            .HasConversion(new EnumerationConverter<Domain.Model.CustomerStatus>())
-            .IsRequired();
+            .IsRequired(false)
+            .HasConversion(new EnumerationConverter<CustomerStatus>());
 
         // Map auditing properties (e.g. CreatedAt, ModifiedAt) via shared extension method
         builder.OwnsOneAuditState();
