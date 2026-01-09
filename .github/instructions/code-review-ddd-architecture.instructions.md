@@ -60,6 +60,7 @@ Each module under `src/Modules/<ModuleName>` follows this structure:
 - No direct access to child entities from outside aggregate
 - Aggregate root enforces all invariants and business rules
 - Methods return `Result<T>` for operations that can fail
+- Prefer `Result<T>` or `Result` over throwing Exceptions for business rule violations or programming errors when the method returns a result `Result<T>` or `Result`
 - No public setters; use methods to modify state
 - Collection properties typed as `IReadOnlyCollection<T>`
 - No lazy loading; all required data loaded eagerly
@@ -87,7 +88,10 @@ public class Customer : AggregateRoot<CustomerId>
     /// <returns>Result indicating success or failure.</returns>
     public Result AddOrder(Order order)
     {
-        ArgumentNullException.ThrowIfNull(order);
+        if (order == null)
+        {
+            return Result.Failure("Order cannot be null");
+        }
 
         if (this.orders.Count >= MaxOrdersPerCustomer)
         {
@@ -96,6 +100,7 @@ public class Customer : AggregateRoot<CustomerId>
 
         this.orders.Add(order);
         this.RaiseDomainEvent(new OrderAddedDomainEvent(this.Id, order.Id));
+
         return Result.Success();
     }
 }

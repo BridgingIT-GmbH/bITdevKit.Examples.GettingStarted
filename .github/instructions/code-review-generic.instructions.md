@@ -121,11 +121,13 @@ public class DiscountCalculator
 - Prefer simple using statements, declarations (C# 8+) for IDisposable objects
 
 ### Error Handling
-- Use specific exception types, not generic `Exception`
+- Use specific exception types, not generic `Exception` when possible
+- Avoid catching general exceptions; catch specific exceptions only
 - Validate inputs early using guard clauses
 - Never catch and swallow exceptions without logging
 - In async code, avoid catching and re-throwing without preserving stack trace
 - Dispose resources properly using `using` statements or declarations
+- Exceptions thrown in methods must not be documented as XML comments.
 
 ### Example
 ```csharp
@@ -164,7 +166,6 @@ public class DataProcessor
     /// <param name="id">The data identifier.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>True if processing succeeded; otherwise, false.</returns>
-    /// <exception cref="ArgumentException">Thrown when id is invalid.</exception>
     public async Task<bool> ProcessDataAsync(Guid id, CancellationToken cancellationToken = default)
     {
         if (id == Guid.Empty)

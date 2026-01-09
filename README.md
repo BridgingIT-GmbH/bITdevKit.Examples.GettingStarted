@@ -809,7 +809,7 @@ public class EmailAddress : ValueObject
     {
         value = value?.Trim()?.ToLowerInvariant();
 
-        if (string.IsNullOrEmpty(value))
+        if (string.IsNullOrWhiteSpace(value))
             return Result<EmailAddress>.Failure()
                 .WithError(new ValidationError("Email cannot be empty"));
 
