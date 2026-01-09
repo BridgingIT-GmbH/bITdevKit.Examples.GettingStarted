@@ -56,16 +56,16 @@ When performing a code review, check for:
 - Methods should be small and focused (ideally < 20-30 lines)
 - Avoid deeply nested code (max 3-4 levels); use guard clauses and early returns
 - Avoid magic numbers and strings (use `const` or `readonly` fields)
-- Use expression-bodied members for accessors and properties (per .editorconfig)
-- **Mandatory**: File-scoped namespaces (per .editorconfig: `csharp_style_namespace_declarations = file_scoped:error`)
-- **Mandatory**: Using directives inside namespace (per .editorconfig: `csharp_using_directive_placement = inside_namespace:error`)
-- **Mandatory**: Use `var` for all variable declarations (per .editorconfig: `csharp_style_var_*:error`)
+- Use expression-bodied members for accessors and properties
+- **Mandatory**: File-scoped namespaces
+- **Mandatory**: Using directives inside namespace
+- **Mandatory**: Use `var` for all variable declarations
 - Code should be self-documenting; XML comments required for all public APIs
 - No double empty lines; single empty line between methods and logical sections
 
 ### Example
 ```csharp
-// ❌ BAD: Block-scoped namespace, poor naming, magic numbers, no XML comments
+// ❌ BAD: Block-scoped namespace (has curly braces), poor naming, magic numbers, no XML comments
 namespace MyApp.Services {
     public class Calc {
         public decimal Do(decimal x, decimal y) {
@@ -75,7 +75,7 @@ namespace MyApp.Services {
     }
 }
 
-// ✅ GOOD: File-scoped namespace, clear naming, constants, XML comments, var usage, pattern matching
+// ✅ GOOD: File-scoped namespace (ends with semicolon), clear naming, constants, XML comments, var usage, pattern matching
 namespace MyApp.Services;
 
 /// <summary>
@@ -104,7 +104,10 @@ public class DiscountCalculator
 
 ### C# Language Features and .editorconfig Compliance
 - Adhere to .editorconfig rules for C# coding style
-- **Mandatory**: File-scoped namespaces
+- **Mandatory**: File-scoped namespaces (ends with `;` not `{}`)
+  - CORRECT: `namespace MyApp.Services;` (file-scoped)
+  - INCORRECT: `namespace MyApp.Services { }` (block-scoped)
+  - **Verification**: Look for semicolon after namespace declaration, NOT opening brace
 - **Mandatory**: Using directives inside namespace
 - **Mandatory**: Use `var` for all local variables
 - Prefer pattern matching over type checks and casts
@@ -114,7 +117,7 @@ public class DiscountCalculator
 - Prefer `string.IsNullOrWhiteSpace()` over `string.IsNullOrEmpty()`
 - Use null-conditional (`?.`) and null-coalescing (`??`, `??=`) operators
 - Prefer `is` pattern matching over equality checks for null: `if (obj is null)`
-- Use `this.` qualifier for fields, methods, properties, and events (per .editorconfig suggestion)
+- Use `this.` qualifier for fields, methods, properties, and events
 - Prefer simple using statements, declarations (C# 8+) for IDisposable objects
 
 ### Error Handling
@@ -552,6 +555,7 @@ When performing a code review, systematically verify:
 
 ### Code Quality (C#/.NET)
 - [ ] Code follows .editorconfig rules (file-scoped namespaces, var usage, using placement)
+- [ ] Namespace is file-scoped (check for semicolon `;` after namespace, not opening brace `{`)
 - [ ] Names follow C# naming conventions (PascalCase for types/methods, camelCase for parameters/locals)
 - [ ] All public APIs have XML documentation comments (`<summary>`, `<param>`, `<returns>`)
 - [ ] Methods are small and focused (< 30 lines ideally)

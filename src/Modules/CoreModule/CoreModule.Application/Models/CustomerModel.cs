@@ -7,8 +7,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Applicati
 
 /// <summary>
 /// Data transfer object (DTO) representing a <see cref="Domain.Model.Customer"/>.
-/// Used by the application and presentation layers to expose Customers to clients.
-/// Mirrors key domain properties in a JSON‑friendly / client‑friendly format.
+/// Used by the application and presentation layers to expose Aggregate to clients.
 /// </summary>
 public class CustomerModel
 {

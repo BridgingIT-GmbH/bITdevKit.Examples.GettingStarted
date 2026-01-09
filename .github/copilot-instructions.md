@@ -202,6 +202,8 @@ Provide: current filename(s), goal (e.g., split large handler), constraints (no 
 ```
 / (root)
   ./github/copilot-instructions.md
+  ./github/instructions/
+  ./github/prompts/
   README.md
   src/
     Modules/CoreModule/
