@@ -11,14 +11,14 @@ using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 /// Command to change a Aggregate status to any valid <see cref="Domain.Model.CustomerStatus"/>.
 /// </summary>
 /// <param name="id">The string representation of the Aggregate's identifier.</param>
-/// <param name="status">Target status identifier.</param>
-public class CustomerUpdateStatusCommand(string id, int status) : RequestBase<CustomerModel>
+/// <param name="status">Target status value (e.g., "Lead", "Active", "Retired").</param>
+public class CustomerUpdateStatusCommand(string id, string status) : RequestBase<CustomerModel>
 {
     /// <summary>Gets or sets the Aggregate id.</summary>
     public string Id { get; set; } = id;
 
-    /// <summary>Gets or sets target status.</summary>
-    public int Status { get; set; } = status;
+    /// <summary>Gets or sets target status value.</summary>
+    public string Status { get; set; } = status;
 
     /// <summary>Validator ensuring valid id and status.</summary>
     public class Validator : AbstractValidator<CustomerUpdateStatusCommand>
@@ -29,9 +29,9 @@ public class CustomerUpdateStatusCommand(string id, int status) : RequestBase<Cu
                 .WithMessage("Invalid guid.");
 
             this.RuleFor(c => c.Status)
-                .GreaterThan(0)
-                .Must(id => CustomerStatus.GetAll().Any(s => s.Id == id))
-                .WithMessage("Invalid status id.");
+                .NotEmpty()
+                .Must(value => CustomerStatus.GetAll().Any(s => s.Value == value))
+                .WithMessage("Invalid status value. Valid values: Lead, Active, Retired.");
         }
     }
 }

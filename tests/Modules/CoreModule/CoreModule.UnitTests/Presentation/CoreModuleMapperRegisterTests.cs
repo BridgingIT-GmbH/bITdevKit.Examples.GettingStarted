@@ -37,7 +37,7 @@ public class CoreModuleMapperRegisterTests
         model.LastName.ShouldBe("Doe");
         model.Email.ShouldBe("john.doe@example.com");
         model.Number.ShouldBe(customerNumber);
-        model.Status.ShouldBe(CustomerStatus.Active.Id);
+        model.Status.ShouldBe(CustomerStatus.Active.Value);
         model.ConcurrencyVersion.ShouldBe(customer.ConcurrencyVersion.ToString());
     }
 
@@ -54,7 +54,7 @@ public class CoreModuleMapperRegisterTests
             LastName = "Smith",
             Email = "jane.smith@example.com",
             Number = "CUS-2026-100000",
-            Status = CustomerStatus.Active.Id,
+            Status = CustomerStatus.Active.Value,
             ConcurrencyVersion = concurrencyVersion
         };
 
@@ -127,26 +127,26 @@ public class CoreModuleMapperRegisterTests
     }
 
     [Fact]
-    public void CustomerStatusToInt_MapsCorrectly()
+    public void CustomerStatusToString_MapsCorrectly()
     {
         // Arrange
         var status = CustomerStatus.Active;
 
         // Act
-        var result = status.Adapt<int>(this.config);
+        var result = status.Adapt<string>(this.config);
 
         // Assert
-        result.ShouldBe(CustomerStatus.Active.Id);
+        result.ShouldBe(CustomerStatus.Active.Value);
     }
 
     [Fact]
-    public void IntToCustomerStatus_MapsCorrectly()
+    public void StringToCustomerStatus_MapsCorrectly()
     {
         // Arrange
-        var statusId = CustomerStatus.Active.Id;
+        var statusValue = CustomerStatus.Active.Value;
 
         // Act
-        var result = statusId.Adapt<CustomerStatus>(this.config);
+        var result = statusValue.Adapt<CustomerStatus>(this.config);
 
         // Assert
         result.ShouldBe(CustomerStatus.Active);
@@ -162,7 +162,7 @@ public class CoreModuleMapperRegisterTests
             LastName = "Smith",
             Email = "jane.smith@example.com",
             Number = "CUS-2026-100000",
-            Status = CustomerStatus.Active.Id,
+            Status = CustomerStatus.Active.Value,
             ConcurrencyVersion = null
         };
 

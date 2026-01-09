@@ -115,7 +115,7 @@ public class CustomerEndpoints : EndpointsBase
                     .MapHttpOk())
             .WithName("CoreModule.Customers.UpdateStatus")
             .WithSummary("Update customer status")
-            .WithDescription("Updates only the status of an existing customer (e.g., Lead, Active, Retired). This is a partial update operation that modifies only the status field. Valid status values: 1 = Lead, 2 = Active, 3 = Retired.")
+            .WithDescription("Updates only the status of an existing customer (e.g., Lead, Active, Retired). This is a partial update operation that modifies only the status field. Valid status values: \"Lead\", \"Active\", \"Retired\".")
             .Accepts<CustomerUpdateStatusRequestModel>("application/json")
             .Produces<CustomerModel>(StatusCodes.Status200OK, "application/json")
             .Produces(StatusCodes.Status401Unauthorized)

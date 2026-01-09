@@ -383,7 +383,7 @@
           "CoreModule.Customers"
         ],
         "summary": "Update customer status",
-        "description": "Updates only the status of an existing customer (e.g., Lead, Active, Retired). This is a partial update operation that modifies only the status field. Valid status values: 1 = Lead, 2 = Active, 3 = Retired.",
+        "description": "Updates only the status of an existing customer (e.g., Lead, Active, Retired). This is a partial update operation that modifies only the status field. Valid status values: \"Lead\", \"Active\", \"Retired\".",
         "operationId": "CoreModule.Customers.UpdateStatus",
         "parameters": [
           {
@@ -1649,10 +1649,12 @@
             "example": "john.doe@example.com"
           },
           "status": {
-            "type": "integer",
-            "description": "Gets or sets the current status of the customer as an enumeration identifier.\r\n1 = Lead, 2 = Active, 3 = Retired. See CustomerStatus enumeration for valid values.",
-            "format": "int32",
-            "example": 2
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets or sets the current status of the customer as a string value.\r\nValid values: \"Lead\", \"Active\", \"Retired\". See CustomerStatus enumeration for valid values.",
+            "example": "Active"
           },
           "concurrencyVersion": {
             "type": [
@@ -1669,10 +1671,12 @@
         "type": "object",
         "properties": {
           "status": {
-            "type": "integer",
-            "description": "Gets or sets the new status value for the customer.\r\nValid values: 1 = Lead, 2 = Active, 3 = Retired. See CustomerStatus enumeration for details.",
-            "format": "int32",
-            "example": 2
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets or sets the new status value for the customer.\r\nValid values: \"Lead\", \"Active\", \"Retired\". See CustomerStatus enumeration for details.",
+            "example": "Active"
           }
         },
         "description": "Request body for changing customer status."

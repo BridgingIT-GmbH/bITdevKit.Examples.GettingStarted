@@ -21,7 +21,7 @@ public class CustomerUpdateStatusCommandValidatorTests
     public void Validate_ValidCommand_ShouldNotHaveValidationError()
     {
         // Arrange
-        var command = new CustomerUpdateStatusCommand(Guid.NewGuid().ToString(), 2);
+        var command = new CustomerUpdateStatusCommand(Guid.NewGuid().ToString(), "Active");
 
         // Act
         var result = this.validator.TestValidate(command);
@@ -35,7 +35,7 @@ public class CustomerUpdateStatusCommandValidatorTests
     public void Validate_NullCustomerId_ShouldHaveValidationError()
     {
         // Arrange
-        var command = new CustomerUpdateStatusCommand(null, 2);
+        var command = new CustomerUpdateStatusCommand(null, "Active");
 
         // Act
         var result = this.validator.TestValidate(command);
@@ -49,7 +49,7 @@ public class CustomerUpdateStatusCommandValidatorTests
     public void Validate_EmptyCustomerId_ShouldHaveValidationError()
     {
         // Arrange
-        var command = new CustomerUpdateStatusCommand("", 2);
+        var command = new CustomerUpdateStatusCommand("", "Active");
 
         // Act
         var result = this.validator.TestValidate(command);
@@ -63,7 +63,7 @@ public class CustomerUpdateStatusCommandValidatorTests
     public void Validate_EmptyGuidCustomerId_ShouldHaveValidationError()
     {
         // Arrange
-        var command = new CustomerUpdateStatusCommand(Guid.Empty.ToString(), 2);
+        var command = new CustomerUpdateStatusCommand(Guid.Empty.ToString(), "Active");
 
         // Act
         var result = this.validator.TestValidate(command);
@@ -72,12 +72,12 @@ public class CustomerUpdateStatusCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Id);
     }
 
-    /// <summary>Verifies validation error for zero status value.</summary>
+    /// <summary>Verifies validation error for null status value.</summary>
     [Fact]
-    public void Validate_ZeroStatus_ShouldHaveValidationError()
+    public void Validate_NullStatus_ShouldHaveValidationError()
     {
         // Arrange
-        var command = new CustomerUpdateStatusCommand(Guid.NewGuid().ToString(), 0);
+        var command = new CustomerUpdateStatusCommand(Guid.NewGuid().ToString(), null);
 
         // Act
         var result = this.validator.TestValidate(command);
@@ -86,12 +86,12 @@ public class CustomerUpdateStatusCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Status);
     }
 
-    /// <summary>Verifies validation error for negative status value.</summary>
+    /// <summary>Verifies validation error for empty status value.</summary>
     [Fact]
-    public void Validate_NegativeStatus_ShouldHaveValidationError()
+    public void Validate_EmptyStatus_ShouldHaveValidationError()
     {
         // Arrange
-        var command = new CustomerUpdateStatusCommand(Guid.NewGuid().ToString(), -1);
+        var command = new CustomerUpdateStatusCommand(Guid.NewGuid().ToString(), "");
 
         // Act
         var result = this.validator.TestValidate(command);
@@ -100,12 +100,12 @@ public class CustomerUpdateStatusCommandValidatorTests
         result.ShouldHaveValidationErrorFor(c => c.Status);
     }
 
-    /// <summary>Verifies validation error for non-existent status ID.</summary>
+    /// <summary>Verifies validation error for non-existent status value.</summary>
     [Fact]
-    public void Validate_InvalidStatusId_ShouldHaveValidationError()
+    public void Validate_InvalidStatusValue_ShouldHaveValidationError()
     {
-        // Arrange - Status 999 doesn't exist
-        var command = new CustomerUpdateStatusCommand(Guid.NewGuid().ToString(), 999);
+        // Arrange - Status "Invalid" doesn't exist
+        var command = new CustomerUpdateStatusCommand(Guid.NewGuid().ToString(), "Invalid");
 
         // Act
         var result = this.validator.TestValidate(command);
@@ -118,8 +118,8 @@ public class CustomerUpdateStatusCommandValidatorTests
     [Fact]
     public void Validate_ValidStatusLead_ShouldNotHaveValidationError()
     {
-        // Arrange - Status 1 = Lead
-        var command = new CustomerUpdateStatusCommand(Guid.NewGuid().ToString(), 1);
+        // Arrange - Status "Lead"
+        var command = new CustomerUpdateStatusCommand(Guid.NewGuid().ToString(), "Lead");
 
         // Act
         var result = this.validator.TestValidate(command);
@@ -132,8 +132,8 @@ public class CustomerUpdateStatusCommandValidatorTests
     [Fact]
     public void Validate_ValidStatusRetired_ShouldNotHaveValidationError()
     {
-        // Arrange - Status 3 = Retired
-        var command = new CustomerUpdateStatusCommand(Guid.NewGuid().ToString(), 3);
+        // Arrange - Status "Retired"
+        var command = new CustomerUpdateStatusCommand(Guid.NewGuid().ToString(), "Retired");
 
         // Act
         var result = this.validator.TestValidate(command);

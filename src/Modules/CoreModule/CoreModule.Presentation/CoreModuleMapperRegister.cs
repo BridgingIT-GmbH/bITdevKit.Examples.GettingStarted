@@ -69,19 +69,19 @@ public class CoreModuleMapperRegister : IRegister
 
     /// <summary>
     /// Registers a generic mapping configuration for <see cref="Enumeration"/> types.
-    /// Maps an enumeration object to its underlying <c>Id</c> and vice versa.
+    /// Maps an enumeration object to its underlying <c>Value</c> (string name) and vice versa.
     /// </summary>
     /// <typeparam name="T">The specific <see cref="Enumeration"/> type.</typeparam>
     /// <param name="config">The <see cref="TypeAdapterConfig"/> to register mappings into.</param>
     private static void RegisterConverter<T>(TypeAdapterConfig config)
        where T : Enumeration
     {
-        // Enumeration -> int (store Id for transport/persistence)
-        config.NewConfig<T, int>()
-            .MapWith(src => src.Id);
+        // Enumeration -> string (store Value for transport/DTO output)
+        config.NewConfig<T, string>()
+            .MapWith(src => src.Value);
 
-        // int -> Enumeration (reconstruct from Id)
-        config.NewConfig<int, T>()
-            .MapWith(src => Enumeration.GetAll<T>().FirstOrDefault(x => x.Id == src));
+        // string -> Enumeration (reconstruct from Value)
+        config.NewConfig<string, T>()
+            .MapWith(src => Enumeration.GetAll<T>().FirstOrDefault(x => x.Value == src));
     }
 }

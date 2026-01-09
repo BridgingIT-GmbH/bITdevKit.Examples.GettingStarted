@@ -49,11 +49,11 @@ public class CustomerModel
     public string Email { get; set; }
 
     /// <summary>
-    /// Gets or sets the current status of the customer as an enumeration identifier.
-    /// 1 = Lead, 2 = Active, 3 = Retired. See CustomerStatus enumeration for valid values.
+    /// Gets or sets the current status of the customer as a string value.
+    /// Valid values: "Lead", "Active", "Retired". See CustomerStatus enumeration for valid values.
     /// </summary>
-    /// <example>2</example>
-    public int Status { get; set; }
+    /// <example>Active</example>
+    public string Status { get; set; }
 
     /// <summary>
     /// Gets or sets the concurrency version token (as a string Guid).

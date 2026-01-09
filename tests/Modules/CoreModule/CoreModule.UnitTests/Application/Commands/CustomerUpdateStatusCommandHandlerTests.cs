@@ -30,11 +30,11 @@ public class CustomerUpdateStatusCommandHandlerTests(ITestOutputHelper output) :
 
         // Act
         var result = await requester.SendAsync(
-            new CustomerUpdateStatusCommand(created.Value.Id, CustomerStatus.Active.Id), null, CancellationToken.None);
+            new CustomerUpdateStatusCommand(created.Value.Id, CustomerStatus.Active.Value), null, CancellationToken.None);
 
         // Assert
         result.ShouldBeSuccess();
-        result.Value.Status.ShouldBe(CustomerStatus.Active.Id);
+        result.Value.Status.ShouldBe(CustomerStatus.Active.Value);
     }
 
     /// <summary>Verifies successful status transition to Retired.</summary>
@@ -53,10 +53,10 @@ public class CustomerUpdateStatusCommandHandlerTests(ITestOutputHelper output) :
 
         // Act
         var result = await requester.SendAsync(
-            new CustomerUpdateStatusCommand(created.Value.Id, CustomerStatus.Retired.Id), null, CancellationToken.None);
+            new CustomerUpdateStatusCommand(created.Value.Id, CustomerStatus.Retired.Value), null, CancellationToken.None);
 
         // Assert
         result.ShouldBeSuccess();
-        result.Value.Status.ShouldBe(CustomerStatus.Retired.Id);
+        result.Value.Status.ShouldBe(CustomerStatus.Retired.Value);
     }
 }
