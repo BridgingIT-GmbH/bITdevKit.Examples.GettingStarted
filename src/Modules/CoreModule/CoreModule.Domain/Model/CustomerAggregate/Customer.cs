@@ -88,7 +88,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
             .Ensure(_ => !string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName), new ValidationError("Invalid name: both first and last name must be provided"))
             .Ensure(_ => lastName != "notallowed", new ValidationError("Invalid last name: 'notallowed' is not permitted"))
             .Ensure(_ => email != null, new ValidationError("Email cannot be null"))
-            .Ensure(_ => number != null, new ValidationError("Customer number cannot be null"))
+            .Ensure(_ => number != null, new ValidationError("Number cannot be null"))
             .Bind(_ => new Customer(firstName, lastName, emailAddressResult.Value, number))
             .Tap(e => e.DomainEvents
                 .Register(new CustomerCreatedDomainEvent(e))
