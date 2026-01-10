@@ -27,7 +27,7 @@ public class CustomerTests
         customer.LastName.ShouldBe("Doe");
         customer.Email.Value.ShouldBe("john.doe@example.com");
         customer.Number.Value.ShouldBe("CUS-2026-100000");
-        customer.Status.ShouldBe(CoreModule.Domain.Model.CustomerStatus.Lead);
+        customer.Status.ShouldBe(CustomerStatus.Lead);
     }
 
     /// <summary>
@@ -174,8 +174,8 @@ public class CustomerTests
         var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
         var status = statusName switch
         {
-            nameof(CoreModule.Domain.Model.CustomerStatus.Active) => CoreModule.Domain.Model.CustomerStatus.Active,
-            nameof(CoreModule.Domain.Model.CustomerStatus.Retired) => CoreModule.Domain.Model.CustomerStatus.Retired,
+            nameof(CustomerStatus.Active) => CustomerStatus.Active,
+            nameof(CustomerStatus.Retired) => CustomerStatus.Retired,
             _ => throw new ArgumentOutOfRangeException(statusName)
         };
 

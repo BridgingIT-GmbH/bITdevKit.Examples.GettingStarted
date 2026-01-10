@@ -20,9 +20,9 @@ public class CustomerStatusTests
         // Arrange
         var status = instanceName switch
         {
-            nameof(CoreModule.Domain.Model.CustomerStatus.Lead) => CoreModule.Domain.Model.CustomerStatus.Lead,
-            nameof(CoreModule.Domain.Model.CustomerStatus.Active) => CoreModule.Domain.Model.CustomerStatus.Active,
-            nameof(CoreModule.Domain.Model.CustomerStatus.Retired) => CoreModule.Domain.Model.CustomerStatus.Retired,
+            nameof(CustomerStatus.Lead) => CustomerStatus.Lead,
+            nameof(CustomerStatus.Active) => CustomerStatus.Active,
+            nameof(CustomerStatus.Retired) => CustomerStatus.Retired,
             _ => throw new ArgumentOutOfRangeException(instanceName)
         };
 
@@ -38,8 +38,8 @@ public class CustomerStatusTests
     public void Equality_SameInstance_ShouldBeEqual()
     {
         // Arrange & Act
-        var status1 = CoreModule.Domain.Model.CustomerStatus.Active;
-        var status2 = CoreModule.Domain.Model.CustomerStatus.Active;
+        var status1 = CustomerStatus.Active;
+        var status2 = CustomerStatus.Active;
 
         // Assert
         status1.ShouldBe(status2);
@@ -58,17 +58,17 @@ public class CustomerStatusTests
         // Arrange
         var first = firstName switch
         {
-            nameof(CoreModule.Domain.Model.CustomerStatus.Lead) => CoreModule.Domain.Model.CustomerStatus.Lead,
-            nameof(CoreModule.Domain.Model.CustomerStatus.Active) => CoreModule.Domain.Model.CustomerStatus.Active,
-            nameof(CoreModule.Domain.Model.CustomerStatus.Retired) => CoreModule.Domain.Model.CustomerStatus.Retired,
+            nameof(CustomerStatus.Lead) => CustomerStatus.Lead,
+            nameof(CustomerStatus.Active) => CustomerStatus.Active,
+            nameof(CustomerStatus.Retired) => CustomerStatus.Retired,
             _ => throw new ArgumentOutOfRangeException(firstName)
         };
 
         var second = secondName switch
         {
-            nameof(CoreModule.Domain.Model.CustomerStatus.Lead) => CoreModule.Domain.Model.CustomerStatus.Lead,
-            nameof(CoreModule.Domain.Model.CustomerStatus.Active) => CoreModule.Domain.Model.CustomerStatus.Active,
-            nameof(CoreModule.Domain.Model.CustomerStatus.Retired) => CoreModule.Domain.Model.CustomerStatus.Retired,
+            nameof(CustomerStatus.Lead) => CustomerStatus.Lead,
+            nameof(CustomerStatus.Active) => CustomerStatus.Active,
+            nameof(CustomerStatus.Retired) => CustomerStatus.Retired,
             _ => throw new ArgumentOutOfRangeException(secondName)
         };
 
