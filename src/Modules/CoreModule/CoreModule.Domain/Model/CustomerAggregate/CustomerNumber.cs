@@ -14,8 +14,7 @@ public class CustomerNumber : ValueObject // TODO: refactor to use Result<Custom
     private static readonly Regex FormatRegex =
         new(@"^CUS-(\d{4})-(\d{6})$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    private CustomerNumber()
-    { }
+    private CustomerNumber() { }
 
     private CustomerNumber(string value) => this.Value = value;
 

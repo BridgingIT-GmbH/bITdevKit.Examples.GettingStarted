@@ -14,8 +14,7 @@ using BridgingIT.DevKit.Domain;
 [TypedEntityId<Guid>]
 public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
 {
-    private Customer()
-    { }
+    private Customer() { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Customer"/> class with the specified name and email address.
@@ -77,7 +76,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <param name="email">The email address of the customer.</param>
     /// <param name="number">The number of the customer.</param>
     /// <returns>A new <see cref="Customer"/> instance.</returns>
-    public static Result<Customer> Create(string firstName, string lastName, string email, CustomerNumber number) // TODO: the email could be EmailAddress type directly
+    public static Result<Customer> Create(string firstName, string lastName, string email, CustomerNumber number) // TODO: the email should be EmailAddress type directly
     {
         var emailAddressResult = EmailAddress.Create(email);
         if (emailAddressResult.IsFailure)
@@ -85,19 +84,15 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
             return emailAddressResult.Unwrap();
         }
 
-        if (number == null)
-        {
-            return Result<Customer>.Failure()
-                .WithError(new ValidationError("Customer number cannot be null."));
-        }
-
-        var customer = new Customer(firstName, lastName, emailAddressResult.Value, number);
-
-        customer.DomainEvents
-            .Register(new CustomerCreatedDomainEvent(customer))
-            .Register(new EntityCreatedDomainEvent<Customer>(customer));
-
-        return customer;
+        return Result<Customer>.Success()
+            .Ensure(_ => !string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName), new ValidationError("Invalid name: both first and last name must be provided"))
+            .Ensure(_ => lastName != "notallowed", new ValidationError("Invalid last name: 'notallowed' is not permitted"))
+            .Ensure(_ => email != null, new ValidationError("Email cannot be null"))
+            .Ensure(_ => number != null, new ValidationError("Customer number cannot be null"))
+            .Bind(_ => new Customer(firstName, lastName, emailAddressResult.Value, number))
+            .Tap(e => e.DomainEvents
+                .Register(new CustomerCreatedDomainEvent(e))
+                .Register(new EntityCreatedDomainEvent<Customer>(e)));
     }
 
     /// <summary>
@@ -112,8 +107,8 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
         return this.Change()
             .Ensure(_ => !string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName), "Invalid name: both first and last name must be provided")
             .Ensure(_ => lastName != "notallowed", "Invalid last name: 'notallowed' is not permitted")
-            .Set(c => c.FirstName, firstName).Set(c => c.LastName, lastName)
-            .Register(c => new CustomerUpdatedDomainEvent(c))
+            .Set(e => e.FirstName, firstName).Set(e => e.LastName, lastName)
+            .Register(e => new CustomerUpdatedDomainEvent(e))
             .Apply();
     }
 
@@ -126,15 +121,15 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     public Result<Customer> ChangeEmail(string email)
     {
         return this.Change()
-            .Set(c => c.Email, EmailAddress.Create(email))
-            .Register(c => new CustomerUpdatedDomainEvent(c))
+            .Set(e => e.Email, EmailAddress.Create(email))
+            .Register(e => new CustomerUpdatedDomainEvent(e))
             .Apply();
     }
 
     /// <summary>
     /// Changes the date of birth of the customer if different from the current value.
     /// Checks validation rules regarding future dates and maximum age.
-    /// Registers a <see cref="EntityUpdatedDomainEvent{Customer}"/> if changed.
+    /// Registers a <see cref="CustomerUpdatedDomainEvent"/> if changed.
     /// </summary>
     /// <param name="dateOfBirth">The new date of birth.</param>
     /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
@@ -150,8 +145,8 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
                 .Add(RuleSet.LessThan(dateOfBirth.Value, DateOnly.MaxValue))
                 .Add(RuleSet.GreaterThan(dateOfBirth.Value, DateOnly.MinValue))
                 .Check(), "Invalid date of birth: out of valid range")
-            .Set(c => c.DateOfBirth, dateOfBirth)
-            .Register(c => new CustomerUpdatedDomainEvent(c))
+            .Set(e => e.DateOfBirth, dateOfBirth)
+            .Register(e => new CustomerUpdatedDomainEvent(e))
             .Apply();
     }
 
@@ -165,8 +160,8 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     {
         return this.Change()
             .When(_ => status != null)
-            .Set(c => c.Status, status)
-            .Register(c => new CustomerUpdatedDomainEvent(c))
+            .Set(e => e.Status, status)
+            .Register(e => new CustomerUpdatedDomainEvent(e))
             .Apply();
     }
 }
