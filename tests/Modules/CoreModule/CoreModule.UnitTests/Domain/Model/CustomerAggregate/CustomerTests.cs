@@ -21,7 +21,7 @@ public class CustomerTests
         var result = Customer.Create("John", "Doe", "john.doe@example.com", number);
 
         // Assert
-        result.IsSuccess.ShouldBeTrue();
+        result.ShouldBeSuccess();
         var customer = result.Value;
         customer.FirstName.ShouldBe("John");
         customer.LastName.ShouldBe("Doe");
@@ -64,7 +64,7 @@ public class CustomerTests
         var result = customer.ChangeName(newFirst, newLast);
 
         // Assert
-        result.IsSuccess.ShouldBeTrue();
+        result.ShouldBeSuccess();
         customer.FirstName.ShouldBe(newFirst);
         customer.LastName.ShouldBe(newLast);
     }
@@ -104,7 +104,7 @@ public class CustomerTests
         var result = customer.ChangeEmail(newEmail);
 
         // Assert
-        result.IsSuccess.ShouldBeTrue();
+        result.ShouldBeSuccess();
         customer.Email.Value.ShouldBe(newEmail);
     }
 
@@ -141,7 +141,7 @@ public class CustomerTests
         var result = customer.ChangeBirthDate(date);
 
         // Assert
-        result.IsSuccess.ShouldBeTrue();
+        result.ShouldBeSuccess();
         customer.DateOfBirth.ShouldBe(date);
     }
 
@@ -159,7 +159,7 @@ public class CustomerTests
         var result = customer.ChangeBirthDate(futureDate);
 
         // Assert
-        result.IsFailure.ShouldBeTrue();
+        result.ShouldBeFailure();
     }
 
     /// <summary>
@@ -183,7 +183,7 @@ public class CustomerTests
         var result = customer.ChangeStatus(status);
 
         // Assert
-        result.IsSuccess.ShouldBeTrue();
+        result.ShouldBeSuccess();
         customer.Status.ShouldBe(status);
     }
 
@@ -200,7 +200,7 @@ public class CustomerTests
         var result = customer.ChangeStatus(null);
 
         // Assert
-        result.IsSuccess.ShouldBeTrue();
+        result.ShouldBeSuccess();
         customer.Status.ShouldBe(CustomerStatus.Lead); // remains unchanged (default)
     }
 
@@ -217,7 +217,7 @@ public class CustomerTests
         var result = customer.ChangeName("John", "Doe");
 
         // Assert
-        result.IsSuccess.ShouldBeTrue();
+        result.ShouldBeSuccess();
         customer.FirstName.ShouldBe("John");
         customer.LastName.ShouldBe("Doe");
     }
@@ -235,7 +235,7 @@ public class CustomerTests
         var result = customer.ChangeEmail("john.doe@example.com");
 
         // Assert
-        result.IsSuccess.ShouldBeTrue();
+        result.ShouldBeSuccess();
         customer.Email.Value.ShouldBe("john.doe@example.com");
     }
 }

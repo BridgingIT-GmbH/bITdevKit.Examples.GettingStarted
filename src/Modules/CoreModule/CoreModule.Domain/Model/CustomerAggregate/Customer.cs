@@ -104,8 +104,8 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// Changes the name of the customer if different from the current value. At least one parameter must be provided.
     /// Registers a <see cref="CustomerUpdatedDomainEvent"/> if changed.
     /// </summary>
-    /// <param name="firstName">The new first name (optional).</param>
-    /// <param name="lastName">The new last name (optional).</param>
+    /// <param name="firstName">The new first name.</param>
+    /// <param name="lastName">The new last name.</param>
     /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
     public Result<Customer> ChangeName(string firstName, string lastName)
     {
@@ -126,7 +126,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     public Result<Customer> ChangeEmail(string email)
     {
         return this.Change()
-            .Set(c => c.Email, EmailAddress.Create(email)) // Implicit guard inside Set()
+            .Set(c => c.Email, EmailAddress.Create(email))
             .Register(c => new CustomerUpdatedDomainEvent(c))
             .Apply();
     }
@@ -146,6 +146,10 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
             .When(_ => dateOfBirth.HasValue)
             .Ensure(_ => dateOfBirth <= currentDate, "Invalid date of birth: cannot be in the future")
             .Ensure(_ => dateOfBirth >= currentDate.AddYears(-150), "Invalid date of birth: age exceeds maximum")
+            .Ensure(_ => Rule // demonstrates complex rule composition with the Rules Feature
+                .Add(RuleSet.LessThan(dateOfBirth.Value, DateOnly.MaxValue))
+                .Add(RuleSet.GreaterThan(dateOfBirth.Value, DateOnly.MinValue))
+                .Check(), "Invalid date of birth: out of valid range")
             .Set(c => c.DateOfBirth, dateOfBirth)
             .Register(c => new CustomerUpdatedDomainEvent(c))
             .Apply();
