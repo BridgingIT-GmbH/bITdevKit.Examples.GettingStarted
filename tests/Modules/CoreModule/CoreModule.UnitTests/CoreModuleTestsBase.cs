@@ -13,7 +13,7 @@ public class CoreModuleTestsBase(ITestOutputHelper output, Action<IServiceCollec
 {
     private static void RegisterServices(IServiceCollection services)
     {
-        services.AddMapping().WithMapster<CoreModuleMapperRegister>();
+        services.AddMapping().WithMapster();
         services.AddRequester().AddHandlers();
         services.AddNotifier().AddHandlers();
         services.AddTimeProvider(new DateTimeOffset(2024, 1, 1, 1, 0, 1, TimeSpan.Zero));

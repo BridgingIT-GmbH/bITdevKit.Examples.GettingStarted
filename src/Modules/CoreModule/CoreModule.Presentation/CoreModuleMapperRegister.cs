@@ -28,6 +28,8 @@ public class CoreModuleMapperRegister : IRegister
         config.ForType<Customer, CustomerModel>()
             .Map(dest => dest.ConcurrencyVersion, // Map concurrency token (Guid in domain -> string in DTO)
                  src => src.ConcurrencyVersion.ToString())
+            .Map(dest => dest.Addresses, // Map address collection
+                 src => src.Addresses)
             .IgnoreNullValues(true);
 
         // CustomerModel -> Customer
@@ -39,6 +41,25 @@ public class CoreModuleMapperRegister : IRegister
                 src.Number).Value)
             .Map(dest => dest.ConcurrencyVersion, // Convert string back to Guid for concurrency token
                  src => src.ConcurrencyVersion != null ? Guid.Parse(src.ConcurrencyVersion) : Guid.Empty)
+            .Ignore(dest => dest.Addresses) // Addresses are managed separately via AddAddress, RemoveAddress, ChangeAddress methods
+            .IgnoreNullValues(true);
+
+        // Address -> CustomerAddressModel
+        config.ForType<Address, CustomerAddressModel>()
+            .Map(dest => dest.Id, // Map AddressId -> string
+                 src => src.Id.Value.ToString())
+            .IgnoreNullValues(true);
+
+        // CustomerAddressModel -> Address
+        config.ForType<CustomerAddressModel, Address>()
+            .ConstructUsing(src => Address.Create( // Reconstruct Address entity from model properties
+                src.Name,
+                src.Line1,
+                src.Line2,
+                src.PostalCode,
+                src.City,
+                src.Country,
+                src.IsPrimary).Value)
             .IgnoreNullValues(true);
 
         // ----------------------------

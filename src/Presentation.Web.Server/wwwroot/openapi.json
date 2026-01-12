@@ -1596,6 +1596,73 @@
           }
         }
       },
+      "CustomerAddressModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets or sets the unique identifier of the address.",
+            "example": "7fa85f64-5717-4562-b3fc-2c963f66afa7"
+          },
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets or sets the optional name or label for this address.",
+            "example": "Home"
+          },
+          "line1": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets or sets the first line of the address (street, number, etc.).",
+            "example": "123 Main Street"
+          },
+          "line2": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets or sets the optional second line of the address (apartment, suite, etc.).",
+            "example": "Apt 4B"
+          },
+          "postalCode": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets or sets the optional postal code.",
+            "example": 12345
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets or sets the city name.",
+            "example": "New York"
+          },
+          "country": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "Gets or sets the country name.",
+            "example": "United States"
+          },
+          "isPrimary": {
+            "type": "boolean",
+            "description": "Gets or sets a value indicating whether this is the primary address.",
+            "example": true
+          }
+        },
+        "description": "Data transfer object (DTO) representing a customer address.\r\nUsed by the application and presentation layers to expose address details to clients."
+      },
       "CustomerModel": {
         "type": "object",
         "properties": {
@@ -1663,6 +1730,16 @@
             ],
             "description": "Gets or sets the concurrency version token (as a string Guid).\r\nUsed for optimistic concurrency control to prevent conflicting updates.\r\nMust be provided when updating to ensure the entity hasn't been modified by another operation.",
             "example": "8f7a9b2c-3d4e-5f6a-7b8c-9d0e1f2a3b4c"
+          },
+          "addresses": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CustomerAddressModel"
+            },
+            "description": "Gets or sets the collection of addresses associated with this customer."
           }
         },
         "description": "Data transfer object (DTO) representing a Customer.\r\nUsed by the application and presentation layers to expose Aggregate to clients."

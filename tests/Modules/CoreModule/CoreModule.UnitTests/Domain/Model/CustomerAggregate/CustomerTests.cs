@@ -238,4 +238,135 @@ public class CustomerTests
         result.ShouldBeSuccess();
         customer.Email.Value.ShouldBe("john.doe@example.com");
     }
+
+    /// <summary>
+    /// Ensures adding address with missing required fields fails.
+    /// </summary>
+    [Theory]
+    [InlineData("", "New York", "USA")]
+    [InlineData("123 Main St", "", "USA")]
+    [InlineData("123 Main St", "New York", "")]
+    [InlineData(null, "New York", "USA")]
+    public void AddAddress_WithMissingRequiredFields_ReturnsFailure(string line1, string city, string country)
+    {
+        // Arrange
+        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+
+        // Act
+        var result = customer.AddAddress("Home", line1, null, "12345", city, country);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Verifies removing an address successfully removes it from collection.
+    /// </summary>
+    [Fact]
+    public void RemoveAddress_WithValidId_RemovesAddress()
+    {
+        // Arrange
+        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        customer.AddAddress("Home", "123 Main St", null, "12345", "New York", "USA");
+        var addressId = customer.Addresses.First().Id;
+
+        // Act
+        var result = customer.RemoveAddress(addressId);
+
+        // Assert
+        result.ShouldBeSuccess();
+        customer.Addresses.Count.ShouldBe(0);
+    }
+
+    /// <summary>
+    /// Verifies removing a non-existent address fails.
+    /// </summary>
+    [Fact]
+    public void RemoveAddress_WithInvalidId_ReturnsFailure()
+    {
+        // Arrange
+        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        customer.AddAddress("Home", "123 Main St", null, "12345", "New York", "USA");
+        var invalidAddressId = AddressId.Create(Guid.NewGuid());
+
+        // Act
+        var result = customer.RemoveAddress(invalidAddressId);
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Verifies changing an address updates all properties correctly.
+    /// </summary>
+    [Fact]
+    public void ChangeAddress_WithValidData_UpdatesAllProperties()
+    {
+        // Arrange
+        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        customer.AddAddress("Home", "123 Main St", "Apt 4B", "12345", "New York", "USA");
+        var addressId = customer.Addresses.First().Id;
+
+        // Act
+        var result = customer.ChangeAddress(addressId, "Work", "999 Corporate Blvd", "Suite 100", "99999", "Seattle", "USA");
+
+        // Assert
+        result.ShouldBeSuccess();
+        var address = customer.Addresses.First();
+        address.Name.ShouldBe("Work");
+        address.Line1.ShouldBe("999 Corporate Blvd");
+        address.Line2.ShouldBe("Suite 100");
+        address.PostalCode.ShouldBe("99999");
+        address.City.ShouldBe("Seattle");
+        address.Country.ShouldBe("USA");
+    }
+
+    /// <summary>
+    /// Ensures changing address with invalid required fields fails.
+    /// </summary>
+    [Fact]
+    public void ChangeAddress_WithInvalidRequiredFields_ReturnsFailure()
+    {
+        // Arrange
+        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        customer.AddAddress("Home", "123 Main St", null, "12345", "New York", "USA");
+        var addressId = customer.Addresses.First().Id;
+
+        // Act
+        var result = customer.ChangeAddress(addressId, "Work", "", null, "99999", "Seattle", "USA");
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Verifies changing a non-existent address fails.
+    /// </summary>
+    [Fact]
+    public void ChangeAddress_WithInvalidId_ReturnsFailure()
+    {
+        // Arrange
+        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        customer.AddAddress("Home", "123 Main St", null, "12345", "New York", "USA");
+        var invalidAddressId = AddressId.Create(Guid.NewGuid());
+
+        // Act
+        var result = customer.ChangeAddress(invalidAddressId, "Work", "999 Corporate Blvd", null, "99999", "Seattle", "USA");
+
+        // Assert
+        result.IsFailure.ShouldBeTrue();
+    }
+
+    /// <summary>
+    /// Verifies customer with no addresses has empty collection.
+    /// </summary>
+    [Fact]
+    public void Customer_WithNoAddresses_HasEmptyCollection()
+    {
+        // Arrange & Act
+        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+
+        // Assert
+        customer.Addresses.ShouldBeEmpty();
+    }
 }

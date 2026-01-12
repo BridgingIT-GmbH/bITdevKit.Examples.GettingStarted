@@ -70,7 +70,51 @@ public class CustomerTypeConfiguration : IEntityTypeConfiguration<Customer>
             .IsRequired(false)
             .HasConversion(new EnumerationConverter<CustomerStatus>());
 
-        // Map auditing properties (e.g. CreatedAt, ModifiedAt) via shared extension method
+        // Map owned Address collection to separate table
+        builder.OwnsMany(c => c.Addresses, ab =>
+        {
+            ab.ToTable("CustomersAddresses");
+            ab.WithOwner().HasForeignKey("CustomerId");
+
+            // Configure AddressId as primary key with conversion
+            ab.Property(a => a.Id)
+                .ValueGeneratedOnAdd()
+                .HasConversion(
+                    id => id.Value,
+                    value => AddressId.Create(value));
+
+            ab.HasKey(a => a.Id);
+
+            // Configure address properties
+            ab.Property(a => a.Name)
+                .IsRequired(true)
+                .HasMaxLength(256);
+
+            ab.Property(a => a.Line1)
+                .IsRequired()
+                .HasMaxLength(256);
+
+            ab.Property(a => a.Line2)
+                .IsRequired(false)
+                .HasMaxLength(256);
+
+            ab.Property(a => a.PostalCode)
+                .IsRequired(false)
+                .HasMaxLength(20);
+
+            ab.Property(a => a.City)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            ab.Property(a => a.Country)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            ab.Property(a => a.IsPrimary)
+                .IsRequired();
+        });
+
+        // Map auditing properties (e.g. CreatedDate, UpdatedDate) via shared extension method
         builder.OwnsOneAuditState();
     }
 }

@@ -69,10 +69,6 @@ public class CoreModuleModule() : WebModuleBase("CoreModule")
             //.WithBehavior<RepositoryDomainEventPublisherBehavior<Customer>>(); // direct publishing of domain events
         services.AddScoped(_ => new RepositoryAuditStateBehaviorOptions { SoftDeleteEnabled = false }); // disable soft delete for Customer
 
-        // mapping setup
-        services.AddMapping()
-            .WithMapster<CoreModuleMapperRegister>();
-
         // endpoints registration
         services.AddEndpoints<CustomerEndpoints>();
 

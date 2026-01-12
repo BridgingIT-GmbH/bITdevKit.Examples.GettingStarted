@@ -34,6 +34,10 @@ builder.Services.AddJobScheduling(o => o
     .AddConsoleCommands();
 
 // ===============================================================================================
+// Configure the mapping service.
+builder.Services.AddMapping().WithMapster();
+
+// ===============================================================================================
 // Configure the application endpoints. https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-presentation-endpoints.md
 builder.Services.AddEndpoints<SystemEndpoints>(builder.Environment.IsLocalDevelopment() || builder.Environment.IsContainerized());
 

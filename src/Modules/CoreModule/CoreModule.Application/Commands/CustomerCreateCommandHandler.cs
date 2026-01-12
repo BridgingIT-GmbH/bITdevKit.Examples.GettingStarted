@@ -88,9 +88,26 @@ public class CustomerCreateCommandHandler(
             .Create(ctx.Model.FirstName, ctx.Model.LastName, ctx.Model.Email, ctx.Number)
             // Apply additional properties
             .When(ctx.Model.Status != null, r => r
-                .Bind(customer => customer.ChangeStatus(ctx.Model.Status)))
+                .Bind(e => e.ChangeStatus(ctx.Model.Status)))
             .When(ctx.Model.DateOfBirth.HasValue, r => r
-                .Bind(customer => customer.ChangeBirthDate(ctx.Model.DateOfBirth.Value)))
+                .Bind(e => e.ChangeBirthDate(ctx.Model.DateOfBirth.Value)))
+            .When(ctx.Model.Addresses.SafeAny(), r => r
+                .Bind(e =>
+                {
+                    foreach (var addressModel in ctx.Model.Addresses)
+                    {
+                        r.Bind(e => e.AddAddress(
+                            addressModel.Name,
+                            addressModel.Line1,
+                            addressModel.Line2,
+                            addressModel.PostalCode,
+                            addressModel.City,
+                            addressModel.Country,
+                            addressModel.IsPrimary));
+                    }
+
+                    return r;
+                }))
             // Capture in context
             .Map(customer =>
             {

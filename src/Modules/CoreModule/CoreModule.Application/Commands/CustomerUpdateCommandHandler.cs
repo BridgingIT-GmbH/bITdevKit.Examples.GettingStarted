@@ -56,6 +56,7 @@ public class CustomerUpdateCommandHandler(
             .Bind(e => e.ChangeEmail(request.Model.Email))
             .Bind(e => e.ChangeBirthDate(request.Model.DateOfBirth))
             .Bind(e => e.ChangeStatus(request.Model.Status))
+            .Bind(e => this.ProcessAddressChanges(e, request.Model.Addresses))
             .Tap(e => // set concurrency version for optimistic concurrency check
             {
                 e.ConcurrencyVersion = Guid.Parse(request.Model.ConcurrencyVersion);
@@ -71,4 +72,84 @@ public class CustomerUpdateCommandHandler(
             // STEP 6 — Map updated Aggregate → Model
             .MapResult<Customer, CustomerModel>(mapper)
             .Log(logger, "Entity mapped to {@Model}", r => [r.Value]);
+
+    /// <summary>
+    /// Processes address changes by comparing the incoming addresses with existing ones.
+    /// Removes addresses not in the request, adds new addresses, and updates existing addresses.
+    /// </summary>
+    /// <param name="customer">The customer aggregate to update.</param>
+    /// <param name="requestAddresses">The addresses from the update request.</param>
+    /// <returns>The updated customer wrapped in a Result.</returns>
+    private Result<Customer> ProcessAddressChanges(Customer customer, List<CustomerAddressModel> requestAddresses)
+    {
+        requestAddresses ??= [];
+
+        // Get current address IDs
+        var existingAddressIds = customer.Addresses.Select(a => a.Id).ToList();
+        var requestAddressIds = requestAddresses
+            .Where(a => !string.IsNullOrWhiteSpace(a.Id))
+            .Select(a => AddressId.Create(Guid.Parse(a.Id)))
+            .ToList();
+
+        // Remove addresses not in request
+        var addressesToRemove = existingAddressIds.Except(requestAddressIds).ToList();
+        foreach (var addressId in addressesToRemove)
+        {
+            var removeResult = customer.RemoveAddress(addressId);
+            if (removeResult.IsFailure)
+            {
+                return removeResult;
+            }
+        }
+
+        // Process each address in request
+        foreach (var addressModel in requestAddresses)
+        {
+            if (string.IsNullOrWhiteSpace(addressModel.Id))
+            {
+                // Add new address
+                var addResult = customer.AddAddress(
+                    addressModel.Name,
+                    addressModel.Line1,
+                    addressModel.Line2,
+                    addressModel.PostalCode,
+                    addressModel.City,
+                    addressModel.Country,
+                    addressModel.IsPrimary);
+
+                if (addResult.IsFailure)
+                {
+                    return addResult;
+                }
+            }
+            else
+            {
+                // Update existing address
+                var addressId = AddressId.Create(Guid.Parse(addressModel.Id));
+                var existingAddress = customer.Addresses.FirstOrDefault(a => a.Id == addressId);
+
+                if (existingAddress != null)
+                {
+                    var changeResult = customer.ChangeAddress(
+                        addressId,
+                        addressModel.Name,
+                        addressModel.Line1,
+                        addressModel.Line2,
+                        addressModel.PostalCode,
+                        addressModel.City,
+                        addressModel.Country);
+
+                    if (changeResult.IsFailure)
+                    {
+                        return changeResult;
+                    }
+
+                    // Update primary flag directly
+                    existingAddress.IsPrimary = addressModel.IsPrimary;
+                }
+            }
+        }
+
+        return Result<Customer>.Success(customer);
+    }
 }

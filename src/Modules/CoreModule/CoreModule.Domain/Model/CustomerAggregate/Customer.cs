@@ -14,6 +14,8 @@ using BridgingIT.DevKit.Domain;
 [TypedEntityId<Guid>]
 public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
 {
+    private readonly List<Address> addresses = [];
+
     private Customer() { }
 
     /// <summary>
@@ -61,6 +63,11 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// Gets the current <see cref="CustomerStatus"/> of the customer.
     /// </summary>
     public CustomerStatus Status { get; private set; } = CustomerStatus.Lead;
+
+    /// <summary>
+    /// Gets the collection of addresses associated with this customer.
+    /// </summary>
+    public IReadOnlyCollection<Address> Addresses => this.addresses.AsReadOnly();
 
     /// <summary>
     /// Gets or sets a concurrency version token for optimistic concurrency control.
@@ -161,6 +168,108 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
         return this.Change()
             .When(_ => status != null)
             .Set(e => e.Status, status)
+            .Register(e => new CustomerUpdatedDomainEvent(e))
+            .Apply();
+    }
+
+    /// <summary>
+    /// Adds a new address to the customer's address collection.
+    /// Registers a <see cref="CustomerUpdatedDomainEvent"/>.
+    /// </summary>
+    /// <param name="name">The optional name/label for the address.</param>
+    /// <param name="line1">The first line of the address (required).</param>
+    /// <param name="line2">The optional second line of the address.</param>
+    /// <param name="postalCode">The optional postal code.</param>
+    /// <param name="city">The city name (required).</param>
+    /// <param name="country">The country name (required).</param>
+    /// <param name="isPrimary">Indicates if this should be the primary address.</param>
+    /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
+    public Result<Customer> AddAddress(string name, string line1, string line2, string postalCode, string city, string country, bool isPrimary = false)
+    {
+        return this.Change()
+            .Add(e => this.addresses, Address.Create(name, line1, line2, postalCode, city, country, isPrimary))
+            .Register(e => new CustomerUpdatedDomainEvent(e))
+            .Apply();
+    }
+
+    /// <summary>
+    /// Removes an address from the customer's address collection.
+    /// Registers a <see cref="CustomerUpdatedDomainEvent"/>.
+    /// </summary>
+    /// <param name="addressId">The ID of the address to remove.</param>
+    /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
+    public Result<Customer> RemoveAddress(AddressId addressId)
+    {
+        var address = this.addresses.FirstOrDefault(a => a.Id == addressId);
+        if (address == null)
+        {
+            return Result<Customer>.Failure($"Address with ID {addressId} not found");
+        }
+
+        this.addresses.Remove(address);
+
+        return this.Change()
+            .Register(e => new CustomerUpdatedDomainEvent(e))
+            .Apply();
+    }
+
+    /// <summary>
+    /// Updates an existing address with new values.
+    /// Registers a <see cref="CustomerUpdatedDomainEvent"/>.
+    /// </summary>
+    /// <param name="addressId">The ID of the address to update.</param>
+    /// <param name="name">The new name/label.</param>
+    /// <param name="line1">The new first line.</param>
+    /// <param name="line2">The new second line.</param>
+    /// <param name="postalCode">The new postal code.</param>
+    /// <param name="city">The new city.</param>
+    /// <param name="country">The new country.</param>
+    /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
+    public Result<Customer> ChangeAddress(AddressId addressId, string name, string line1, string line2, string postalCode, string city, string country)
+    {
+        var address = this.addresses.FirstOrDefault(a => a.Id == addressId);
+        if (address == null)
+        {
+            return Result<Customer>.Failure($"Address with ID {addressId} not found");
+        }
+
+        var nameResult = address.ChangeName(name);
+        if (nameResult.IsFailure)
+        {
+            return nameResult.Unwrap();
+        }
+
+        var line1Result = address.ChangeLine1(line1);
+        if (line1Result.IsFailure)
+        {
+            return line1Result.Unwrap();
+        }
+
+        var line2Result = address.ChangeLine2(line2);
+        if (line2Result.IsFailure)
+        {
+            return line2Result.Unwrap();
+        }
+
+        var postalCodeResult = address.ChangePostalCode(postalCode);
+        if (postalCodeResult.IsFailure)
+        {
+            return postalCodeResult.Unwrap();
+        }
+
+        var cityResult = address.ChangeCity(city);
+        if (cityResult.IsFailure)
+        {
+            return cityResult.Unwrap();
+        }
+
+        var countryResult = address.ChangeCountry(country);
+        if (countryResult.IsFailure)
+        {
+            return countryResult.Unwrap();
+        }
+
+        return this.Change()
             .Register(e => new CustomerUpdatedDomainEvent(e))
             .Apply();
     }
