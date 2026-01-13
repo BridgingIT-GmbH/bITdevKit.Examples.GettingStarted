@@ -19,8 +19,8 @@ This skill helps you write comprehensive Architectural Decision Records (ADRs) f
 ## Core Rules
 
 1. **NEVER** use emoji or special characters in ADRs. Use plain ASCII:
-   - Use `V` for correct examples
-   - Use `X` for wrong examples
+   - Use `CORRECT` for correct examples
+   - Use `WRONG` for wrong examples
    - Use `WARNING:` for warnings (not emoji)
 2. **ALWAYS** include all required MADR sections (Status, Context, Decision, Rationale, Consequences, Alternatives, References)
 3. **NEVER** reference `AGENTS.md` or `.github/copilot-instructions.md` in ADR References section

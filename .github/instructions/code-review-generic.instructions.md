@@ -75,7 +75,7 @@ namespace MyApp.Services {
     }
 }
 
-// ✅ GOOD: File-scoped namespace (ends with semicolon), clear naming, constants, XML comments, var usage, pattern matching
+// GOOD: File-scoped namespace (ends with semicolon), clear naming, constants, XML comments, var usage, pattern matching
 namespace MyApp.Services;
 
 /// <summary>
@@ -145,7 +145,7 @@ public void ProcessData(int id)
     }
 }
 
-// ✅ GOOD: Explicit error handling with XML comments
+// GOOD: Explicit error handling with XML comments
 namespace MyApp.Services;
 
 using System;
@@ -215,7 +215,7 @@ public class ApiClient
     private const string ApiKey = "sk_live_abc123xyz789"; // NEVER DO THIS!
 }
 
-// ✅ GOOD: Use configuration with XML comments
+// GOOD: Use configuration with XML comments
 namespace MyApp.Services;
 
 using Microsoft.Extensions.Configuration;
@@ -263,7 +263,7 @@ public void Test1()
     Assert.True(result > 0);
 }
 
-// ✅ GOOD: Clear naming, specific assertions, AAA pattern
+// GOOD: Clear naming, specific assertions, AAA pattern
 namespace MyApp.Tests;
 
 using Xunit;
@@ -326,7 +326,7 @@ public void ProcessOrder(Guid orderId)
     order.Process();
 }
 
-// ✅ GOOD: Proper async/await
+// GOOD: Proper async/await
 namespace MyApp.Services;
 
 using System;
@@ -391,7 +391,7 @@ public class PaymentService
     }
 }
 
-// ✅ GOOD: Comprehensive XML documentation
+// GOOD: Comprehensive XML documentation
 namespace MyApp.Services;
 
 using System;
