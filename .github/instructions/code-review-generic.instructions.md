@@ -65,7 +65,7 @@ When performing a code review, check for:
 
 ### Example
 ```csharp
-// ❌ BAD: Block-scoped namespace (has curly braces), poor naming, magic numbers, no XML comments
+// WRONG: Block-scoped namespace (has curly braces), poor naming, magic numbers, no XML comments
 namespace MyApp.Services {
     public class Calc {
         public decimal Do(decimal x, decimal y) {
@@ -131,7 +131,7 @@ public class DiscountCalculator
 
 ### Example
 ```csharp
-// ❌ BAD: Silent failure, catching all exceptions, no XML comments
+// WRONG: Silent failure, catching all exceptions, no XML comments
 public void ProcessData(int id)
 {
     try
@@ -207,7 +207,7 @@ When performing a code review, check for security issues:
 
 ### Example
 ```csharp
-// ❌ BAD: Exposed secret in code
+// WRONG: Exposed secret in code
 namespace MyApp.Services;
 
 public class ApiClient
@@ -255,7 +255,7 @@ When performing a code review, verify test quality:
 
 ### Example
 ```csharp
-// ❌ BAD: Vague name, generic assertion
+// WRONG: Vague name, generic assertion
 [Fact]
 public void Test1()
 {
@@ -319,7 +319,7 @@ When performing a code review, check for performance issues:
 
 ### Example
 ```csharp
-// ❌ BAD: Blocking on async code
+// WRONG: Blocking on async code
 public void ProcessOrder(Guid orderId)
 {
     var order = this.repository.GetAsync(orderId).Result; // BLOCKS THREAD!
@@ -380,7 +380,7 @@ When performing a code review, check documentation:
 
 ### Example
 ```csharp
-// ❌ BAD: No documentation on public API
+// WRONG: No documentation on public API
 namespace MyApp.Services;
 
 public class PaymentService

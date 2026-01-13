@@ -17,6 +17,7 @@ You are a senior software architect performing a comprehensive code review.
    - `.github/instructions/code-review-ddd-architecture.instructions.md`
    - `.editorconfig`
    - `README.md`
+   - `src/Modules/CoreModule/CoreModule-README.md`
    - `AGENTS.md`
 
 2. **Review the specified code** systematically against ALL loaded standards

@@ -131,6 +131,8 @@ The application will automatically migrate the database on startup (via Database
 
 The bITdevKit GettingStarted project implements **Clean/Onion Architecture** principles combined with **Domain-Driven Design (DDD)** and a **Modular Monolith** approach. This section explains the architectural decisions, layer responsibilities and how components interact.
 
+> **Architectural Decisions**: For detailed rationale and alternatives considered for key architectural choices, see the [Architectural Decision Records (ADRs)](./docs/ADR/README.md) in the `/docs/ADR` directory. Key ADRs include Clean Architecture boundaries ([ADR-0001](./docs/ADR/0001-clean-onion-architecture.md)), Result pattern ([ADR-0002](./docs/ADR/0002-result-pattern-error-handling.md)), Modular Monolith structure ([ADR-0003](./docs/ADR/0003-modular-monolith-architecture.md)), and implementation patterns for repositories ([ADR-0004](./docs/ADR/0004-repository-decorator-behaviors.md)), jobs ([ADR-0015](./docs/ADR/0015-background-jobs-quartz-scheduling.md)), logging ([ADR-0016](./docs/ADR/0016-logging-observability-strategy.md)), and testing ([ADR-0013](./docs/ADR/0013-unit-testing-high-coverage-strategy.md), [ADR-0017](./docs/ADR/0017-integration-testing-strategy.md)).
+
 ### Clean Architecture Overview
 
 Clean Architecture enforces strict dependency rules where **inner layers never depend on outer layers**. Dependencies flow inward toward the domain core, ensuring business logic remains independent of infrastructure concerns and delivery mechanisms.

@@ -1,0 +1,21 @@
+# OpenCode Session Files - Version Control Strategy
+#
+# By default, we keep all committed sessions in git for team collaboration.
+# Uncomment patterns below to exclude certain types of sessions.
+
+# Exclude work-in-progress sessions (naming convention: *-wip-*.json)
+# *-wip-*.json
+
+# Exclude very large sessions (you can use git-lfs for these instead)
+# Consider adding: *.json filter=lfs diff=lfs merge=lfs -text in .gitattributes
+
+# Exclude temporary/experimental sessions
+# *-temp-*.json
+# *-experiment-*.json
+
+# Exclude sessions that might contain sensitive data
+# *-sensitive-*.json
+
+# Keep this README in git
+!README.md
+!.gitignore

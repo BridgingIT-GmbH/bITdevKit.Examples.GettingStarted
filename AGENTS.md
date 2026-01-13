@@ -111,6 +111,50 @@ This document provides AI agents with concise, high-signal context about this re
 - Keep `README.md` updated for setup steps.
 - Update module `README` files (e.g., `CoreModule-README.md`) when adding features.
 
+## Architectural Decision Records (ADRs)
+
+The project maintains comprehensive ADRs documenting key architectural decisions. Reference these when working on related features:
+
+**Core Architecture**:
+
+- [ADR-0001](./docs/ADR/0001-clean-onion-architecture.md): Clean/Onion Architecture with Strict Layer Boundaries
+- [ADR-0002](./docs/ADR/0002-result-pattern-error-handling.md): Result Pattern for Error Handling
+- [ADR-0003](./docs/ADR/0003-modular-monolith-architecture.md): Modular Monolith Architecture
+- [ADR-0004](./docs/ADR/0004-repository-decorator-behaviors.md): Repository Pattern with Decorator Behaviors
+- [ADR-0005](./docs/ADR/0005-requester-notifier-mediator-pattern.md): Requester/Notifier (Mediator) Pattern
+
+**Domain & Data**:
+
+- [ADR-0006](./docs/ADR/0006-outbox-pattern-domain-events.md): Outbox Pattern for Domain Events
+- [ADR-0007](./docs/ADR/0007-entity-framework-core-code-first-migrations.md): Entity Framework Core with Code-First Migrations
+- [ADR-0008](./docs/ADR/0008-typed-entity-ids-source-generators.md): Typed Entity IDs using Source Generators
+- [ADR-0012](./docs/ADR/0012-domain-logic-in-domain-layer.md): Domain Logic Encapsulation in Domain Layer
+- [ADR-0019](./docs/ADR/0019-specification-pattern-repository-queries.md): Specification Pattern for Repository Queries
+
+**Application Layer**:
+
+- [ADR-0009](./docs/ADR/0009-fluentvalidation-strategy.md): FluentValidation Strategy
+- [ADR-0010](./docs/ADR/0010-mapster-object-mapping.md): Mapster for Object Mapping
+- [ADR-0011](./docs/ADR/0011-application-logic-in-commands-queries.md): Application Logic in Commands & Queries
+
+**Presentation & API**:
+
+- [ADR-0014](./docs/ADR/0014-minimal-api-endpoints-dto-exposure.md): Minimal API Endpoints with DTO Exposure
+
+**Infrastructure & Operations**:
+
+- [ADR-0015](./docs/ADR/0015-background-jobs-quartz-scheduling.md): Background Jobs & Scheduling with Quartz.NET
+- [ADR-0016](./docs/ADR/0016-logging-observability-strategy.md): Logging & Observability Strategy (Serilog)
+- [ADR-0018](./docs/ADR/0018-dependency-injection-service-lifetimes.md): Dependency Injection & Service Lifetime Management
+- [ADR-0020](./docs/ADR/0020-jwt-bearer-authentication-authorization.md): JWT Bearer Authentication & Authorization Strategy
+
+**Testing**:
+
+- [ADR-0013](./docs/ADR/0013-unit-testing-high-coverage-strategy.md): Unit Testing Strategy with High Coverage Goals
+- [ADR-0017](./docs/ADR/0017-integration-testing-strategy.md): Integration Testing Strategy
+
+See [docs/ADR/README.md](./docs/ADR/README.md) for the complete list and ADR creation guidelines.
+
 ## Internal APIs & Shared Code
 
 - Common functionality is organized per module; avoid cross-module duplication.
@@ -143,6 +187,17 @@ When asking Copilot to implement something, include:
 
 Example prompt:
 > Add a new command/query pair to CoreModule to deactivate a Customer (sets Status=Retired). Include validator, handler retry/timeout attributes, endpoint (PUT /api/core/customers/{id:guid}/deactivate), and unit tests.
+
+## Skills
+
+This repository includes custom Agent skills located in `.github/skills/` that provide specialized capabilities for common development tasks. These skills extend the Agent functionality with project-specific workflows and best practices.
+
+Available skills:
+
+- **adr-writer**: Assists in creating Architectural Decision Records (ADR) following project conventions.
+- **nuget-manager**: Helps manage NuGet package dependencies across the solution.
+
+Reference: [VS Code Copilot Agent Skills Documentation](https://code.visualstudio.com/docs/copilot/customization/agent-skills)
 
 ## Do / Don't for AI-Generated Changes
 
@@ -186,4 +241,4 @@ pwsh -NoProfile -File .\bdk.ps1 -Task ef-apply
 
 ## Alignment with `.github/copilot-instructions.md`
 
-This AGENTS.md reinforces and summarizes the rules found in `.github/copilot-instructions.md`. Agents should treat that file as authoritative for architectural boundaries, naming, and module practices.
+This AGENTS.md reinforces and summarizes the rules found in `.github/copilot-instructions.md`. Agents should treat that file as authoritative for architectural boundaries, naming and module practices.

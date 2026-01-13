@@ -366,7 +366,7 @@ public sealed record CustomerCreateCommand(
 
 **Example of N+1 problem**:
 ```csharp
-// ❌ BAD: N+1 query problem
+// WRONG: N+1 query problem
 var customers = await this.context.Customers.ToListAsync();
 foreach (var customer in customers)
 {
@@ -473,7 +473,7 @@ public class CustomerEndpoints : EndpointsBase
 
 **Example**:
 ```csharp
-// ❌ BAD: Using exceptions for flow control
+// WRONG: Using exceptions for flow control
 public Customer CreateCustomer(string name)
 {
     if (string.IsNullOrWhiteSpace(name))
