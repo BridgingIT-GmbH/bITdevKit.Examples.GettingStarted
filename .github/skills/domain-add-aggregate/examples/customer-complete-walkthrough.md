@@ -36,8 +36,7 @@ Customer.cs (276 lines)
 └── Address Management Methods (lines 175-275)
     ├── AddAddress (lines 175-210)
     ├── RemoveAddress (lines 212-233)
-    ├── ChangeAddress (lines 235-269)
-    └── SetPrimaryAddress (lines 271-275)
+    └── ChangeAddress (lines 235-269)
 ```
 
 ## 1. Class Definition and Inheritance
@@ -505,7 +504,7 @@ protected override async Task<Result<CustomerModel>> HandleAsync(...)
             request.Model.Email,
             generatedNumber))
         // Persist (repository pattern)
-        .BindAsync(async (entity, ct) => 
+        .BindAsync(async (entity, ct) =>
             await repository.InsertResultAsync(entity, ct))
         // Map to DTO (Mapster)
         .MapResult<Customer, CustomerModel>(mapper);
@@ -515,7 +514,7 @@ protected override async Task<Result<CustomerModel>> HandleAsync(...)
 ### Step 4: Domain Event Handling
 
 ```csharp
-public class CustomerCreatedDomainEventHandler 
+public class CustomerCreatedDomainEventHandler
     : DomainEventHandlerBase<CustomerCreatedDomainEvent>
 {
     protected override async Task HandleAsync(

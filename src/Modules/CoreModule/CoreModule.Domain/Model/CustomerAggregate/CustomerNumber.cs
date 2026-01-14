@@ -9,7 +9,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Mo
 /// Represents a unique customer number in the format CUS-YYYY-NNNNNN.
 /// </summary>
 [DebuggerDisplay("Value={Value}")]
-public class CustomerNumber : ValueObject // TODO: refactor to use Result<CustomerNumber> for the create methods
+public class CustomerNumber : ValueObject
 {
     private static readonly Regex FormatRegex =
         new(@"^CUS-(\d{4})-(\d{6})$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -33,8 +33,8 @@ public class CustomerNumber : ValueObject // TODO: refactor to use Result<Custom
     /// Implicitly converts a <see cref="string"/> to a <see cref="CustomerNumber"/> instance.
     /// Performs the same validation as <see cref="Create(string)"/> and throws a <see cref="ResultException"/> on failure.
     /// </summary>
-    /// <param name="value">The raw email address string.</param>
-    /// <exception cref="RuleException">Thrown when the provided value is not a valid email format.</exception>
+    /// <param name="value">The number as a  string.</param>
+    /// <exception cref="RuleException">Thrown when the provided value is not a valid customer number format.</exception>
     public static implicit operator CustomerNumber(string value)
     {
         var result = Create(value);

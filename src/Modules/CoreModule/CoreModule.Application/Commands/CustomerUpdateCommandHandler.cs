@@ -48,7 +48,7 @@ public class CustomerUpdateCommandHandler(
                 .Add(RuleSet.IsNotEmpty(e.FirstName)) // also validated in domain
                 .Add(RuleSet.IsNotEmpty(e.LastName)) // also validated in domain
                 .Add(RuleSet.NotEqual(e.LastName, "notallowed")) // also validated in domain
-                //.Add(new EmailShouldBeUniqueRule(e.Email, repository)) // TODO: Check unique email excluding the current entity (currently disabled)
+                                                                 //.Add(new EmailShouldBeUniqueRule(e.Email, repository)) // TODO: Check unique email excluding the current entity (currently disabled)
                 .CheckAsync(cancellationToken), cancellationToken: cancellationToken)
 
             // STEP 3 - Apply changes to Aggregate
@@ -85,20 +85,18 @@ public class CustomerUpdateCommandHandler(
         requestAddresses ??= [];
 
         // Get current address IDs
-        var existingAddressIds = customer.Addresses.Select(a => a.Id).ToList();
         var requestAddressIds = requestAddresses
             .Where(a => !string.IsNullOrWhiteSpace(a.Id))
-            .Select(a => AddressId.Create(Guid.Parse(a.Id)))
-            .ToList();
+            .Select(a => AddressId.Create(a.Id)).ToList();
 
         // Remove addresses not in request
-        var addressesToRemove = existingAddressIds.Except(requestAddressIds).ToList();
+        var addressesToRemove = customer.Addresses.Select(a => a.Id).Except(requestAddressIds).ToList();
         foreach (var addressId in addressesToRemove)
         {
-            var removeResult = customer.RemoveAddress(addressId);
-            if (removeResult.IsFailure)
+            var result = customer.RemoveAddress(addressId);
+            if (result.IsFailure)
             {
-                return removeResult;
+                return result;
             }
         }
 
@@ -108,7 +106,7 @@ public class CustomerUpdateCommandHandler(
             if (string.IsNullOrWhiteSpace(addressModel.Id))
             {
                 // Add new address
-                var addResult = customer.AddAddress(
+                var result = customer.AddAddress(
                     addressModel.Name,
                     addressModel.Line1,
                     addressModel.Line2,
@@ -117,9 +115,9 @@ public class CustomerUpdateCommandHandler(
                     addressModel.Country,
                     addressModel.IsPrimary);
 
-                if (addResult.IsFailure)
+                if (result.IsFailure)
                 {
-                    return addResult;
+                    return result;
                 }
             }
             else
@@ -130,22 +128,20 @@ public class CustomerUpdateCommandHandler(
 
                 if (existingAddress != null)
                 {
-                    var changeResult = customer.ChangeAddress(
+                    var result = customer.ChangeAddress(
                         addressId,
                         addressModel.Name,
                         addressModel.Line1,
                         addressModel.Line2,
                         addressModel.PostalCode,
                         addressModel.City,
-                        addressModel.Country);
+                        addressModel.Country,
+                        addressModel.IsPrimary);
 
-                    if (changeResult.IsFailure)
+                    if (result.IsFailure)
                     {
-                        return changeResult;
+                        return result;
                     }
-
-                    // Update primary flag directly
-                    existingAddress.IsPrimary = addressModel.IsPrimary;
                 }
             }
         }

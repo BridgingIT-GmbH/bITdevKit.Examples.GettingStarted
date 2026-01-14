@@ -213,6 +213,21 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
             .Apply();
     }
 
+    public Result<Customer> SetPrimaryAddress(AddressId addressId)
+    {
+        return this.Change()
+            .Ensure(_ => this.addresses.Any(a => a.Id == addressId), "Address with ID {addressId} not found")
+            .Execute(e =>
+            {
+                foreach (var addr in this.addresses)
+                {
+                    addr.SetPrimary(addr.Id == addressId);
+                }
+            })
+            .Register(e => new CustomerUpdatedDomainEvent(e))
+            .Apply();
+    }
+
     /// <summary>
     /// Updates an existing address with new values.
     /// Registers a <see cref="CustomerUpdatedDomainEvent"/>.
@@ -233,44 +248,56 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
             return Result<Customer>.Failure($"Address with ID {addressId} not found");
         }
 
-        var nameResult = address.ChangeName(name);
-        if (nameResult.IsFailure)
-        {
-            return nameResult.Unwrap();
-        }
-
-        var line1Result = address.ChangeLine1(line1);
-        if (line1Result.IsFailure)
-        {
-            return line1Result.Unwrap();
-        }
-
-        var line2Result = address.ChangeLine2(line2);
-        if (line2Result.IsFailure)
-        {
-            return line2Result.Unwrap();
-        }
-
-        var postalCodeResult = address.ChangePostalCode(postalCode);
-        if (postalCodeResult.IsFailure)
-        {
-            return postalCodeResult.Unwrap();
-        }
-
-        var cityResult = address.ChangeCity(city);
-        if (cityResult.IsFailure)
-        {
-            return cityResult.Unwrap();
-        }
-
-        var countryResult = address.ChangeCountry(country);
-        if (countryResult.IsFailure)
-        {
-            return countryResult.Unwrap();
-        }
-
-        return this.Change()
-            .Register(e => new CustomerUpdatedDomainEvent(e))
+        return address.Change()
+            .Ensure(_ => address != null, "Address with ID {addressId} not found")
+            //.Ensure(_ => this.addresses.Any(a => a.Id == addressId), "Address with ID {addressId} not found")
+            .Set(e => e.ChangeName(name))
+            .Set(e => e.ChangeLine1(line1))
+            .Set(e => e.ChangeLine2(line2))
+            .Set(e => e.ChangePostalCode(postalCode))
+            .Set(e => e.ChangeCity(city))
+            .Set(e => e.ChangeCountry(country))
+            .Register(e => new CustomerUpdatedDomainEvent(this))
             .Apply();
-    }
+
+        // var nameResult = address.ChangeName(name);
+        // if (nameResult.IsFailure)
+        // {
+        //     return nameResult.Unwrap();
+        // }
+
+        // var line1Result = address.ChangeLine1(line1);
+        // if (line1Result.IsFailure)
+        // {
+        //     return line1Result.Unwrap();
+        // }
+
+        // var line2Result = address.ChangeLine2(line2);
+        // if (line2Result.IsFailure)
+        // {
+        //     return line2Result.Unwrap();
+        // }
+
+        // var postalCodeResult = address.ChangePostalCode(postalCode);
+        // if (postalCodeResult.IsFailure)
+        // {
+        //     return postalCodeResult.Unwrap();
+        // }
+
+        // var cityResult = address.ChangeCity(city);
+        // if (cityResult.IsFailure)
+        // {
+        //     return cityResult.Unwrap();
+        // }
+
+        // var countryResult = address.ChangeCountry(country);
+        // if (countryResult.IsFailure)
+        // {
+        //     return countryResult.Unwrap();
+        // }
+
+    //     return this.Change()
+    //         .Register(e => new CustomerUpdatedDomainEvent(e))
+    //         .Apply();
+     }
 }

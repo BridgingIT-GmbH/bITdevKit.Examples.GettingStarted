@@ -70,9 +70,8 @@ public class Address : Entity<AddressId>
 
     /// <summary>
     /// Gets or sets a value indicating whether this is the primary address for the customer.
-    /// Note: Direct modification should be avoided; use Customer.SetPrimaryAddress instead to ensure consistency.
     /// </summary>
-    public bool IsPrimary { get; set; }
+    public bool IsPrimary { get; private set; }
 
     /// <summary>
     /// Factory method to create a new <see cref="Address"/> entity.
@@ -173,12 +172,11 @@ public class Address : Entity<AddressId>
     }
 
     /// <summary>
-    /// Sets the primary flag for this address.
-    /// Note: Use Customer.SetPrimaryAddress to ensure only one address is primary across the collection.
+    /// Sets whether this address is the primary address.
     /// </summary>
-    /// <param name="isPrimary">The new primary status.</param>
+    /// <param name="isPrimary">True to set as primary; false otherwise.</param>
     /// <returns>The current <see cref="Address"/> instance for chaining.</returns>
-    internal Result<Address> SetPrimary(bool isPrimary)
+    public Result<Address> SetPrimary(bool isPrimary)
     {
         return this.Change()
             .Set(e => e.IsPrimary, isPrimary)
