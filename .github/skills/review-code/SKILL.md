@@ -1,5 +1,5 @@
 ---
-skill: review-code
+name: review-code
 description: Perform comprehensive C#/.NET code reviews focusing on clean code, security, testing, performance, and documentation
 globs:
   - "**/*.cs"

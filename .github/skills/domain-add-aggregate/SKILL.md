@@ -1,5 +1,5 @@
 ---
-skill: domain-add-aggregate
+name: domain-add-aggregate
 description: Adds new Domain Aggregates using Clean Architecture and DDD principles with full CRUD scaffolding across all layers
 globs:
   - src/Modules/*/Domain/**/*.cs

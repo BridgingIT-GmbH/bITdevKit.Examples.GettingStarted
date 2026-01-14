@@ -8,16 +8,14 @@ Every `SKILL.md` file MUST begin with YAML frontmatter delimited by `---`:
 
 ```yaml
 ---
-skill: skill-name
+name: skill-name
 description: Brief one-line description of what the skill does
-globs: []
-alwaysApply: false
 ---
 ```
 
 ## Field Definitions
 
-### `skill` (Required)
+### `name` (Required)
 - **Type**: String
 - **Format**: Lowercase with hyphens (kebab-case)
 - **Purpose**: Unique identifier for the skill
@@ -25,21 +23,21 @@ alwaysApply: false
   - Must match the directory name
   - Use descriptive, action-oriented names
   - Avoid abbreviations unless universally understood
-  
+
 **CORRECT Examples:**
 ```yaml
-skill: adr-writer
-skill: nuget-manager
-skill: domain-add-aggregate
-skill: skill-creator
+name: adr-writer
+name: nuget-manager
+name: domain-add-aggregate
+name: skill-creator
 ```
 
 **WRONG Examples:**
 ```yaml
-skill: ADRWriter          # WRONG: Not kebab-case
-skill: write_adr          # WRONG: Use hyphens, not underscores
-skill: adr                # WRONG: Too vague
-skill: aggregate          # WRONG: Missing action verb
+name: ADRWriter          # WRONG: Not kebab-case
+name: write_adr          # WRONG: Use hyphens, not underscores
+name: adr                # WRONG: Too vague
+name: aggregate          # WRONG: Missing action verb
 ```
 
 ### `description` (Required)
@@ -66,12 +64,14 @@ description: Guides creation of high-quality Agent Skills following agentskills.
 description: Helps with ADRs                                    # WRONG: Too vague
 description: A tool for writing documentation                   # WRONG: Not specific
 description: Creates ADRs.                                      # WRONG: Has trailing period
-description: This skill will help you create Architectural 
+description: This skill will help you create Architectural
 Decision Records for your project                               # WRONG: Multi-line
 description: NuGet stuff                                        # WRONG: Unprofessional, vague
 ```
 
-### `globs` (Required)
+## Optional Fields
+
+### `globs` (Optional - VS Code Specific)
 - **Type**: Array of strings
 - **Purpose**: File patterns that trigger automatic skill relevance
 - **Format**: Standard glob patterns (e.g., `*.md`, `src/**/*.cs`)
@@ -108,21 +108,22 @@ globs: []
 ```yaml
 globs:
   - "**/*"                          # WRONG: Too broad, triggers on everything
-  
+
 globs:
   - docs\ADR\*.md                   # WRONG: Use forward slashes, not backslashes
-  
+
 globs:
   - *.cs                            # WRONG: Too broad for domain-specific skill
-  
-# Missing entirely                  # WRONG: globs is required field
+
 ```
 
-### `alwaysApply` (Required)
+### `alwaysApply` (Optional - VS Code Specific)
 - **Type**: Boolean
 - **Default**: `false`
-- **Purpose**: Controls whether skill is always considered relevant
+- **Purpose**: Controls whether skill is always considered relevant (VS Code only, not part of standard)
+- **Note**: This field is VS Code-specific and not part of the agentskills.io standard
 - **Rules**:
+  - Omit entirely if not needed
   - Set to `true` ONLY if skill should be globally available
   - Most skills should be `false` (context-triggered)
   - Use `true` sparingly to avoid cognitive overload
@@ -140,15 +141,15 @@ globs:
 **CORRECT Examples:**
 ```yaml
 # Meta-skill that could be needed anytime
-skill: skill-creator
+name: skill-creator
 alwaysApply: true
 
 # Domain-specific workflow (only relevant when working with domain code)
-skill: domain-add-aggregate
+name: domain-add-aggregate
 alwaysApply: false
 
 # File-specific operation
-skill: adr-writer
+name: adr-writer
 alwaysApply: false
 ```
 
@@ -157,84 +158,66 @@ alwaysApply: false
 ### Minimal Skill (Simple Tool)
 ```yaml
 ---
-skill: code-formatter
+name: code-formatter
 description: Formats code files according to .editorconfig rules with validation
-globs:
-  - "*.cs"
-  - "*.js"
-  - "*.ts"
-alwaysApply: false
 ---
 ```
 
 ### Workflow Skill (Multi-Step Process)
 ```yaml
 ---
-skill: feature-scaffolder
+name: feature-scaffolder
 description: Scaffolds complete feature implementation with tests, docs, and migrations using vertical slice architecture
-globs:
-  - src/Modules/**/*.cs
-  - src/**/Application/**/*.cs
-alwaysApply: false
 ---
 ```
 
 ### Meta-Skill (Always Available)
 ```yaml
 ---
-skill: architecture-advisor
+name: architecture-advisor
 description: Analyzes code changes for architectural violations and suggests improvements based on project ADRs
-globs: []
-alwaysApply: true
 ---
 ```
 
 ### Documentation Skill (Specific File Type)
 ```yaml
 ---
-skill: api-doc-generator
+name: api-doc-generator
 description: Generates API documentation from OpenAPI spec with examples and authentication flows
-globs:
-  - openapi.yaml
-  - openapi.json
-  - swagger.json
-alwaysApply: false
 ---
 ```
 
-## Common Patterns
+## Common Patterns (VS Code Specific)
+
+> **Note**: These patterns use `globs` and `alwaysApply` fields which are VS Code-specific extensions. For maximum portability, rely on the `description` field to trigger skill relevance.
 
 ### Pattern 1: Single File Type
-When skill operates on one type of file:
+When skill operates on one type of file (VS Code):
 ```yaml
 globs:
   - "*.csproj"
-alwaysApply: false
 ```
 
 ### Pattern 2: Multiple Related Files
-When skill operates on related file types:
+When skill operates on related file types (VS Code):
 ```yaml
 globs:
   - "*.csproj"
   - "*.sln"
   - Directory.*.props
-alwaysApply: false
 ```
 
 ### Pattern 3: Directory-Scoped
-When skill operates on files in specific directories:
+When skill operates on files in specific directories (VS Code):
 ```yaml
 globs:
   - docs/ADR/*.md
   - src/Modules/*/Domain/**/*.cs
-alwaysApply: false
 ```
 
 ### Pattern 4: Always Available
-When skill is globally relevant:
+When skill is globally relevant (VS Code):
 ```yaml
-globs: []
 alwaysApply: true
 ```
 
@@ -242,17 +225,20 @@ alwaysApply: true
 
 Before finalizing frontmatter, verify:
 
-- [ ] `skill` matches directory name exactly
-- [ ] `skill` uses kebab-case (lowercase with hyphens)
+**Required Fields:**
+- [ ] `name` matches directory name exactly
+- [ ] `name` uses kebab-case (lowercase with hyphens)
 - [ ] `description` is a single line (no line breaks)
-- [ ] `description` starts with action verb
-- [ ] `description` is 60-120 characters (recommended)
+- [ ] `description` includes what it does AND when to use it
+- [ ] `description` is 50-1024 characters
 - [ ] `description` has no trailing period
-- [ ] `globs` is present (even if empty array)
-- [ ] `globs` patterns use forward slashes `/`
-- [ ] `globs` are specific enough to avoid over-triggering
-- [ ] `alwaysApply` is explicitly set to `true` or `false`
-- [ ] `alwaysApply: true` is justified (not overused)
+
+**Optional Fields (VS Code Specific):**
+- [ ] `globs` patterns use forward slashes `/` (if used)
+- [ ] `globs` are specific enough to avoid over-triggering (if used)
+- [ ] `alwaysApply: true` is justified and not overused (if used)
+
+**General:**
 - [ ] YAML syntax is valid (proper indentation, quotes for special chars)
 
 ## Testing Your Frontmatter
