@@ -1,9 +1,11 @@
 ---
 name: skill-creator
-description: Guide for creating high-quality Agent Skills following the open standard (agentskills.io). Use this when asked to create a new skill, write a SKILL.md file, convert custom instructions or chatmodes into portable skills, or design specialized AI agent capabilities.
+description: Guide for creating high-quality Agent Skills following the open standard (agentskills.io). Use this when asked to create or update a skill, write a SKILL.md file, convert custom instructions or chatmodes into portable skills, or design specialized AI agent capabilities.
 ---
 
 # Skill Creator
+
+This skill provides guidance for creating effective skills.
 
 ## Overview
 
