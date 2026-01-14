@@ -1,6 +1,6 @@
 ---
 name: adr-writer
-description: 'Write high-quality Architectural Decision Records (ADRs) following MADR format. Use when documenting important architectural decisions, technology choices, or cross-cutting concerns. Never use emoji or special characters - use plain V for correct and X for wrong.'
+description: 'Write high-quality Architectural Decision Records (ADRs) following MADR format. Use when documenting important architectural decisions, technology choices, or cross-cutting concerns. Never use emoji or special characters - use plain words CORRECT for correct and WRONG for wrong.'
 ---
 
 # ADR Writer
@@ -18,9 +18,9 @@ This skill helps you write comprehensive Architectural Decision Records (ADRs) f
 
 ## Core Rules
 
-1. **NEVER** use emoji or special characters in ADRs. Use plain ASCII:
-   - Use `CORRECT` for correct examples
-   - Use `WRONG` for wrong examples
+1. **NEVER** use emoji or special characters in ADRs. Use plain ASCII words:
+   - Use `CORRECT:` for correct examples
+   - Use `WRONG:` for wrong examples
    - Use `WARNING:` for warnings (not emoji)
 2. **ALWAYS** include all required MADR sections (Status, Context, Decision, Rationale, Consequences, Alternatives, References)
 3. **NEVER** reference `AGENTS.md` or `.github/copilot-instructions.md` in ADR References section
@@ -244,14 +244,14 @@ config.ForType<CustomerModel, Customer>()
 **CORRECT Usage:**
 
 ```markdown
-V Correct: Use typed IDs for type safety
-X Wrong: Use raw Guid everywhere
+CORRECT: Use typed IDs for type safety
+WRONG: Use raw Guid everywhere
 ```
 
 **WRONG Usage (DO NOT DO THIS):**
 
 ```markdown
-Correct: Use typed IDs
+✓ Correct: Use typed IDs
 ❌ Wrong: Use raw Guid
 ⚠️ Warning: This is dangerous
 ```
@@ -280,7 +280,7 @@ After creating ADR, edit `docs/ADR/README.md` and add entry:
    - Alternatives: Dapper, NHibernate, manual ADO.NET
    - References: EF Core docs, project README
    - Notes: Code examples, migration commands, file paths
-4. Use plain ASCII (V/X, not emoji)
+4. Use plain ASCII (CORRECT/WRONG, not emoji)
 5. Update `docs/ADR/README.md` Quick Reference table
 
 ### User: "Create ADR for FluentValidation strategy"
@@ -297,7 +297,7 @@ After creating ADR, edit `docs/ADR/README.md` and add entry:
    - **Alternatives**: DataAnnotations, manual validation, domain-only
    - **Related**: Link to ADR-0005 (ValidationPipelineBehavior), ADR-0011/0012 (validation layers)
    - **Notes**: Validator examples, pipeline order, testing patterns
-4. **CRITICAL**: Use `V` and `X` (NOT emoji)
+4. **CRITICAL**: Use `CORRECT:` and `WRONG:` (NOT emoji)
 5. Update README Quick Reference
 
 ## Quality Checklist
@@ -314,14 +314,14 @@ Before finalizing, verify:
 - [ ] References included (NOT AGENTS.md)
 - [ ] Code examples included in Notes
 - [ ] Implementation file paths listed
-- [ ] Only plain ASCII used (V/X, no emoji)
+- [ ] Only plain ASCII used (CORRECT/WRONG, no emoji)
 - [ ] Quick Reference table updated in README.md
 
 ## Common Pitfalls
 
-**X DO NOT:**
+**WRONG:**
 
-- Use emoji or special characters (✅❌⚠️) - use V/X instead
+- Use emoji or special characters (✅❌⚠️) - use CORRECT/WRONG instead
 - Reference AGENTS.md or .github/copilot-instructions.md
 - Write vague decisions ("use better error handling")
 - Skip Alternatives Considered section
@@ -329,9 +329,9 @@ Before finalizing, verify:
 - Make ADRs too short (aim for 7,000-15,000 bytes for technical ADRs)
 - Write implementation docs (belongs in code comments)
 
-**V DO:**
+**CORRECT:**
 
-- Use plain ASCII: V for correct, X for wrong
+- Use plain ASCII: CORRECT for correct, WRONG for wrong
 - Write comprehensive context (problem, forces, constraints)
 - Be specific in decision statement
 - List 5-7 rationale points
@@ -452,8 +452,8 @@ Accepted
 **ALWAYS use plain ASCII:**
 
 ```markdown
-V Correct example
-X Wrong example
+CORRECT: Example of correct approach
+WRONG: Example of wrong approach
 WARNING: Be careful here
 NOTE: Important detail
 ```
@@ -461,7 +461,7 @@ NOTE: Important detail
 **NEVER use emoji or special Unicode:**
 
 ```markdown
-Correct    <- DO NOT USE
+✓ Correct    <- DO NOT USE
 ❌ Wrong      <- DO NOT USE
 ⚠️ Warning   <- DO NOT USE
 ```

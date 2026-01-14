@@ -196,6 +196,10 @@ Available skills:
 
 - **adr-writer**: Assists in creating Architectural Decision Records (ADR) following project conventions.
 - **nuget-manager**: Helps manage NuGet package dependencies across the solution.
+- **skill-creator**: Meta-skill that teaches how to create high-quality Agent Skills following the agentskills.io open standard. Includes templates, examples, checklists, and best practices for authoring new skills.
+- **domain-add-aggregate**: Comprehensive guide for scaffolding complete Domain Aggregates with full CRUD operations across all 5 layers (Domain, Infrastructure, Application, Mapping, Presentation) following Clean Architecture, DDD, and bITdevKit patterns.
+- **review-code**: Perform comprehensive C#/.NET code reviews focusing on clean code, security, testing, performance, and documentation. Includes checklists for code quality (file-scoped namespaces, var usage), security (no hardcoded secrets), testing (xUnit, AAA pattern), performance (async/await), and documentation (XML comments). References .editorconfig rules.
+- **review-architecture**: Verify DDD patterns, Clean Architecture boundaries, and bITdevKit-specific conventions in modular monolith projects. Covers layer boundaries (Domain → Application → Infrastructure → Presentation), DDD patterns (aggregates, value objects, domain events), CQRS (commands/queries/handlers), repository pattern, Result<T> error handling, and presentation endpoints. Includes inline ADR references to 20 architectural decisions.
 
 Reference: [VS Code Copilot Agent Skills Documentation](https://code.visualstudio.com/docs/copilot/customization/agent-skills)
 
