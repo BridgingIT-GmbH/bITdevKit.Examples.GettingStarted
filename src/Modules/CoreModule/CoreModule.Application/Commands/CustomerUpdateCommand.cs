@@ -36,8 +36,8 @@ public class CustomerUpdateCommand(CustomerModel model) : RequestBase<CustomerMo
 
             // Address validation rules
             this.RuleFor(c => c.Model.Addresses)
-                .Must(addresses => addresses == null || addresses.Count(a => a.IsPrimary) <= 1)
-                .WithMessage("Only one address can be marked as primary");
+                .Must(addresses => addresses == null || addresses.Count(a => a.IsPrimary) == 1)
+                .WithMessage("One address should be marked as primary");
 
             this.RuleForEach(c => c.Model.Addresses).ChildRules(address =>
             {

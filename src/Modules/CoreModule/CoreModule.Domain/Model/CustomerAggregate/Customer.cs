@@ -5,6 +5,7 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
+using System.Net.Sockets;
 using BridgingIT.DevKit.Domain;
 
 /// <summary>
@@ -184,10 +185,10 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <param name="country">The country name (required).</param>
     /// <param name="isPrimary">Indicates if this should be the primary address.</param>
     /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
-    public Result<Customer> AddAddress(string name, string line1, string line2, string postalCode, string city, string country, bool isPrimary = false)
+    public Result<Customer> AddAddress(string name, string line1, string line2, string postalCode, string city, string country)
     {
         return this.Change()
-            .Add(e => this.addresses, Address.Create(name, line1, line2, postalCode, city, country, isPrimary))
+            .Add(e => this.addresses, Address.Create(name, line1, line2, postalCode, city, country))
             .Register(e => new CustomerUpdatedDomainEvent(e))
             .Apply();
     }
@@ -196,34 +197,23 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// Removes an address from the customer's address collection.
     /// Registers a <see cref="CustomerUpdatedDomainEvent"/>.
     /// </summary>
-    /// <param name="addressId">The ID of the address to remove.</param>
+    /// <param name="id">The ID of the address to remove.</param>
     /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
-    public Result<Customer> RemoveAddress(AddressId addressId)
+    public Result<Customer> RemoveAddress(AddressId id)
     {
-        var address = this.addresses.FirstOrDefault(a => a.Id == addressId);
-        if (address == null)
-        {
-            return Result<Customer>.Failure($"Address with ID {addressId} not found");
-        }
-
-        this.addresses.Remove(address);
-
         return this.Change()
+            //.When(_ => id != null)
+            .RemoveById(e => this.addresses, id, errorMessage: "Address with specified ID not found")
             .Register(e => new CustomerUpdatedDomainEvent(e))
             .Apply();
     }
 
-    public Result<Customer> SetPrimaryAddress(AddressId addressId)
+    public Result<Customer> SetPrimaryAddress(AddressId id)
     {
         return this.Change()
-            .Ensure(_ => this.addresses.Any(a => a.Id == addressId), "Address with ID {addressId} not found")
-            .Execute(e =>
-            {
-                foreach (var addr in this.addresses)
-                {
-                    addr.SetPrimary(addr.Id == addressId);
-                }
-            })
+            //.When(_ => id != null)
+            .Ensure(_ => this.addresses.Any(a => a.Id == id), "Address with specified ID not found")
+            .Set(e => e.addresses, a => a.SetPrimary(a.Id == id))
             .Register(e => new CustomerUpdatedDomainEvent(e))
             .Apply();
     }
@@ -232,7 +222,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// Updates an existing address with new values.
     /// Registers a <see cref="CustomerUpdatedDomainEvent"/>.
     /// </summary>
-    /// <param name="addressId">The ID of the address to update.</param>
+    /// <param name="id">The ID of the address to update.</param>
     /// <param name="name">The new name/label.</param>
     /// <param name="line1">The new first line.</param>
     /// <param name="line2">The new second line.</param>
@@ -240,17 +230,17 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <param name="city">The new city.</param>
     /// <param name="country">The new country.</param>
     /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
-    public Result<Customer> ChangeAddress(AddressId addressId, string name, string line1, string line2, string postalCode, string city, string country)
+    public Result<Customer> ChangeAddress(AddressId id, string name, string line1, string line2, string postalCode, string city, string country)
     {
-        var address = this.addresses.FirstOrDefault(a => a.Id == addressId);
+        var address = this.addresses.FirstOrDefault(a => a.Id == id);
         if (address == null)
         {
-            return Result<Customer>.Failure($"Address with ID {addressId} not found");
+            return Result<Customer>.Failure("Address with specified ID not found");
         }
 
         return address.Change()
-            .Ensure(_ => address != null, "Address with ID {addressId} not found")
-            //.Ensure(_ => this.addresses.Any(a => a.Id == addressId), "Address with ID {addressId} not found")
+            .Ensure(_ => address != null, "Address with specified ID not found")
+            //.Ensure(_ => this.addresses.Any(a => a.Id == addressId), "Address with specified ID not found")
             .Set(e => e.ChangeName(name))
             .Set(e => e.ChangeLine1(line1))
             .Set(e => e.ChangeLine2(line2))
@@ -258,7 +248,31 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
             .Set(e => e.ChangeCity(city))
             .Set(e => e.ChangeCountry(country))
             .Register(e => new CustomerUpdatedDomainEvent(this))
-            .Apply();
+            .Apply().Wrap(this);
+
+        // return customer.Change()
+        //     .Register(e => new CustomerUpdatedDomainEvent(this))
+        //     .Select(e => e.addresses.FirstOrDefault(a => a.Id == id), "Address with specified ID not found") // change to address context
+        //     .Set(a => a.ChangeName(name))
+        //     .Set(a => a.ChangeLine1(line1))
+        //     .Set(a => a.ChangeLine2(line2))
+        //     .Set(a => a.ChangePostalCode(postalCode))
+        //     .Set(a => a.ChangeCity(city))
+        //     .Set(a => a.ChangeCountry(country))
+        //     .Apply();
+
+        // return customer.Change()
+        //     .Ensure(_ => this.addresses.Any(a => a.Id == id), "Address with specified ID not found")
+        //     .Select(e => e.addresses.FirstOrDefault(a => a.Id == id) // change to address context
+        //         .Change()
+        //             .Set(a => a.ChangeName(name))
+        //             .Set(a => a.ChangeLine1(line1))
+        //             .Set(a => a.ChangeLine2(line2))
+        //             .Set(a => a.ChangePostalCode(postalCode))
+        //             .Set(a => a.ChangeCity(city))
+        //             .Set(a => a.ChangeCountry(country)).Apply())
+        //     .Register(e => new CustomerUpdatedDomainEvent(this))
+        //     .Apply();
 
         // var nameResult = address.ChangeName(name);
         // if (nameResult.IsFailure)
@@ -296,8 +310,8 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
         //     return countryResult.Unwrap();
         // }
 
-    //     return this.Change()
-    //         .Register(e => new CustomerUpdatedDomainEvent(e))
-    //         .Apply();
-     }
+        //     return this.Change()
+        //         .Register(e => new CustomerUpdatedDomainEvent(e))
+        //         .Apply();
+    }
 }

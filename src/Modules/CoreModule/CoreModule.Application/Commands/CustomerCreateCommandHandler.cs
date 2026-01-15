@@ -102,8 +102,7 @@ public class CustomerCreateCommandHandler(
                             addressModel.Line2,
                             addressModel.PostalCode,
                             addressModel.City,
-                            addressModel.Country,
-                            addressModel.IsPrimary));
+                            addressModel.Country));
                     }
 
                     return r;

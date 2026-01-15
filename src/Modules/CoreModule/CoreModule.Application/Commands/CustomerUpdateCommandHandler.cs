@@ -1,4 +1,4 @@
-﻿// MIT-License
+// MIT-License
 // Copyright BridgingIT GmbH - All Rights Reserved
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
@@ -56,7 +56,7 @@ public class CustomerUpdateCommandHandler(
             .Bind(e => e.ChangeEmail(request.Model.Email))
             .Bind(e => e.ChangeBirthDate(request.Model.DateOfBirth))
             .Bind(e => e.ChangeStatus(request.Model.Status))
-            .Bind(e => this.ProcessAddressChanges(e, request.Model.Addresses))
+            .Bind(e => this.UpdateAddresses(e, request.Model.Addresses))
             .Tap(e => // set concurrency version for optimistic concurrency check
             {
                 e.ConcurrencyVersion = Guid.Parse(request.Model.ConcurrencyVersion);
@@ -74,78 +74,60 @@ public class CustomerUpdateCommandHandler(
             .Log(logger, "Entity mapped to {@Model}", r => [r.Value]);
 
     /// <summary>
-    /// Processes address changes by comparing the incoming addresses with existing ones.
-    /// Removes addresses not in the request, adds new addresses, and updates existing addresses.
+    /// Processes address changes by comparing the specified addresses with existing ones.
+    /// Removes Customer addresses not in the specified addresses, adds new addresses and updates existing addresses.
     /// </summary>
     /// <param name="customer">The customer aggregate to update.</param>
-    /// <param name="requestAddresses">The addresses from the update request.</param>
+    /// <param name="addressModels">The addresses from the update request.</param>
     /// <returns>The updated customer wrapped in a Result.</returns>
-    private Result<Customer> ProcessAddressChanges(Customer customer, List<CustomerAddressModel> requestAddresses)
+    private Result<Customer> UpdateAddresses(Customer customer, List<CustomerAddressModel> addressModels)
     {
-        requestAddresses ??= [];
+        addressModels ??= [];
 
-        // Get current address IDs
-        var requestAddressIds = requestAddresses
-            .Where(a => !string.IsNullOrWhiteSpace(a.Id))
-            .Select(a => AddressId.Create(a.Id)).ToList();
+        // Extract valid address IDs from request using LINQ fluent style
+        var addressIds = addressModels
+            .Where(m => !string.IsNullOrWhiteSpace(m.Id))
+            .Select(m => AddressId.Create(m.Id)).ToList();
 
-        // Remove addresses not in request
-        var addressesToRemove = customer.Addresses.Select(a => a.Id).Except(requestAddressIds).ToList();
-        foreach (var addressId in addressesToRemove)
+        // Remove obsolete addresses - find and return first failure if any
+        var removeResult = customer.Addresses
+            .Select(a => a.Id).Except(addressIds)
+            .Select(customer.RemoveAddress).FirstOrDefault(r => r.IsFailure).Unwrap(); // TODO: use .Flatten()
+
+        // Early return on first failure using fluent When extension
+        if (removeResult.IsFailure)
         {
-            var result = customer.RemoveAddress(addressId);
+            return removeResult;
+        }
+
+        // Process each address: add new or update existing
+        foreach (var addressModel in addressModels)
+        {
+            var result = ProcessAddress(customer, addressModel);
             if (result.IsFailure)
             {
                 return result;
             }
         }
 
-        // Process each address in request
-        foreach (var addressModel in requestAddresses)
-        {
-            if (string.IsNullOrWhiteSpace(addressModel.Id))
-            {
-                // Add new address
-                var result = customer.AddAddress(
-                    addressModel.Name,
-                    addressModel.Line1,
-                    addressModel.Line2,
-                    addressModel.PostalCode,
-                    addressModel.City,
-                    addressModel.Country,
-                    addressModel.IsPrimary);
+        // Set primary address if specified
+        return addressModels
+            .Find(m => m.IsPrimary)
+            .Match(
+                some: m => customer.SetPrimaryAddress(m.Id),
+                none: () => Result<Customer>.Success(customer));
 
-                if (result.IsFailure)
-                {
-                    return result;
-                }
-            }
-            else
-            {
-                // Update existing address
-                var addressId = AddressId.Create(Guid.Parse(addressModel.Id));
-                var existingAddress = customer.Addresses.FirstOrDefault(a => a.Id == addressId);
-
-                if (existingAddress != null)
-                {
-                    var result = customer.ChangeAddress(
-                        addressId,
-                        addressModel.Name,
-                        addressModel.Line1,
-                        addressModel.Line2,
-                        addressModel.PostalCode,
-                        addressModel.City,
-                        addressModel.Country,
-                        addressModel.IsPrimary);
-
-                    if (result.IsFailure)
-                    {
-                        return result;
-                    }
-                }
-            }
-        }
-
-        return Result<Customer>.Success(customer);
+        Result<Customer> ProcessAddress(Customer customer, CustomerAddressModel model) =>
+            string.IsNullOrWhiteSpace(model.Id)
+                ? customer.AddAddress(
+                    model.Name, model.Line1, model.Line2,
+                    model.PostalCode, model.City, model.Country)
+                : customer.Addresses
+                    .Find(a => a.Id == AddressId.Create(model.Id))
+                    .Match(
+                        some: _ => customer.ChangeAddress(
+                            model.Id, model.Name, model.Line1, model.Line2,
+                            model.PostalCode, model.City, model.Country),
+                        none: () => Result<Customer>.Success(customer));
     }
 }
