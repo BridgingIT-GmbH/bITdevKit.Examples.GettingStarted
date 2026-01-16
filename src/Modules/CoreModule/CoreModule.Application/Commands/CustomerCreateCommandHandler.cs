@@ -58,7 +58,7 @@ public class CustomerCreateCommandHandler(
                 .Log(logger, "Customer number created{@Number}", r => [r.Value.Number])
 
                 // STEP 4 — Create new Aggregate from request model
-                .Bind(this.CreateEntity)
+                .Bind(this.CreateAggregate)
 
                 // STEP 6 — Save new Aggregate to repository
                 .BindResultAsync(this.PersistEntityAsync, this.CapturePersistedEntity, cancellationToken)
@@ -66,9 +66,10 @@ public class CustomerCreateCommandHandler(
                 // STEP 7 — Side effects (audit/logging)
                 .Log(logger, "AUDIT - Customer {Id} created for {Email}", r => [r.Value.Entity.Id, r.Value.Entity.Email.Value])
 
-                // STEP 8 — Map new Aggregate → Model
-                .Map(this.ToModel)
-                .Log(logger, "Entity mapped to {@Model}", r => [r.Value]);
+                // STEP 8 — Map created Aggregate -> Model
+                .Map(ctx => ctx.Entity)
+                .MapResult<Customer, CustomerModel>(mapper) //.Map(this.ToModel)
+                .Log(logger, "Aggregate mapped to {@Model}", r => [r.Value]);
 
     private async Task<Result<long>> GenerateSequenceAsync(CustomerCreateContext ctx, CancellationToken ct)
     {
@@ -82,7 +83,7 @@ public class CustomerCreateCommandHandler(
         return ctx;
     }
 
-    private Result<CustomerCreateContext> CreateEntity(CustomerCreateContext ctx)
+    private Result<CustomerCreateContext> CreateAggregate(CustomerCreateContext ctx)
     {
         return Customer
             .Create(ctx.Model.FirstName, ctx.Model.LastName, ctx.Model.Email, ctx.Number)

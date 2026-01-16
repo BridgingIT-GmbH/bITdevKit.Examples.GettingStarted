@@ -5,8 +5,10 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
-using System.Net.Sockets;
 using BridgingIT.DevKit.Domain;
+using System.Diagnostics.Metrics;
+using System.Net.Sockets;
+using System.Xml.Linq;
 
 /// <summary>
 /// Represents a customer aggregate root with personal details, email address, and lead/status information.
@@ -109,7 +111,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// </summary>
     /// <param name="firstName">The new first name.</param>
     /// <param name="lastName">The new last name.</param>
-    /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
+    /// <returns>The updated <see cref="Customer"/> wrapped in a Result.</returns>
     public Result<Customer> ChangeName(string firstName, string lastName)
     {
         return this.Change()
@@ -125,7 +127,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// Registers a <see cref="CustomerUpdatedDomainEvent"/> if changed.
     /// </summary>
     /// <param name="email">The new email address.</param>
-    /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
+    /// <returns>The updated <see cref="Customer"/> wrapped in a Result.</returns>
     public Result<Customer> ChangeEmail(string email)
     {
         return this.Change()
@@ -140,7 +142,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// Registers a <see cref="CustomerUpdatedDomainEvent"/> if changed.
     /// </summary>
     /// <param name="dateOfBirth">The new date of birth.</param>
-    /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
+    /// <returns>The updated <see cref="Customer"/> wrapped in a Result.</returns>
     public Result<Customer> ChangeBirthDate(DateOnly? dateOfBirth)
     {
         var currentDate = TimeProviderAccessor.Current.GetUtcNow().ToDateOnly();
@@ -163,7 +165,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// Registers a <see cref="CustomerUpdatedDomainEvent"/> if changed.
     /// </summary>
     /// <param name="status">The new customer status.</param>
-    /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
+    /// <returns>The updated <see cref="Customer"/> wrapped in a Result.</returns>
     public Result<Customer> ChangeStatus(CustomerStatus status)
     {
         return this.Change()
@@ -184,7 +186,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <param name="city">The city name (required).</param>
     /// <param name="country">The country name (required).</param>
     /// <param name="isPrimary">Indicates if this should be the primary address.</param>
-    /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
+    /// <returns>The updated <see cref="Customer"/> wrapped in a Result.</returns>
     public Result<Customer> AddAddress(string name, string line1, string line2, string postalCode, string city, string country)
     {
         return this.Change()
@@ -198,7 +200,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// Registers a <see cref="CustomerUpdatedDomainEvent"/>.
     /// </summary>
     /// <param name="id">The ID of the address to remove.</param>
-    /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
+    /// <returns>The updated <see cref="Customer"/> wrapped in a Result.</returns>
     public Result<Customer> RemoveAddress(AddressId id)
     {
         return this.Change()
@@ -218,6 +220,15 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
             .Apply();
     }
 
+    public Result<Address> FindAddress(AddressId id)
+    {
+        return this.addresses.AsEnumerable().Find(e => e.Id == id)
+            .Match(
+                some: e => Result<Address>.Success(e),
+                none: () => Result<Address>.Failure()
+                    .WithError("Address with specified ID not found"));
+    }
+
     /// <summary>
     /// Updates an existing address with new values.
     /// Registers a <see cref="CustomerUpdatedDomainEvent"/>.
@@ -229,89 +240,18 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <param name="postalCode">The new postal code.</param>
     /// <param name="city">The new city.</param>
     /// <param name="country">The new country.</param>
-    /// <returns>The current <see cref="Customer"/> instance for chaining.</returns>
+    /// <returns>The updated <see cref="Customer"/> wrapped in a Result.</returns>
     public Result<Customer> ChangeAddress(AddressId id, string name, string line1, string line2, string postalCode, string city, string country)
     {
-        var address = this.addresses.FirstOrDefault(a => a.Id == id);
-        if (address == null)
-        {
-            return Result<Customer>.Failure("Address with specified ID not found");
-        }
-
-        return address.Change()
-            .Ensure(_ => address != null, "Address with specified ID not found")
-            //.Ensure(_ => this.addresses.Any(a => a.Id == addressId), "Address with specified ID not found")
-            .Set(e => e.ChangeName(name))
-            .Set(e => e.ChangeLine1(line1))
-            .Set(e => e.ChangeLine2(line2))
-            .Set(e => e.ChangePostalCode(postalCode))
-            .Set(e => e.ChangeCity(city))
-            .Set(e => e.ChangeCountry(country))
-            .Register(e => new CustomerUpdatedDomainEvent(this))
-            .Apply().Wrap(this);
-
-        // return customer.Change()
-        //     .Register(e => new CustomerUpdatedDomainEvent(this))
-        //     .Select(e => e.addresses.FirstOrDefault(a => a.Id == id), "Address with specified ID not found") // change to address context
-        //     .Set(a => a.ChangeName(name))
-        //     .Set(a => a.ChangeLine1(line1))
-        //     .Set(a => a.ChangeLine2(line2))
-        //     .Set(a => a.ChangePostalCode(postalCode))
-        //     .Set(a => a.ChangeCity(city))
-        //     .Set(a => a.ChangeCountry(country))
-        //     .Apply();
-
-        // return customer.Change()
-        //     .Ensure(_ => this.addresses.Any(a => a.Id == id), "Address with specified ID not found")
-        //     .Select(e => e.addresses.FirstOrDefault(a => a.Id == id) // change to address context
-        //         .Change()
-        //             .Set(a => a.ChangeName(name))
-        //             .Set(a => a.ChangeLine1(line1))
-        //             .Set(a => a.ChangeLine2(line2))
-        //             .Set(a => a.ChangePostalCode(postalCode))
-        //             .Set(a => a.ChangeCity(city))
-        //             .Set(a => a.ChangeCountry(country)).Apply())
-        //     .Register(e => new CustomerUpdatedDomainEvent(this))
-        //     .Apply();
-
-        // var nameResult = address.ChangeName(name);
-        // if (nameResult.IsFailure)
-        // {
-        //     return nameResult.Unwrap();
-        // }
-
-        // var line1Result = address.ChangeLine1(line1);
-        // if (line1Result.IsFailure)
-        // {
-        //     return line1Result.Unwrap();
-        // }
-
-        // var line2Result = address.ChangeLine2(line2);
-        // if (line2Result.IsFailure)
-        // {
-        //     return line2Result.Unwrap();
-        // }
-
-        // var postalCodeResult = address.ChangePostalCode(postalCode);
-        // if (postalCodeResult.IsFailure)
-        // {
-        //     return postalCodeResult.Unwrap();
-        // }
-
-        // var cityResult = address.ChangeCity(city);
-        // if (cityResult.IsFailure)
-        // {
-        //     return cityResult.Unwrap();
-        // }
-
-        // var countryResult = address.ChangeCountry(country);
-        // if (countryResult.IsFailure)
-        // {
-        //     return countryResult.Unwrap();
-        // }
-
-        //     return this.Change()
-        //         .Register(e => new CustomerUpdatedDomainEvent(e))
-        //         .Apply();
+        return this.FindAddress(id).Bind(e => e
+            .Change()
+                .Set(e => e.ChangeName(name))
+                .Set(e => e.ChangeLine1(line1))
+                .Set(e => e.ChangeLine2(line2))
+                .Set(e => e.ChangePostalCode(postalCode))
+                .Set(e => e.ChangeCity(city))
+                .Set(e => e.ChangeCountry(country))
+                .Register(e => new CustomerUpdatedDomainEvent(this))
+                .Apply().Wrap(this));
     }
 }

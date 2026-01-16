@@ -34,7 +34,7 @@ public class ArchitectureFixture
 /// </para>
 /// <para>
 /// Based on the bITdevKit Getting Started guidelines, these tests validate:
-/// - Clean Architecture layer dependencies (Domain → Application → Infrastructure → Presentation)
+/// - Clean Architecture layer dependencies (Domain -> Application -> Infrastructure -> Presentation)
 /// - Domain-Driven Design patterns (factory methods, value objects, aggregates)
 /// - Module isolation boundaries (preparing for multi-module scenarios)
 /// </para>

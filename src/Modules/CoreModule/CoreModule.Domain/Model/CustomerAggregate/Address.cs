@@ -84,7 +84,7 @@ public class Address : Entity<AddressId>
     /// <param name="city">The city name (required).</param>
     /// <param name="country">The country name (required).</param>
     /// <param name="isPrimary">Indicates whether this is the primary address (default: false).</param>
-    /// <returns>A new <see cref="Address"/> instance wrapped in a <see cref="Result{T}"/>.</returns>
+    /// <returns>A new <see cref="Address"/> instance wrapped in a Result.</returns>
     public static Result<Address> Create(string name, string line1, string line2, string postalCode, string city, string country, bool isPrimary = false)
     {
         return Result<Address>.Success()
@@ -99,7 +99,7 @@ public class Address : Entity<AddressId>
     /// Changes the name/label of the address if different from the current value.
     /// </summary>
     /// <param name="name">The new name/label (required).</param>
-    /// <returns>The current <see cref="Address"/> instance for chaining.</returns>
+    /// <returns>The updated <see cref="Address"/> wrapped in a Result.</returns>
     public Result<Address> ChangeName(string name)
     {
         return this.Change()
@@ -112,7 +112,7 @@ public class Address : Entity<AddressId>
     /// Changes the first line of the address if different from the current value.
     /// </summary>
     /// <param name="line1">The new first line (required).</param>
-    /// <returns>The current <see cref="Address"/> instance for chaining.</returns>
+    /// <returns>The updated <see cref="Address"/> wrapped in a Result.</returns>
     public Result<Address> ChangeLine1(string line1)
     {
         return this.Change()
@@ -125,7 +125,7 @@ public class Address : Entity<AddressId>
     /// Changes the second line of the address if different from the current value.
     /// </summary>
     /// <param name="line2">The new second line (optional).</param>
-    /// <returns>The current <see cref="Address"/> instance for chaining.</returns>
+    /// <returns>The updated <see cref="Address"/> wrapped in a Result.</returns>
     public Result<Address> ChangeLine2(string line2)
     {
         return this.Change()
@@ -137,7 +137,7 @@ public class Address : Entity<AddressId>
     /// Changes the postal code of the address if different from the current value.
     /// </summary>
     /// <param name="postalCode">The new postal code (optional).</param>
-    /// <returns>The current <see cref="Address"/> instance for chaining.</returns>
+    /// <returns>The updated <see cref="Address"/> wrapped in a Result.</returns>
     public Result<Address> ChangePostalCode(string postalCode)
     {
         return this.Change()
@@ -149,7 +149,7 @@ public class Address : Entity<AddressId>
     /// Changes the city of the address if different from the current value.
     /// </summary>
     /// <param name="city">The new city (required).</param>
-    /// <returns>The current <see cref="Address"/> instance for chaining.</returns>
+    /// <returns>The updated <see cref="Address"/> wrapped in a Result.</returns>
     public Result<Address> ChangeCity(string city)
     {
         return this.Change()
@@ -162,7 +162,7 @@ public class Address : Entity<AddressId>
     /// Changes the country of the address if different from the current value.
     /// </summary>
     /// <param name="country">The new country (required).</param>
-    /// <returns>The current <see cref="Address"/> instance for chaining.</returns>
+    /// <returns>The updated <see cref="Address"/> wrapped in a Result.</returns>
     public Result<Address> ChangeCountry(string country)
     {
         return this.Change()
@@ -175,7 +175,7 @@ public class Address : Entity<AddressId>
     /// Sets whether this address is the primary address.
     /// </summary>
     /// <param name="isPrimary">True to set as primary; false otherwise.</param>
-    /// <returns>The current <see cref="Address"/> instance for chaining.</returns>
+    /// <returns>The updated <see cref="Address"/> wrapped in a Result.</returns>
     public Result<Address> SetPrimary(bool isPrimary)
     {
         return this.Change()

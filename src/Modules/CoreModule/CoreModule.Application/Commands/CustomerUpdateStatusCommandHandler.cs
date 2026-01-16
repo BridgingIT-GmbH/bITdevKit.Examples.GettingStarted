@@ -36,6 +36,6 @@ public class CustomerUpdateStatusCommandHandler(
             // STEP 4 — Side effects (audit/logging)
             .Log(logger, "AUDIT - Customer {Id} status updated for {Email}", r => [r.Value.Id, r.Value.Email.Value])
 
-            // STEP 5 — Map updated Aggregate → Model
+            // STEP 5 — Map updated Aggregate -> Model
             .MapResult<Customer, CustomerModel>(mapper);
 }

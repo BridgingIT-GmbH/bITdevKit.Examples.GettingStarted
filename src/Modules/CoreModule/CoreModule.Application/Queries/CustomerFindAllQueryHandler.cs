@@ -19,7 +19,7 @@ using Microsoft.Extensions.Logging;
 /// - Configured with retry (<see cref="HandlerRetryAttribute"/>) for transient failures.
 /// - Configured with timeout (<see cref="HandlerTimeoutAttribute"/>) to bound execution.
 /// - Uses <see cref="IGenericRepository{Customer}"/> for persistence access.
-/// - Uses <see cref="IMapper"/> (Mapster abstraction) for domain → DTO transformations.
+/// - Uses <see cref="IMapper"/> (Mapster abstraction) for domain -> DTO transformations.
 /// </remarks>
 // [HandlerRetry(2, 100)]   // retry twice with 100ms delay between retries
 // [HandlerTimeout(500)]    // enforce max 500ms execution per request
@@ -49,7 +49,7 @@ public class CustomerFindAllQueryHandler(
             // Side effects (audit/logging)
             .Log(logger, "AUDIT - Customers retrieved (count: {Count}, filter: {@Filter})", r => [r.Value.Count(), request.Filter])
 
-            // Map retrieved Aggregates → Models
+            // Map retrieved Aggregates -> Models
             .Map(mapper.Map<Customer, CustomerModel>);
     }
 }
