@@ -190,6 +190,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     public Result<Customer> AddAddress(string name, string line1, string line2, string postalCode, string city, string country)
     {
         return this.Change()
+            .Ensure(_ => !this.HasDuplicateAddress(name, line1, postalCode, city, country), "Duplicate address already exists")
             .Add(e => this.addresses, Address.Create(name, line1, line2, postalCode, city, country))
             .Register(e => new CustomerUpdatedDomainEvent(e))
             .Apply();
@@ -224,7 +225,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     {
         return this.addresses.AsEnumerable().Find(e => e.Id == id)
             .Match(
-                some: e => Result<Address>.Success(e),
+                some: Result<Address>.Success,
                 none: () => Result<Address>.Failure()
                     .WithError("Address with specified ID not found"));
     }
@@ -245,13 +246,26 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     {
         return this.FindAddress(id).Bind(e => e
             .Change()
+                .Ensure(_ => !this.HasDuplicateAddress(name, line1, postalCode, city, country,id), "Duplicate address already exists")
                 .Set(e => e.ChangeName(name))
                 .Set(e => e.ChangeLine1(line1))
                 .Set(e => e.ChangeLine2(line2))
                 .Set(e => e.ChangePostalCode(postalCode))
                 .Set(e => e.ChangeCity(city))
                 .Set(e => e.ChangeCountry(country))
-                .Register(e => new CustomerUpdatedDomainEvent(this))
+                .Register(e => new CustomerUpdatedDomainEvent(this)) // TODO: the event should register on the Customer aggregate, not the Address entity
+                //.Register(c, e=> new CustomerUpdatedDomainEvent(this))
                 .Apply().Wrap(this));
+    }
+
+    private bool HasDuplicateAddress(string name, string line1, string postalCode, string city, string country, AddressId excludeId = null)
+    {
+        return this.addresses.Any(a =>
+            (excludeId == null || a.Id != excludeId) &&
+            a.Name == name &&
+            a.Line1 == line1 &&
+            a.PostalCode == postalCode &&
+            a.City == city &&
+            a.Country == country);
     }
 }
