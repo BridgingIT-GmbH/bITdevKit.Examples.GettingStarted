@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # -------- Build stage --------
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy source (use .dockerignore to exclude bin/obj/.git etc.)
@@ -13,7 +13,7 @@ RUN dotnet restore Presentation.Web.Server.csproj \
  && dotnet publish Presentation.Web.Server.csproj -c Release -o /app/publish /p:UseAppHost=false
 
 # -------- Runtime stage --------
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
 # Copy published output
