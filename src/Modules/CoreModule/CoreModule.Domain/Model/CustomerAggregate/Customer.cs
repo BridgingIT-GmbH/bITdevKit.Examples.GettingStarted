@@ -192,7 +192,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
         return this.Change()
             .Ensure(_ => !this.HasDuplicateAddress(name, line1, postalCode, city, country), "Duplicate address already exists")
             .Add(e => this.addresses, Address.Create(name, line1, line2, postalCode, city, country))
-            .Register(e => new CustomerUpdatedDomainEvent(e))
+            .Register(e => new CustomerUpdatedDomainEvent(e), this)
             .Apply();
     }
 
@@ -253,7 +253,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
                 .Set(e => e.ChangePostalCode(postalCode))
                 .Set(e => e.ChangeCity(city))
                 .Set(e => e.ChangeCountry(country))
-                .Register(e => new CustomerUpdatedDomainEvent(this)) // TODO: the event should register on the Customer aggregate, not the Address entity
+                .Register(e => new CustomerUpdatedDomainEvent(this), this) // TODO: the event should register on the Customer aggregate, not the Address entity
                 //.Register(c, e=> new CustomerUpdatedDomainEvent(this))
                 .Apply().Wrap(this));
     }
