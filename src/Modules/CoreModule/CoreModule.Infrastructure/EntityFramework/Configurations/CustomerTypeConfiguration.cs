@@ -30,7 +30,7 @@ public class CustomerTypeConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(e => e.Id)
             .ValueGeneratedOnAdd() // Guid is generated on insert
             .HasConversion(
-                id => id.Value,                 // convert to Guid when saving
+                id => id.Value,                     // convert to Guid when saving
                 value => CustomerId.Create(value)); // convert back to CustomerId when loading
 
         // First name is required with max length 128
@@ -42,7 +42,7 @@ public class CustomerTypeConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(d => d.Number)
             .IsRequired()
             .HasConversion(
-                number => number.Value,                  // when saving
+                number => number.Value,                      // when saving
                 value => CustomerNumber.Create(value).Value) // when loading
             .HasMaxLength(256);
 
@@ -56,7 +56,7 @@ public class CustomerTypeConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(x => x.Email)
             .IsRequired()
             .HasConversion(
-                email => email.Value,                // when saving
+                email => email.Value,                      // when saving
                 value => EmailAddress.Create(value).Value) // when loading
             .HasMaxLength(256);
 

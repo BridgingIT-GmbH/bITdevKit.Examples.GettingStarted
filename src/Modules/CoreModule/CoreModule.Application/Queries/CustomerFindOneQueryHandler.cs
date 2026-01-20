@@ -44,7 +44,7 @@ public class CustomerFindOneQueryHandler(
             await repository.FindOneResultAsync(CustomerId.Create(request.Id), cancellationToken: cancellationToken)
 
             // Side effects (audit/logging)
-            .Log(logger, "AUDIT - Customer {CustomerId} retrieved", r => [r.Value.Id])
+            .Log(logger, "AUDIT - Customer {CustomerId} retrieved for {Email}", r => [r.Value.Id, r.Value.Email])
 
             // Map retrieved Aggregate -> Model
             .MapResult<Customer, CustomerModel>(mapper);

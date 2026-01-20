@@ -48,28 +48,19 @@ public class CustomerNumber : ValueObject
     }
 
     /// <summary>
-    /// Creates a <see cref="CustomerNumber"/> from a validated value string.
-    /// Returns a <see cref="Result{T}"/> instead of throwing for expected validation failures.
+    /// Creates a <see cref="CustomerNumber"/> instance after checking the input string.
+    /// Normalizes the string to uppercase and trims whitespace.
     /// </summary>
-    /// <param name="value">Raw customer number value.</param>
-    /// <returns>A success result wrapping the <see cref="CustomerNumber"/> or a failure result with validation errors.</returns>
+    /// <param name="value">The customer number string to create from.</param>
+    /// <returns>A success result wrapping the <see cref="CustomerNumber"/> or a failure result with errors.</returns>
     public static Result<CustomerNumber> Create(string value)
     {
-        value = value?.Trim()?.ToUpperInvariant();
-
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return Result<CustomerNumber>.Failure()
-                .WithError(new ValidationError("Customer number cannot be empty."));
-        }
-
-        if (!FormatRegex.IsMatch(value))
-        {
-            return Result<CustomerNumber>.Failure()
-                .WithError(new ValidationError("Customer number must match format CUS-YYYY-NNNNNN (e.g., CUS-2024-000001)."));
-        }
-
-        return new CustomerNumber(value); // implicitly wrapped in a successful Result
+        return Result<string>.Success(value?.Trim()?.ToUpperInvariant())
+            .Bind(v => Rule
+                .Add(RuleSet.IsNotEmpty(v, "Customer number cannot be empty."))
+                .Add(RuleSet.IsTrue(FormatRegex.IsMatch(v), "Customer number must match format CUS-YYYY-NNNNNN (e.g., CUS-2024-000001)."))
+                .Check()
+                .ToResult(new CustomerNumber(v)));
     }
 
     /// <summary>
@@ -77,7 +68,7 @@ public class CustomerNumber : ValueObject
     /// </summary>
     /// <param name="year">The year (e.g., 2025).</param>
     /// <param name="sequence">Sequence number (expected between 100000 and 999999).</param>
-    public static Result<CustomerNumber> Create(int year, long sequence)
+    public static Result<CustomerNumber> Create(int year, long sequence) // TODO: use Result statement body
     {
         var currentPlusOne = TimeProviderAccessor.Current.GetUtcNow().Year + 1; // use configured time provider for deterministic tests
         if (year < 2000 || year > currentPlusOne)
@@ -92,9 +83,7 @@ public class CustomerNumber : ValueObject
                 .WithError(new ValidationError("Sequence must be between 100000 and 999999."));
         }
 
-        var value = $"CUS-{year:D4}-{sequence:D6}";
-
-        return new CustomerNumber(value); // success
+        return new CustomerNumber($"CUS-{year:D4}-{sequence:D6}"); // success
     }
 
     /// <summary>
@@ -102,7 +91,8 @@ public class CustomerNumber : ValueObject
     /// </summary>
     /// <param name="date">The date from which the year will be extracted.</param>
     /// <param name="sequence">Sequence number between 100000 and 999999.</param>
-    public static Result<CustomerNumber> Create(DateTimeOffset date, long sequence) => Create(date.Year, sequence);
+    public static Result<CustomerNumber> Create(DateTimeOffset date, long sequence) =>
+        Create(date.Year, sequence);
 
     protected override IEnumerable<object> GetAtomicValues()
     {

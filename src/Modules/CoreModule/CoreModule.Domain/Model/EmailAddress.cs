@@ -58,29 +58,18 @@ public class EmailAddress : ValueObject
     }
 
     /// <summary>
-    /// Creates a new <see cref="EmailAddress"/> instance after validating the input string.
+    /// Creates a new <see cref="EmailAddress"/> instance after checking the input string.
     /// Normalizes the string to lowercase and trims whitespace.
     /// </summary>
     /// <param name="value">The email address string to create from.</param>
-    /// <exception cref="RuleValidationException">
-    /// Thrown if <paramref name="value"/> is not a valid email format.
-    /// </exception>
-    /// <returns>A new <see cref="EmailAddress"/> value object.</returns>
+    /// <returns>A success result wrapping the <see cref="EmailAddress"/> or a failure result with errors.</returns>
     public static Result<EmailAddress> Create(string value)
     {
-        value = value?.Trim()?.ToLowerInvariant();
-
-        var ruleResult = Rule.Add(RuleSet.IsValidEmail(value))
-            .Check();
-
-        if (ruleResult.IsFailure)
-        {
-            return Result<EmailAddress>.Failure()
-                .WithMessages(ruleResult.Messages)
-                .WithErrors(ruleResult.Errors);
-        }
-
-        return new EmailAddress(value); // implicitly wrapped in a successful Result
+        return Result<string>.Success(value?.Trim()?.ToLowerInvariant())
+            .Bind(v => Rule
+                .Add(RuleSet.IsValidEmail(v))
+                .Check()
+                .ToResult(new EmailAddress(v)));
     }
 
     /// <summary>
