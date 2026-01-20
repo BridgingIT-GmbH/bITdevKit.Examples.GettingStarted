@@ -813,11 +813,11 @@ public class EmailAddress : ValueObject
 
         if (string.IsNullOrWhiteSpace(value))
             return Result<EmailAddress>.Failure()
-                .WithError(new ValidationError("Email cannot be empty"));
+                .WithError(Errors.Validation.Error("Email cannot be empty"));
 
         if (!value.Contains("@"))
             return Result<EmailAddress>.Failure()
-                .WithError(new ValidationError("Invalid email format"));
+                .WithError(Errors.Validation.Error("Invalid email format"));
 
         return new EmailAddress(value);
     }

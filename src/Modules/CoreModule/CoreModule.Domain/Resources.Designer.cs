@@ -61,6 +61,51 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Customer number cannot be empty.
+        /// </summary>
+        public static string Validator_CustomerNumberCannotBeEmpty {
+            get {
+                return ResourceManager.GetString("Validator_CustomerNumberCannotBeEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Customer number must match format CUS-YYYY-NNNNNN (e.g., CUS-2024-000001).
+        /// </summary>
+        public static string Validator_CustomerNumberInvalidFormat {
+            get {
+                return ResourceManager.GetString("Validator_CustomerNumberInvalidFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Age exceeds maximum.
+        /// </summary>
+        public static string Validator_DateOfBirthAgeExceedsMaximum {
+            get {
+                return ResourceManager.GetString("Validator_DateOfBirthAgeExceedsMaximum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date of birth cannot be in the future.
+        /// </summary>
+        public static string Validator_DateOfBirthCannotBeFuture {
+            get {
+                return ResourceManager.GetString("Validator_DateOfBirthCannotBeFuture", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date of birth out of valid range.
+        /// </summary>
+        public static string Validator_DateOfBirthOutOfRange {
+            get {
+                return ResourceManager.GetString("Validator_DateOfBirthOutOfRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value.
         /// </summary>
         public static string Validator_InvalidValue {
@@ -75,6 +120,42 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain {
         public static string Validator_MustNotBeEmpty {
             get {
                 return ResourceManager.GetString("Validator_MustNotBeEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Both first and last name must be provided.
+        /// </summary>
+        public static string Validator_NameBothFirstAndLastRequired {
+            get {
+                return ResourceManager.GetString("Validator_NameBothFirstAndLastRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;notallowed&apos; is not permitted.
+        /// </summary>
+        public static string Validator_NotAllowedValue {
+            get {
+                return ResourceManager.GetString("Validator_NotAllowedValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sequence must be between 100000 and 999999.
+        /// </summary>
+        public static string Validator_SequenceOutOfRange {
+            get {
+                return ResourceManager.GetString("Validator_SequenceOutOfRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Year out of valid range.
+        /// </summary>
+        public static string Validator_YearOutOfRange {
+            get {
+                return ResourceManager.GetString("Validator_YearOutOfRange", resourceCulture);
             }
         }
     }

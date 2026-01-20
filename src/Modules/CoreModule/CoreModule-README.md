@@ -121,7 +121,7 @@ public class CustomerCreateCommandHandler(
                 
                 // STEP 2: Inline validation
                 .Ensure((ctx) => ctx.Model.FirstName != ctx.Model.LastName,
-                    new ValidationError("Firstname cannot be same as lastname"))
+                    Errors.Validation.Error("Firstname cannot be same as lastname"))
                 
                 // STEP 3: Business rules validation
                 .UnlessAsync(async (ctx, ct) => await Rule

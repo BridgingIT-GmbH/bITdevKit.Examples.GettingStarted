@@ -5,6 +5,8 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
 /// <summary>
 /// Represents a unique customer number in the format CUS-YYYY-NNNNNN.
 /// </summary>
@@ -57,8 +59,8 @@ public class CustomerNumber : ValueObject
     {
         return Result<string>.Success(value?.Trim()?.ToUpperInvariant())
             .Bind(v => Rule
-                .Add(RuleSet.IsNotEmpty(v, "Customer number cannot be empty."))
-                .Add(RuleSet.IsTrue(FormatRegex.IsMatch(v), "Customer number must match format CUS-YYYY-NNNNNN (e.g., CUS-2024-000001)."))
+                .Add(RuleSet.IsNotEmpty(v, Resources.Validator_CustomerNumberCannotBeEmpty))
+                .Add(RuleSet.IsTrue(FormatRegex.IsMatch(v), Resources.Validator_CustomerNumberInvalidFormat))
                 .Check()
                 .ToResult(new CustomerNumber(v)));
     }
@@ -68,22 +70,22 @@ public class CustomerNumber : ValueObject
     /// </summary>
     /// <param name="year">The year (e.g., 2025).</param>
     /// <param name="sequence">Sequence number (expected between 100000 and 999999).</param>
-    public static Result<CustomerNumber> Create(int year, long sequence) // TODO: use Result statement body
+    public static Result<CustomerNumber> Create(int year, long sequence)
     {
-        var currentPlusOne = TimeProviderAccessor.Current.GetUtcNow().Year + 1; // use configured time provider for deterministic tests
+        var currentPlusOne = TimeProviderAccessor.Current.GetUtcNow().Year + 1;
         if (year < 2000 || year > currentPlusOne)
         {
             return Result<CustomerNumber>.Failure()
-                .WithError(new ValidationError($"Year out of valid range (2000-{currentPlusOne})."));
+                .WithError(Errors.Validation.Error($"{Resources.Validator_YearOutOfRange} (2000-{currentPlusOne})."));
         }
 
         if (sequence < 100000 || sequence > 999999)
         {
             return Result<CustomerNumber>.Failure()
-                .WithError(new ValidationError("Sequence must be between 100000 and 999999."));
+                .WithError(Errors.Validation.Error(Resources.Validator_SequenceOutOfRange));
         }
 
-        return new CustomerNumber($"CUS-{year:D4}-{sequence:D6}"); // success
+        return new CustomerNumber($"CUS-{year:D4}-{sequence:D6}");
     }
 
     /// <summary>

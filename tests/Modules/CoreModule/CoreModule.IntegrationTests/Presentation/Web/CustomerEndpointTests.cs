@@ -143,7 +143,6 @@ public class CustomerEndpointTests
         // Arrange
         var ticks = DateTime.UtcNow.Ticks;
         var model = new CustomerModel { FirstName = $"John{ticks}", LastName = $"Doe{ticks}", Email = $"john.doe{ticks}@example.com" };
-        model.FirstName = string.Empty;
         var json = JsonSerializer.Serialize(model, Common.DefaultJsonSerializerOptions.Create());
         var content = new StringContent(json, Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
         this.output.WriteLine($"RequestModel: {model.DumpText()}");
@@ -197,6 +196,7 @@ public class CustomerEndpointTests
         var model = await this.SeedEntity(route);
         model.FirstName += "changed";
         model.LastName += "changed";
+        model.ConcurrencyVersion = Guid.NewGuid().ToString();
         var json = JsonSerializer.Serialize(model, Common.DefaultJsonSerializerOptions.Create());
         var content = new StringContent(json, Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
         this.output.WriteLine($"RequestModel: {model.DumpText()}");

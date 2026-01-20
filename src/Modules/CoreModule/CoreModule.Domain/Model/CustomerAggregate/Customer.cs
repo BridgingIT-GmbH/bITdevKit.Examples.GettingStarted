@@ -6,9 +6,11 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
 using BridgingIT.DevKit.Domain;
+using System.ComponentModel;
 using System.Diagnostics.Metrics;
 using System.Net.Sockets;
 using System.Xml.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 /// <summary>
 /// Represents a customer aggregate root with personal details, email address, and lead/status information.
@@ -95,10 +97,10 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
         }
 
         return Result<Customer>.Success()
-            .Ensure(_ => !string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName), new ValidationError("Invalid name: both first and last name must be provided", nameof(firstName)))
-            .Ensure(_ => lastName != "notallowed", new ValidationError("Invalid last name: 'notallowed' is not permitted", nameof(lastName)))
-            .Ensure(_ => email != null, new ValidationError(Resources.Validator_MustNotBeEmpty, nameof(email)))
-            .Ensure(_ => number != null, new ValidationError(Resources.Validator_MustNotBeEmpty, nameof(number)))
+            .Ensure(_ => !string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName), Errors.Validation.Error(Resources.Validator_NameBothFirstAndLastRequired, nameof(firstName)))
+            .Ensure(_ => lastName != "notallowed", Errors.Validation.Error(Resources.Validator_NotAllowedValue, nameof(lastName)))
+            .Ensure(_ => email != null, Errors.Validation.Error(Resources.Validator_MustNotBeEmpty, nameof(email)))
+            .Ensure(_ => number != null, Errors.Validation.Error(Resources.Validator_MustNotBeEmpty, nameof(number)))
             .Bind(_ => new Customer(firstName, lastName, emailAddressResult.Value, number))
             .Tap(e => e.DomainEvents
                 .Register(new CustomerCreatedDomainEvent(e))
@@ -115,8 +117,8 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     public Result<Customer> ChangeName(string firstName, string lastName)
     {
         return this.Change()
-            .Ensure(_ => !string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName), "Invalid name: both first and last name must be provided")
-            .Ensure(_ => lastName != "notallowed", "Invalid last name: 'notallowed' is not permitted")
+            .Ensure(_ => !string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName), Errors.Validation.Error(Resources.Validator_NameBothFirstAndLastRequired))
+            .Ensure(_ => lastName != "notallowed", Errors.Validation.Error(Resources.Validator_NotAllowedValue))
             .Set(e => e.FirstName, firstName).Set(e => e.LastName, lastName)
             .Register(e => new CustomerUpdatedDomainEvent(e))
             .Apply();
@@ -149,12 +151,12 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
 
         return this.Change()
             .When(_ => dateOfBirth.HasValue)
-            .Ensure(_ => dateOfBirth <= currentDate, new ValidationError("Invalid date of birth: cannot be in the future"))
-            .Ensure(_ => dateOfBirth >= currentDate.AddYears(-150), new ValidationError("Invalid date of birth: age exceeds maximum"))
+            .Ensure(_ => dateOfBirth <= currentDate, Errors.Validation.Error(Resources.Validator_DateOfBirthCannotBeFuture))
+            .Ensure(_ => dateOfBirth >= currentDate.AddYears(-150), Errors.Validation.Error(Resources.Validator_DateOfBirthAgeExceedsMaximum))
             .Ensure(_ => Rule // demonstrates complex rule composition with the Rules Feature
                 .Add(RuleSet.LessThan(dateOfBirth.Value, DateOnly.MaxValue))
                 .Add(RuleSet.GreaterThan(dateOfBirth.Value, DateOnly.MinValue))
-                .Check(), "Invalid date of birth: out of valid range")
+                .Check(), Errors.Validation.Error(Resources.Validator_DateOfBirthOutOfRange))
             .Set(e => e.DateOfBirth, dateOfBirth)
             .Register(e => new CustomerUpdatedDomainEvent(e))
             .Apply();
@@ -189,7 +191,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     public Result<Customer> AddAddress(string name, string line1, string line2, string postalCode, string city, string country)
     {
         return this.Change()
-            .Ensure(_ => !this.HasDuplicateAddress(name, line1, postalCode, city, country), "Duplicate address already exists")
+            .Ensure(_ => !this.HasDuplicateAddress(name, line1, postalCode, city, country), Errors.Validation.Duplicate())
             .Add(e => this.addresses, Address.Create(name, line1, line2, postalCode, city, country))
             .Register(e => new CustomerUpdatedDomainEvent(e), this)
             .Apply();
@@ -205,7 +207,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     {
         return this.Change()
             //.When(_ => id != null)
-            .RemoveById(e => this.addresses, id, errorMessage: "Address with specified ID not found")
+            .RemoveById(e => this.addresses, id, error: Errors.Domain.EntityNotFound())
             .Register(e => new CustomerUpdatedDomainEvent(e))
             .Apply();
     }
@@ -214,7 +216,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     {
         return this.Change()
             //.When(_ => id != null)
-            .Ensure(_ => this.addresses.Any(a => a.Id == id), "Address with specified ID not found")
+            .Ensure(_ => this.addresses.Any(a => a.Id == id), Errors.Domain.EntityNotFound())
             .Set(e => e.addresses, a => a.SetPrimary(a.Id == id))
             .Register(e => new CustomerUpdatedDomainEvent(e))
             .Apply();
@@ -226,7 +228,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
             .Match(
                 some: Result<Address>.Success,
                 none: () => Result<Address>.Failure()
-                    .WithError("Address with specified ID not found"));
+                    .WithError(Errors.Domain.EntityNotFound()));
     }
 
     /// <summary>
@@ -245,7 +247,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     {
         return this.FindAddress(id).Bind(e => e
             .Change()
-                .Ensure(_ => !this.HasDuplicateAddress(name, line1, postalCode, city, country,id), "Duplicate address already exists")
+                .Ensure(_ => !this.HasDuplicateAddress(name, line1, postalCode, city, country,id), Errors.Validation.Duplicate())
                 .Set(e => e.ChangeName(name))
                 .Set(e => e.ChangeLine1(line1))
                 .Set(e => e.ChangeLine2(line2))

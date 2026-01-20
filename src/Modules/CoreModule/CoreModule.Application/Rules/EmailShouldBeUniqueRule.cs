@@ -37,6 +37,6 @@ public class EmailShouldBeUniqueRule(string email, IGenericRepository<Customer> 
         // Query number of customers with the given email
         return await repository
             .CountResultAsync(e => e.Email == email, cancellationToken)
-            .Ensure(e => e == 0, new ValidationError(this.Message));   // fail if count > 0
+            .Ensure(e => e == 0, Errors.Validation.Error(this.Message));   // fail if count > 0
     }
 }

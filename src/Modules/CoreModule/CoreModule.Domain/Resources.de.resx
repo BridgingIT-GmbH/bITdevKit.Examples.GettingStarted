@@ -123,4 +123,31 @@
   <data name="Validator_MustNotBeEmpty" xml:space="preserve">
     <value>Darf nicht leer sein</value>
   </data>
+  <data name="Validator_YearOutOfRange" xml:space="preserve">
+    <value>Jahr außerhalb des gültigen Bereichs</value>
+  </data>
+  <data name="Validator_SequenceOutOfRange" xml:space="preserve">
+    <value>Sequenz muss zwischen 100000 und 999999 liegen</value>
+  </data>
+  <data name="Validator_CustomerNumberCannotBeEmpty" xml:space="preserve">
+    <value>Kundennummer darf nicht leer sein</value>
+  </data>
+  <data name="Validator_CustomerNumberInvalidFormat" xml:space="preserve">
+    <value>Kundennummer muss dem Format CUS-YYYY-NNNNNN entsprechen (z.B. CUS-2024-000001)</value>
+  </data>
+  <data name="Validator_NameBothFirstAndLastRequired" xml:space="preserve">
+    <value>Vor- und Nachname müssen angegeben werden</value>
+  </data>
+  <data name="Validator_NotAllowedValue" xml:space="preserve">
+    <value>'notallowed' ist nicht zulässig</value>
+  </data>
+  <data name="Validator_DateOfBirthCannotBeFuture" xml:space="preserve">
+    <value>Geburtsdatum darf nicht in der Zukunft liegen</value>
+  </data>
+  <data name="Validator_DateOfBirthAgeExceedsMaximum" xml:space="preserve">
+    <value>Alter überschreitet das Maximum</value>
+  </data>
+  <data name="Validator_DateOfBirthOutOfRange" xml:space="preserve">
+    <value>Geburtsdatum außerhalb des gültigen Bereichs</value>
+  </data>
 </root>

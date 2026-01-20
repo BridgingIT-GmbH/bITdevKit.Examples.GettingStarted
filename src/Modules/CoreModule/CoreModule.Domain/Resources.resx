@@ -123,4 +123,31 @@
   <data name="Validator_MustNotBeEmpty" xml:space="preserve">
     <value>Must not be empty</value>
   </data>
+  <data name="Validator_YearOutOfRange" xml:space="preserve">
+    <value>Year out of valid range</value>
+  </data>
+  <data name="Validator_SequenceOutOfRange" xml:space="preserve">
+    <value>Sequence must be between 100000 and 999999</value>
+  </data>
+  <data name="Validator_CustomerNumberCannotBeEmpty" xml:space="preserve">
+    <value>Customer number cannot be empty</value>
+  </data>
+  <data name="Validator_CustomerNumberInvalidFormat" xml:space="preserve">
+    <value>Customer number must match format CUS-YYYY-NNNNNN (e.g., CUS-2024-000001)</value>
+  </data>
+  <data name="Validator_NameBothFirstAndLastRequired" xml:space="preserve">
+    <value>Both first and last name must be provided</value>
+  </data>
+  <data name="Validator_NotAllowedValue" xml:space="preserve">
+    <value>'notallowed' is not permitted</value>
+  </data>
+  <data name="Validator_DateOfBirthCannotBeFuture" xml:space="preserve">
+    <value>Date of birth cannot be in the future</value>
+  </data>
+  <data name="Validator_DateOfBirthAgeExceedsMaximum" xml:space="preserve">
+    <value>Age exceeds maximum</value>
+  </data>
+  <data name="Validator_DateOfBirthOutOfRange" xml:space="preserve">
+    <value>Date of birth out of valid range</value>
+  </data>
 </root>
