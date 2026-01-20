@@ -196,7 +196,6 @@ public class CustomerEndpointTests
         var model = await this.SeedEntity(route);
         model.FirstName += "changed";
         model.LastName += "changed";
-        model.ConcurrencyVersion = Guid.NewGuid().ToString();
         var json = JsonSerializer.Serialize(model, Common.DefaultJsonSerializerOptions.Create());
         var content = new StringContent(json, Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
         this.output.WriteLine($"RequestModel: {model.DumpText()}");
