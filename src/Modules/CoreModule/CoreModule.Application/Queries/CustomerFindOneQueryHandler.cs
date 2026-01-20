@@ -47,5 +47,6 @@ public class CustomerFindOneQueryHandler(
             .Log(logger, "AUDIT - Customer {CustomerId} retrieved for {Email}", r => [r.Value.Id, r.Value.Email])
 
             // Map retrieved Aggregate -> Model
-            .MapResult<Customer, CustomerModel>(mapper);
+            .MapResult<Customer, CustomerModel>(mapper)
+            .Log(logger, "AUDIT - Customer {CustomerId} retrieved for {Email}", r => [r.Value.Id, r.Value.Email]);
 }
