@@ -5,9 +5,9 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
-using System;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using Microsoft.Extensions.Logging;
+using System;
 
 /// <summary>
 /// Handler for <see cref="CustomerCreateCommand"/> that performs business validation,
@@ -40,8 +40,6 @@ public class CustomerCreateCommandHandler(
                 // STEP 1 — Create initial context
                 .Bind<CustomerCreateContext>(() => new(request.Model))
                 .Log(logger, "Context created {@Context}", r => [r.Value])
-                .Ensure((ctx) => ctx.Model.FirstName != ctx.Model.LastName,
-                    new ValidationError("Firstname cannot be same as lastname", "Firstname"))
 
                 // STEP 2 — Validate model
                 .UnlessAsync(async (ctx, ct) => await Rule
@@ -97,13 +95,7 @@ public class CustomerCreateCommandHandler(
                 {
                     foreach (var addressModel in ctx.Model.Addresses)
                     {
-                        r.Bind(e => e.AddAddress(
-                            addressModel.Name,
-                            addressModel.Line1,
-                            addressModel.Line2,
-                            addressModel.PostalCode,
-                            addressModel.City,
-                            addressModel.Country));
+                        r.Bind(e => e.AddAddress(addressModel.Name, addressModel.Line1, addressModel.Line2, addressModel.PostalCode, addressModel.City, addressModel.Country));
                     }
 
                     return r;
@@ -125,11 +117,6 @@ public class CustomerCreateCommandHandler(
     {
         ctx.Entity = entity;
         return ctx;
-    }
-
-    private CustomerModel ToModel(CustomerCreateContext ctx)
-    {
-        return mapper.Map<Customer, CustomerModel>(ctx.Entity);
     }
 
     private class CustomerCreateContext(CustomerModel model)

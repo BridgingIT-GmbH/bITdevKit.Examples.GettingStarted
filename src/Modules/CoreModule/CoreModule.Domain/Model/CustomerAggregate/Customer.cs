@@ -95,10 +95,10 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
         }
 
         return Result<Customer>.Success()
-            .Ensure(_ => !string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName), new ValidationError("Invalid name: both first and last name must be provided"))
-            .Ensure(_ => lastName != "notallowed", new ValidationError("Invalid last name: 'notallowed' is not permitted"))
-            .Ensure(_ => email != null, new ValidationError("Email cannot be null"))
-            .Ensure(_ => number != null, new ValidationError("Number cannot be null"))
+            .Ensure(_ => !string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName), new ValidationError("Invalid name: both first and last name must be provided", nameof(firstName)))
+            .Ensure(_ => lastName != "notallowed", new ValidationError("Invalid last name: 'notallowed' is not permitted", nameof(lastName)))
+            .Ensure(_ => email != null, new ValidationError(Resources.Validator_MustNotBeEmpty, nameof(email)))
+            .Ensure(_ => number != null, new ValidationError(Resources.Validator_MustNotBeEmpty, nameof(number)))
             .Bind(_ => new Customer(firstName, lastName, emailAddressResult.Value, number))
             .Tap(e => e.DomainEvents
                 .Register(new CustomerCreatedDomainEvent(e))
@@ -149,8 +149,8 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
 
         return this.Change()
             .When(_ => dateOfBirth.HasValue)
-            .Ensure(_ => dateOfBirth <= currentDate, "Invalid date of birth: cannot be in the future")
-            .Ensure(_ => dateOfBirth >= currentDate.AddYears(-150), "Invalid date of birth: age exceeds maximum")
+            .Ensure(_ => dateOfBirth <= currentDate, new ValidationError("Invalid date of birth: cannot be in the future"))
+            .Ensure(_ => dateOfBirth >= currentDate.AddYears(-150), new ValidationError("Invalid date of birth: age exceeds maximum"))
             .Ensure(_ => Rule // demonstrates complex rule composition with the Rules Feature
                 .Add(RuleSet.LessThan(dateOfBirth.Value, DateOnly.MaxValue))
                 .Add(RuleSet.GreaterThan(dateOfBirth.Value, DateOnly.MinValue))
@@ -185,7 +185,6 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <param name="postalCode">The optional postal code.</param>
     /// <param name="city">The city name (required).</param>
     /// <param name="country">The country name (required).</param>
-    /// <param name="isPrimary">Indicates if this should be the primary address.</param>
     /// <returns>The updated <see cref="Customer"/> wrapped in a Result.</returns>
     public Result<Customer> AddAddress(string name, string line1, string line2, string postalCode, string city, string country)
     {

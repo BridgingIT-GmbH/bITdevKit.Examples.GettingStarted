@@ -46,6 +46,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers(); // TODO: needed for openapi gen, even with no controllers
 #pragma warning disable CS0618 // Type or member is obsolete
 builder.Services.AddProblemDetails(o => Configure.ProblemDetails(o, true));
+// TODO: use builder.Services.AddExceptionHandler(); (uses new dotnet IExceptionHandler interface)
 #pragma warning restore CS0618 // Type or member is obsolete
 builder.Services.AddTimeProvider();
 
@@ -97,6 +98,7 @@ app.UseProblemDetails();
 app.UseHttpsRedirection();
 
 app.UseModules();
+//app.UseExceptionHandler();
 
 app.UseAuthentication();
 app.UseAuthorization();

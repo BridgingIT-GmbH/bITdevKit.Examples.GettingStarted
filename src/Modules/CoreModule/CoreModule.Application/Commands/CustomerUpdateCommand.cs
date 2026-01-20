@@ -23,44 +23,44 @@ public class CustomerUpdateCommand(CustomerModel model) : RequestBase<CustomerMo
             this.RuleFor(c => c.Model).NotNull();
 
             this.RuleFor(c => c.Model.Id).MustNotBeDefaultOrEmptyGuid()
-                .WithMessage("Invalid guid.");
+                .WithMessage(Resources.Validator_InvalidValue);
 
             this.RuleFor(c => c.Model.FirstName)
-                .NotNull().NotEmpty().WithMessage("Must not be empty.");
+                .NotNull().NotEmpty().WithMessage(Resources.Validator_MustNotBeEmpty);
 
             this.RuleFor(c => c.Model.LastName)
-                .NotNull().NotEmpty().WithMessage("Must not be empty.");
+                .NotNull().NotEmpty().WithMessage(Resources.Validator_MustNotBeEmpty);
 
             this.RuleFor(c => c.Model.Email)
-                .NotNull().NotEmpty().WithMessage("Must not be empty.");
+                .NotNull().NotEmpty().WithMessage(Resources.Validator_MustNotBeEmpty);
 
             // Address validation rules
             this.RuleFor(c => c.Model.Addresses)
-                .Must(addresses => addresses == null || addresses.Count(a => a.IsPrimary) == 1)
-                .WithMessage("One address should be marked as primary");
+                .Must(addresses => addresses.IsNullOrEmpty() || addresses.Count(a => a.IsPrimary) == 1)
+                .WithMessage(Resources.Validator_OnePrimaryAddressRequired);
 
             this.RuleForEach(c => c.Model.Addresses).ChildRules(address =>
             {
                 address.RuleFor(a => a.Line1)
-                    .NotEmpty().WithMessage("Address line 1 is required")
-                    .MaximumLength(256).WithMessage("Address line 1 must not exceed 256 characters");
+                    .NotEmpty().WithMessage(Resources.Validator_MustNotBeEmpty)
+                    .MaximumLength(256).WithMessage(Resources.Validator_MustNotExceed256Characters);
 
                 address.RuleFor(a => a.Line2)
-                    .MaximumLength(256).WithMessage("Address line 2 must not exceed 256 characters");
+                    .MaximumLength(256).WithMessage(Resources.Validator_MustNotExceed256Characters);
 
                 address.RuleFor(a => a.City)
-                    .NotEmpty().WithMessage("City is required")
-                    .MaximumLength(100).WithMessage("City must not exceed 100 characters");
+                    .NotEmpty().WithMessage(Resources.Validator_MustNotBeEmpty)
+                    .MaximumLength(100).WithMessage(Resources.Validator_MustNotExceed100Characters);
 
                 address.RuleFor(a => a.Country)
-                    .NotEmpty().WithMessage("Country is required")
-                    .MaximumLength(100).WithMessage("Country must not exceed 100 characters");
+                    .NotEmpty().WithMessage(Resources.Validator_MustNotBeEmpty)
+                    .MaximumLength(100).WithMessage(Resources.Validator_MustNotExceed100Characters);
 
                 address.RuleFor(a => a.Name)
-                    .MaximumLength(128).WithMessage("Address name must not exceed 128 characters");
+                    .MaximumLength(128).WithMessage(Resources.Validator_MustNotExceed128Characters);
 
                 address.RuleFor(a => a.PostalCode)
-                    .MaximumLength(20).WithMessage("Postal code must not exceed 20 characters");
+                    .MaximumLength(20).WithMessage(Resources.Validator_MustNotExceed20Characters);
             });
         }
     }

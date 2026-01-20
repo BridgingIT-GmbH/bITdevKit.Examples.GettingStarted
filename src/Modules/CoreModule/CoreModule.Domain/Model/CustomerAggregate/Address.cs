@@ -88,10 +88,10 @@ public class Address : Entity<AddressId>
     public static Result<Address> Create(string name, string line1, string line2, string postalCode, string city, string country, bool isPrimary = false)
     {
         return Result<Address>.Success()
-            .Ensure(_ => !string.IsNullOrWhiteSpace(name), new ValidationError("Address name is required"))
-            .Ensure(_ => !string.IsNullOrWhiteSpace(line1), new ValidationError("Address line 1 is required"))
-            .Ensure(_ => !string.IsNullOrWhiteSpace(city), new ValidationError("City is required"))
-            .Ensure(_ => !string.IsNullOrWhiteSpace(country), new ValidationError("Country is required"))
+            .Ensure(_ => !string.IsNullOrWhiteSpace(name), new ValidationError(Resources.Validator_MustNotBeEmpty, nameof(name)))
+            .Ensure(_ => !string.IsNullOrWhiteSpace(line1), new ValidationError(Resources.Validator_MustNotBeEmpty, nameof(line1)))
+            .Ensure(_ => !string.IsNullOrWhiteSpace(city), new ValidationError(Resources.Validator_MustNotBeEmpty, nameof(city)))
+            .Ensure(_ => !string.IsNullOrWhiteSpace(country), new ValidationError(Resources.Validator_MustNotBeEmpty, nameof(country)))
             .Bind(_ => new Address(name, line1, line2, postalCode, city, country, isPrimary));
     }
 
@@ -103,7 +103,7 @@ public class Address : Entity<AddressId>
     public Result<Address> ChangeName(string name)
     {
         return this.Change()
-            .Ensure(_ => !string.IsNullOrWhiteSpace(name), "Address name is required")
+            .Ensure(_ => !string.IsNullOrWhiteSpace(name), Resources.Validator_MustNotBeEmpty)
             .Set(e => e.Name, name)
             .Apply();
     }
@@ -116,7 +116,7 @@ public class Address : Entity<AddressId>
     public Result<Address> ChangeLine1(string line1)
     {
         return this.Change()
-            .Ensure(_ => !string.IsNullOrWhiteSpace(line1), "Address line 1 is required")
+            .Ensure(_ => !string.IsNullOrWhiteSpace(line1), Resources.Validator_MustNotBeEmpty)
             .Set(e => e.Line1, line1)
             .Apply();
     }
@@ -153,7 +153,7 @@ public class Address : Entity<AddressId>
     public Result<Address> ChangeCity(string city)
     {
         return this.Change()
-            .Ensure(_ => !string.IsNullOrWhiteSpace(city), "City is required")
+            .Ensure(_ => !string.IsNullOrWhiteSpace(city), Resources.Validator_MustNotBeEmpty)
             .Set(e => e.City, city)
             .Apply();
     }
@@ -166,7 +166,7 @@ public class Address : Entity<AddressId>
     public Result<Address> ChangeCountry(string country)
     {
         return this.Change()
-            .Ensure(_ => !string.IsNullOrWhiteSpace(country), "Country is required")
+            .Ensure(_ => !string.IsNullOrWhiteSpace(country), Resources.Validator_MustNotBeEmpty)
             .Set(e => e.Country, country)
             .Apply();
     }

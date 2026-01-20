@@ -51,7 +51,6 @@ public class CustomerTypeConfiguration : IEntityTypeConfiguration<Customer>
             .IsRequired()
             .HasMaxLength(512);
 
-
         // Map EmailAddress value object -> string in database
         builder.Property(x => x.Email)
             .IsRequired()
