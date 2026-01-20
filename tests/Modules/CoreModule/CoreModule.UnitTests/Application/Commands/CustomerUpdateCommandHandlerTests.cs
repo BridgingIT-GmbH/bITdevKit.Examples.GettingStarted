@@ -147,7 +147,6 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         response.ShouldBeFailure();
     }
 
-
     /// <summary>Verifies successful email address update.</summary>
     [Fact]
     public async Task Process_UpdateEmailAddress_SuccessResult()
