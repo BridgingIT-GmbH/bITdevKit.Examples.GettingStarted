@@ -5,13 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 
-using BridgingIT.DevKit.Domain;
-using System.ComponentModel;
-using System.Diagnostics.Metrics;
-using System.Net.Sockets;
-using System.Xml.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
 /// <summary>
 /// Represents a customer aggregate root with personal details, email address, and lead/status information.
 /// </summary>

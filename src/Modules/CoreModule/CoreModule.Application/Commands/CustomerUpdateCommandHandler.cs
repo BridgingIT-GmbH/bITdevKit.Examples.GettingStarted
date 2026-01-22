@@ -5,9 +5,7 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
-using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Events;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using MediatR;
 using Microsoft.Extensions.Logging;
 
 /// <summary>

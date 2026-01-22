@@ -1,10 +1,6 @@
 ---
 name: review-code
-description: Perform comprehensive C#/.NET code reviews focusing on clean code, security, testing, performance, and documentation
-globs:
-  - "**/*.cs"
-  - "**/*.csproj"
-alwaysApply: false
+description: Perform comprehensive csharp/dotnet code reviews focusing on clean code, security, testing, performance, and documentation
 ---
 
 # Code Review - C# and .NET

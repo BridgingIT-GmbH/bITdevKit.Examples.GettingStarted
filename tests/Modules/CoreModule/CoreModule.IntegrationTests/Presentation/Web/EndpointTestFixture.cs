@@ -7,7 +7,6 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Integrati
 
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using BridgingIT.DevKit.Domain.Repositories;
 
 [CollectionDefinition(nameof(EndpointCollection))]

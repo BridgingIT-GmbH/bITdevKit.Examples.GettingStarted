@@ -4,9 +4,6 @@
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
 /// <summary>
 /// Represents a unique customer number in the format CUS-YYYY-NNNNNN.
 /// </summary>

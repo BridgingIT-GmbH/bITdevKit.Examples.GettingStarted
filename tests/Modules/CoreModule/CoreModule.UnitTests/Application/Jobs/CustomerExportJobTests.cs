@@ -5,7 +5,6 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application;
 
-using BridgingIT.DevKit.Application.JobScheduling;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Quartz;

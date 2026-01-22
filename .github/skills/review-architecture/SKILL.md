@@ -1,10 +1,6 @@
 ---
 name: review-architecture
 description: Verify DDD patterns, Clean Architecture boundaries, and bITdevKit-specific conventions in modular monolith projects
-globs:
-  - "src/Modules/**/*.cs"
-  - "tests/**/*.cs"
-alwaysApply: false
 ---
 
 # Architecture Review Skill (DDD + Clean Architecture)

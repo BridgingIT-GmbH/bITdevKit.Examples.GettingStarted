@@ -4,10 +4,6 @@
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-
-using BridgingIT.DevKit.Domain;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
 /// <summary>
 /// Represents a customer address entity with location details and primary designation.
 /// </summary>
