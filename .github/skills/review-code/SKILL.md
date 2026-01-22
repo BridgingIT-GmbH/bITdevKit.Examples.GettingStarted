@@ -257,7 +257,7 @@ Use these checklists for systematic code review:
 **Focus Areas**:
 
 - ✅ XML documentation on public APIs (🔴 MANDATORY - `<summary>`, `<param>`, `<returns>`)
-- ✅ Exception documentation (`<exception>` tags)
+- ✅ Exception documentation (`<exception>` tags) only for public methods and methods that throw and do not return a Result<T> or Result
 - ✅ Complex logic comments (explain WHY, not WHAT)
 - ✅ README updates (document new features)
 - ✅ API documentation (OpenAPI/Swagger summaries)

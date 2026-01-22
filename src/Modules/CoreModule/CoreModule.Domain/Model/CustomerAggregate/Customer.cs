@@ -199,7 +199,6 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     public Result<Customer> RemoveAddress(AddressId id)
     {
         return this.Change()
-            //.When(_ => id != null)
             .RemoveById(e => this.addresses, id, error: Errors.Domain.EntityNotFound())
             .Register(e => new CustomerUpdatedDomainEvent(e))
             .Apply();
@@ -208,7 +207,6 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     public Result<Customer> SetPrimaryAddress(AddressId id)
     {
         return this.Change()
-            //.When(_ => id != null)
             .Ensure(_ => this.addresses.Any(a => a.Id == id), Errors.Domain.EntityNotFound())
             .Set(e => e.addresses, a => a.SetPrimary(a.Id == id))
             .Register(e => new CustomerUpdatedDomainEvent(e))
@@ -217,7 +215,8 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
 
     public Result<Address> FindAddress(AddressId id)
     {
-        return this.addresses.AsEnumerable().Find(e => e.Id == id)
+        return this.addresses
+            .Find(e => e.Id == id)
             .Match(
                 some: Result<Address>.Success,
                 none: () => Result<Address>.Failure()
@@ -238,9 +237,8 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// <returns>The updated <see cref="Customer"/> wrapped in a Result.</returns>
     public Result<Customer> ChangeAddress(AddressId id, string name, string line1, string line2, string postalCode, string city, string country)
     {
-        return this.FindAddress(id).Bind(e => e
-            .Change()
-                .Ensure(_ => !this.HasDuplicateAddress(name, line1, postalCode, city, country,id), Errors.Validation.Duplicate())
+        return this.FindAddress(id).Bind(e => e.Change()
+                .Ensure(_ => !this.HasDuplicateAddress(name, line1, postalCode, city, country, id), Errors.Validation.Duplicate())
                 .Set(e => e.ChangeName(name))
                 .Set(e => e.ChangeLine1(line1))
                 .Set(e => e.ChangeLine2(line2))
