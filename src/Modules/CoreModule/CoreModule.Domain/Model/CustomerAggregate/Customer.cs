@@ -78,23 +78,17 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// </summary>
     /// <param name="firstName">The first name of the customer.</param>
     /// <param name="lastName">The last name of the customer.</param>
-    /// <param name="email">The email address of the customer.</param>
+    /// <param name="email">The validated <see cref="EmailAddress"/> of the customer.</param>
     /// <param name="number">The number of the customer.</param>
     /// <returns>A new <see cref="Customer"/> instance.</returns>
-    public static Result<Customer> Create(string firstName, string lastName, string email, CustomerNumber number) // TODO: the email should be EmailAddress type directly
+    public static Result<Customer> Create(string firstName, string lastName, EmailAddress email, CustomerNumber number)
     {
-        var emailAddressResult = EmailAddress.Create(email);
-        if (emailAddressResult.IsFailure)
-        {
-            return emailAddressResult.Unwrap();
-        }
-
         return Result<Customer>.Success()
             .Ensure(_ => !string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName), Errors.Validation.Error(Resources.Validator_NameBothFirstAndLastRequired, nameof(firstName)))
             .Ensure(_ => lastName != "notallowed", Errors.Validation.Error(Resources.Validator_NotAllowedValue, nameof(lastName)))
             .Ensure(_ => email != null, Errors.Validation.Error(Resources.Validator_MustNotBeEmpty, nameof(email)))
             .Ensure(_ => number != null, Errors.Validation.Error(Resources.Validator_MustNotBeEmpty, nameof(number)))
-            .Bind(_ => new Customer(firstName, lastName, emailAddressResult.Value, number))
+            .Bind(_ => new Customer(firstName, lastName, email, number))
             .Tap(e => e.DomainEvents
                 .Register(new CustomerCreatedDomainEvent(e))
                 .Register(new EntityCreatedDomainEvent<Customer>(e)));
@@ -123,10 +117,11 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
     /// </summary>
     /// <param name="email">The new email address.</param>
     /// <returns>The updated <see cref="Customer"/> wrapped in a Result.</returns>
-    public Result<Customer> ChangeEmail(string email)
+    public Result<Customer> ChangeEmail(EmailAddress email)
     {
         return this.Change()
-            .Set(e => e.Email, EmailAddress.Create(email))
+            .Ensure(_ => email != null, Errors.Validation.Error(Resources.Validator_MustNotBeEmpty, nameof(email)))
+            .Set(e => e.Email, email)
             .Register(e => new CustomerUpdatedDomainEvent(e))
             .Apply();
     }
@@ -245,8 +240,7 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
                 .Set(e => e.ChangePostalCode(postalCode))
                 .Set(e => e.ChangeCity(city))
                 .Set(e => e.ChangeCountry(country))
-                .Register(e => new CustomerUpdatedDomainEvent(this), this) // TODO: the event should register on the Customer aggregate, not the Address entity
-                //.Register(c, e=> new CustomerUpdatedDomainEvent(this))
+                .Register(e => new CustomerUpdatedDomainEvent(this), this)
                 .Apply().Wrap(this));
     }
 

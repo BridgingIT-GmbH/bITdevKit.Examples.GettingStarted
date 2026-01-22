@@ -83,24 +83,24 @@ public class CustomerCreateCommandHandler(
 
     private Result<CustomerCreateContext> CreateAggregate(CustomerCreateContext ctx)
     {
-        return Customer
-            .Create(ctx.Model.FirstName, ctx.Model.LastName, ctx.Model.Email, ctx.Number)
-            // Apply additional properties
-            .When(ctx.Model.Status != null, r => r
-                .Bind(e => e.ChangeStatus(ctx.Model.Status)))
-            .When(ctx.Model.DateOfBirth.HasValue, r => r
-                .Bind(e => e.ChangeBirthDate(ctx.Model.DateOfBirth.Value)))
-            .When(ctx.Model.Addresses.SafeAny(), r => r
-                .Bind(e =>
-                {
-                    foreach (var addressModel in ctx.Model.Addresses)
+        return EmailAddress.Create(ctx.Model.Email)
+            .Bind(email => Customer
+                .Create(ctx.Model.FirstName, ctx.Model.LastName, email, ctx.Number)
+                // Apply additional properties
+                .When(ctx.Model.Status != null, r => r
+                    .Bind(e => e.ChangeStatus(ctx.Model.Status)))
+                .When(ctx.Model.DateOfBirth.HasValue, r => r
+                    .Bind(e => e.ChangeBirthDate(ctx.Model.DateOfBirth.Value)))
+                .When(ctx.Model.Addresses.SafeAny(), r => r
+                    .Bind(e =>
                     {
-                        r.Bind(e => e.AddAddress(addressModel.Name, addressModel.Line1, addressModel.Line2, addressModel.PostalCode, addressModel.City, addressModel.Country));
-                    }
+                        foreach (var addressModel in ctx.Model.Addresses)
+                        {
+                            r.Bind(e => e.AddAddress(addressModel.Name, addressModel.Line1, addressModel.Line2, addressModel.PostalCode, addressModel.City, addressModel.Country));
+                        }
 
-                    return r;
-                }))
-            // Capture in context
+                        return r;
+                    })))
             .Map(customer =>
             {
                 ctx.Entity = customer;

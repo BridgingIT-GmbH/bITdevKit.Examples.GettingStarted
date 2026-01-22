@@ -176,6 +176,34 @@ public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreM
         response.Value.Email.ShouldBe("john.newemail@example.com");
     }
 
+    /// <summary>Verifies successful email address update.</summary>
+    [Fact]
+    public async Task Process_UpdateInvalidEmailAddress_FailureResult()
+    {
+        // Arrange
+        var requester = this.ServiceProvider.GetService<IRequester>();
+        var repository = this.ServiceProvider.GetService<IGenericRepository<Customer>>();
+
+        var customer = Customer.Create("John", "Doe", "john.oldemail@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var inserted = await repository.InsertAsync(customer, CancellationToken.None);
+
+        var command = new CustomerUpdateCommand(
+            new CustomerModel
+            {
+                Id = inserted.Id.Value.ToString(),
+                FirstName = "John",
+                LastName = "Doe",
+                Email = "invalid-email",
+                ConcurrencyVersion = inserted.ConcurrencyVersion.ToString()
+            });
+
+        // Act
+        var response = await requester.SendAsync(command, null, CancellationToken.None);
+
+        // Assert
+        response.ShouldBeFailure();
+    }
+
     /// <summary>Verifies successful update of multiple customer fields simultaneously.</summary>
     [Fact]
     public async Task Process_UpdateMultipleFields_SuccessResult()

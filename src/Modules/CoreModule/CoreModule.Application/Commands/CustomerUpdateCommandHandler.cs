@@ -74,7 +74,7 @@ public class CustomerUpdateCommandHandler(
         // Setup the customer update chain.
         Result<Customer>.Success(customer)
             .Bind(e => e.ChangeName(model.FirstName, model.LastName))
-            .Bind(e => e.ChangeEmail(model.Email))
+            .Bind(e => EmailAddress.Create(model.Email).Bind(email => e.ChangeEmail(email)))
             .Bind(e => e.ChangeBirthDate(model.DateOfBirth))
             .Bind(e => e.ChangeStatus(model.Status))
             .Bind(e => this.ChangeAddresses(customer, model))

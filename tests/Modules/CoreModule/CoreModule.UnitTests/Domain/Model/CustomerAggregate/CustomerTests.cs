@@ -16,9 +16,10 @@ public class CustomerTests
     {
         // Arrange
         var number = CustomerNumber.Create("CUS-2026-100000").Value;
+        var email = EmailAddress.Create("john.doe@example.com").Value;
 
         // Act
-        var result = Customer.Create("John", "Doe", "john.doe@example.com", number);
+        var result = Customer.Create("John", "Doe", email, number);
 
         // Assert
         result.ShouldBeSuccess();
@@ -31,25 +32,6 @@ public class CustomerTests
     }
 
     /// <summary>
-    /// Ensures invalid email inputs cause creation failure.
-    /// </summary>
-    [Theory]
-    [InlineData("invalid-email")]
-    [InlineData("")]
-    [InlineData("   ")] // whitespace
-    public void Create_WithInvalidEmail_ReturnsFailureResult(string email)
-    {
-        // Arrange
-        var number = CustomerNumber.Create("CUS-2026-100000").Value;
-
-        // Act
-        var result = Customer.Create("John", "Doe", email, number);
-
-        // Assert
-        result.IsFailure.ShouldBeTrue();
-    }
-
-    /// <summary>
     /// Confirms changing name updates both first and last names for valid input.
     /// </summary>
     [Theory]
@@ -58,7 +40,7 @@ public class CustomerTests
     public void ChangeName_WithValidNewNames_UpdatesNames(string newFirst, string newLast)
     {
         // Arrange
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var customer = Customer.Create("John", "Doe", EmailAddress.Create("john.doe@example.com").Value, CustomerNumber.Create("CUS-2026-100000").Value).Value;
 
         // Act
         var result = customer.ChangeName(newFirst, newLast);
@@ -80,7 +62,7 @@ public class CustomerTests
     public void ChangeName_WithNoNamesProvided_ReturnsFailureResult(string first, string last)
     {
         // Arrange
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var customer = Customer.Create("John", "Doe", EmailAddress.Create("john.doe@example.com").Value, CustomerNumber.Create("CUS-2026-100000").Value).Value;
 
         // Act
         var result = customer.ChangeName(first, last);
@@ -98,33 +80,15 @@ public class CustomerTests
     public void ChangeEmail_WithValidEmail_UpdatesEmail(string newEmail)
     {
         // Arrange
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var customer = Customer.Create("John", "Doe", EmailAddress.Create("john.doe@example.com").Value, CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var newEmailAddress = EmailAddress.Create(newEmail).Value;
 
         // Act
-        var result = customer.ChangeEmail(newEmail);
+        var result = customer.ChangeEmail(newEmailAddress);
 
         // Assert
         result.ShouldBeSuccess();
         customer.Email.Value.ShouldBe(newEmail);
-    }
-
-    /// <summary>
-    /// Ensures invalid email inputs cause email change failure.
-    /// </summary>
-    [Theory]
-    [InlineData("")]
-    [InlineData("invalid-email")]
-    [InlineData("   ")]
-    public void ChangeEmail_WithInvalidEmail_ReturnsFailureResult(string newEmail)
-    {
-        // Arrange
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
-
-        // Act
-        var result = customer.ChangeEmail(newEmail);
-
-        // Assert
-        result.IsFailure.ShouldBeTrue();
     }
 
     /// <summary>
@@ -134,7 +98,7 @@ public class CustomerTests
     public void ChangeBirthDate_WithValidPastDate_UpdatesDate()
     {
         // Arrange
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var customer = Customer.Create("John", "Doe", EmailAddress.Create("john.doe@example.com").Value, CustomerNumber.Create("CUS-2026-100000").Value).Value;
         var date = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-20));
 
         // Act
@@ -152,7 +116,7 @@ public class CustomerTests
     public void ChangeBirthDate_WithFutureDate_ReturnsFailureResult()
     {
         // Arrange
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var customer = Customer.Create("John", "Doe", EmailAddress.Create("john.doe@example.com").Value, CustomerNumber.Create("CUS-2026-100000").Value).Value;
         var futureDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1));
 
         // Act
@@ -171,7 +135,7 @@ public class CustomerTests
     public void ChangeStatus_WithValidStatus_UpdatesStatus(string statusName)
     {
         // Arrange
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var customer = Customer.Create("John", "Doe", EmailAddress.Create("john.doe@example.com").Value, CustomerNumber.Create("CUS-2026-100000").Value).Value;
         var status = statusName switch
         {
             nameof(CustomerStatus.Active) => CustomerStatus.Active,
@@ -194,7 +158,7 @@ public class CustomerTests
     public void ChangeStatus_WithNullStatus_DoesNotChange()
     {
         // Arrange
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var customer = Customer.Create("John", "Doe", EmailAddress.Create("john.doe@example.com").Value, CustomerNumber.Create("CUS-2026-100000").Value).Value;
 
         // Act
         var result = customer.ChangeStatus(null);
@@ -211,7 +175,7 @@ public class CustomerTests
     public void ChangeName_WithSameValues_DoesNotChange()
     {
         // Arrange
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var customer = Customer.Create("John", "Doe", EmailAddress.Create("john.doe@example.com").Value, CustomerNumber.Create("CUS-2026-100000").Value).Value;
 
         // Act
         var result = customer.ChangeName("John", "Doe");
@@ -220,23 +184,6 @@ public class CustomerTests
         result.ShouldBeSuccess();
         customer.FirstName.ShouldBe("John");
         customer.LastName.ShouldBe("Doe");
-    }
-
-    /// <summary>
-    /// Ensures no-op email change returns success and retains original email.
-    /// </summary>
-    [Fact]
-    public void ChangeEmail_WithSameValue_DoesNotChange()
-    {
-        // Arrange
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
-
-        // Act
-        var result = customer.ChangeEmail("john.doe@example.com");
-
-        // Assert
-        result.ShouldBeSuccess();
-        customer.Email.Value.ShouldBe("john.doe@example.com");
     }
 
     /// <summary>
@@ -250,7 +197,7 @@ public class CustomerTests
     public void AddAddress_WithMissingRequiredFields_ReturnsFailure(string line1, string city, string country)
     {
         // Arrange
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var customer = Customer.Create("John", "Doe", EmailAddress.Create("john.doe@example.com").Value, CustomerNumber.Create("CUS-2026-100000").Value).Value;
 
         // Act
         var result = customer.AddAddress("Home", line1, null, "12345", city, country);
@@ -266,7 +213,7 @@ public class CustomerTests
     public void RemoveAddress_WithValidId_RemovesAddress()
     {
         // Arrange
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var customer = Customer.Create("John", "Doe", EmailAddress.Create("john.doe@example.com").Value, CustomerNumber.Create("CUS-2026-100000").Value).Value;
         customer.AddAddress("Home", "123 Main St", null, "12345", "New York", "USA");
         var addressId = customer.Addresses.First().Id;
 
@@ -285,7 +232,7 @@ public class CustomerTests
     public void RemoveAddress_WithInvalidId_ReturnsFailure()
     {
         // Arrange
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var customer = Customer.Create("John", "Doe", EmailAddress.Create("john.doe@example.com").Value, CustomerNumber.Create("CUS-2026-100000").Value).Value;
         customer.AddAddress("Home", "123 Main St", null, "12345", "New York", "USA");
         var invalidAddressId = AddressId.Create(Guid.NewGuid());
 
@@ -303,7 +250,7 @@ public class CustomerTests
     public void ChangeAddress_WithValidData_UpdatesAllProperties()
     {
         // Arrange
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var customer = Customer.Create("John", "Doe", EmailAddress.Create("john.doe@example.com").Value, CustomerNumber.Create("CUS-2026-100000").Value).Value;
         customer.AddAddress("Home", "123 Main St", "Apt 4B", "12345", "New York", "USA");
         var addressId = customer.Addresses.First().Id;
 
@@ -328,7 +275,7 @@ public class CustomerTests
     public void ChangeAddress_WithInvalidRequiredFields_ReturnsFailure()
     {
         // Arrange
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var customer = Customer.Create("John", "Doe", EmailAddress.Create("john.doe@example.com").Value, CustomerNumber.Create("CUS-2026-100000").Value).Value;
         customer.AddAddress("Home", "123 Main St", null, "12345", "New York", "USA");
         var addressId = customer.Addresses.First().Id;
 
@@ -346,7 +293,7 @@ public class CustomerTests
     public void ChangeAddress_WithInvalidId_ReturnsFailure()
     {
         // Arrange
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var customer = Customer.Create("John", "Doe", EmailAddress.Create("john.doe@example.com").Value, CustomerNumber.Create("CUS-2026-100000").Value).Value;
         customer.AddAddress("Home", "123 Main St", null, "12345", "New York", "USA");
         var invalidAddressId = AddressId.Create(Guid.NewGuid());
 
@@ -364,7 +311,7 @@ public class CustomerTests
     public void Customer_WithNoAddresses_HasEmptyCollection()
     {
         // Arrange & Act
-        var customer = Customer.Create("John", "Doe", "john.doe@example.com", CustomerNumber.Create("CUS-2026-100000").Value).Value;
+        var customer = Customer.Create("John", "Doe", EmailAddress.Create("john.doe@example.com").Value, CustomerNumber.Create("CUS-2026-100000").Value).Value;
 
         // Assert
         customer.Addresses.ShouldBeEmpty();

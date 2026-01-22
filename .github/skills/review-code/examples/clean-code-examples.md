@@ -299,13 +299,13 @@ public Result ProcessCustomer(Customer customer)
 {
     if (customer == null)
         return Result.Failure("Customer is null");
-    
+
     if (!customer.IsActive)
         return Result.Failure("Customer is not active");
-    
+
     if (customer.Email == null)
         return Result.Failure("Email is required");
-    
+
     // Actual processing logic at base level (no nesting)
     return SendEmail(customer.Email);
 }
@@ -336,7 +336,7 @@ public class Customer
 public class Customer
 {
     private Customer() { } // For ORM
-    
+
     private Customer(string firstName, string lastName, EmailAddress email)
     {
         this.FirstName = firstName;
@@ -344,38 +344,38 @@ public class Customer
         this.Email = email;
         this.Status = CustomerStatus.Lead; // Default state
     }
-    
+
     public Guid Id { get; private set; }
     public string FirstName { get; private set; }
     public string LastName { get; private set; }
     public EmailAddress Email { get; private set; }
     public CustomerStatus Status { get; private set; }
-    
+
     // Factory method with validation
     public static Result<Customer> Create(string firstName, string lastName, string email)
     {
         var emailResult = EmailAddress.Create(email);
         if (emailResult.IsFailure)
             return emailResult.Unwrap();
-        
+
         return Result<Customer>.Success()
             .Ensure(_ => !string.IsNullOrWhiteSpace(firstName), new ValidationError("First name required"))
             .Ensure(_ => !string.IsNullOrWhiteSpace(lastName), new ValidationError("Last name required"))
             .Bind(_ => new Customer(firstName, lastName, emailResult.Value));
     }
-    
+
     // Change method with business logic
     public Result Activate()
     {
         if (this.Status == CustomerStatus.Active)
             return Result.Failure(new BusinessRuleError("Customer is already active"));
-        
+
         if (this.Email == null)
             return Result.Failure(new ValidationError("Cannot activate customer without email"));
-        
+
         this.Status = CustomerStatus.Active;
         this.DomainEvents.Register(new CustomerActivatedDomainEvent(this));
-        
+
         return Result.Success();
     }
 }
@@ -427,7 +427,7 @@ public int GetOrderCount(Customer customer) =>
 // 🟢 SUGGESTION: String concatenation
 public string GetCustomerSummary(Customer customer)
 {
-    return "Customer: " + customer.FirstName + " " + customer.LastName + 
+    return "Customer: " + customer.FirstName + " " + customer.LastName +
            " (Email: " + customer.Email.Value + ")";
 }
 
@@ -485,7 +485,7 @@ public class CustomerService
 {
     private readonly IGenericRepository<Customer> repository;
     private readonly IMapper mapper;
-    
+
     public CustomerService(
         IGenericRepository<Customer> repository,
         IMapper mapper)
@@ -502,7 +502,7 @@ public class CustomerService(
 {
     // Fields automatically created and assigned
     // Can reference repository and mapper directly
-    
+
     public async Task<Result<Customer>> GetCustomerAsync(Guid id)
     {
         return await repository.FindOneAsync(id);
@@ -514,19 +514,20 @@ public class CustomerService(
 
 Clean code examples demonstrate project standards:
 
-✅ **File-scoped namespaces** (🔴 CRITICAL - MANDATORY via `.editorconfig`)  
-✅ **Var usage everywhere** (🔴 CRITICAL - MANDATORY via `.editorconfig`)  
-✅ **Using directives inside namespace** (🔴 CRITICAL - MANDATORY via `.editorconfig`)  
-✅ **Expression-bodied members** (🟢 SUGGESTION - for simple methods/properties)  
-✅ **Pattern matching** (🟢 SUGGESTION - for type checks, switch expressions)  
-✅ **Guard clauses** (🟢 SUGGESTION - early returns reduce nesting)  
-✅ **Private setters** (🟡 IMPORTANT - encapsulation, business rules in change methods)  
-✅ **Null-conditional operators** (🟢 SUGGESTION - safe null handling with `?.`, `??`)  
-✅ **String interpolation** (🟢 SUGGESTION - `$""` over concatenation)  
-✅ **Collection expressions** (🟢 SUGGESTION - C# 12+ `[...]` syntax)  
-✅ **Primary constructors** (🟢 SUGGESTION - C# 12+ cleaner dependency injection)  
+✅ **File-scoped namespaces** (🔴 CRITICAL - MANDATORY via `.editorconfig`)
+✅ **Var usage everywhere** (🔴 CRITICAL - MANDATORY via `.editorconfig`)
+✅ **Using directives inside namespace** (🔴 CRITICAL - MANDATORY via `.editorconfig`)
+✅ **Expression-bodied members** (🟢 SUGGESTION - for simple methods/properties)
+✅ **Pattern matching** (🟢 SUGGESTION - for type checks, switch expressions)
+✅ **Guard clauses** (🟢 SUGGESTION - early returns reduce nesting)
+✅ **Private setters** (🟡 IMPORTANT - encapsulation, business rules in change methods)
+✅ **Null-conditional operators** (🟢 SUGGESTION - safe null handling with `?.`, `??`)
+✅ **String interpolation** (🟢 SUGGESTION - `$""` over concatenation)
+✅ **Collection expressions** (🟢 SUGGESTION - C# 12+ `[...]` syntax)
+✅ **Primary constructors** (🟢 SUGGESTION - C# 12+ cleaner dependency injection)
 
 **Reference to actual codebase patterns**:
+
 - **File-scoped namespace**: See `EmailAddress.cs:6`, `Customer.cs:6`
 - **Private setters**: See `Customer.cs:40-65`
 - **Factory methods**: See `Customer.Create:86-99`, `EmailAddress.Create:69-84`
