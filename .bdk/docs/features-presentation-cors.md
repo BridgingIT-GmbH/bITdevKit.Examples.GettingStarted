@@ -686,3 +686,4 @@ Ensure `DefaultPolicy` name matches a policy in `Policies`:
 | Multiple subdomains | `AllowWildcardSubdomains: true` with base domain |
 | Development | `AllowedOrigins` with localhost ports, `AllowCredentials: true` |
 | Microservices | Named policies per service, no default policy |
+

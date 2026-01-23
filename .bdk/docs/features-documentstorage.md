@@ -1,4 +1,4 @@
-# Messaging Feature Documentation
+# DocumentStorage Feature Documentation
 
 [TOC]
 

@@ -26,16 +26,13 @@ sequenceDiagram
 ```
 
 ## Challenges
-
 - Managing the order of initialization tasks
 - Handling task failures gracefully
 - Configuring different behaviors for development and production environments
 - Controlling task execution timing and delays
 
 ## Solution
-
 The StartupTasks feature solves these challenges by providing:
-
 - A flexible configuration system
 - Task execution ordering
 - Environment-specific task enabling/disabling
@@ -43,7 +40,6 @@ The StartupTasks feature solves these challenges by providing:
 - Built-in logging and error handling
 
 ## Use Cases
-
 - Database seeding for development environments
 - System configuration validation
 - Initial data caching
@@ -53,7 +49,6 @@ The StartupTasks feature solves these challenges by providing:
 ## Usage
 
 ### Basic Setup
-
 Add startup tasks to your application in `Program.cs`:
 
 ```csharp
@@ -66,7 +61,6 @@ builder.Services.AddStartupTasks(o => o
 ```
 
 ### Creating a Startup Task
-
 Implement the `IStartupTask` interface:
 
 ```csharp
@@ -91,7 +85,6 @@ public class DatabaseSeederTask : IStartupTask
 ```
 
 ### Configuration Options
-
 Tasks can be configured with various options:
 
 ```csharp
@@ -106,7 +99,6 @@ builder.Services.AddStartupTasks()
 ```
 
 ### Adding Behaviors
-
 Add behaviors to modify task execution:
 
 ```csharp
