@@ -1,0 +1,22 @@
+{
+  "name": "bdk-tui",
+  "version": "0.1.0",
+  "description": "Terminal UI for bITdevKit development tasks",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "build": "bun build --compile --outfile bin/bdk-tui src/index.ts",
+    "start": "bun run src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@opentui/core": "^0.1.75",
+    "enquirer": "^2.4.1"
+  }
+}
