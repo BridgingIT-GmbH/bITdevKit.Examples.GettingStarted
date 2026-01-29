@@ -82,7 +82,7 @@ Inform them clarifying questions will be asked once they've done their initial d
 
 - If user mentions team channels or shared documents:
   - If integrations available: Inform them the content will be read now, then use the appropriate integration
-  - If integrations not available: Explain lack of access. Suggest they enable connectors in Claude settings, or paste the relevant content directly.
+  - If integrations not available: Explain lack of access. Suggest they enable connectors in the Agent settings, or paste the relevant content directly.
 
 - If user mentions entities/projects that are unknown:
   - Ask if connected tools should be searched to learn more
@@ -138,7 +138,7 @@ Ask if this structure works, or if they want to adjust it.
 Create the initial document structure with placeholder text for all sections.
 
 **If access to artifacts is available:**
-Use `create_file` to create an artifact. This gives both Claude and the user a scaffold to work from.
+Use `create_file` to create an artifact. This gives both the Agent and the user a scaffold to work from.
 
 Inform them that the initial structure with placeholders for all sections will be created.
 
