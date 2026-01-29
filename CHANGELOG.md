@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Git Commit Skill**: New developer skill for creating conventional commits with automatic type/scope analysis, intelligent staging, and standardized message generation following the Conventional Commits specification
+- **Agent Skills Usage Policy**: Comprehensive guidelines in AGENTS.md documenting when and how to use available skills, with clear priority order to ensure consistent use of standardized workflows
 - **Value Object Creator Skill**: New developer skill for creating domain value objects with validation, equality, and Result<T> pattern following DDD principles
 - **Document Co-authoring Skill**: Interactive workflow skill to guide collaborative documentation creation through structured refinement and verification
 - **Development Container Support**: Added devcontainer configuration for consistent development environment setup
