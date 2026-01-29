@@ -20,6 +20,46 @@ This document provides AI agents with concise, high-signal context about this re
 - Use existing devkit features (requester, notifier, pipeline behaviors) instead of re-inventing infrastructure.
 - Produce testable changes with unit/integration tests where meaningful.
 
+## Agent Skills
+
+**IMPORTANT**: This project uses Agent Skills to provide specialized, standardized workflows for common tasks.
+
+### Skills Usage Policy
+
+- **ALWAYS check for and use available skills** when the user's request matches a skill's description.
+- Skills are located in `.github/skills/` and `.opencode/skills/` directories.
+- Each skill provides a tested, standardized approach to specific tasks.
+- Using skills ensures consistency, follows best practices, and reduces errors.
+
+### Available Skills
+
+Skills may include (but are not limited to):
+- `git-commit`: Create conventional commits with proper type/scope analysis
+- `value-object-creator`: Generate domain value objects with validation
+- `review-code`: Comprehensive code review for C#/.NET projects
+- `review-architecture`: Verify DDD and Clean Architecture patterns
+- `nuget-manager`: Manage NuGet packages safely
+- `mermaid-diagrams`: Create software diagrams
+- `domain-add-aggregate`: Add new domain aggregates with full CRUD
+- `doc-coauthoring`: Structured documentation workflow
+- `changelog-generator`: Generate changelogs from git history
+- `adr-writer`: Write Architectural Decision Records
+
+### When to Use Skills
+
+- When a user request explicitly matches a skill's purpose (e.g., "commit changes" → use `git-commit` skill)
+- When performing tasks that have established workflows (e.g., adding aggregates, reviewing code)
+- Before manually implementing any workflow, check if a skill exists for it
+- **Default to using skills over ad-hoc manual approaches**
+
+### Skill Priority
+
+1. **First**: Check if a skill exists for the task
+2. **Second**: Load and follow the skill's workflow
+3. **Last Resort**: Only use manual approaches when no skill exists
+
+This ensures all agents follow the same high-quality, tested patterns that the project relies on.
+
 ## Coding Standards
 
 - Please follow the rules in [.editorconfig](./.editorconfig).
