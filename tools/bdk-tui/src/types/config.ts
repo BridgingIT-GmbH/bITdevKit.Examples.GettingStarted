@@ -15,4 +15,5 @@ export interface BdkConfig {
   containerPrefix: string;
   registryHost: string;
   networkName: string;
+  solutionFile: string;
 }

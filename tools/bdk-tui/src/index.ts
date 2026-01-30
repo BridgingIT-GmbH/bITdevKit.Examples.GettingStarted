@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 // BDK TUI - Terminal User Interface for bITdevKit tasks
 
-import { loadConfig } from './core/config';
+import { loadConfig, selectSolution } from './core/config';
 import { getCategories, getTasksByCategory, getTaskByKey } from './tasks/registry';
 import { colors, box, success, info, bold, dim, center, symbols } from './ui/theme';
 
@@ -25,10 +25,27 @@ try {
   config = loadConfig();
   console.log(`${success(symbols.success)} Config loaded`);
   console.log(`${success(symbols.success)} Root: ${dim(config.rootPath)}`);
+  
+  // Display solution file if set
+  if (config.solutionFile) {
+    console.log(`${success(symbols.success)} Solution: ${dim(config.solutionFile)}`);
+  }
+  
   console.log('');
 } catch (error) {
   console.error(`${error(symbols.error)} Failed to load config: ${error}`);
   process.exit(1);
+}
+
+// If no solution is cached and multiple exist, prompt for selection
+if (!config.solutionFile) {
+  try {
+    config.solutionFile = await selectSolution(config.rootPath, (line) => {
+      console.log(line);
+    });
+  } catch (error) {
+    console.warn(`${info(symbols.warning)} Could not auto-select solution: ${error}`);
+  }
 }
 
 // Check for direct task execution
