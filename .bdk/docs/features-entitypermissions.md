@@ -396,4 +396,3 @@ permissions.ForEach(p => Console.WriteLine($"{p.Permission} from {p.Source}"));
 ```
 [CEO: Read] --> [Manager: Write, Delete(Admins)] --> [Employee: Read, Write, Delete(Admins)]
 ```
-
