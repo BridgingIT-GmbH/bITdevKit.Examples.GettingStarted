@@ -202,7 +202,7 @@ export function loadConfig(solutionFile?: string): BdkConfig {
     dockerDbConnectionString: settings.DOCKER_DB_CONNECTIONSTRING || '',
     containerPrefix: settings.CONTAINER_PREFIX || 'bit-devkit-gettingstarted',
     registryHost: settings.REGISTRY_HOST || 'localhost:5000',
-    networkName: settings.NETWORK_NAME || 'bit-devkit-network',
+    networkName: settings.NETWORK_NAME || 'bit_devkit_gettingstarted',
     solutionFile: solutionFile || '',
   };
 }
