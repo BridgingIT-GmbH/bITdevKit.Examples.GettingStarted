@@ -1661,7 +1661,7 @@
             "example": true
           }
         },
-        "description": "Data transfer object (DTO) representing a customer address.\r\nUsed by the application and presentation layers to expose address details to clients."
+        "description": "Data transfer object (DTO) representing a customer address.\nUsed by the application and presentation layers to expose address details to clients."
       },
       "CustomerModel": {
         "type": "object",
@@ -1695,7 +1695,7 @@
               "null",
               "string"
             ],
-            "description": "Gets or sets the customer number in format CUS-YYYY-NNNNNN (e.g., CUS-2024-100000).\r\nThis is a system-generated sequential identifier unique per year.",
+            "description": "Gets or sets the customer number in format CUS-YYYY-NNNNNN (e.g., CUS-2024-100000).\nThis is a system-generated sequential identifier unique per year.",
             "example": "CUS-2024-100000"
           },
           "dateOfBirth": {
@@ -1720,7 +1720,7 @@
               "null",
               "string"
             ],
-            "description": "Gets or sets the current status of the customer as a string value.\r\nValid values: \"Lead\", \"Active\", \"Retired\". See CustomerStatus enumeration for valid values.",
+            "description": "Gets or sets the current status of the customer as a string value.\nValid values: \"Lead\", \"Active\", \"Retired\". See CustomerStatus enumeration for valid values.",
             "example": "Active"
           },
           "concurrencyVersion": {
@@ -1728,7 +1728,7 @@
               "null",
               "string"
             ],
-            "description": "Gets or sets the concurrency version token (as a string Guid).\r\nUsed for optimistic concurrency control to prevent conflicting updates.\r\nMust be provided when updating to ensure the entity hasn't been modified by another operation.",
+            "description": "Gets or sets the concurrency version token (as a string Guid).\nUsed for optimistic concurrency control to prevent conflicting updates.\nMust be provided when updating to ensure the entity hasn't been modified by another operation.",
             "example": "8f7a9b2c-3d4e-5f6a-7b8c-9d0e1f2a3b4c"
           },
           "addresses": {
@@ -1742,7 +1742,7 @@
             "description": "Gets or sets the collection of addresses associated with this customer."
           }
         },
-        "description": "Data transfer object (DTO) representing a Customer.\r\nUsed by the application and presentation layers to expose Aggregate to clients."
+        "description": "Data transfer object (DTO) representing a Customer.\nUsed by the application and presentation layers to expose Aggregate to clients."
       },
       "CustomerUpdateStatusRequestModel": {
         "type": "object",
@@ -1752,7 +1752,7 @@
               "null",
               "string"
             ],
-            "description": "Gets or sets the new status value for the customer.\r\nValid values: \"Lead\", \"Active\", \"Retired\". See CustomerStatus enumeration for details.",
+            "description": "Gets or sets the new status value for the customer.\nValid values: \"Lead\", \"Active\", \"Retired\". See CustomerStatus enumeration for details.",
             "example": "Active"
           }
         },
