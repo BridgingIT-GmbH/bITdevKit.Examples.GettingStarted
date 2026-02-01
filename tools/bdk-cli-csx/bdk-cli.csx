@@ -5,7 +5,6 @@
 //        dotnet script bdk-cli.csx --help
 
 #r "nuget: Spectre.Console, 0.54.0"
-#r "nuget: Spectre.Console.ImageSharp, 0.54.0"
 
 using System;
 using System.Collections.Generic;
@@ -194,6 +193,8 @@ public class DotnetCli
     private readonly BdkConfig _config;
     private readonly string _solutionFile;
 
+    public string SolutionFile => _solutionFile;
+
     public DotnetCli(CommandExecutor executor, BdkConfig config, string workingDirectory)
     {
         _executor = executor;
@@ -201,18 +202,38 @@ public class DotnetCli
         _solutionFile = FindSolutionFile(workingDirectory);
     }
 
+    /// <summary>
+    /// Finds all solution files (.sln and .slnx) in the specified directory
+    /// </summary>
+    public static List<string> FindAllSolutionFiles(string directory)
+    {
+        var solutionFiles = new List<string>();
+        
+        // Find .sln files
+        solutionFiles.AddRange(
+            Directory.GetFiles(directory, "*.sln")
+                .Select(f => Path.GetFileName(f))
+        );
+        
+        // Find .slnx files
+        solutionFiles.AddRange(
+            Directory.GetFiles(directory, "*.slnx")
+                .Select(f => Path.GetFileName(f))
+        );
+        
+        return solutionFiles.OrderBy(f => f).ToList();
+    }
+
     private string FindSolutionFile(string directory)
     {
-        // Look for .sln or .slnx files
-        var slnFiles = Directory.GetFiles(directory, "*.sln");
-        if (slnFiles.Length > 0)
-            return Path.GetFileName(slnFiles[0]);
-
-        var slnxFiles = Directory.GetFiles(directory, "*.slnx");
-        if (slnxFiles.Length > 0)
-            return Path.GetFileName(slnxFiles[0]);
-
-        return "";
+        var solutionFiles = FindAllSolutionFiles(directory);
+        
+        if (solutionFiles.Count == 0)
+            return "";
+        
+        // Return the first one (alphabetically sorted)
+        // In interactive mode, we'll handle selection separately
+        return solutionFiles[0];
     }
 
     public Task<ExecutionResult> VersionAsync()
@@ -262,6 +283,7 @@ public class TaskContext
     public BdkConfig Config { get; set; } = null!;
     public DotnetCli DotnetCli { get; set; } = null!;
     public CommandExecutor Executor { get; set; } = null!;
+    public string SolutionFile { get; set; } = "";
 }
 
 public static class TaskRegistry
@@ -375,9 +397,12 @@ public class BdkUI
 
     public async Task RunInteractiveAsync()
     {
-        // Show header with ASCII art only once at startup
+        // Show header with ASCII art and solution selection
         Console.Clear();
         ShowStartupBanner();
+        
+        // Select solution file if multiple exist
+        await SelectSolutionFileAsync();
         
         while (true)
         {
@@ -390,6 +415,44 @@ public class BdkUI
             if (shouldExit)
                 break; // Exit was selected from submenu
         }
+    }
+
+    private async Task SelectSolutionFileAsync()
+    {
+        var solutionFiles = DotnetCli.FindAllSolutionFiles(Directory.GetCurrentDirectory());
+        
+        if (solutionFiles.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[yellow]Warning: No solution files (.sln or .slnx) found in repo root[/]");
+            AnsiConsole.WriteLine();
+            return;
+        }
+        
+        if (solutionFiles.Count == 1)
+        {
+            _context.SolutionFile = solutionFiles[0];
+            AnsiConsole.MarkupLine($"[green]✓ Solution:[/] {solutionFiles[0]}");
+            AnsiConsole.WriteLine();
+            return;
+        }
+        
+        // Multiple solutions found - let user select
+        AnsiConsole.MarkupLine("[yellow]Multiple solution files found:[/]");
+        AnsiConsole.WriteLine();
+        
+        var prompt = new SelectionPrompt<string>()
+            .Title("[cyan]Select a solution file:[/]")
+            .PageSize(10)
+            .AddChoices(solutionFiles);
+        
+        prompt.SearchEnabled = true;
+        prompt.WrapAround = true;
+        
+        var selectedSolution = AnsiConsole.Prompt(prompt);
+        _context.SolutionFile = selectedSolution;
+        
+        AnsiConsole.MarkupLine($"[green]✓ Selected:[/] {selectedSolution}");
+        AnsiConsole.WriteLine();
     }
 
     private async Task<bool> ShowTaskMenuLoopAsync(string category)
@@ -412,101 +475,39 @@ public class BdkUI
     {
         var repoName = Path.GetFileName(Directory.GetCurrentDirectory());
         
-        // Check if running in VS Code
-        var isVSCode = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("VSCODE_PID")) || 
-                       Environment.GetEnvironmentVariable("TERM_PROGRAM") == "vscode";
-        
-        if (isVSCode)
+        // Create BDK banner using FigletText
+        var figlet = new FigletText("BDK")
         {
-            // VS Code: Show ASCII art only
-            ShowAsciiArtBanner(repoName);
-        }
-        else
-        {
-            // Terminal: Try to show image, fallback to ASCII art if needed
-            try
-            {
-                ShowImageBanner(repoName);
-            }
-            catch (Exception ex)
-            {
-                // Fallback to ASCII art if image loading fails
-                AnsiConsole.MarkupLine($"[dim]Note: Could not load image ({ex.GetType().Name}), showing ASCII art instead[/]");
-                ShowAsciiArtBanner(repoName);
-            }
-        }
-    }
-
-    private void ShowAsciiArtBanner(string repoName)
-    {
-        var panel = new Panel(
-            Align.Left(
-                new Markup($@"[cyan]
-       ██╗      ██████╗ ██╗  ██╗
-       ╚██╗     ██╔══██╗██║ ██╔╝
-        ╚██╗    ██████╔╝█████╔╝ 
-        ██╔╝    ██╔══██╗██╔═██╗ 
-       ██╔╝     ██████╔╝██║  ██╗
-       ╚═╝      ╚═════╝ ╚═╝  ╚═╝[/]
-       
-       [white]{repoName}[/]
-       [dim]C# Script Edition[/]
-")))
-        {
-            Border = BoxBorder.Double,
-            BorderStyle = new Style(Color.DeepSkyBlue3),
-            Expand = true
+            Color = Color.Cyan,
+            Justification = Justify.Center
         };
         
-        AnsiConsole.Write(panel);
+        // Write the banner
+        AnsiConsole.Write(new Rule());
+        AnsiConsole.Write(figlet);
+        AnsiConsole.Write(new Rule());
         AnsiConsole.WriteLine();
-    }
-
-    private void ShowImageBanner(string repoName)
-    {
-        // Look for logo file in repository root (current directory is set to repoRoot)
-        var logoPath = "bITDevKit_Logo_dark.png";
-        var absoluteLogoPath = Path.GetFullPath(logoPath);
         
-        if (!File.Exists(absoluteLogoPath))
-        {
-            AnsiConsole.MarkupLine($"[yellow]Note: Logo file not found at {absoluteLogoPath}, showing ASCII art instead[/]");
-            ShowAsciiArtBanner(repoName);
-            return;
-        }
+        // Write project info
+        var info = new Panel(
+            new Align(
+                new Markup($@"[bold cyan]bITdevKit CLI[/]
 
-        try
-        {
-            // Create CanvasImage using the fluent API
-            var image = new CanvasImage(absoluteLogoPath)
-                .MaxWidth(40)
-                .BicubicResampler();
-
-            // Create layout with image on left and text on right
-            var grid = new Grid()
-                .AddColumn(new GridColumn().Width(45))
-                .AddColumn(new GridColumn().Width(30));
-
-            var info = new Panel(
-                Align.Left(
-                    new Markup($@"[white]{repoName}[/]
+[dim]{repoName}[/]
 [dim]C# Script Edition[/]
-[dim]bITdevKit Example Project[/]")))
-            {
-                Border = BoxBorder.None,
-                Padding = new Padding(1, 0, 0, 0)
-            };
 
-            grid.AddRow(image, info);
-            AnsiConsole.Write(grid);
-            AnsiConsole.WriteLine();
-        }
-        catch (Exception ex)
+[green]Press arrow keys to navigate[/]
+[green]Type to search options[/]"),
+                HorizontalAlignment.Center,
+                VerticalAlignment.Middle))
         {
-            // If image rendering fails, fallback to ASCII art
-            AnsiConsole.MarkupLine($"[dim]Image display failed ({ex.GetType().Name}), falling back to ASCII art[/]");
-            ShowAsciiArtBanner(repoName);
-        }
+            Border = BoxBorder.Rounded,
+            BorderStyle = new Style(Color.Cyan),
+            Padding = new Padding(2, 1, 2, 1)
+        };
+        
+        AnsiConsole.Write(info);
+        AnsiConsole.WriteLine();
     }
 
     private string ShowCategoryMenu()
@@ -613,7 +614,8 @@ var context = new TaskContext
 {
     Config = config,
     DotnetCli = dotnetCli,
-    Executor = executor
+    Executor = executor,
+    SolutionFile = dotnetCli.SolutionFile
 };
 
 // Parse arguments

@@ -7,8 +7,7 @@ A cross-platform Terminal CLI for running bITdevKit development tasks using C# s
 - **Pure C#**: Native .NET implementation using dotnet-script
 - **Cross-platform**: Works on Windows, Linux, and macOS
 - **Interactive UI**: Beautiful Spectre.Console-powered menus with arrow key navigation
-- **Logo Display**: Real bITdevKit logo image rendered in terminal (with ASCII fallback)
-- **Smart Image Handling**: Automatically detects VS Code and shows ASCII art instead of image
+- **Eye-Catching Banner**: Large FigletText "BDK" banner with project information
 - **Direct Execution**: Run tasks directly from command line (perfect for VS Code tasks)
 - **Runtime Configuration**: Editable `.env` file (no recompilation needed)
 - **Rich Output**: Color-coded output with progress indicators
@@ -139,29 +138,16 @@ Add to `.vscode/tasks.json`:
 }
 ```
 
-## Logo Display
+## Interactive Welcome Screen
 
-The C# Script edition features a beautiful bITdevKit logo display using Spectre.Console's official CanvasImage widget:
+The C# Script edition launches with a beautiful FigletText banner that displays:
 
-**In Regular Terminals**: The actual logo PNG image is rendered using the `CanvasImage` fluent API with bicubic resampling for high-quality scaling.
+- **Large "BDK" ASCII Art Banner** - Eye-catching cyan-colored display using FIGlet fonts
+- **Project Information** - Repository name and edition details in a rounded panel
+- **Navigation Instructions** - Quick help for using search and arrow keys
+- **Consistent Theme** - Cyan color scheme throughout for visual coherence
 
-**In VS Code Terminal**: Automatically falls back to ASCII art instead of the image (detected via `VSCODE_PID` environment variable) for better compatibility.
-
-**Logo Rendering Implementation**: 
-```csharp
-var image = new CanvasImage(logoPath)
-    .MaxWidth(40)
-    .BicubicResampler();
-
-AnsiConsole.Write(image);
-```
-
-**Features**: 
-- Automatically loads `bITDevKit_Logo_dark.png` from the repository root
-- High-quality bicubic resampling for optimal scaling
-- Gracefully falls back to ASCII art if the image cannot be loaded or rendered
-- Smart terminal detection for VS Code compatibility
-- Arranged in a grid layout alongside project information
+The banner is shown once at startup, then you can navigate tasks using the interactive menus.
 
 ## Configuration
 
