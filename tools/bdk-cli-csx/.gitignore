@@ -1,0 +1,6 @@
+# dotnet-script cache
+.cache/
+*.dll
+*.pdb
+obj/
+bin/
