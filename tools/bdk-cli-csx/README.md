@@ -141,16 +141,27 @@ Add to `.vscode/tasks.json`:
 
 ## Logo Display
 
-The C# Script edition features a beautiful bITdevKit logo display:
+The C# Script edition features a beautiful bITdevKit logo display using Spectre.Console's official CanvasImage widget:
 
-**In Regular Terminals**: The actual logo PNG image is rendered using Spectre.Console's `CanvasImage` widget, scaled to fit nicely alongside the project information.
+**In Regular Terminals**: The actual logo PNG image is rendered using the `CanvasImage` fluent API with bicubic resampling for high-quality scaling.
 
 **In VS Code Terminal**: Automatically falls back to ASCII art instead of the image (detected via `VSCODE_PID` environment variable) for better compatibility.
 
-**Logo Rendering**: 
+**Logo Rendering Implementation**: 
+```csharp
+var image = new CanvasImage(logoPath)
+    .MaxWidth(40)
+    .BicubicResampler();
+
+AnsiConsole.Write(image);
+```
+
+**Features**: 
 - Automatically loads `bITDevKit_Logo_dark.png` from the repository root
+- High-quality bicubic resampling for optimal scaling
 - Gracefully falls back to ASCII art if the image cannot be loaded or rendered
-- Uses reflection to dynamically load the `CanvasImage` type for optimal compatibility
+- Smart terminal detection for VS Code compatibility
+- Arranged in a grid layout alongside project information
 
 ## Configuration
 

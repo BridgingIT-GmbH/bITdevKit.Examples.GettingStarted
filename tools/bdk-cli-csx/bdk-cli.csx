@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Spectre.Console;
@@ -478,32 +477,14 @@ public class BdkUI
 
         try
         {
-            // Get the CanvasImage type from Spectre.Console (via ImageSharp package)
-            var canvasImageType = Type.GetType("Spectre.Console.CanvasImage, Spectre.Console.ImageSharp");
-            if (canvasImageType == null)
-            {
-                AnsiConsole.MarkupLine("[yellow]Warning: CanvasImage type not available, showing ASCII art[/]");
-                ShowAsciiArtBanner(repoName);
-                return;
-            }
-
-            // Create instance of CanvasImage
-            object image = Activator.CreateInstance(canvasImageType, absoluteLogoPath);
-            if (image == null)
-            {
-                throw new Exception("Failed to create CanvasImage instance");
-            }
-
-            // Set MaxWidth property
-            var maxWidthProperty = canvasImageType.GetProperty("MaxWidth");
-            if (maxWidthProperty != null)
-            {
-                maxWidthProperty.SetValue(image, 30);
-            }
+            // Create CanvasImage using the fluent API
+            var image = new CanvasImage(absoluteLogoPath)
+                .MaxWidth(40)
+                .BicubicResampler();
 
             // Create layout with image on left and text on right
             var grid = new Grid()
-                .AddColumn(new GridColumn().Width(35))
+                .AddColumn(new GridColumn().Width(45))
                 .AddColumn(new GridColumn().Width(30));
 
             var info = new Panel(
@@ -516,26 +497,14 @@ public class BdkUI
                 Padding = new Padding(1, 0, 0, 0)
             };
 
-            // Cast to IRenderable for grid
-            var iRenderableImage = image as Spectre.Console.Rendering.IRenderable;
-            if (iRenderableImage != null)
-            {
-                grid.AddRow(iRenderableImage, info);
-                AnsiConsole.Write(grid);
-            }
-            else
-            {
-                // If not IRenderable, just show ASCII art
-                ShowAsciiArtBanner(repoName);
-                return;
-            }
-
+            grid.AddRow(image, info);
+            AnsiConsole.Write(grid);
             AnsiConsole.WriteLine();
         }
         catch (Exception ex)
         {
             // If image rendering fails, fallback to ASCII art
-            AnsiConsole.MarkupLine($"[dim]Image display failed ({ex.GetType().Name}: {ex.Message}), falling back to ASCII art[/]");
+            AnsiConsole.MarkupLine($"[dim]Image display failed ({ex.GetType().Name}), falling back to ASCII art[/]");
             ShowAsciiArtBanner(repoName);
         }
     }
