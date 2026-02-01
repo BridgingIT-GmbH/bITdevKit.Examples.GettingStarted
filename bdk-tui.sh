@@ -7,12 +7,16 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Check if Bun is installed
-if ! command -v bun &> /dev/null; then
-    echo "ERROR: Bun is not installed"
-    echo ""
-    echo "To install Bun:"
-    echo "  curl -fsSL https://bun.sh/install | bash"
-    exit 1
+BUN_PATH="${HOME}/.bun/bin/bun"
+if [[ ! -f "$BUN_PATH" ]]; then
+    if ! command -v bun &> /dev/null; then
+        echo "ERROR: Bun is not installed"
+        echo ""
+        echo "To install Bun:"
+        echo "  curl -fsSL https://bun.sh/install | bash"
+        exit 1
+    fi
+    BUN_PATH="bun"
 fi
 
 # Run the TUI tool
@@ -24,4 +28,4 @@ if [[ ! -f "$TOOL_PATH" ]]; then
 fi
 
 # Execute with Bun, passing all arguments
-exec bun run "$TOOL_PATH" "$@"
+exec "$BUN_PATH" run "$TOOL_PATH" "$@"
