@@ -7,6 +7,7 @@ public class TaskContext
 {
     public BdkConfig Config { get; set; } = null!;
     public DotnetCli DotnetCli { get; set; } = null!;
+    public DockerCli DockerCli { get; set; } = null!;
     public CommandExecutor Executor { get; set; } = null!;
     public string SolutionFile { get; set; } = "";
     public string SelectedModule { get; set; } = "";

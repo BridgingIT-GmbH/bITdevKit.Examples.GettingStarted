@@ -384,6 +384,48 @@ public static class Prompts
     }
     
     /// <summary>
+    /// Prompts user for yes/no selection with cancel option
+    /// </summary>
+    /// <param name="title">Prompt title</param>
+    /// <param name="defaultValue">Default value for non-interactive mode</param>
+    /// <returns>True for Yes, False for No, or null if cancelled</returns>
+    public static async Task<bool?> SelectYesNoAsync(string title, bool defaultValue = false)
+    {
+        if (!Console.IsInputRedirected && Environment.GetEnvironmentVariable("NON_INTERACTIVE") != "1")
+        {
+            var choices = new List<string>
+            {
+                "No",
+                "Yes",
+                "✕ Cancel"
+            };
+            
+            var prompt = new SelectionPrompt<string>()
+                .Title($"[cyan]{title}[/]")
+                .PageSize(5)
+                .AddChoices(choices);
+            
+            prompt.SearchEnabled = false;
+            prompt.WrapAround = true;
+            
+            var selected = AnsiConsole.Prompt(prompt);
+            
+            if (selected == "✕ Cancel")
+            {
+                AnsiConsole.MarkupLine("[yellow]Selection cancelled[/]");
+                return null;
+            }
+            
+            var isYes = selected == "Yes";
+            return isYes;
+        }
+        else
+        {
+            return defaultValue;
+        }
+    }
+    
+    /// <summary>
     /// Discovers all modules in the solution
     /// </summary>
     /// <returns>List of module names</returns>

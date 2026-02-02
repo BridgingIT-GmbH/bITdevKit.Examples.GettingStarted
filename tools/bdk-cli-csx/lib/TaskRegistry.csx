@@ -617,6 +617,134 @@ public static class TaskRegistry
                     var outputPath = await Prompts.PromptTextAsync("Output path:", defaultOutput);
                     return await ctx.DotnetCli.EfBundleAsync(module, dbContext, outputPath);
                 }
+            },
+            
+            // ===== Docker & Containers =====
+            new BdkTask
+            {
+                Key = "docker-build-run",
+                Label = "Docker Build & Run",
+                Description = "Build image (Debug) & run container",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => 
+                {
+                    var noCache = await Prompts.SelectYesNoAsync("Skip build cache?", false);
+                    if (noCache == null)
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    return await ctx.DockerCli.BuildAndRunAsync("Debug", noCache.Value);
+                }
+            },
+            new BdkTask
+            {
+                Key = "docker-build-debug",
+                Label = "Docker Build (Debug)",
+                Description = "Build image in Debug configuration",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => 
+                {
+                    var noCache = await Prompts.SelectYesNoAsync("Skip build cache?", false);
+                    if (noCache == null)
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    return await ctx.DockerCli.BuildImageAsync("Debug", noCache.Value);
+                }
+            },
+            new BdkTask
+            {
+                Key = "docker-build-release",
+                Label = "Docker Build (Release)",
+                Description = "Build image in Release configuration",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => 
+                {
+                    var noCache = await Prompts.SelectYesNoAsync("Skip build cache?", false);
+                    if (noCache == null)
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    return await ctx.DockerCli.BuildImageAsync("Release", noCache.Value);
+                }
+            },
+            new BdkTask
+            {
+                Key = "docker-run",
+                Label = "Docker Run",
+                Description = "Run container (assumes image built)",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => await ctx.DockerCli.RunContainerAsync()
+            },
+            new BdkTask
+            {
+                Key = "docker-stop",
+                Label = "Docker Stop",
+                Description = "Stop container",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => await ctx.DockerCli.StopContainerAsync()
+            },
+            new BdkTask
+            {
+                Key = "docker-remove",
+                Label = "Docker Remove",
+                Description = "Remove (stop & force delete) container",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => await ctx.DockerCli.RemoveContainerAsync(false)
+            },
+            new BdkTask
+            {
+                Key = "docker-remove-image",
+                Label = "Docker Remove Image",
+                Description = "Remove container and image",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => await ctx.DockerCli.RemoveImageAsync()
+            },
+            new BdkTask
+            {
+                Key = "compose-up",
+                Label = "Compose Up",
+                Description = "Start docker compose stack",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => 
+                {
+                    var pull = await Prompts.SelectYesNoAsync("Pull latest images?", false);
+                    if (pull == null)
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    return await ctx.DockerCli.ComposeUpAsync(pull.Value);
+                }
+            },
+            new BdkTask
+            {
+                Key = "compose-recreate",
+                Label = "Compose Recreate",
+                Description = "Recompose specific container/service",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => await ctx.DockerCli.ComposeRecreateAsync()
+            },
+            new BdkTask
+            {
+                Key = "compose-up-pull",
+                Label = "Compose Up & Pull",
+                Description = "Pull images then start compose stack",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => 
+                {
+                    var pullResult = await ctx.DockerCli.ComposeUpAsync(true);
+                    if (!pullResult.Success)
+                        return pullResult;
+                    return await ctx.DockerCli.ComposeUpAsync(false);
+                }
+            },
+            new BdkTask
+            {
+                Key = "compose-down",
+                Label = "Compose Down",
+                Description = "Stop docker compose stack (keep volumes)",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => await ctx.DockerCli.ComposeDownAsync()
+            },
+            new BdkTask
+            {
+                Key = "compose-down-clean",
+                Label = "Compose Down Clean",
+                Description = "Stop stack & remove volumes/images",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => await ctx.DockerCli.ComposeDownCleanAsync()
             }
         };
     }

@@ -10,6 +10,7 @@
 #load "lib/CommandExecutor.csx"
 #load "lib/TaskContext.csx"
 #load "lib/DotnetCli.csx"
+#load "lib/DockerCli.csx"
 #load "lib/Prompts.csx"
 #load "lib/TaskRegistry.csx"
 #load "lib/BdkUI.csx"
@@ -36,6 +37,7 @@ var config = BdkConfig.LoadFromEnv(envPath);
 
 var executor = new CommandExecutor(repoRoot);
 var dotnetCli = new DotnetCli(executor, config, repoRoot);
+var dockerCli = new DockerCli(config, executor);
 
 // Initialize module information
 var availableModules = Prompts.DiscoverModules();
@@ -45,6 +47,7 @@ var context = new TaskContext
 {
     Config = config,
     DotnetCli = dotnetCli,
+    DockerCli = dockerCli,
     Executor = executor,
     SolutionFile = dotnetCli.SolutionFile,
     AvailableModules = availableModules,
@@ -58,26 +61,27 @@ if (args.Count == 0)
     var ui = new BdkUI(context);
     await ui.RunInteractiveAsync();
 }
-else if (args[0] == "--help" || args[0] == "-h")
-{
-    var table = new Table();
-    table.Border(TableBorder.Rounded);
-    table.AddColumn(new TableColumn("[cyan]Task[/]").Width(20));
-    table.AddColumn(new TableColumn("[cyan]Description[/]").Width(50));
-    table.AddColumn(new TableColumn("[cyan]Category[/]").Width(25));
-
-    foreach (var task in TaskRegistry.GetAllTasks().OrderBy(t => t.Category).ThenBy(t => t.Key))
+else if (args[0] == "help" || args[0] == "-h")
     {
-        table.AddRow(task.Key, task.Description, task.Category);
+        var table = new Table();
+        table.Border(TableBorder.Rounded);
+        table.AddColumn(new TableColumn("[cyan]Task[/]").Width(20));
+        table.AddColumn(new TableColumn("[cyan]Description[/]").Width(50));
+        table.AddColumn(new TableColumn("[cyan]Category[/]").Width(25));
+        
+        foreach (var task in TaskRegistry.GetAllTasks().OrderBy(t => t.Category).ThenBy(t => t.Key))
+        {
+            table.AddRow(task.Key, task.Description, task.Category);
+        }
+        
+        AnsiConsole.Write(new Rule("[cyan]BDK CLI - Available Tasks[/]"));
+        AnsiConsole.WriteLine();
+        AnsiConsole.Write(table);
+        AnsiConsole.WriteLine();
+        Console.WriteLine("Usage: dotnet script bdk-cli.csx [task-name]");
+        Console.WriteLine("       dotnet script bdk-cli.csx          (interactive mode)");
+        Console.WriteLine("       dotnet script bdk-cli.csx help     (show this help)");
     }
-
-    AnsiConsole.Write(new Rule("[cyan]BDK CLI - Available Tasks[/]"));
-    AnsiConsole.WriteLine();
-    AnsiConsole.Write(table);
-    AnsiConsole.WriteLine();
-    Console.WriteLine("Usage: dotnet script bdk-cli.csx [task-name]");
-    Console.WriteLine("       dotnet script bdk-cli.csx          (interactive mode)");
-}
 else
 {
     var taskKey = args[0];

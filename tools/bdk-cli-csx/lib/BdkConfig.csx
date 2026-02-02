@@ -18,6 +18,11 @@ public class BdkConfig
     public string DotnetPublishProject { get; set; } = "src/Presentation.Web.Server/Presentation.Web.Server.csproj";
     public string EfStartupProject { get; set; } = "src/Presentation.Web.Server/Presentation.Web.Server.csproj";
     public string DockerDbConnectionString { get; set; } = "";
+    public string DockerRegistryHost { get; set; } = "localhost:5500";
+    public string ContainerPrefix { get; set; } = "bit_devkit_gettingstarted";
+    public string NetworkName { get; set; } = "bit_devkit_gettingstarted";
+    public int DockerHostPort { get; set; } = 8080;
+    public int DockerContainerPort { get; set; } = 8080;
 
     public static BdkConfig LoadFromEnv(string envPath)
     {
@@ -73,6 +78,23 @@ public class BdkConfig
                     break;
                 case "DOCKER_DB_CONNECTIONSTRING":
                     config.DockerDbConnectionString = value;
+                    break;
+                case "REGISTRY_HOST":
+                    config.DockerRegistryHost = value;
+                    break;
+                case "CONTAINER_PREFIX":
+                    config.ContainerPrefix = value;
+                    break;
+                case "NETWORK_NAME":
+                    config.NetworkName = value;
+                    break;
+                case "DOCKER_HOST_PORT":
+                    if (int.TryParse(value, out var hostPort))
+                        config.DockerHostPort = hostPort;
+                    break;
+                case "DOCKER_CONTAINER_PORT":
+                    if (int.TryParse(value, out var containerPort))
+                        config.DockerContainerPort = containerPort;
                     break;
             }
         }
