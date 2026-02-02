@@ -19,6 +19,11 @@ public class BdkUI
     public async Task RunInteractiveAsync()
     {
         Console.Clear();
+        
+        // Discover modules and auto-select if only one exists
+        _context.AvailableModules = Prompts.DiscoverModules();
+        _context.SelectedModule = Prompts.AutoSelectModule();
+        
         ShowStartupBanner();
         
         await SelectSolutionFileAsync();
@@ -29,6 +34,9 @@ public class BdkUI
             AnsiConsole.MarkupLine("[yellow]No solution selected. Exiting.[/]");
             return;
         }
+
+        AnsiConsole.MarkupLine("");
+        AnsiConsole.MarkupLine("[dim]Use [cyan]↑↓[/] to navigate, [cyan]type[/] to search, [cyan]Enter[/] to select[/]");
         
         while (true)
         {
@@ -83,8 +91,7 @@ public class BdkUI
         var grid = new Grid().AddColumn().AddColumn().AddColumn();
         grid
             .AddRow(figlet, 
-                new Markup("[bold cyan]bITdevKit[/]\n[dim]C# Script Edition[/]"),
-                new Markup($"[dim]{repoName}[/]\n[dim]{(!string.IsNullOrEmpty(_context.SolutionFile) ? _context.SolutionFile : "no solution")}[/]"));
+                new Markup("[bold cyan]bITdevKit[/]\n[dim]C# Script Edition[/]"));
         
         var panel = new Panel(grid)
         {
@@ -94,7 +101,26 @@ public class BdkUI
         };
         
         AnsiConsole.Write(panel);
-        AnsiConsole.MarkupLine("[dim]Use [cyan]↑↓[/] to navigate, [cyan]type[/] to search, [cyan]Enter[/] to select[/]");
+        
+        // Display available modules below banner
+        if (_context.AvailableModules.Count > 0)
+        {
+            AnsiConsole.Markup("[dim]Modules:[/]");
+            
+            foreach (var module in _context.AvailableModules)
+            {
+                if (module == _context.SelectedModule)
+                {
+                    AnsiConsole.Markup($"  [green]✓[/] [cyan]{module}[/]");
+                }
+                else
+                {
+                    AnsiConsole.Markup($"    [dim]{module}[/]");
+                }
+            }
+        }
+        
+        //AnsiConsole.MarkupLine("[dim]Use [cyan]↑↓[/] to navigate, [cyan]type[/] to search, [cyan]Enter[/] to select[/]");
         AnsiConsole.WriteLine();
     }
 

@@ -9,4 +9,6 @@ public class TaskContext
     public DotnetCli DotnetCli { get; set; } = null!;
     public CommandExecutor Executor { get; set; } = null!;
     public string SolutionFile { get; set; } = "";
+    public string SelectedModule { get; set; } = "";
+    public List<string> AvailableModules { get; set; } = new();
 }

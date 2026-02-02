@@ -180,4 +180,27 @@ public class DotnetCli
             args += $" --report {reportPath}";
         return _executor.ExecuteAsync("dotnet", args);
     }
+    
+    // ===== Module-Specific Test Methods =====
+    
+    /// <summary>
+    /// Runs tests for a specific module
+    /// </summary>
+    /// <param name="moduleName">Name of module</param>
+    /// <param name="kind">Type of test: "unit" or "integration"</param>
+    /// <returns>Execution result</returns>
+    public Task<ExecutionResult> TestModuleAsync(string moduleName, string kind)
+    {
+        var testProjectPath = BuildTestProjectPath(moduleName, kind);
+        return _executor.ExecuteAsync("dotnet", $"test {testProjectPath}");
+    }
+    
+    /// <summary>
+    /// Builds test project path for a module
+    /// </summary>
+    private string BuildTestProjectPath(string moduleName, string kind)
+    {
+        var testProjectType = kind == "unit" ? "UnitTests" : "IntegrationTests";
+        return $"tests/Modules/{moduleName}/{moduleName}.{testProjectType}/{moduleName}.{testProjectType}.csproj";
+    }
 }

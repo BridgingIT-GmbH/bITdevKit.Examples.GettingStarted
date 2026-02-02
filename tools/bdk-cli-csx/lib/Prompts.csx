@@ -34,8 +34,10 @@ public static class Prompts
                 return projects[0];
             }
             
-            var choices = new List<string>(projects);
-            choices.Add("✕ Cancel");
+            var choices = new List<string>(projects)
+            {
+                "✕ Cancel"
+            };
             
             var prompt = new SelectionPrompt<string>()
                 .Title($"[cyan]{promptTitle}[/]")
@@ -154,8 +156,10 @@ public static class Prompts
                 return options[0];
             }
             
-            var choices = new List<string>(options);
-            choices.Add("✕ Cancel");
+            var choices = new List<string>(options)
+            {
+                "✕ Cancel"
+            };
             
             var prompt = new SelectionPrompt<string>()
                 .Title($"[cyan]{title}[/]")
@@ -213,12 +217,14 @@ public static class Prompts
             
             if (solutions.Count == 1)
             {
-                AnsiConsole.MarkupLine($"[green]✓[/] [dim]Solution:[/] {solutions[0]}");
+                AnsiConsole.MarkupLine($"[dim]Solution:[/] [green]✓[/] {solutions[0]}");
                 return solutions[0];
             }
             
-            var choices = new List<string>(solutions);
-            choices.Add("✕ Cancel");
+            var choices = new List<string>(solutions)
+            {
+                "✕ Cancel"
+            };
             
             var prompt = new SelectionPrompt<string>()
                 .Title("[cyan]Select a solution file:[/]")
@@ -278,8 +284,10 @@ public static class Prompts
             return "";
         }
         
-        var choices = new List<string>(modules);
-        choices.Add("✕ Cancel");
+        var choices = new List<string>(modules)
+        {
+            "✕ Cancel"
+        };
         
         var prompt = new SelectionPrompt<string>()
             .Title("[cyan]Select a module:[/]")
@@ -319,5 +327,166 @@ public static class Prompts
         };
         
         return await SelectFromListAsync("Select runtime identifier (RID):", rids, defaultValue);
+    }
+    
+    /// <summary>
+    /// Selects build configuration (Debug or Release)
+    /// </summary>
+    /// <param name="defaultValue">Default configuration</param>
+    /// <returns>Selected configuration, or empty string if cancelled</returns>
+    public static async Task<string> SelectConfigurationAsync(string defaultValue = "Debug")
+    {
+        return await SelectFromListAsync("Select configuration:", ["Debug", "Release"], defaultValue);
+    }
+    
+    /// <summary>
+    /// Selects whether to create single-file executable
+    /// </summary>
+    /// <param name="defaultValue">Default value</param>
+    /// <returns>True for single-file, False for multi-file, or null if cancelled</returns>
+    public static async Task<bool?> SelectSingleFileAsync(bool defaultValue = false)
+    {
+        if (!Console.IsInputRedirected && Environment.GetEnvironmentVariable("NON_INTERACTIVE") != "1")
+        {
+            var choices = new List<string>
+            {
+                "No (multi-file)",
+                "Yes (single-file)",
+                "✕ Cancel"
+            };
+            
+            var prompt = new SelectionPrompt<string>()
+                .Title("[cyan]Create single-file executable?[/]")
+                .PageSize(5)
+                .AddChoices(choices);
+            
+            prompt.SearchEnabled = false;
+            prompt.WrapAround = true;
+            
+            var selected = AnsiConsole.Prompt(prompt);
+            
+            if (selected == "✕ Cancel")
+            {
+                AnsiConsole.MarkupLine("[yellow]Selection cancelled[/]");
+                return null;
+            }
+            
+            var isSingleFile = selected.StartsWith("Yes");
+            // AnsiConsole.MarkupLine($"[green]✓ Selected:[/] {(isSingleFile ? "Single-file" : "Multi-file")}[/]");
+            return isSingleFile;
+        }
+        else
+        {
+            var isSingleFile = defaultValue;
+            // AnsiConsole.MarkupLine($"[dim]Using default: {(isSingleFile ? "Single-file" : "Multi-file")}[/]");
+            return isSingleFile;
+        }
+    }
+    
+    /// <summary>
+    /// Discovers all modules in the solution
+    /// </summary>
+    /// <returns>List of module names</returns>
+    public static List<string> DiscoverModules()
+    {
+        var modules = new List<string>();
+        var repoRoot = Directory.GetCurrentDirectory();
+        var modulesDir = Path.Combine(repoRoot, "src", "Modules");
+        
+        if (!Directory.Exists(modulesDir))
+            return modules;
+        
+        modules.AddRange(
+            Directory.GetDirectories(modulesDir)
+                .Select(Path.GetFileName)
+                .Where(m => !string.IsNullOrEmpty(m) && m != "Common" && m != "Shared")
+                .OrderBy(m => m)
+        );
+        
+        return modules;
+    }
+    
+    /// <summary>
+    /// Auto-selects a module if only one exists
+    /// </summary>
+    /// <returns>Selected module name, or empty string if none or multiple</returns>
+    public static string AutoSelectModule()
+    {
+        var modules = DiscoverModules();
+        
+        if (modules.Count == 1)
+        {
+            return modules[0];
+        }
+        
+        return "";
+    }
+    
+    /// <summary>
+    /// Selects a module for task execution
+    /// If a module is already selected in context and valid, returns it without prompting
+    /// If multiple modules exist and none selected, prompts for selection
+    /// </summary>
+    /// <param name="context">Task context with available modules and selected module</param>
+    /// <param name="promptTitle">Title for selection prompt</param>
+    /// <returns>Selected module name, or empty string if cancelled</returns>
+    public static async Task<string> SelectModuleForTaskAsync(TaskContext context, string promptTitle = "Select a module:")
+    {
+        var modules = context.AvailableModules;
+        
+        if (modules.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[yellow]Warning: No modules found[/]");
+            return "";
+        }
+        
+        // Auto-select if only one module exists
+        if (modules.Count == 1)
+        {
+            var selectedModule = modules[0];
+            context.SelectedModule = selectedModule;
+            return selectedModule;
+        }
+        
+        // If module already selected in context and valid, use it
+        if (!string.IsNullOrEmpty(context.SelectedModule) && modules.Contains(context.SelectedModule))
+        {
+            return context.SelectedModule;
+        }
+        
+        // Multiple modules exist, prompt for selection
+        if (!Console.IsInputRedirected && Environment.GetEnvironmentVariable("NON_INTERACTIVE") != "1")
+        {
+            var choices = new List<string>(modules)
+            {
+                "✕ Cancel"
+            };
+            
+            var prompt = new SelectionPrompt<string>()
+                .Title($"[cyan]{promptTitle}[/]")
+                .PageSize(10)
+                .AddChoices(choices);
+            
+            prompt.SearchEnabled = true;
+            prompt.WrapAround = true;
+            
+            var selected = AnsiConsole.Prompt(prompt);
+            
+            if (selected == "✕ Cancel")
+            {
+                AnsiConsole.MarkupLine("[yellow]Selection cancelled[/]");
+                return "";
+            }
+            
+            context.SelectedModule = selected;
+            return selected;
+        }
+        else
+        {
+            // Non-interactive mode: use first module
+            var firstModule = modules[0];
+            context.SelectedModule = firstModule;
+            return firstModule;
+        }
     }
 }

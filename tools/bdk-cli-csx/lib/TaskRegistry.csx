@@ -27,74 +27,65 @@ public static class TaskRegistry
         return new List<BdkTask>
         {
             // ===== Build & Maintenance =====
-            new BdkTask
-            {
+            new() {
                 Key = "clean",
                 Label = "Clean Solution",
                 Description = "Clean build artifacts",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.CleanAsync()
             },
-            new BdkTask
-            {
+            new() {
                 Key = "restore",
                 Label = "Restore Packages",
                 Description = "Restore NuGet packages",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.RestoreAsync()
             },
-            new BdkTask
-            {
+            new() {
                 Key = "build",
                 Label = "Build Solution",
                 Description = "Build entire solution (Debug)",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.BuildAsync()
             },
-            new BdkTask
-            {
+            new() {
                 Key = "build-release",
                 Label = "Build Release",
                 Description = "Build solution in Release configuration",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.BuildReleaseAsync()
             },
-            new BdkTask
-            {
+            new() {
                 Key = "build-nr",
                 Label = "Build NoRestore",
                 Description = "Build without restoring packages",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.BuildNoRestoreAsync()
             },
-            new BdkTask
-            {
+            new() {
                 Key = "pack",
                 Label = "Pack",
                 Description = "Create NuGet packages for entire solution",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.PackAsync()
             },
-            new BdkTask
-            {
+            new() {
                 Key = "pack-projects",
                 Label = "Pack Projects",
                 Description = "Create NuGet packages for all projects",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.PackProjectsAsync()
             },
-            new BdkTask
-            {
+            new() {
                 Key = "tool-restore",
                 Label = "Restore Tools",
                 Description = "Restore dotnet tools",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.ToolRestoreAsync()
             },
-            new BdkTask
-            {
+            new() {
                 Key = "server-build",
-                Label = "Server Build",
+                Label = "Build Server",
                 Description = "Build web server project",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => 
@@ -109,8 +100,7 @@ public static class TaskRegistry
                     return await ctx.DotnetCli.BuildProjectAsync(project, "Debug", false);
                 }
             },
-            new BdkTask
-            {
+            new() {
                 Key = "build-project",
                 Label = "Build Project",
                 Description = "Build a specific project",
@@ -123,11 +113,10 @@ public static class TaskRegistry
                     return await ctx.DotnetCli.BuildProjectAsync(project, "Debug", false);
                 }
             },
-            new BdkTask
-            {
+            new() {
                 Key = "server-publish",
                 Label = "Publish Server",
-                Description = "Publish web server (Debug) with RID selection",
+                Description = "Publish web server with config, RID, and single-file options",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => 
                 {
@@ -138,6 +127,13 @@ public static class TaskRegistry
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     }
                     
+                    var config = await Prompts.SelectConfigurationAsync("Debug");
+                    if (string.IsNullOrEmpty(config))
+                    {
+                        AnsiConsole.MarkupLine("[yellow]Configuration selection cancelled[/]");
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    }
+                    
                     var rid = await Prompts.SelectRidAsync("linux-x64");
                     if (string.IsNullOrEmpty(rid))
                     {
@@ -145,16 +141,25 @@ public static class TaskRegistry
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     }
                     
-                    AnsiConsole.MarkupLine($"[dim]Publishing server project: {project}[/]");
-                    AnsiConsole.MarkupLine($"[dim]Target RID: {rid}[/]");
-                    return await ctx.DotnetCli.PublishProjectRidAsync(project, "Debug", rid, false, "");
+                    var singleFile = await Prompts.SelectSingleFileAsync(false);
+                    if (singleFile == null)
+                    {
+                        AnsiConsole.MarkupLine("[yellow]Single-file selection cancelled[/]");
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    }
+                    
+                    AnsiConsole.MarkupLine($"[cyan]Publishing server:[/] {project}");
+                    AnsiConsole.MarkupLine($"[dim]Configuration:[/] [cyan]{config}[/]");
+                    AnsiConsole.MarkupLine($"[dim]RID:[/] [cyan]{rid}[/]");
+                    AnsiConsole.MarkupLine($"[dim]Single-file:[/] [cyan]{singleFile.Value}[/]");
+                    
+                    return await ctx.DotnetCli.PublishProjectRidAsync(project, config, rid, singleFile.Value, "");
                 }
             },
-            new BdkTask
-            {
+            new() {
                 Key = "publish-project",
                 Label = "Publish Project",
-                Description = "Publish a specific project with RID selection",
+                Description = "Publish a project with config, RID, and single-file options",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => 
                 {
@@ -162,30 +167,10 @@ public static class TaskRegistry
                     if (string.IsNullOrEmpty(project))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     
-                    var rid = await Prompts.SelectRidAsync("linux-x64");
-                    if (string.IsNullOrEmpty(rid))
+                    var config = await Prompts.SelectConfigurationAsync("Debug");
+                    if (string.IsNullOrEmpty(config))
                     {
-                        AnsiConsole.MarkupLine("[yellow]RID selection cancelled[/]");
-                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    }
-                    
-                    AnsiConsole.MarkupLine($"[dim]Publishing project: {project}[/]");
-                    AnsiConsole.MarkupLine($"[dim]Target RID: {rid}[/]");
-                    return await ctx.DotnetCli.PublishProjectRidAsync(project, "Debug", rid, false, "");
-                }
-            },
-            new BdkTask
-            {
-                Key = "server-publish-release",
-                Label = "Publish Server (Release)",
-                Description = "Publish web server (Release) with RID selection",
-                Category = "Build & Maintenance",
-                Execute = async (ctx) => 
-                {
-                    var project = ctx.Config.DotnetPublishProject ?? "";
-                    if (string.IsNullOrEmpty(project))
-                    {
-                        AnsiConsole.MarkupLine("[red]Error: DOTNET_PUBLISH_PROJECT not configured in .env[/]");
+                        AnsiConsole.MarkupLine("[yellow]Configuration selection cancelled[/]");
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     }
                     
@@ -196,88 +181,22 @@ public static class TaskRegistry
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     }
                     
-                    AnsiConsole.MarkupLine($"[dim]Publishing server project (Release): {project}[/]");
-                    AnsiConsole.MarkupLine($"[dim]Target RID: {rid}[/]");
-                    return await ctx.DotnetCli.PublishProjectRidAsync(project, "Release", rid, false, "");
-                }
-            },
-            new BdkTask
-            {
-                Key = "publish-project-release",
-                Label = "Publish Project (Release)",
-                Description = "Publish a project (Release) with RID selection",
-                Category = "Build & Maintenance",
-                Execute = async (ctx) => 
-                {
-                    var project = await Prompts.SelectProjectAsync(ctx, "Select a project to publish:");
-                    if (string.IsNullOrEmpty(project))
-                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
-                    var rid = await Prompts.SelectRidAsync("linux-x64");
-                    if (string.IsNullOrEmpty(rid))
+                    var singleFile = await Prompts.SelectSingleFileAsync(false);
+                    if (singleFile == null)
                     {
-                        AnsiConsole.MarkupLine("[yellow]RID selection cancelled[/]");
+                        AnsiConsole.MarkupLine("[yellow]Single-file selection cancelled[/]");
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     }
                     
-                    AnsiConsole.MarkupLine($"[dim]Publishing project (Release): {project}[/]");
-                    AnsiConsole.MarkupLine($"[dim]Target RID: {rid}[/]");
-                    return await ctx.DotnetCli.PublishProjectRidAsync(project, "Release", rid, false, "");
+                    AnsiConsole.MarkupLine($"[cyan]Publishing project:[/] {project}");
+                    AnsiConsole.MarkupLine($"[dim]Configuration:[/] [cyan]{config}[/]");
+                    AnsiConsole.MarkupLine($"[dim]RID:[/] [cyan]{rid}[/]");
+                    AnsiConsole.MarkupLine($"[dim]Single-file:[/] [cyan]{singleFile.Value}[/]");
+                    
+                    return await ctx.DotnetCli.PublishProjectRidAsync(project, config, rid, singleFile.Value, "");
                 }
             },
-            new BdkTask
-            {
-                Key = "server-publish-sc",
-                Label = "Publish Server Single",
-                Description = "Publish web server as single-file with RID",
-                Category = "Build & Maintenance",
-                Execute = async (ctx) => 
-                {
-                    var project = ctx.Config.DotnetPublishProject ?? "";
-                    if (string.IsNullOrEmpty(project))
-                    {
-                        AnsiConsole.MarkupLine("[red]Error: DOTNET_PUBLISH_PROJECT not configured in .env[/]");
-                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    }
-                    
-                    var rid = await Prompts.SelectRidAsync("linux-x64");
-                    if (string.IsNullOrEmpty(rid))
-                    {
-                        AnsiConsole.MarkupLine("[yellow]RID selection cancelled[/]");
-                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    }
-                    
-                    AnsiConsole.MarkupLine($"[dim]Publishing server project (single-file): {project}[/]");
-                    AnsiConsole.MarkupLine($"[dim]Target RID: {rid}[/]");
-                    return await ctx.DotnetCli.PublishProjectRidAsync(project, "Release", rid, true, "");
-                }
-            },
-            new BdkTask
-            {
-                Key = "publish-project-sc",
-                Label = "Publish Project Single",
-                Description = "Publish a project as single-file with RID",
-                Category = "Build & Maintenance",
-                Execute = async (ctx) => 
-                {
-                    var project = await Prompts.SelectProjectAsync(ctx, "Select a project to publish:");
-                    if (string.IsNullOrEmpty(project))
-                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
-                    var rid = await Prompts.SelectRidAsync("linux-x64");
-                    if (string.IsNullOrEmpty(rid))
-                    {
-                        AnsiConsole.MarkupLine("[yellow]RID selection cancelled[/]");
-                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    }
-                    
-                    AnsiConsole.MarkupLine($"[dim]Publishing project (single-file): {project}[/]");
-                    AnsiConsole.MarkupLine($"[dim]Target RID: {rid}[/]");
-                    return await ctx.DotnetCli.PublishProjectRidAsync(project, "Release", rid, true, "");
-                }
-            },
-            new BdkTask
-            {
+            new() {
                 Key = "server-run-dev",
                 Label = "Run Server",
                 Description = "Run web server in development mode",
@@ -294,8 +213,7 @@ public static class TaskRegistry
                     return await ctx.DotnetCli.RunProjectAsync(project, false);
                 }
             },
-            new BdkTask
-            {
+            new() {
                 Key = "run-project",
                 Label = "Run Project",
                 Description = "Run a specific project",
@@ -308,8 +226,7 @@ public static class TaskRegistry
                     return await ctx.DotnetCli.RunProjectAsync(project, false);
                 }
             },
-            new BdkTask
-            {
+            new() {
                 Key = "server-watch",
                 Label = "Watch Server",
                 Description = "Watch and hot-reload web server",
@@ -326,48 +243,42 @@ public static class TaskRegistry
                     return await ctx.DotnetCli.WatchProjectAsync(project);
                 }
             },
-            new BdkTask
-            {
+            new() {
                 Key = "update-packages",
                 Label = "Update All Packages",
                 Description = "List and update all NuGet packages",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.UpdatePackagesAsync()
             },
-            new BdkTask
-            {
+            new() {
                 Key = "update-packages-devkit",
                 Label = "Update DevKit Packages",
                 Description = "Update bITdevKit NuGet packages",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.UpdatePackagesDevkitAsync()
             },
-            new BdkTask
-            {
+            new() {
                 Key = "format-apply",
                 Label = "Format Apply",
                 Description = "Apply code formatting to solution",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.FormatAsync(verify: false)
             },
-            new BdkTask
-            {
+            new() {
                 Key = "format-check",
                 Label = "Format Check",
                 Description = "Verify code formatting",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.FormatAsync(verify: true)
             },
-            new BdkTask
-            {
+            new() {
                 Key = "analyzers",
                 Label = "Analyzers",
                 Description = "Run Roslyn analyzers",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.AnalyzersAsync()
             },
-            new BdkTask
-            {
+            new() {
                 Key = "analyzers-export",
                 Label = "Analyzers Export",
                 Description = "Export analyzer report",
@@ -380,34 +291,56 @@ public static class TaskRegistry
             },
             
             // ===== Testing =====
-            new BdkTask
-            {
+            new() {
                 Key = "test",
                 Label = "Run All Tests",
                 Description = "Run all unit and integration tests",
                 Category = "Testing",
                 Execute = async (ctx) => await ctx.DotnetCli.TestAsync()
             },
-            new BdkTask
-            {
+            new() {
                 Key = "test-unit",
                 Label = "Run Unit Tests",
                 Description = "Run unit tests only",
                 Category = "Testing",
                 Execute = async (ctx) => await ctx.DotnetCli.TestAsync("Category=unit")
             },
-            new BdkTask
-            {
+            new() {
                 Key = "test-integration",
                 Label = "Run Integration Tests",
                 Description = "Run integration tests only",
                 Category = "Testing",
                 Execute = async (ctx) => await ctx.DotnetCli.TestAsync("Category=integration")
             },
+            new() {
+                Key = "test-unit-module",
+                Label = "Run Unit Tests (Module)",
+                Description = "Run unit tests for selected module",
+                Category = "Testing",
+                Execute = async (ctx) => 
+                {
+                    var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to run unit tests:");
+                    if (string.IsNullOrEmpty(module))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    return await ctx.DotnetCli.TestModuleAsync(module, "unit");
+                }
+            },
+            new() {
+                Key = "test-integration-module",
+                Label = "Run Integration Tests (Module)",
+                Description = "Run integration tests for selected module",
+                Category = "Testing",
+                Execute = async (ctx) => 
+                {
+                    var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to run integration tests:");
+                    if (string.IsNullOrEmpty(module))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    return await ctx.DotnetCli.TestModuleAsync(module, "integration");
+                }
+            },
             
             // ===== Utilities =====
-            new BdkTask
-            {
+            new() {
                 Key = "version",
                 Label = "Show .NET Version",
                 Description = "Display .NET SDK version",

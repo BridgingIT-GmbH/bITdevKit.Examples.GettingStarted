@@ -36,12 +36,19 @@ var config = BdkConfig.LoadFromEnv(envPath);
 
 var executor = new CommandExecutor(repoRoot);
 var dotnetCli = new DotnetCli(executor, config, repoRoot);
+
+// Initialize module information
+var availableModules = Prompts.DiscoverModules();
+var selectedModule = Prompts.AutoSelectModule();
+
 var context = new TaskContext
 {
     Config = config,
     DotnetCli = dotnetCli,
     Executor = executor,
-    SolutionFile = dotnetCli.SolutionFile
+    SolutionFile = dotnetCli.SolutionFile,
+    AvailableModules = availableModules,
+    SelectedModule = selectedModule
 };
 
 var args = Args.ToList();
@@ -81,6 +88,12 @@ else
         AnsiConsole.MarkupLine($"[red]Error: Unknown task '{taskKey}'[/]");
         AnsiConsole.MarkupLine($"[dim]Run 'dotnet script bdk-cli.csx --help' to see available tasks[/]");
         Environment.Exit(1);
+    }
+
+    // Display selected module
+    if (!string.IsNullOrEmpty(context.SelectedModule))
+    {
+        AnsiConsole.MarkupLine($"[green]✓ Module:[/] [cyan]{context.SelectedModule}[/]");
     }
 
     AnsiConsole.MarkupLine($"[cyan]Executing:[/] {task.Label}");
