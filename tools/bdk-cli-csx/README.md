@@ -6,8 +6,10 @@ A cross-platform Terminal CLI for running bITdevKit development tasks using C# s
 
 - **Pure C#**: Native .NET implementation using dotnet-script
 - **Cross-platform**: Works on Windows, Linux, and macOS
+- **Modular Architecture**: Split into focused library files for better maintainability
 - **Interactive UI**: Beautiful Spectre.Console-powered menus with arrow key navigation
-- **Eye-Catching Banner**: Large FigletText "BDK" banner with project information
+- **Compact Banner**: FigletText "BDK" banner in a grid layout (saves space)
+- **Solution Detection**: Auto-detects .sln/.slnx files with multi-select support
 - **Direct Execution**: Run tasks directly from command line (perfect for VS Code tasks)
 - **Runtime Configuration**: Editable `.env` file (no recompilation needed)
 - **Rich Output**: Color-coded output with progress indicators
@@ -140,14 +142,18 @@ Add to `.vscode/tasks.json`:
 
 ## Interactive Welcome Screen
 
-The C# Script edition launches with a beautiful FigletText banner that displays:
+The C# Script edition launches with a compact FigletText banner that displays:
 
-- **Large "BDK" ASCII Art Banner** - Eye-catching cyan-colored display using FIGlet fonts
-- **Project Information** - Repository name and edition details in a rounded panel
-- **Navigation Instructions** - Quick help for using search and arrow keys
-- **Consistent Theme** - Cyan color scheme throughout for visual coherence
+- **FigletText "BDK"** - Large ASCII art in cyan color
+- **Grid Layout** - Three-column layout showing:
+  - BDK logo (FigletText)
+  - bITdevKit title and edition info
+  - Repository name and solution file
+- **Single Panel** - All information in one compact, rounded border
+- **Navigation Hint** - Brief instruction for arrow keys, search, and selection
+- **Solution File** - Shows detected/selected solution file (auto-detects .sln/.slnx)
 
-The banner is shown once at startup, then you can navigate tasks using the interactive menus.
+The banner is shown once at startup, then you can navigate tasks using the interactive menus. If multiple solution files are found, a selection prompt appears before the menu.
 
 ## Configuration
 
@@ -210,7 +216,15 @@ new BdkTask
 ```
 tools/bdk-cli-csx/
 ├── .env                    # Runtime configuration
-├── bdk-cli.csx            # Main C# script
+├── bdk-cli.csx            # Main entry point (101 lines)
+├── lib/                    # Modular library files
+│   ├── README.md            # Library structure documentation
+│   ├── BdkConfig.csx       # Configuration loader (82 lines)
+│   ├── CommandExecutor.csx   # Process execution (92 lines)
+│   ├── TaskContext.csx       # Context definition (12 lines)
+│   ├── DotnetCli.csx         # .NET CLI wrapper (81 lines)
+│   ├── TaskRegistry.csx      # Task definitions (113 lines)
+│   └── BdkUI.csx            # Interactive UI (190 lines)
 └── README.md              # This file
 
 Root launchers:
@@ -220,11 +234,23 @@ Root launchers:
 
 ### Key Components
 
-- **BdkConfig**: Configuration loader from `.env` file
-- **CommandExecutor**: Cross-platform process executor with real-time output
-- **DotnetCli**: .NET CLI wrapper with solution file auto-detection
-- **TaskRegistry**: Centralized task definitions organized by category
-- **BdkUI**: Interactive Spectre.Console-based UI with menus
+- **bdk-cli.csx**: Main entry point that loads library files and handles argument parsing
+- **lib/BdkConfig**: Configuration loader from `.env` file
+- **lib/CommandExecutor**: Cross-platform process executor with real-time output
+- **lib/TaskContext**: Data container passing dependencies to task handlers
+- **lib/DotnetCli**: .NET CLI wrapper with solution file auto-detection
+- **lib/TaskRegistry**: Centralized task definitions organized by category
+- **lib/BdkUI**: Interactive Spectre.Console-based UI with compact banner
+
+### Benefits of Modular Structure
+
+- **Smaller files**: Main entry reduced from 681 to 101 lines (85% reduction)
+- **Easier navigation**: Each component in its own file
+- **Logical grouping**: Related code stays together
+- **Extensibility**: Easy to add new features in dedicated files
+- **Maintainability**: Easier to find and fix bugs in specific areas
+
+See `lib/README.md` for detailed file documentation and dependency order.
 
 ## Comparison with TypeScript Version
 
