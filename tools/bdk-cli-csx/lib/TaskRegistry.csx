@@ -591,7 +591,8 @@ public static class TaskRegistry
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     
-                    var outputPath = await Prompts.PromptTextAsync("Output path (blank = .tmp/ef/efscript.sql):", "");
+                    var defaultOutput = $".tmp/ef/efscript_{module.ToLower()}.sql";
+                    var outputPath = await Prompts.PromptTextAsync("Output path:", defaultOutput);
                     return await ctx.DotnetCli.EfScriptAsync(module, dbContext, outputPath);
                 }
             },
@@ -612,7 +613,8 @@ public static class TaskRegistry
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     
-                    var outputPath = await Prompts.PromptTextAsync("Output path (blank = .tmp/ef/efbundle.exe):", "");
+                    var defaultOutput = $".tmp/ef/efbundle_{module.ToLower()}.exe";
+                    var outputPath = await Prompts.PromptTextAsync("Output path:", defaultOutput);
                     return await ctx.DotnetCli.EfBundleAsync(module, dbContext, outputPath);
                 }
             }

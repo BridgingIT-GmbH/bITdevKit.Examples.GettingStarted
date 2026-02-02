@@ -2,6 +2,9 @@
 /// <summary>
 /// Wrapper for .NET CLI commands (build, test, restore, format, etc.)
 /// </summary>
+
+using Spectre.Console;
+
 public class DotnetCli
 {
     private readonly CommandExecutor _executor;
@@ -330,30 +333,46 @@ public class DotnetCli
     /// <summary>
     /// Exports SQL script
     /// </summary>
-    public Task<ExecutionResult> EfScriptAsync(string moduleName, string dbContext, string outputPath = "")
+    public async Task<ExecutionResult> EfScriptAsync(string moduleName, string dbContext, string outputPath = "")
     {
-        var output = string.IsNullOrEmpty(outputPath) ? ".tmp/ef/efscript.sql" : outputPath;
+        var moduleLower = moduleName.ToLower();
+        var output = string.IsNullOrEmpty(outputPath) ? $".tmp/ef/efscript_{moduleLower}.sql" : outputPath;
         var infraProject = GetInfrastructureProjectPath(moduleName);
         
         var outputDir = Path.GetDirectoryName(output);
         if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             Directory.CreateDirectory(outputDir);
         
-        return _executor.ExecuteAsync("dotnet", $"ef migrations script --context {dbContext} --project {infraProject} --startup-project src/Presentation.Web.Server/Presentation.Web.Server.csproj --output {output} --idempotent --no-build");
+        var result = await _executor.ExecuteAsync("dotnet", $"ef migrations script --context {dbContext} --project {infraProject} --startup-project src/Presentation.Web.Server/Presentation.Web.Server.csproj --output {output} --idempotent --no-build");
+        
+        if (result.Success)
+        {
+            AnsiConsole.MarkupLine($"[green]✓ Script written:[/] [cyan]{Path.GetFullPath(output)}[/]");
+        }
+        
+        return result;
     }
     
     /// <summary>
     /// Exports migration bundle
     /// </summary>
-    public Task<ExecutionResult> EfBundleAsync(string moduleName, string dbContext, string outputPath = "")
+    public async Task<ExecutionResult> EfBundleAsync(string moduleName, string dbContext, string outputPath = "")
     {
-        var output = string.IsNullOrEmpty(outputPath) ? ".tmp/ef/efbundle.exe" : outputPath;
+        var moduleLower = moduleName.ToLower();
+        var output = string.IsNullOrEmpty(outputPath) ? $".tmp/ef/efbundle_{moduleLower}.exe" : outputPath;
         var infraProject = GetInfrastructureProjectPath(moduleName);
         
         var outputDir = Path.GetDirectoryName(output);
         if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             Directory.CreateDirectory(outputDir);
         
-        return _executor.ExecuteAsync("dotnet", $"ef migrations bundle --context {dbContext} --project {infraProject} --startup-project src/Presentation.Web.Server/Presentation.Web.Server.csproj --output {output} --no-build");
+        var result = await _executor.ExecuteAsync("dotnet", $"ef migrations bundle --context {dbContext} --project {infraProject} --startup-project src/Presentation.Web.Server/Presentation.Web.Server.csproj --output {output} --no-build");
+        
+        if (result.Success)
+        {
+            AnsiConsole.MarkupLine($"[green]✓ Bundle written:[/] [cyan]{Path.GetFullPath(output)}[/]");
+        }
+        
+        return result;
     }
 }

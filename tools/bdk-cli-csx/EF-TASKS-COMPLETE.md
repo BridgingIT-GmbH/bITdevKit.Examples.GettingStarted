@@ -113,9 +113,10 @@ All EF commands use:
 
 ### File Operations
 - **Migrations directory**: `src/Modules/{ModuleName}/{ModuleName}.Infrastructure/EntityFramework/Migrations/`
-- **SQL script output**: `.tmp/ef/efscript.sql` (default)
-- **Bundle output**: `.tmp/ef/efbundle.exe` (default)
+- **SQL script output**: `.tmp/ef/efscript_{moduleLower}.sql` (default, includes module name)
+- **Bundle output**: `.tmp/ef/efbundle_{moduleLower}.exe` (default, includes module name)
 - **Auto-creates output directories** if they don't exist
+- **Full path printed** on successful completion
 
 ---
 
