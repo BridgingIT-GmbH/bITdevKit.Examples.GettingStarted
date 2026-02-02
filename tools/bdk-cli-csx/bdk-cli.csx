@@ -10,6 +10,7 @@
 #load "lib/CommandExecutor.csx"
 #load "lib/TaskContext.csx"
 #load "lib/DotnetCli.csx"
+#load "lib/Prompts.csx"
 #load "lib/TaskRegistry.csx"
 #load "lib/BdkUI.csx"
 

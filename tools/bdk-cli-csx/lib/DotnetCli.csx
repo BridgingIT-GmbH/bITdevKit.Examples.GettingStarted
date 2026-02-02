@@ -78,4 +78,106 @@ public class DotnetCli
             args += " --verify-no-changes";
         return _executor.ExecuteAsync("dotnet", args);
     }
+
+    // ===== Additional Build & Maintenance Methods =====
+
+    public Task<ExecutionResult> BuildReleaseAsync()
+    {
+        var args = $"build {_solutionFile} -c Release";
+        return _executor.ExecuteAsync("dotnet", args);
+    }
+
+    public Task<ExecutionResult> BuildNoRestoreAsync()
+    {
+        var args = $"build {_solutionFile} --no-restore";
+        return _executor.ExecuteAsync("dotnet", args);
+    }
+
+    public Task<ExecutionResult> PackAsync(string projectPath = "")
+    {
+        var target = string.IsNullOrEmpty(projectPath) ? _solutionFile : projectPath;
+        return _executor.ExecuteAsync("dotnet", $"pack {target}");
+    }
+
+    public Task<ExecutionResult> PackProjectsAsync()
+    {
+        return _executor.ExecuteAsync("dotnet", $"pack {_solutionFile}");
+    }
+
+    public Task<ExecutionResult> ToolRestoreAsync()
+    {
+        return _executor.ExecuteAsync("dotnet", "tool restore");
+    }
+
+    public Task<ExecutionResult> BuildProjectAsync(string projectPath, string configuration = "Debug", bool noRestore = false)
+    {
+        var args = $"build {projectPath} -c {configuration}";
+        if (noRestore)
+            args += " --no-restore";
+        return _executor.ExecuteAsync("dotnet", args);
+    }
+
+    public Task<ExecutionResult> PublishProjectAsync(string projectPath, string configuration = "Debug", string outputDir = "", bool singleFile = false)
+    {
+        var args = $"publish {projectPath} -c {configuration}";
+        if (!string.IsNullOrEmpty(outputDir))
+            args += $" -o {outputDir}";
+        if (singleFile)
+            args += " --self-contained false -p:PublishSingleFile=true";
+        return _executor.ExecuteAsync("dotnet", args);
+    }
+
+    public Task<ExecutionResult> PublishProjectRidAsync(string projectPath, string configuration = "Debug", string rid = "", bool singleFile = false, string outputDir = "")
+    {
+        var args = $"publish {projectPath} -c {configuration}";
+        if (!string.IsNullOrEmpty(rid))
+        {
+            args += $" -r {rid} --self-contained true";
+        }
+        if (singleFile)
+        {
+            args += " /p:PublishSingleFile=true /p:PublishTrimmed=false";
+        }
+        if (!string.IsNullOrEmpty(outputDir))
+        {
+            args += $" -o {outputDir}";
+        }
+        return _executor.ExecuteAsync("dotnet", args);
+    }
+
+    public Task<ExecutionResult> RunProjectAsync(string projectPath, bool noBuild = false)
+    {
+        var args = $"run --project {projectPath}";
+        if (noBuild)
+            args += " --no-build";
+        return _executor.ExecuteAsync("dotnet", args);
+    }
+
+    public Task<ExecutionResult> WatchProjectAsync(string projectPath)
+    {
+        return _executor.ExecuteAsync("dotnet", $"watch --project {projectPath} run");
+    }
+
+    public Task<ExecutionResult> UpdatePackagesAsync()
+    {
+        return _executor.ExecuteAsync("dotnet", $"outdated {_solutionFile}");
+    }
+
+    public Task<ExecutionResult> UpdatePackagesDevkitAsync()
+    {
+        return _executor.ExecuteAsync("dotnet", $"outdated {_solutionFile} --framework net10.0");
+    }
+
+    public Task<ExecutionResult> AnalyzersAsync()
+    {
+        return _executor.ExecuteAsync("dotnet", $"format analyzers {_solutionFile}");
+    }
+
+    public Task<ExecutionResult> AnalyzersExportAsync(string reportPath = "")
+    {
+        var args = $"format analyzers {_solutionFile}";
+        if (!string.IsNullOrEmpty(reportPath))
+            args += $" --report {reportPath}";
+        return _executor.ExecuteAsync("dotnet", args);
+    }
 }

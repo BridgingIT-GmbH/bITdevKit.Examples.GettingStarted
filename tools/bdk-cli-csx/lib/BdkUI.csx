@@ -23,6 +23,13 @@ public class BdkUI
         
         await SelectSolutionFileAsync();
         
+        // If no solution selected, exit
+        if (string.IsNullOrEmpty(_context.SolutionFile))
+        {
+            AnsiConsole.MarkupLine("[yellow]No solution selected. Exiting.[/]");
+            return;
+        }
+        
         while (true)
         {
             var category = ShowCategoryMenu();
@@ -37,39 +44,15 @@ public class BdkUI
 
     private async Task SelectSolutionFileAsync()
     {
-        var solutionFiles = DotnetCli.FindAllSolutionFiles(Directory.GetCurrentDirectory());
+        var selected = await Prompts.SelectSolutionAsync(_context);
         
-        if (solutionFiles.Count == 0)
+        if (string.IsNullOrEmpty(selected))
         {
-            AnsiConsole.MarkupLine("[yellow]Warning: No solution files (.sln or .slnx) found in repo root[/]");
-            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine("[yellow]No solution selected or cancelled[/]");
             return;
         }
         
-        if (solutionFiles.Count == 1)
-        {
-            _context.SolutionFile = solutionFiles[0];
-            AnsiConsole.MarkupLine($"[green]✓[/] [dim]Solution:[/] {solutionFiles[0]}");
-            AnsiConsole.WriteLine();
-            return;
-        }
-        
-        AnsiConsole.MarkupLine("[yellow]Multiple solution files found:[/]");
-        AnsiConsole.WriteLine();
-        
-        var prompt = new SelectionPrompt<string>()
-            .Title("[cyan]Select a solution file:[/]")
-            .PageSize(10)
-            .AddChoices(solutionFiles);
-        
-        prompt.SearchEnabled = true;
-        prompt.WrapAround = true;
-        
-        var selectedSolution = AnsiConsole.Prompt(prompt);
-        _context.SolutionFile = selectedSolution;
-        
-        AnsiConsole.MarkupLine($"[green]✓ Selected:[/] {selectedSolution}");
-        AnsiConsole.WriteLine();
+        _context.SolutionFile = selected;
     }
 
     private async Task<bool> ShowTaskMenuLoopAsync(string category)

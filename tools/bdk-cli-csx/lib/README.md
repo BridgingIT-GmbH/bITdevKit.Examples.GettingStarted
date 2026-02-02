@@ -12,7 +12,8 @@ bdk-cli.csx (main entry point)
 ├── CommandExecutor.csx      # Process execution (no dependencies)
 ├── TaskContext.csx          # Context definition (no dependencies)
 ├── DotnetCli.csx            # .NET CLI wrapper (depends on all above)
-├── TaskRegistry.csx         # Task definitions (depends on DotnetCli)
+├── Prompts.csx              # User prompt utilities (depends on TaskContext)
+├── TaskRegistry.csx         # Task definitions (depends on DotnetCli, Prompts)
 └── BdkUI.csx                # Interactive UI (depends on all above)
 ```
 
@@ -27,16 +28,36 @@ Cross-platform command execution with real-time output streaming. Uses `Process`
 ### TaskContext.csx (12 lines)
 Simple data container that passes dependencies (Config, DotnetCli, Executor, SolutionFile) to task handlers.
 
-### DotnetCli.csx (81 lines)
-Wrapper for .NET CLI commands (build, test, restore, format, version). Includes solution file detection logic.
+### DotnetCli.csx (179 lines)
+Wrapper for .NET CLI commands. Includes:
+- Basic commands: build, clean, restore, test, format, version
+- Advanced build: build-release, build-nr, pack, tool-restore
+- Project operations: build-project, publish-project, run-project, watch-project
+- Project publish with RID: PublishProjectRidAsync() for cross-platform self-contained builds
+- Maintenance: update-packages, analyzers, analyzers-export
+- Solution file detection logic
 
-### TaskRegistry.csx (113 lines)
-Defines all available tasks (9 tasks across 3 categories) organized by functionality.
+### Prompts.csx (247 lines)
+Reusable user prompt utilities for interactive CLI features:
+- SelectProjectAsync() - Project file selection with cancel support
+- SelectSolutionAsync() - Solution file selection with cancel support
+- SelectModuleAsync() - Module selection with cancel support
+- SelectRidAsync() - Runtime identifier (RID) selection with cancel support
+- SelectFromListAsync() - Generic list selection with cancel support
+- PromptTextAsync() - Text input with default values
+- ConfirmAsync() - Yes/No confirmation
+- Works in both interactive and non-interactive modes
 
-### BdkUI.csx (190 lines)
+### TaskRegistry.csx (379 lines)
+Defines all available tasks (29 tasks across 3 categories) organized by functionality:
+- Build & Maintenance: 24 tasks (including server and project-specific tasks with RID selection)
+- Testing: 3 tasks
+- Utilities: 1 task
+
+### BdkUI.csx (189 lines)
 Interactive UI components including:
 - Compact FigletText banner with Grid layout
-- Solution file selection prompt (multi-select support)
+- Solution file selection with cancel support
 - Category menu with search
 - Task menu with search
 - Task execution display with duration tracking
@@ -62,3 +83,4 @@ Interactive UI components including:
 - **Logical grouping**: Related code stays together
 - **Extensibility**: Easy to add new features in dedicated files
 - **Maintainability**: Easier to find and fix bugs in specific areas
+- **Reusable prompts**: Prompts.csx provides consistent user interaction across all tasks
