@@ -203,4 +203,157 @@ public class DotnetCli
         var testProjectType = kind == "unit" ? "UnitTests" : "IntegrationTests";
         return $"tests/Modules/{moduleName}/{moduleName}.{testProjectType}/{moduleName}.{testProjectType}.csproj";
     }
+    
+    // ===== EF Core Methods =====
+    
+    /// <summary>
+    /// Gets infrastructure project path for a module
+    /// </summary>
+    private string GetInfrastructureProjectPath(string moduleName)
+    {
+        return $"src/Modules/{moduleName}/{moduleName}.Infrastructure/{moduleName}.Infrastructure.csproj";
+    }
+    
+    /// <summary>
+    /// Builds EF command arguments
+    /// </summary>
+    private string[] BuildEfArgs(string moduleName, string dbContext, string startupProject, string[] extraArgs)
+    {
+        var infraProject = GetInfrastructureProjectPath(moduleName);
+        var args = new List<string> { "dotnet", "ef" };
+        args.AddRange(extraArgs);
+        args.AddRange(new[] { "--project", infraProject, "--startup-project", startupProject, "--no-build", "--verbose", "--context", dbContext });
+        return args.ToArray();
+    }
+    
+    /// <summary>
+    /// Shows DbContext info
+    /// </summary>
+    public Task<ExecutionResult> EfInfoAsync(string moduleName, string dbContext)
+    {
+        var args = BuildEfArgs(moduleName, dbContext, "src/Presentation.Web.Server/Presentation.Web.Server.csproj", new[] { "dbcontext", "info" });
+        return _executor.ExecuteAsync("dotnet", $"ef dbcontext info --context {dbContext} --project {GetInfrastructureProjectPath(moduleName)} --startup-project src/Presentation.Web.Server/Presentation.Web.Server.csproj --no-build");
+    }
+    
+    /// <summary>
+    /// Lists migrations
+    /// </summary>
+    public Task<ExecutionResult> EfListAsync(string moduleName, string dbContext)
+    {
+        return _executor.ExecuteAsync("dotnet", $"ef migrations list --context {dbContext} --project {GetInfrastructureProjectPath(moduleName)} --startup-project src/Presentation.Web.Server/Presentation.Web.Server.csproj --no-build");
+    }
+    
+    /// <summary>
+    /// Adds a new migration
+    /// </summary>
+    public Task<ExecutionResult> EfAddAsync(string moduleName, string dbContext, string migrationName)
+    {
+        var infraProject = GetInfrastructureProjectPath(moduleName);
+        var migrationsDir = $"src/Modules/{moduleName}/{moduleName}.Infrastructure/EntityFramework/Migrations";
+        var args = $"ef migrations add {migrationName} --context {dbContext} --project {infraProject} --startup-project src/Presentation.Web.Server/Presentation.Web.Server.csproj --output-dir EntityFramework/Migrations --no-build";
+        return _executor.ExecuteAsync("dotnet", args);
+    }
+    
+    /// <summary>
+    /// Removes last migration
+    /// </summary>
+    public Task<ExecutionResult> EfRemoveAsync(string moduleName, string dbContext)
+    {
+        return _executor.ExecuteAsync("dotnet", $"ef migrations remove --context {dbContext} --project {GetInfrastructureProjectPath(moduleName)} --startup-project src/Presentation.Web.Server/Presentation.Web.Server.csproj --no-build");
+    }
+    
+    /// <summary>
+    /// Removes all migration files
+    /// </summary>
+    public ExecutionResult EfRemoveAll(string moduleName, string dbContext)
+    {
+        var migrationsDir = Path.Combine(Directory.GetCurrentDirectory(), "src", "Modules", moduleName, $"{moduleName}.Infrastructure", "EntityFramework", "Migrations");
+        
+        if (Directory.Exists(migrationsDir))
+        {
+            var files = Directory.GetFiles(migrationsDir, "*.cs");
+            foreach (var file in files)
+            {
+                File.Delete(file);
+            }
+            return new ExecutionResult { Success = true, ExitCode = 0, Duration = TimeSpan.Zero };
+        }
+        
+        return new ExecutionResult { Success = true, ExitCode = 0, Duration = TimeSpan.Zero };
+    }
+    
+    /// <summary>
+    /// Applies migrations to database
+    /// </summary>
+    public Task<ExecutionResult> EfApplyAsync(string moduleName, string dbContext)
+    {
+        return _executor.ExecuteAsync("dotnet", $"ef database update --context {dbContext} --project {GetInfrastructureProjectPath(moduleName)} --startup-project src/Presentation.Web.Server/Presentation.Web.Server.csproj --no-build");
+    }
+    
+    /// <summary>
+    /// Recreates database (drop and migrate)
+    /// </summary>
+    public async Task<ExecutionResult> EfRecreateAsync(string moduleName, string dbContext)
+    {
+        await _executor.ExecuteAsync("dotnet", $"ef database drop --context {dbContext} --project {GetInfrastructureProjectPath(moduleName)} --startup-project src/Presentation.Web.Server/Presentation.Web.Server.csproj --no-build --force");
+        return await _executor.ExecuteAsync("dotnet", $"ef database update --context {dbContext} --project {GetInfrastructureProjectPath(moduleName)} --startup-project src/Presentation.Web.Server/Presentation.Web.Server.csproj --no-build");
+    }
+    
+    /// <summary>
+    /// Undoes last migration
+    /// </summary>
+    public Task<ExecutionResult> EfUndoAsync(string moduleName, string dbContext)
+    {
+        return _executor.ExecuteAsync("dotnet", $"ef database update 0 --context {dbContext} --project {GetInfrastructureProjectPath(moduleName)} --startup-project src/Presentation.Web.Server/Presentation.Web.Server.csproj --no-build");
+    }
+    
+    /// <summary>
+    /// Shows migration status
+    /// </summary>
+    public Task<ExecutionResult> EfStatusAsync(string moduleName, string dbContext)
+    {
+        return _executor.ExecuteAsync("dotnet", $"ef migrations list --context {dbContext} --project {GetInfrastructureProjectPath(moduleName)} --startup-project src/Presentation.Web.Server/Presentation.Web.Server.csproj --no-build");
+    }
+    
+    /// <summary>
+    /// Resets migrations (creates new baseline)
+    /// </summary>
+    public async Task<ExecutionResult> EfResetAsync(string moduleName, string dbContext)
+    {
+        var infraProject = GetInfrastructureProjectPath(moduleName);
+        
+        EfRemoveAll(moduleName, dbContext);
+        
+        return await _executor.ExecuteAsync("dotnet", $"ef migrations add Initial --context {dbContext} --project {infraProject} --startup-project src/Presentation.Web.Server/Presentation.Web.Server.csproj --output-dir EntityFramework/Migrations --no-build");
+    }
+    
+    /// <summary>
+    /// Exports SQL script
+    /// </summary>
+    public Task<ExecutionResult> EfScriptAsync(string moduleName, string dbContext, string outputPath = "")
+    {
+        var output = string.IsNullOrEmpty(outputPath) ? ".tmp/ef/efscript.sql" : outputPath;
+        var infraProject = GetInfrastructureProjectPath(moduleName);
+        
+        var outputDir = Path.GetDirectoryName(output);
+        if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            Directory.CreateDirectory(outputDir);
+        
+        return _executor.ExecuteAsync("dotnet", $"ef migrations script --context {dbContext} --project {infraProject} --startup-project src/Presentation.Web.Server/Presentation.Web.Server.csproj --output {output} --idempotent --no-build");
+    }
+    
+    /// <summary>
+    /// Exports migration bundle
+    /// </summary>
+    public Task<ExecutionResult> EfBundleAsync(string moduleName, string dbContext, string outputPath = "")
+    {
+        var output = string.IsNullOrEmpty(outputPath) ? ".tmp/ef/efbundle.exe" : outputPath;
+        var infraProject = GetInfrastructureProjectPath(moduleName);
+        
+        var outputDir = Path.GetDirectoryName(output);
+        if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            Directory.CreateDirectory(outputDir);
+        
+        return _executor.ExecuteAsync("dotnet", $"ef migrations bundle --context {dbContext} --project {infraProject} --startup-project src/Presentation.Web.Server/Presentation.Web.Server.csproj --output {output} --no-build");
+    }
 }

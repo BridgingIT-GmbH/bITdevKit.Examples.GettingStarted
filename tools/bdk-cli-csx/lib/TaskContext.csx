@@ -10,5 +10,7 @@ public class TaskContext
     public CommandExecutor Executor { get; set; } = null!;
     public string SolutionFile { get; set; } = "";
     public string SelectedModule { get; set; } = "";
+    public string SelectedDbContext { get; set; } = "";
     public List<string> AvailableModules { get; set; } = new();
+    public List<string> AvailableDbContexts { get; set; } = new();
 }

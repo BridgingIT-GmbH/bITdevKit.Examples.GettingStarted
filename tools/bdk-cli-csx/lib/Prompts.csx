@@ -407,6 +407,29 @@ public static class Prompts
     }
     
     /// <summary>
+    /// Discovers DbContexts for a specific module
+    /// </summary>
+    /// <param name="moduleName">Name of module</param>
+    /// <returns>List of DbContext names</returns>
+    public static List<string> DiscoverDbContexts(string moduleName)
+    {
+        var contexts = new List<string>();
+        var repoRoot = Directory.GetCurrentDirectory();
+        var infraDir = Path.Combine(repoRoot, "src", "Modules", moduleName, $"{moduleName}.Infrastructure");
+        
+        if (!Directory.Exists(infraDir))
+            return contexts;
+        
+        contexts.AddRange(
+            Directory.GetFiles(infraDir, "*DbContext.cs", SearchOption.AllDirectories)
+                .Select(Path.GetFileNameWithoutExtension)
+                .OrderBy(c => c)
+        );
+        
+        return contexts;
+    }
+    
+    /// <summary>
     /// Auto-selects a module if only one exists
     /// </summary>
     /// <returns>Selected module name, or empty string if none or multiple</returns>
@@ -487,6 +510,79 @@ public static class Prompts
             var firstModule = modules[0];
             context.SelectedModule = firstModule;
             return firstModule;
+        }
+    }
+    
+    /// <summary>
+    /// Selects a DbContext for EF operations
+    /// Auto-selects if only one exists, otherwise prompts for selection
+    /// </summary>
+    /// <param name="context">Task context with selected module and available DbContexts</param>
+    /// <param name="promptTitle">Title for selection prompt</param>
+    /// <returns>Selected DbContext name, or empty string if cancelled</returns>
+    public static async Task<string> SelectDbContextForTaskAsync(TaskContext context, string promptTitle = "Select a DbContext:")
+    {
+        if (string.IsNullOrEmpty(context.SelectedModule))
+        {
+            AnsiConsole.MarkupLine("[yellow]Warning: No module selected[/]");
+            return "";
+        }
+        
+        var contexts = context.AvailableDbContexts;
+        
+        if (contexts.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[yellow]Warning: No DbContexts found for module[/]");
+            return "";
+        }
+        
+        // Auto-select if only one DbContext exists
+        if (contexts.Count == 1)
+        {
+            var selectedContext = contexts[0];
+            context.SelectedDbContext = selectedContext;
+            return selectedContext;
+        }
+        
+        // If DbContext already selected in context and valid, use it
+        if (!string.IsNullOrEmpty(context.SelectedDbContext) && contexts.Contains(context.SelectedDbContext))
+        {
+            return context.SelectedDbContext;
+        }
+        
+        // Multiple DbContexts exist, prompt for selection
+        if (!Console.IsInputRedirected && Environment.GetEnvironmentVariable("NON_INTERACTIVE") != "1")
+        {
+            var choices = new List<string>(contexts)
+            {
+                "✕ Cancel"
+            };
+            
+            var prompt = new SelectionPrompt<string>()
+                .Title($"[cyan]{promptTitle}[/]")
+                .PageSize(10)
+                .AddChoices(choices);
+            
+            prompt.SearchEnabled = true;
+            prompt.WrapAround = true;
+            
+            var selected = AnsiConsole.Prompt(prompt);
+            
+            if (selected == "✕ Cancel")
+            {
+                AnsiConsole.MarkupLine("[yellow]Selection cancelled[/]");
+                return "";
+            }
+            
+            context.SelectedDbContext = selected;
+            return selected;
+        }
+        else
+        {
+            // Non-interactive mode: use first DbContext
+            var firstContext = contexts[0];
+            context.SelectedDbContext = firstContext;
+            return firstContext;
         }
     }
 }

@@ -340,12 +340,281 @@ public static class TaskRegistry
             },
             
             // ===== Utilities =====
-            new() {
+            new BdkTask
+            {
                 Key = "version",
                 Label = "Show .NET Version",
                 Description = "Display .NET SDK version",
                 Category = "Utilities",
                 Execute = async (ctx) => await ctx.DotnetCli.VersionAsync()
+            },
+            
+            // ===== EF & Persistence =====
+            new BdkTask
+            {
+                Key = "ef-info",
+                Label = "EF Info",
+                Description = "Show DbContext info",
+                Category = "EF & Persistence",
+                Execute = async (ctx) => 
+                {
+                    var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module for EF info:");
+                    if (string.IsNullOrEmpty(module))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
+                    var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
+                    if (string.IsNullOrEmpty(dbContext))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    return await ctx.DotnetCli.EfInfoAsync(module, dbContext);
+                }
+            },
+            new BdkTask
+            {
+                Key = "ef-list",
+                Label = "EF List Migrations",
+                Description = "List migrations",
+                Category = "EF & Persistence",
+                Execute = async (ctx) => 
+                {
+                    var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to list migrations:");
+                    if (string.IsNullOrEmpty(module))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
+                    var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
+                    if (string.IsNullOrEmpty(dbContext))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    return await ctx.DotnetCli.EfListAsync(module, dbContext);
+                }
+            },
+            new BdkTask
+            {
+                Key = "ef-add",
+                Label = "EF Add Migration",
+                Description = "Add new migration",
+                Category = "EF & Persistence",
+                Execute = async (ctx) => 
+                {
+                    var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module for migration:");
+                    if (string.IsNullOrEmpty(module))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
+                    var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
+                    if (string.IsNullOrEmpty(dbContext))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    var migrationName = await Prompts.PromptTextAsync("Enter migration name (blank = auto timestamp):", "");
+                    if (string.IsNullOrEmpty(migrationName))
+                        migrationName = "Migration_" + DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                    
+                    return await ctx.DotnetCli.EfAddAsync(module, dbContext, migrationName);
+                }
+            },
+            new BdkTask
+            {
+                Key = "ef-remove",
+                Label = "EF Remove Migration",
+                Description = "Remove last migration",
+                Category = "EF & Persistence",
+                Execute = async (ctx) => 
+                {
+                    var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to remove migration:");
+                    if (string.IsNullOrEmpty(module))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
+                    var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
+                    if (string.IsNullOrEmpty(dbContext))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    return await ctx.DotnetCli.EfRemoveAsync(module, dbContext);
+                }
+            },
+            new BdkTask
+            {
+                Key = "ef-removeall",
+                Label = "EF Remove All Migrations",
+                Description = "Delete all migration files",
+                Category = "EF & Persistence",
+                Execute = async (ctx) => 
+                {
+                    var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to remove all migrations:");
+                    if (string.IsNullOrEmpty(module))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
+                    var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
+                    if (string.IsNullOrEmpty(dbContext))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    return ctx.DotnetCli.EfRemoveAll(module, dbContext);
+                }
+            },
+            new BdkTask
+            {
+                Key = "ef-apply",
+                Label = "EF Apply Migrations",
+                Description = "Update database (apply migrations)",
+                Category = "EF & Persistence",
+                Execute = async (ctx) => 
+                {
+                    var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to apply migrations:");
+                    if (string.IsNullOrEmpty(module))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
+                    var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
+                    if (string.IsNullOrEmpty(dbContext))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    return await ctx.DotnetCli.EfApplyAsync(module, dbContext);
+                }
+            },
+            new BdkTask
+            {
+                Key = "ef-update",
+                Label = "EF Update Database",
+                Description = "Update database (alias for apply)",
+                Category = "EF & Persistence",
+                Execute = async (ctx) => 
+                {
+                    var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to update database:");
+                    if (string.IsNullOrEmpty(module))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
+                    var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
+                    if (string.IsNullOrEmpty(dbContext))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    return await ctx.DotnetCli.EfApplyAsync(module, dbContext);
+                }
+            },
+            new BdkTask
+            {
+                Key = "ef-recreate",
+                Label = "EF Recreate Database",
+                Description = "Drop and recreate database",
+                Category = "EF & Persistence",
+                Execute = async (ctx) => 
+                {
+                    var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to recreate database:");
+                    if (string.IsNullOrEmpty(module))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
+                    var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
+                    if (string.IsNullOrEmpty(dbContext))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    return await ctx.DotnetCli.EfRecreateAsync(module, dbContext);
+                }
+            },
+            new BdkTask
+            {
+                Key = "ef-undo",
+                Label = "EF Undo Migration",
+                Description = "Undo last migration",
+                Category = "EF & Persistence",
+                Execute = async (ctx) => 
+                {
+                    var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to undo migration:");
+                    if (string.IsNullOrEmpty(module))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
+                    var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
+                    if (string.IsNullOrEmpty(dbContext))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    return await ctx.DotnetCli.EfUndoAsync(module, dbContext);
+                }
+            },
+            new BdkTask
+            {
+                Key = "ef-status",
+                Label = "EF Migration Status",
+                Description = "Show migration status",
+                Category = "EF & Persistence",
+                Execute = async (ctx) => 
+                {
+                    var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module for migration status:");
+                    if (string.IsNullOrEmpty(module))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
+                    var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
+                    if (string.IsNullOrEmpty(dbContext))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    return await ctx.DotnetCli.EfStatusAsync(module, dbContext);
+                }
+            },
+            new BdkTask
+            {
+                Key = "ef-reset",
+                Label = "EF Reset Migrations",
+                Description = "Squash migrations into new baseline",
+                Category = "EF & Persistence",
+                Execute = async (ctx) => 
+                {
+                    var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to reset migrations:");
+                    if (string.IsNullOrEmpty(module))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
+                    var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
+                    if (string.IsNullOrEmpty(dbContext))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    return await ctx.DotnetCli.EfResetAsync(module, dbContext);
+                }
+            },
+            new BdkTask
+            {
+                Key = "ef-script",
+                Label = "EF Export SQL Script",
+                Description = "Export schema as SQL script",
+                Category = "EF & Persistence",
+                Execute = async (ctx) => 
+                {
+                    var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to export script:");
+                    if (string.IsNullOrEmpty(module))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
+                    var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
+                    if (string.IsNullOrEmpty(dbContext))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    var outputPath = await Prompts.PromptTextAsync("Output path (blank = .tmp/ef/efscript.sql):", "");
+                    return await ctx.DotnetCli.EfScriptAsync(module, dbContext, outputPath);
+                }
+            },
+            new BdkTask
+            {
+                Key = "ef-bundle",
+                Label = "EF Export Bundle",
+                Description = "Export migration bundle",
+                Category = "EF & Persistence",
+                Execute = async (ctx) => 
+                {
+                    var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to export bundle:");
+                    if (string.IsNullOrEmpty(module))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
+                    var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
+                    if (string.IsNullOrEmpty(dbContext))
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    
+                    var outputPath = await Prompts.PromptTextAsync("Output path (blank = .tmp/ef/efbundle.exe):", "");
+                    return await ctx.DotnetCli.EfBundleAsync(module, dbContext, outputPath);
+                }
             }
         };
     }
