@@ -335,11 +335,12 @@ public static class MiscUtils
 
         try
         {
-            AnsiConsole.MarkupLine($"[cyan]Opening {title}:[/] {Markup.Escape(url)}[/]");
+            AnsiConsole.Markup($"[cyan]Opening {Markup.Escape(title)}:[/] ");
+            AnsiConsole.MarkupLine(Markup.Escape(url));
 
             Utils.OpenUrl(url);
 
-            AnsiConsole.MarkupLine($"[green]{title} opened.[/]");
+            AnsiConsole.MarkupLine($"[green]{Markup.Escape(title)} opened.[/]");
 
             return new ExecutionResult
             {
