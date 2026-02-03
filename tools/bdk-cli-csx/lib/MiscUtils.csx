@@ -332,20 +332,20 @@ public static class MiscUtils
     public static async Task<ExecutionResult> OpenBrowserUrlAsync(TaskContext ctx, string url, string title)
     {
         var startTime = DateTime.Now;
-        
+
         try
         {
-            AnsiConsole.MarkupLine($"[cyan]Opening {title}:[/] {url}[/]");
-            
+            AnsiConsole.MarkupLine($"[cyan]Opening {title}:[/] {Markup.Escape(url)}[/]");
+
             Utils.OpenUrl(url);
-            
+
             AnsiConsole.MarkupLine($"[green]{title} opened.[/]");
-            
-            return new ExecutionResult 
-            { 
-                Success = true, 
-                ExitCode = 0, 
-                Duration = DateTime.Now - startTime 
+
+            return new ExecutionResult
+            {
+                Success = true,
+                ExitCode = 0,
+                Duration = DateTime.Now - startTime
             };
         }
         catch (Exception ex)
@@ -354,5 +354,113 @@ public static class MiscUtils
             return new ExecutionResult { Success = false, ExitCode = 1, Duration = DateTime.Now - startTime };
         }
     }
+
+    public static async Task<ExecutionResult> UpdateDocsAsync(TaskContext ctx)
+    {
+        var startTime = DateTime.Now;
+
+        try
+        {
+            AnsiConsole.MarkupLine("[cyan]Downloading latest DevKit documentation...[/]");
+
+            var docsUrl = "https://api.github.com/repos/BridgingIT-GmbH/bITdevKit/contents/docs?ref=main";
+            var docsDir = Path.Combine(ctx.RootDir, ".bdk", "docs");
+
+            // Clean existing docs folder FIRST
+            if (Directory.Exists(docsDir))
+            {
+                foreach (var file in Directory.GetFiles(docsDir, "*", SearchOption.AllDirectories))
+                    try { File.Delete(file); } catch { }
+                foreach (var dir in Directory.GetDirectories(docsDir, "*", SearchOption.AllDirectories))
+                    try { Directory.Delete(dir, true); } catch { }
+            }
+
+            Directory.CreateDirectory(docsDir);
+
+            // Use GitHub API
+            using var client = new System.Net.Http.HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "BDK-CLI");
+            client.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json");
+
+            var response = await client.GetAsync(docsUrl);
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var files = System.Text.Json.JsonSerializer.Deserialize<List<GitHubFile>>(json);
+
+            if (files == null || files.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[yellow]No docs files found on GitHub[/]");
+                return new ExecutionResult { Success = true, ExitCode = 0, Duration = DateTime.Now - startTime };
+            }
+
+            Console.WriteLine($"Found {files.Count} items in docs folder");
+
+            await DownloadGitHubFilesAsync(files, docsDir, "https://raw.githubusercontent.com/BridgingIT-GmbH/bITdevKit/main/docs/");
+
+            Console.WriteLine($"DevKit documentation downloaded to: {Markup.Escape(docsDir)}");
+
+            return new ExecutionResult { Success = true, ExitCode = 0, Duration = DateTime.Now - startTime };
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[red]Error downloading docs: {Markup.Escape(ex.Message)}[/]");
+            return new ExecutionResult { Success = false, ExitCode = 1, Duration = DateTime.Now - startTime };
+        }
+    }
+
+    private static async Task DownloadGitHubFilesAsync(List<GitHubFile> files, string docsDir, string baseUrl)
+    {
+        foreach (var file in files)
+        {
+            if (file.type == "dir")
+            {
+                var subdir = Path.Combine(docsDir, file.name);
+                Directory.CreateDirectory(subdir);
+
+                var subUrl = $"https://api.github.com/repos/BridgingIT-GmbH/bITdevKit/contents/docs/{file.name}?ref=main";
+
+                using var client = new System.Net.Http.HttpClient();
+                client.DefaultRequestHeaders.Add("User-Agent", "BDK-CLI");
+                client.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json");
+
+                var response = await client.GetAsync(subUrl);
+                response.EnsureSuccessStatusCode();
+
+                var json = await response.Content.ReadAsStringAsync();
+                var subFiles = System.Text.Json.JsonSerializer.Deserialize<List<GitHubFile>>(json);
+
+                if (subFiles != null && subFiles.Count > 0)
+                {
+                    Console.WriteLine($"  Entering {file.name}/");
+                    await DownloadGitHubFilesAsync(subFiles, subdir, $"{baseUrl}{file.name}/");
+                }
+            }
+            else
+            {
+                var filePath = Path.Combine(docsDir, file.name);
+                var fileUrl = $"{baseUrl}{file.name}";
+
+                Console.WriteLine($"  Downloading {file.name}...");
+
+                using var client = new System.Net.Http.HttpClient();
+                client.DefaultRequestHeaders.Add("User-Agent", "BDK-CLI");
+
+                var fileResponse = await client.GetAsync(fileUrl);
+                fileResponse.EnsureSuccessStatusCode();
+
+                var content = await fileResponse.Content.ReadAsByteArrayAsync();
+                File.WriteAllBytes(filePath, content);
+            }
+        }
+    }
+}
+
+public class GitHubFile
+{
+    public string name { get; set; } = "";
+    public string type { get; set; } = "file";
+    public int size { get; set; }
+    public string download_url { get; set; } = "";
 }
 

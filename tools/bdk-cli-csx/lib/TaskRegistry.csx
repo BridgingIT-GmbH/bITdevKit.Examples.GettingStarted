@@ -596,11 +596,7 @@ public static class TaskRegistry
                 Label = "Update DevKit Docs",
                 Description = "Download latest DevKit docs",
                 Category = "Utilities",
-                Execute = async (ctx) => 
-                {
-                    AnsiConsole.MarkupLine("[yellow]Docs update not yet implemented in C# CLI[/]");
-                    return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                }
+                Execute = async (ctx) => await MiscUtils.UpdateDocsAsync(ctx)
             },
             
             // ===== Performance & Diagnostics =====
