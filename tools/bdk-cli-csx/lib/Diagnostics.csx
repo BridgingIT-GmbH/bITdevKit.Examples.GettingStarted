@@ -11,10 +11,10 @@ public static class DiagnosticsUtils
     public static async Task<ExecutionResult> RunBenchmarksAsync(TaskContext ctx)
     {
         var startTime = DateTime.Now;
-        
+
         try
         {
-            var benchmarkProjects = Utils.FindFiles(ctx.RootDir, "*Benchmarks.csproj");
+            var benchmarkProjects = Utils.FindFiles(ctx.RootDir, "*Benchmarks.csproj", recursive: true);
             
             if (benchmarkProjects.Count == 0)
             {
@@ -59,7 +59,7 @@ public static class DiagnosticsUtils
         
         try
         {
-            var benchmarkProjects = Utils.FindFiles(ctx.RootDir, "*Benchmarks.csproj");
+            var benchmarkProjects = Utils.FindFiles(ctx.RootDir, "*Benchmarks.csproj", recursive: true);
             
             if (benchmarkProjects.Count == 0)
             {

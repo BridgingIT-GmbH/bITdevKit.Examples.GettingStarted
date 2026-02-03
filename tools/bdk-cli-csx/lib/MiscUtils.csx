@@ -18,7 +18,7 @@ public static class MiscUtils
 
             Directory.CreateDirectory(ctx.OutputDir);
             var outputFile = Path.Combine(ctx.OutputDir, "digest_code.md");
-            var projects = Utils.FindFiles(ctx.RootDir, "*.csproj");
+            var projects = Utils.FindFiles(ctx.RootDir, "*.csproj", recursive: true);
 
             if (projects.Count == 0)
             {
