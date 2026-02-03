@@ -65,7 +65,7 @@ public static class MiscUtils
                 }
             }
             
-            AnsiConsole.MarkupLine($"[green]Documentation generated in:[/] {Markup.Escape(outputDir)}[/]");
+            AnsiConsole.MarkupLine($"[green]Documentation generated in:[/] {Markup.Escape(outputDir)}");
             
             return new ExecutionResult 
             { 

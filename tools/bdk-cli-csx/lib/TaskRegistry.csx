@@ -496,14 +496,6 @@ public static class TaskRegistry
             },
             new BdkTask
             {
-                Key = "cleanup",
-                Label = "Clean Workspace (Alias)",
-                Description = "Remove build/output artifact directories (alias for clean-ws)",
-                Category = "Utilities",
-                Execute = async (ctx) => await MiscUtils.CleanWorkspaceAsync(ctx)
-            },
-            new BdkTask
-            {
                 Key = "remove-headers",
                 Label = "Remove File Headers",
                 Description = "Remove MIT license headers from all C# files in src/ and tests/",
@@ -520,14 +512,6 @@ public static class TaskRegistry
             },
             new BdkTask
             {
-                Key = "shell",
-                Label = "C# Shell (Alias)",
-                Description = "Run C# REPL (alias for repl)",
-                Category = "Utilities",
-                Execute = async (ctx) => await MiscUtils.RunCSharpReplAsync(ctx)
-            },
-            new BdkTask
-            {
                 Key = "kill-dotnet",
                 Label = "Kill .NET Process",
                 Description = "Terminate a dotnet process (interactive selection or direct -ProcessId)",
@@ -539,14 +523,6 @@ public static class TaskRegistry
                 Key = "minver",
                 Label = "Show MinVer",
                 Description = "Display semantic version computed by MinVer",
-                Category = "Utilities",
-                Execute = async (ctx) => await MiscUtils.ShowMinVerAsync(ctx)
-            },
-            new BdkTask
-            {
-                Key = "show-minver",
-                Label = "Show MinVer (Alias)",
-                Description = "Display semantic version (alias for minver)",
                 Category = "Utilities",
                 Execute = async (ctx) => await MiscUtils.ShowMinVerAsync(ctx)
             },
