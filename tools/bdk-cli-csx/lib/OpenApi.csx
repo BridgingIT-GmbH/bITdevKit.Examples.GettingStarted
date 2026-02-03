@@ -44,9 +44,14 @@ public static class OpenApiUtils
             
             var args = $"run --rm -v \"{ctx.RootDir}:/work\" {dockerImage} lint \"/work/{specPath}\" --format {format} --fail-severity {failSeverity}";
             
-            if (!string.IsNullOrEmpty(fullRulesetPath) && File.Exists(fullRulesetPath))
+            // Always include ruleset if it exists
+            var actualRulesetPath = string.IsNullOrEmpty(rulesetPath) ? ".spectral.yaml" : rulesetPath;
+            var actualFullRulesetPath = Path.Combine(ctx.RootDir, actualRulesetPath);
+            if (File.Exists(actualFullRulesetPath))
             {
-                args += $" -r \"/work/{rulesetPath}\"";
+                var relativeRuleset = actualRulesetPath.Replace(ctx.RootDir, "").Replace("\\", "/").TrimStart('/');
+                args += $" --ruleset \"/work/{relativeRuleset}\"";
+                AnsiConsole.MarkupLine($"[cyan]Ruleset:[/] {Markup.Escape(relativeRuleset)}[/]");
             }
             
             var result = await ctx.Executor.ExecuteAsync("docker", args);

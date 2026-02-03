@@ -343,7 +343,7 @@ public static class TaskRegistry
                 Label = "Code Coverage",
                 Description = "Run tests with coverage (cobertura)",
                 Category = "Testing",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var startTime = DateTime.Now;
                     var solution = ctx.SolutionPath;
@@ -352,17 +352,17 @@ public static class TaskRegistry
                         AnsiConsole.MarkupLine("[red]Error: No solution file found[/]");
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     }
-                    
+
                     var outDir = Path.Combine(ctx.OutputDir, "coverage");
                     Directory.CreateDirectory(outDir);
-                    
+
                     var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
                     var runDir = Path.Combine(outDir, $"run_{timestamp}");
                     Directory.CreateDirectory(runDir);
-                    
+
                     AnsiConsole.MarkupLine($"[cyan]Running tests with coverage -> {Markup.Escape(runDir)}[/]");
-                    
-                    var args = $"test \"{solution}\" --collect:XPlat Code Coverage --results-directory \"{runDir}\" --settings:coverlet.runsettings";
+
+                    var args = $"test \"{solution}\" --collect:\"XPlat Code Coverage\" --results-directory \"{runDir}\" --settings:coverlet.runsettings";
                     var result = await ctx.Executor.ExecuteAsync("dotnet", args);
                     
                     if (result.ExitCode != 0)
@@ -394,7 +394,7 @@ public static class TaskRegistry
                 Label = "Code Coverage (HTML)",
                 Description = "Run coverage and generate HTML report",
                 Category = "Testing",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var startTime = DateTime.Now;
                     var solution = ctx.SolutionPath;
@@ -403,17 +403,17 @@ public static class TaskRegistry
                         AnsiConsole.MarkupLine("[red]Error: No solution file found[/]");
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     }
-                    
+
                     var outDir = Path.Combine(ctx.OutputDir, "coverage");
                     Directory.CreateDirectory(outDir);
-                    
+
                     var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
                     var runDir = Path.Combine(outDir, $"run_{timestamp}");
                     Directory.CreateDirectory(runDir);
-                    
+
                     AnsiConsole.MarkupLine($"[cyan]Running tests with coverage -> {Markup.Escape(runDir)}[/]");
-                    
-                    var args = $"test \"{solution}\" --collect:XPlat Code Coverage --results-directory \"{runDir}\" --settings:coverlet.runsettings";
+
+                    var args = $"test \"{solution}\" --collect:\"XPlat Code Coverage\" --results-directory \"{runDir}\" --settings:coverlet.runsettings";
                     var result = await ctx.Executor.ExecuteAsync("dotnet", args);
                     
                     if (result.ExitCode != 0)

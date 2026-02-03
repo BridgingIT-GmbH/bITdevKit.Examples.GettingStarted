@@ -200,21 +200,22 @@ public static class SecurityUtils
             
             var outDir = Path.Combine(ctx.OutputDir, "compliance");
             Directory.CreateDirectory(outDir);
-            
+
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             var mdFile = Path.Combine(outDir, $"licenses_{timestamp}.md");
             var jsonFile = Path.Combine(outDir, $"licenses_{timestamp}.json");
-            
+
             AnsiConsole.MarkupLine("[cyan]Generating license report[/]");
-            
+
+            // Restore solution first to ensure project.assets.json files exist
+            AnsiConsole.MarkupLine("[dim]Restoring solution...[/]");
+            await ctx.Executor.ExecuteAsync("dotnet", $"restore \"{solution}\"", captureOutput: false, showCommand: false);
+
             var args = $"tool run nuget-license -i \"{solution}\" -t -o JsonPretty";
-            var result = await ctx.Executor.ExecuteAsync("dotnet", args, captureOutput: true);
+            var result = await ctx.Executor.ExecuteAsync("dotnet", args, captureOutput: false);
             
-            if (result.ExitCode != 0)
-            {
-                throw new Exception("nuget-license failed");
-            }
-            
+            // nuget-license may exit with non-zero even if successful, so check output
+            // We'll rely on the JSON parsing to determine success
             var parseSource = result.Output.TrimStart();
             if (!parseSource.StartsWith("[") && !parseSource.StartsWith("{"))
             {
