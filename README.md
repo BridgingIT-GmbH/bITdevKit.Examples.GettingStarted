@@ -175,6 +175,7 @@ graph TB
 ### Layer Responsibilities
 
 #### Domain Layer (Core)
+
 **Location**: `src/Modules/CoreModule/CoreModule.Domain`
 
 **Responsibilities**:
@@ -191,6 +192,7 @@ graph TB
 **Key Principle**: The domain layer is **persistence-ignorant** and **framework-agnostic**. It contains no references to databases, web frameworks, or external services.
 
 #### Application Layer
+
 **Location**: `src/Modules/CoreModule/CoreModule.Application`
 
 **Responsibilities**:
@@ -207,6 +209,7 @@ graph TB
 **Key Principle**: Application defines **what** the system does, not **how** it's implemented (infrastructure) or **how** it's exposed (presentation).
 
 #### Infrastructure Layer
+
 **Location**: `src/Modules/CoreModule/CoreModule.Infrastructure`
 
 **Responsibilities**:
@@ -222,6 +225,7 @@ graph TB
 **Key Principle**: Infrastructure provides **implementations** of abstractions defined by inner layers.
 
 #### Presentation Layer
+
 **Location**: `src/Modules/CoreModule/CoreModule.Presentation`
 
 **Responsibilities**:
