@@ -11,72 +11,92 @@ public static class MiscUtils
     public static async Task<ExecutionResult> GenerateDocsAsync(TaskContext ctx)
     {
         var startTime = DateTime.Now;
-        
+
         try
         {
-            AnsiConsole.MarkupLine("[cyan]Generating consolidated markdown documentation...[/]");
-            
-            var outputDir = Path.Combine(ctx.OutputDir, "docs");
-            Directory.CreateDirectory(outputDir);
-            
+            AnsiConsole.MarkupLine("[cyan]Compacting source code for LLM digestion...[/]");
+
+            Directory.CreateDirectory(ctx.OutputDir);
+            var outputFile = Path.Combine(ctx.OutputDir, "digest_code.md");
             var projects = Utils.FindFiles(ctx.RootDir, "*.csproj");
-            
+
             if (projects.Count == 0)
             {
-                AnsiConsole.MarkupLine("[yellow]No projects found for documentation generation[/]");
+                AnsiConsole.MarkupLine("[yellow]No projects found for code digestion[/]");
                 return new ExecutionResult { Success = true, ExitCode = 0, Duration = DateTime.Now - startTime };
             }
-            
+
+            var digestLines = new List<string>();
+            digestLines.Add("# Code Digest");
+            digestLines.Add("");
+
             foreach (var project in projects)
             {
                 var projectName = Path.GetFileNameWithoutExtension(project);
                 var projectDir = Path.GetDirectoryName(Path.Combine(ctx.RootDir, project));
-                
+
                 if (string.IsNullOrEmpty(projectDir))
                     continue;
-                
-                var mdFile = Path.Combine(outputDir, $"{projectName}.g.md");
-                
+
                 try
                 {
                     var sourceFiles = Directory.GetFiles(projectDir, "*.cs", SearchOption.AllDirectories)
-                        .Where(f => !f.EndsWith(".g.cs") && !f.EndsWith(".designer.cs") && !f.EndsWith(".generated.cs"));
-                    
-                    var mdContent = new List<string>();
-                    mdContent.Add($"# {projectName}");
-                    mdContent.Add("");
-                    
+                        .Where(f => !f.EndsWith(".g.cs") && !f.EndsWith(".designer.cs") && !f.EndsWith(".generated.cs")
+                            && !f.Contains("GlobalSuppressions.cs"));
+
                     foreach (var file in sourceFiles)
                     {
-                        var relativePath = Path.GetRelativePath(projectDir, file).Replace("\\", "/");
-                        mdContent.Add($"## {relativePath}");
-                        mdContent.Add("```csharp");
-                        var content = File.ReadAllText(file);
-                        mdContent.Add(content);
-                        mdContent.Add("```");
-                        mdContent.Add("");
+                        var relativePath = Path.GetRelativePath(ctx.RootDir, file).Replace("\\", "/");
+                        digestLines.Add($"## {relativePath}");
+                        digestLines.Add("");
+
+                        var content = File.ReadAllLines(file);
+                        var codeLines = new List<string>();
+
+                        var inHeader = true;
+                        foreach (var line in content)
+                        {
+                            if (inHeader && line.TrimStart().StartsWith("//"))
+                                continue;
+
+                            if (inHeader && !string.IsNullOrWhiteSpace(line))
+                            {
+                                if (!line.TrimStart().StartsWith("//"))
+                                    inHeader = false;
+                                else
+                                    continue;
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(line))
+                                codeLines.Add(line);
+                        }
+
+                        digestLines.Add("```csharp");
+                        digestLines.AddRange(codeLines);
+                        digestLines.Add("```");
+                        digestLines.Add("");
                     }
-                    
-                    File.WriteAllLines(mdFile, mdContent);
                 }
                 catch (Exception ex)
                 {
-                    AnsiConsole.MarkupLine($"[yellow]Failed to generate docs for {projectName}: {Markup.Escape(ex.Message)}[/]");
+                    AnsiConsole.MarkupLine($"[yellow]Failed to process {projectName}: {Markup.Escape(ex.Message)}[/]");
                 }
             }
-            
-            AnsiConsole.MarkupLine($"[green]Documentation generated in:[/] {Markup.Escape(outputDir)}");
-            
-            return new ExecutionResult 
-            { 
-                Success = true, 
-                ExitCode = 0, 
-                Duration = DateTime.Now - startTime 
+
+            File.WriteAllLines(outputFile, digestLines);
+            var fullPath = Path.GetFullPath(outputFile);
+            Console.WriteLine($"Code digest created: {fullPath}");
+
+            return new ExecutionResult
+            {
+                Success = true,
+                ExitCode = 0,
+                Duration = DateTime.Now - startTime
             };
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[red]Error generating docs: {Markup.Escape(ex.Message)}[/]");
+            AnsiConsole.MarkupLine($"[red]Error generating digest: {Markup.Escape(ex.Message)}[/]");
             return new ExecutionResult { Success = false, ExitCode = 1, Duration = DateTime.Now - startTime };
         }
     }

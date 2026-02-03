@@ -481,8 +481,8 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "docs-generate",
-                Label = "Generate Documentation",
-                Description = "Generate consolidated markdown documentation per project",
+                Label = "Digest Code",
+                Description = "Compact source code for LLM digestion",
                 Category = "Utilities",
                 Execute = async (ctx) => await MiscUtils.GenerateDocsAsync(ctx)
             },
