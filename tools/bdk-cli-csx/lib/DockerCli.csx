@@ -344,19 +344,13 @@ public class DockerCli
         return containerName;
     }
 
-    public async Task<ExecutionResult> ComposeUpAsync(bool pull)
+    public async Task<ExecutionResult> ComposeUpAsync()
     {
         var composeFile = _dockerConfig.ComposeFilePath;
         if (string.IsNullOrEmpty(composeFile) || !File.Exists(composeFile))
         {
             AnsiConsole.MarkupLine($"[red]Error: Compose file not found: {composeFile}[/]");
             return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-        }
-
-        if (pull)
-        {
-            AnsiConsole.MarkupLine("[cyan]Pulling images...[/]");
-            await _executor.ExecuteAsync("docker", $"compose -f {composeFile} pull", showCommand: true);
         }
 
         AnsiConsole.MarkupLine($"[cyan]Starting compose stack:[/] [green]{composeFile}[/]");
@@ -422,48 +416,8 @@ public class DockerCli
             return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
         }
 
-        AnsiConsole.MarkupLine("[cyan]Retrieving running containers...[/]");
-        var containers = await GetRunningContainersAsync();
-        
-        if (containers.Count == 0)
-        {
-            AnsiConsole.MarkupLine("[yellow]No running containers found.[/]");
-            return new ExecutionResult { Success = true, ExitCode = 0, Duration = TimeSpan.Zero };
-        }
-
-        var choices = new List<string> { "All services (recreate all)" };
-        foreach (var c in containers)
-        {
-            choices.Add($"{c.Name}  ({c.Image}) - {c.Status}");
-        }
-
-        var selection = await Prompts.SelectFromListAsync("Select container to recreate:", choices);
-        if (string.IsNullOrEmpty(selection))
-            return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-
-        var idx = choices.IndexOf(selection);
-        if (idx < 0)
-            return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-
-        if (idx == 0)
-        {
-            AnsiConsole.MarkupLine($"[cyan]Recreating ALL services:[/] [green]{composeFile}[/]");
-            return await ExecuteDockerCommandAsync($"compose -f {composeFile} up -d --force-recreate");
-        }
-
-        var selectedContainer = containers[idx - 1];
-        var serviceName = selectedContainer.ServiceName;
-        
-        AnsiConsole.MarkupLine($"[cyan]Recreating service:[/] [green]{serviceName}[/] [dim](container: {selectedContainer.Name})[/]");
-        
-        var result = await ExecuteDockerCommandAsync($"compose -f {composeFile} up -d --force-recreate {serviceName}");
-        
-        if (result.Success)
-        {
-            AnsiConsole.MarkupLine($"[green]Recreate requested for:[/] [cyan]{serviceName}[/]");
-        }
-
-        return result;
+        AnsiConsole.MarkupLine($"[cyan]Recreating ALL services:[/] [green]{composeFile}[/]");
+        return await ExecuteDockerCommandAsync($"compose -f {composeFile} up -d --force-recreate");
     }
 
     public async Task<ExecutionResult> ListContainersAsync(bool all = false)

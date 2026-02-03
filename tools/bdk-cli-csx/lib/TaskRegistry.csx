@@ -1080,39 +1080,19 @@ public static class TaskRegistry
             },
             new BdkTask
             {
-                Key = "compose-up",
+                Key = "compose-up-pull",
                 Label = "Compose Up",
                 Description = "Start docker compose stack",
                 Category = "Docker & Containers",
-                Execute = async (ctx) => 
-                {
-                    var pull = await Prompts.SelectYesNoAsync("Pull latest images?", false);
-                    if (pull == null)
-                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    return await ctx.DockerCli.ComposeUpAsync(pull.Value);
-                }
+                Execute = async (ctx) => await ctx.DockerCli.ComposeUpAsync()
             },
             new BdkTask
             {
                 Key = "compose-recreate",
                 Label = "Compose Recreate",
-                Description = "Recompose specific container/service",
+                Description = "Recreate all compose services",
                 Category = "Docker & Containers",
                 Execute = async (ctx) => await ctx.DockerCli.ComposeRecreateAsync()
-            },
-            new BdkTask
-            {
-                Key = "compose-up-pull",
-                Label = "Compose Up & Pull",
-                Description = "Pull images then start compose stack",
-                Category = "Docker & Containers",
-                Execute = async (ctx) => 
-                {
-                    var pullResult = await ctx.DockerCli.ComposeUpAsync(true);
-                    if (!pullResult.Success)
-                        return pullResult;
-                    return await ctx.DockerCli.ComposeUpAsync(false);
-                }
             },
             new BdkTask
             {
