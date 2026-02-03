@@ -349,6 +349,164 @@ public static class TaskRegistry
                 Execute = async (ctx) => await ctx.DotnetCli.VersionAsync()
             },
             
+            // ===== Performance & Diagnostics =====
+            new BdkTask
+            {
+                Key = "bench",
+                Label = "Run Benchmarks",
+                Description = "Run benchmark project (auto-detect)",
+                Category = "Performance & Diagnostics",
+                Execute = async (ctx) => await DiagnosticsUtils.RunBenchmarksAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "bench-select",
+                Label = "Run Selected Benchmarks",
+                Description = "Select and run specific benchmark project",
+                Category = "Performance & Diagnostics",
+                Execute = async (ctx) => await DiagnosticsUtils.RunSelectedBenchmarksAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "trace-flame",
+                Label = "Flame Trace",
+                Description = "Collect flame graph trace (SampleProfiler)",
+                Category = "Performance & Diagnostics",
+                Execute = async (ctx) => await DiagnosticsUtils.CollectFlameTraceAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "trace-cpu",
+                Label = "CPU Trace",
+                Description = "Collect CPU performance trace",
+                Category = "Performance & Diagnostics",
+                Execute = async (ctx) => await DiagnosticsUtils.CollectCpuTraceAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "trace-gc",
+                Label = "GC Trace",
+                Description = "Collect GC-focused performance trace",
+                Category = "Performance & Diagnostics",
+                Execute = async (ctx) => await DiagnosticsUtils.CollectGcTraceAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "dump-heap",
+                Label = "Heap Dump",
+                Description = "Create memory heap dump of process",
+                Category = "Performance & Diagnostics",
+                Execute = async (ctx) => await DiagnosticsUtils.CreateHeapDumpAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "gc-stats",
+                Label = "GC Stats",
+                Description = "Monitor GC counters for 5 seconds",
+                Category = "Performance & Diagnostics",
+                Execute = async (ctx) => await DiagnosticsUtils.CollectGcStatsAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "aspnet-metrics",
+                Label = "ASP.NET Metrics",
+                Description = "Monitor ASP.NET Core counters for 10 seconds",
+                Category = "Performance & Diagnostics",
+                Execute = async (ctx) => await DiagnosticsUtils.CollectAspnetMetricsAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "diag-quick",
+                Label = "Quick Diagnostics",
+                Description = "Combined CPU+GC trace + ASP.NET metrics (5s each)",
+                Category = "Performance & Diagnostics",
+                Execute = async (ctx) => await DiagnosticsUtils.RunQuickDiagnosticsAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "speedscope-view",
+                Label = "View Speedscope",
+                Description = "Open speedscope profile in viewer",
+                Category = "Performance & Diagnostics",
+                Execute = async (ctx) => await DiagnosticsUtils.ViewSpeedscopeAsync(ctx)
+            },
+            
+            // ===== Security & Compliance =====
+            new BdkTask
+            {
+                Key = "vulnerabilities",
+                Label = "Check Vulnerabilities",
+                Description = "List vulnerable packages",
+                Category = "Security & Compliance",
+                Execute = async (ctx) => await SecurityUtils.ListVulnerablePackagesAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "vulnerabilities-deep",
+                Label = "Check Vulnerabilities (Deep)",
+                Description = "List vulnerable packages (including transitive)",
+                Category = "Security & Compliance",
+                Execute = async (ctx) => await SecurityUtils.ListVulnerablePackagesDeepAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "outdated",
+                Label = "Outdated Packages",
+                Description = "List packages with updates available",
+                Category = "Security & Compliance",
+                Execute = async (ctx) => await SecurityUtils.ListOutdatedPackagesAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "outdated-json",
+                Label = "Outdated Packages (JSON)",
+                Description = "Export outdated packages to JSON",
+                Category = "Security & Compliance",
+                Execute = async (ctx) => await SecurityUtils.ListOutdatedPackagesJsonAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "licenses",
+                Label = "License Report",
+                Description = "Generate license report (Markdown + JSON)",
+                Category = "Security & Compliance",
+                Execute = async (ctx) => await SecurityUtils.GenerateLicenseReportAsync(ctx)
+            },
+            
+            // ===== API & Spec =====
+            new BdkTask
+            {
+                Key = "openapi-lint",
+                Label = "Lint OpenAPI",
+                Description = "Lint OpenAPI spec with Spectral",
+                Category = "API & Spec",
+                Execute = async (ctx) => await OpenApiUtils.LintOpenApiAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "openapi-client-dotnet",
+                Label = "Generate C# Client",
+                Description = "Generate OpenAPI C# client with Kiota",
+                Category = "API & Spec",
+                Execute = async (ctx) => await OpenApiUtils.GenerateDotNetClientAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "openapi-client-typescript",
+                Label = "Generate TypeScript Client",
+                Description = "Generate OpenAPI TypeScript client with Kiota",
+                Category = "API & Spec",
+                Execute = async (ctx) => await OpenApiUtils.GenerateTypeScriptClientAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "openapi-http",
+                Label = "Generate HTTP Requests",
+                Description = "Generate .http request files from spec",
+                Category = "API & Spec",
+                Execute = async (ctx) => await OpenApiUtils.GenerateHttpRequestFilesAsync(ctx)
+            },
+            
             // ===== EF & Persistence =====
             new BdkTask
             {

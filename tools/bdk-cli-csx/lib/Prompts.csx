@@ -627,4 +627,237 @@ public static class Prompts
             return firstContext;
         }
     }
+    
+    /// <summary>
+    /// Selects a duration from a list of options
+    /// </summary>
+    /// <param name="options">List of duration options</param>
+    /// <param name="defaultValue">Default duration for non-interactive mode</param>
+    /// <returns>Selected duration, or empty string if cancelled</returns>
+    public static async Task<string> SelectDurationAsync(List<string> options, string defaultValue = "")
+    {
+        if (!Console.IsInputRedirected && Environment.GetEnvironmentVariable("NON_INTERACTIVE") != "1")
+        {
+            if (options.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[yellow]Warning: No duration options available[/]");
+                return "";
+            }
+            
+            var choices = new List<string>(options)
+            {
+                "✕ Cancel"
+            };
+            
+            var prompt = new SelectionPrompt<string>()
+                .Title("[cyan]Select duration:[/]")
+                .PageSize(10)
+                .AddChoices(choices);
+            
+            prompt.SearchEnabled = false;
+            prompt.WrapAround = true;
+            
+            var selected = AnsiConsole.Prompt(prompt);
+            
+            if (selected == "✕ Cancel")
+            {
+                AnsiConsole.MarkupLine("[yellow]Selection cancelled[/]");
+                return "";
+            }
+            
+            AnsiConsole.MarkupLine($"[green]✓ Selected:[/] {selected}");
+            return selected;
+        }
+        else
+        {
+            if (!string.IsNullOrEmpty(defaultValue))
+            {
+                AnsiConsole.MarkupLine($"[dim]Using default duration: {defaultValue}[/]");
+                return defaultValue;
+            }
+            
+            if (options.Count > 0)
+            {
+                AnsiConsole.MarkupLine($"[dim]Using first duration: {options[0]}[/]");
+                return options[0];
+            }
+            
+            return "";
+        }
+    }
+    
+    /// <summary>
+    /// Selects a running process by PID
+    /// </summary>
+    /// <param name="promptTitle">Title for selection prompt</param>
+    /// <returns>Selected process ID as string, or empty string if cancelled</returns>
+    public static async Task<string> SelectProcessAsync(string promptTitle = "Select a process:")
+    {
+        if (!Console.IsInputRedirected && Environment.GetEnvironmentVariable("NON_INTERACTIVE") != "1")
+        {
+            var processes = Process.GetProcesses()
+                .Where(p => p.MainWindowHandle != IntPtr.Zero || p.ProcessName.Contains("dotnet"))
+                .OrderBy(p => p.ProcessName)
+                .Select(p => new
+                {
+                    ProcessId = p.Id,
+                    ProcessName = p.ProcessName,
+                    DisplayName = $"{p.ProcessName} (PID: {p.Id})"
+                })
+                .ToList();
+            
+            if (processes.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[yellow]Warning: No suitable processes found[/]");
+                return "";
+            }
+            
+            var choices = processes.Select(p => p.DisplayName).ToList();
+            choices.Add("✕ Cancel");
+            
+            var prompt = new SelectionPrompt<string>()
+                .Title($"[cyan]{promptTitle}[/]")
+                .PageSize(20)
+                .AddChoices(choices);
+            
+            prompt.SearchEnabled = true;
+            prompt.WrapAround = true;
+            
+            var selected = AnsiConsole.Prompt(prompt);
+            
+            if (selected == "✕ Cancel")
+            {
+                AnsiConsole.MarkupLine("[yellow]Selection cancelled[/]");
+                return "";
+            }
+            
+            var process = processes.FirstOrDefault(p => p.DisplayName == selected);
+            if (process != null)
+            {
+                AnsiConsole.MarkupLine($"[green]✓ Selected:[/] {selected}");
+                return process.ProcessId.ToString();
+            }
+            
+            return "";
+        }
+        else
+        {
+            AnsiConsole.MarkupLine("[yellow]Non-interactive mode: Process selection not supported[/]");
+            return "";
+        }
+    }
+    
+    /// <summary>
+    /// Selects a benchmark project from a list of available projects
+    /// </summary>
+    /// <param name="benchmarkProjects">List of benchmark project paths</param>
+    /// <returns>Selected project path, or empty string if cancelled</returns>
+    public static async Task<string> SelectBenchmarkProjectAsync(List<string> benchmarkProjects)
+    {
+        if (!Console.IsInputRedirected && Environment.GetEnvironmentVariable("NON_INTERACTIVE") != "1")
+        {
+            if (benchmarkProjects.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[yellow]Warning: No benchmark projects found[/]");
+                return "";
+            }
+            
+            if (benchmarkProjects.Count == 1)
+            {
+                AnsiConsole.MarkupLine($"[green]✓[/] [dim]Project:[/] {benchmarkProjects[0]}");
+                return benchmarkProjects[0];
+            }
+            
+            var choices = new List<string>(benchmarkProjects)
+            {
+                "✕ Cancel"
+            };
+            
+            var prompt = new SelectionPrompt<string>()
+                .Title("[cyan]Select Benchmark Project:[/]")
+                .PageSize(15)
+                .AddChoices(choices);
+            
+            prompt.SearchEnabled = true;
+            prompt.WrapAround = true;
+            
+            var selected = AnsiConsole.Prompt(prompt);
+            
+            if (selected == "✕ Cancel")
+            {
+                AnsiConsole.MarkupLine("[yellow]Selection cancelled[/]");
+                return "";
+            }
+            
+            AnsiConsole.MarkupLine($"[green]✓ Selected:[/] {selected}");
+            return selected;
+        }
+        else
+        {
+            if (benchmarkProjects.Count > 0)
+            {
+                AnsiConsole.MarkupLine($"[dim]Using first benchmark project: {benchmarkProjects[0]}[/]");
+                return benchmarkProjects[0];
+            }
+            
+            return "";
+        }
+    }
+    
+    /// <summary>
+    /// Selects a speedscope profile from available files
+    /// </summary>
+    /// <param name="profiles">List of speedscope profile file paths</param>
+    /// <returns>Selected profile path, or empty string if cancelled</returns>
+    public static async Task<string> SelectSpeedscopeProfileAsync(List<string> profiles)
+    {
+        if (!Console.IsInputRedirected && Environment.GetEnvironmentVariable("NON_INTERACTIVE") != "1")
+        {
+            if (profiles.Count == 0)
+            {
+                AnsiConsole.MarkupLine("[yellow]Warning: No speedscope profiles found[/]");
+                return "";
+            }
+            
+            if (profiles.Count == 1)
+            {
+                AnsiConsole.MarkupLine($"[green]✓[/] [dim]Profile:[/] {profiles[0]}");
+                return profiles[0];
+            }
+            
+            var choices = new List<string>(profiles)
+            {
+                "✕ Cancel"
+            };
+            
+            var prompt = new SelectionPrompt<string>()
+                .Title("[cyan]Select Speedscope Profile:[/]")
+                .PageSize(20)
+                .AddChoices(choices);
+            
+            prompt.SearchEnabled = true;
+            prompt.WrapAround = true;
+            
+            var selected = AnsiConsole.Prompt(prompt);
+            
+            if (selected == "✕ Cancel")
+            {
+                AnsiConsole.MarkupLine("[yellow]Selection cancelled[/]");
+                return "";
+            }
+            
+            AnsiConsole.MarkupLine($"[green]✓ Selected:[/] {selected}");
+            return selected;
+        }
+        else
+        {
+            if (profiles.Count > 0)
+            {
+                AnsiConsole.MarkupLine($"[dim]Using first speedscope profile: {profiles[0]}[/]");
+                return profiles[0];
+            }
+            
+            return "";
+        }
+    }
 }

@@ -14,6 +14,10 @@
 #load "lib/Prompts.csx"
 #load "lib/TaskRegistry.csx"
 #load "lib/BdkUI.csx"
+#load "lib/Utils.csx"
+#load "lib/Diagnostics.csx"
+#load "lib/Security.csx"
+#load "lib/OpenApi.csx"
 
 using System;
 using System.Collections.Generic;
@@ -50,6 +54,10 @@ var context = new TaskContext
     DockerCli = dockerCli,
     Executor = executor,
     SolutionFile = dotnetCli.SolutionFile,
+    SolutionPath = dotnetCli.SolutionFile,
+    RootDir = repoRoot,
+    OutputDir = config.OutputDirectory ?? ".tmp",
+    TraceNoView = Environment.GetEnvironmentVariable("TRACE_NO_VIEW") ?? "",
     AvailableModules = availableModules,
     SelectedModule = selectedModule
 };
