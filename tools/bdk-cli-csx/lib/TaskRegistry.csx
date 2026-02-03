@@ -1086,6 +1086,38 @@ public static class TaskRegistry
             },
             new BdkTask
             {
+                Key = "docker-container-logs",
+                Label = "Docker Container Logs",
+                Description = "View container logs",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => await ctx.DockerCli.ViewLogsAsync("", false)
+            },
+            new BdkTask
+            {
+                Key = "docker-container-logs-follow",
+                Label = "Docker Container Logs (Follow)",
+                Description = "Follow container logs in real-time",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => await ctx.DockerCli.ViewLogsAsync("", true)
+            },
+            new BdkTask
+            {
+                Key = "docker-container-ps",
+                Label = "Docker Container PS",
+                Description = "List running containers",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => await ctx.DockerCli.ListContainersAsync(false)
+            },
+            new BdkTask
+            {
+                Key = "docker-container-inspect",
+                Label = "Docker Container Inspect",
+                Description = "Show detailed container info",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => await ctx.DockerCli.InspectContainerAsync("")
+            },
+            new BdkTask
+            {
                 Key = "docker-container-stop",
                 Label = "Docker Container Stop",
                 Description = "Stop container",
