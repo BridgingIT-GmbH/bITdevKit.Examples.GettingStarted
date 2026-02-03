@@ -1038,13 +1038,7 @@ public static class TaskRegistry
                 Label = "Docker Build (Release)",
                 Description = "Build image in Release configuration",
                 Category = "Docker & Containers",
-                Execute = async (ctx) => 
-                {
-                    var noCache = await Prompts.SelectYesNoAsync("Skip build cache?", false);
-                    if (noCache == null)
-                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    return await ctx.DockerCli.BuildImageAsync("Release", noCache.Value);
-                }
+                Execute = async (ctx) => await ctx.DockerCli.BuildImageAsync("Release", false)
             },
             new BdkTask
             {
