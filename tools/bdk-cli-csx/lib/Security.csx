@@ -164,7 +164,7 @@ public static class SecurityUtils
                     });
                 }
             }
-            
+
             var json = System.Text.Json.JsonSerializer.Serialize(pkgs, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(outFile, json);
             

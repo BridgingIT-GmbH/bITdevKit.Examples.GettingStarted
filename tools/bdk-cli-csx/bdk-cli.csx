@@ -18,6 +18,7 @@
 #load "lib/Diagnostics.csx"
 #load "lib/Security.csx"
 #load "lib/OpenApi.csx"
+#load "lib/MiscUtils.csx"
 
 using System;
 using System.Collections.Generic;

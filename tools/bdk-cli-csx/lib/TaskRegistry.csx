@@ -338,6 +338,136 @@ public static class TaskRegistry
                     return await ctx.DotnetCli.TestModuleAsync(module, "integration");
                 }
             },
+            new BdkTask {
+                Key = "coverage",
+                Label = "Code Coverage",
+                Description = "Run tests with coverage (cobertura)",
+                Category = "Testing",
+                Execute = async (ctx) => 
+                {
+                    var startTime = DateTime.Now;
+                    var solution = ctx.SolutionPath;
+                    if (string.IsNullOrEmpty(solution))
+                    {
+                        AnsiConsole.MarkupLine("[red]Error: No solution file found[/]");
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    }
+                    
+                    var outDir = Path.Combine(ctx.OutputDir, "coverage");
+                    Directory.CreateDirectory(outDir);
+                    
+                    var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                    var runDir = Path.Combine(outDir, $"run_{timestamp}");
+                    Directory.CreateDirectory(runDir);
+                    
+                    AnsiConsole.MarkupLine($"[cyan]Running tests with coverage -> {Markup.Escape(runDir)}[/]");
+                    
+                    var args = $"test \"{solution}\" --collect:XPlat Code Coverage --results-directory \"{runDir}\" --settings:coverlet.runsettings";
+                    var result = await ctx.Executor.ExecuteAsync("dotnet", args);
+                    
+                    if (result.ExitCode != 0)
+                    {
+                        AnsiConsole.MarkupLine("[red]Tests failed[/]");
+                        return new ExecutionResult { Success = false, ExitCode = result.ExitCode, Duration = DateTime.Now - startTime };
+                    }
+                    
+                    var coverageFiles = Directory.GetFiles(runDir, "coverage.cobertura.xml", SearchOption.AllDirectories);
+
+                    if (coverageFiles.Length == 0)
+                    {
+                        AnsiConsole.MarkupLine("[yellow]No coverage.cobertura.xml files found[/]");
+                        return new ExecutionResult { Success = false, ExitCode = 2, Duration = DateTime.Now - startTime };
+                    }
+
+                    AnsiConsole.MarkupLine($"[green]Found {coverageFiles.Length} coverage file(s) under {Markup.Escape(runDir)}[/]");
+                    
+                    return new ExecutionResult 
+                    { 
+                        Success = true, 
+                        ExitCode = 0, 
+                        Duration = DateTime.Now - startTime 
+                    };
+                }
+            },
+            new BdkTask {
+                Key = "coverage-html",
+                Label = "Code Coverage (HTML)",
+                Description = "Run coverage and generate HTML report",
+                Category = "Testing",
+                Execute = async (ctx) => 
+                {
+                    var startTime = DateTime.Now;
+                    var solution = ctx.SolutionPath;
+                    if (string.IsNullOrEmpty(solution))
+                    {
+                        AnsiConsole.MarkupLine("[red]Error: No solution file found[/]");
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    }
+                    
+                    var outDir = Path.Combine(ctx.OutputDir, "coverage");
+                    Directory.CreateDirectory(outDir);
+                    
+                    var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                    var runDir = Path.Combine(outDir, $"run_{timestamp}");
+                    Directory.CreateDirectory(runDir);
+                    
+                    AnsiConsole.MarkupLine($"[cyan]Running tests with coverage -> {Markup.Escape(runDir)}[/]");
+                    
+                    var args = $"test \"{solution}\" --collect:XPlat Code Coverage --results-directory \"{runDir}\" --settings:coverlet.runsettings";
+                    var result = await ctx.Executor.ExecuteAsync("dotnet", args);
+                    
+                    if (result.ExitCode != 0)
+                    {
+                        AnsiConsole.MarkupLine("[red]Tests failed[/]");
+                        return new ExecutionResult { Success = false, ExitCode = result.ExitCode, Duration = DateTime.Now - startTime };
+                    }
+                    
+                    var coverageFiles = Directory.GetFiles(runDir, "coverage.cobertura.xml", SearchOption.AllDirectories);
+                    
+                    if (coverageFiles.Length == 0)
+                    {
+                        AnsiConsole.MarkupLine("[red]No coverage.cobertura.xml files found[/]");
+                        return new ExecutionResult { Success = false, ExitCode = 2, Duration = DateTime.Now - startTime };
+                    }
+                    
+                    var reportRoot = Path.Combine(runDir, "report");
+                    Directory.CreateDirectory(reportRoot);
+                    var reportsArg = string.Join(';', coverageFiles);
+                    var reportTypes = "HtmlInline_AzurePipelines;MarkdownSummaryGithub";
+                    
+                    AnsiConsole.MarkupLine($"[cyan]Generating HTML report -> {Markup.Escape(reportRoot)}[/]");
+                    
+                    args = $"tool run reportgenerator -- -reports:\"{reportsArg}\" -targetdir:\"{reportRoot}\" -reporttypes:{reportTypes}";
+                    result = await ctx.Executor.ExecuteAsync("dotnet", args);
+                    
+                    if (result.ExitCode != 0)
+                    {
+                        AnsiConsole.MarkupLine("[red]Report generation failed[/]");
+                        return new ExecutionResult { Success = false, ExitCode = result.ExitCode, Duration = DateTime.Now - startTime };
+                    }
+                    
+                    var indexFile = Path.Combine(reportRoot, "index.html");
+                    if (File.Exists(indexFile))
+                    {
+                        Utils.OpenFile(indexFile);
+                        return new ExecutionResult 
+                        { 
+                            Success = true, 
+                            ExitCode = 0, 
+                            Duration = DateTime.Now - startTime 
+                        };
+                    }
+                    
+                    AnsiConsole.MarkupLine("[yellow]Report generation completed but index.html not found[/]");
+                    
+                    return new ExecutionResult 
+                    { 
+                        Success = true, 
+                        ExitCode = 0, 
+                        Duration = DateTime.Now - startTime 
+                    };
+                }
+            },
             
             // ===== Utilities =====
             new BdkTask
@@ -347,6 +477,130 @@ public static class TaskRegistry
                 Description = "Display .NET SDK version",
                 Category = "Utilities",
                 Execute = async (ctx) => await ctx.DotnetCli.VersionAsync()
+            },
+            new BdkTask
+            {
+                Key = "docs-generate",
+                Label = "Generate Documentation",
+                Description = "Generate consolidated markdown documentation per project",
+                Category = "Utilities",
+                Execute = async (ctx) => await MiscUtils.GenerateDocsAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "clean-ws",
+                Label = "Clean Workspace",
+                Description = "Remove build/output artifact directories (bin/obj/node_modules/etc.)",
+                Category = "Utilities",
+                Execute = async (ctx) => await MiscUtils.CleanWorkspaceAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "cleanup",
+                Label = "Clean Workspace (Alias)",
+                Description = "Remove build/output artifact directories (alias for clean-ws)",
+                Category = "Utilities",
+                Execute = async (ctx) => await MiscUtils.CleanWorkspaceAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "remove-headers",
+                Label = "Remove File Headers",
+                Description = "Remove MIT license headers from all C# files in src/ and tests/",
+                Category = "Utilities",
+                Execute = async (ctx) => await MiscUtils.RemoveFileHeadersAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "repl",
+                Label = "C# REPL",
+                Description = "Run C# REPL (csharprepl)",
+                Category = "Utilities",
+                Execute = async (ctx) => await MiscUtils.RunCSharpReplAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "shell",
+                Label = "C# Shell (Alias)",
+                Description = "Run C# REPL (alias for repl)",
+                Category = "Utilities",
+                Execute = async (ctx) => await MiscUtils.RunCSharpReplAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "kill-dotnet",
+                Label = "Kill .NET Process",
+                Description = "Terminate a dotnet process (interactive selection or direct -ProcessId)",
+                Category = "Utilities",
+                Execute = async (ctx) => await MiscUtils.KillDotnetProcessAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "minver",
+                Label = "Show MinVer",
+                Description = "Display semantic version computed by MinVer",
+                Category = "Utilities",
+                Execute = async (ctx) => await MiscUtils.ShowMinVerAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "show-minver",
+                Label = "Show MinVer (Alias)",
+                Description = "Display semantic version (alias for minver)",
+                Category = "Utilities",
+                Execute = async (ctx) => await MiscUtils.ShowMinVerAsync(ctx)
+            },
+            new BdkTask
+            {
+                Key = "browser-devkit-docs",
+                Label = "Open DevKit Docs",
+                Description = "Open DevKit docs",
+                Category = "Utilities",
+                Execute = async (ctx) => await MiscUtils.OpenBrowserUrlAsync(ctx, "https://github.com/BridgingIT-GmbH/bITdevKit/tree/main/docs", "DevKit Docs")
+            },
+            new BdkTask
+            {
+                Key = "browser-seq",
+                Label = "Open SEQ Dashboard",
+                Description = "Open SEQ logging dashboard",
+                Category = "Utilities",
+                Execute = async (ctx) => await MiscUtils.OpenBrowserUrlAsync(ctx, "http://localhost:15349", "SEQ Dashboard")
+            },
+            new BdkTask
+            {
+                Key = "browser-adminneo",
+                Label = "Open AdminNeo Dashboard",
+                Description = "Open AdminNeo dashboard",
+                Category = "Utilities",
+                Execute = async (ctx) => await MiscUtils.OpenBrowserUrlAsync(ctx, "http://localhost:18089", "AdminNeo Dashboard")
+            },
+            new BdkTask
+            {
+                Key = "browser-server-kestrel",
+                Label = "Open Server (Kestrel)",
+                Description = "Open Server (Kestrel HTTPS)",
+                Category = "Utilities",
+                Execute = async (ctx) => await MiscUtils.OpenBrowserUrlAsync(ctx, "https://localhost:5001/scalar", "Server Kestrel")
+            },
+            new BdkTask
+            {
+                Key = "browser-server-docker",
+                Label = "Open Server (Docker)",
+                Description = "Open Server (Docker HTTP)",
+                Category = "Utilities",
+                Execute = async (ctx) => await MiscUtils.OpenBrowserUrlAsync(ctx, "http://localhost:8080/scalar", "Server Docker")
+            },
+            new BdkTask
+            {
+                Key = "docs-update",
+                Label = "Update DevKit Docs",
+                Description = "Download latest DevKit docs",
+                Category = "Utilities",
+                Execute = async (ctx) => 
+                {
+                    AnsiConsole.MarkupLine("[yellow]Docs update not yet implemented in C# CLI[/]");
+                    return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                }
             },
             
             // ===== Performance & Diagnostics =====
@@ -778,34 +1032,6 @@ public static class TaskRegistry
             },
             
             // ===== Docker & Containers =====
-            new BdkTask
-            {
-                Key = "docker-build-run",
-                Label = "Docker Build & Run",
-                Description = "Build image (Debug) & run container",
-                Category = "Docker & Containers",
-                Execute = async (ctx) => 
-                {
-                    var noCache = await Prompts.SelectYesNoAsync("Skip build cache?", false);
-                    if (noCache == null)
-                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    return await ctx.DockerCli.BuildAndRunAsync("Debug", noCache.Value);
-                }
-            },
-            new BdkTask
-            {
-                Key = "docker-build-debug",
-                Label = "Docker Build (Debug)",
-                Description = "Build image in Debug configuration",
-                Category = "Docker & Containers",
-                Execute = async (ctx) => 
-                {
-                    var noCache = await Prompts.SelectYesNoAsync("Skip build cache?", false);
-                    if (noCache == null)
-                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    return await ctx.DockerCli.BuildImageAsync("Debug", noCache.Value);
-                }
-            },
             new BdkTask
             {
                 Key = "docker-build-release",
