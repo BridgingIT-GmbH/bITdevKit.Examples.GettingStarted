@@ -131,20 +131,25 @@ public static class SecurityUtils
                 return new ExecutionResult { Success = false, ExitCode = 1, Duration = DateTime.Now - startTime };
             }
             
+            // Restore solution first to ensure project.assets.json files exist
+            AnsiConsole.MarkupLine("[dim]Restoring solution...[/]");
+            await ctx.Executor.ExecuteAsync("dotnet", $"restore \"{solution}\"", captureOutput: false, showCommand: true);
+
             var outDir = Path.Combine(ctx.OutputDir, "compliance");
             Directory.CreateDirectory(outDir);
-            
+
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             var outFile = Path.Combine(outDir, $"outdated_{timestamp}.json");
-            
+
             AnsiConsole.MarkupLine($"[cyan]Collecting outdated packages (JSON) -> {Markup.Escape(outFile)}[/]");
-            
+
             var args = $"list \"{solution}\" package --outdated";
             var result = await ctx.Executor.ExecuteAsync("dotnet", args, captureOutput: true);
             
-            if (result.ExitCode != 0)
+            // Exit code 0 = no errors, 1 = no outdated packages
+            if (result.ExitCode != 0 && result.ExitCode != 1)
             {
-                throw new Exception("dotnet list outdated failed");
+                AnsiConsole.MarkupLine($"[yellow]dotnet list outdated exited with code {result.ExitCode}[/]");
             }
             
             var lines = result.Output.Split('\n');
@@ -167,9 +172,11 @@ public static class SecurityUtils
 
             var json = System.Text.Json.JsonSerializer.Serialize(pkgs, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(outFile, json);
-            
+
+            var fullOutPath = Path.GetFullPath(outFile);
+
             AnsiConsole.MarkupLine($"[green]Outdated packages captured: {pkgs.Count}[/]");
-            AnsiConsole.MarkupLine($"[green]Output written to: {Markup.Escape(outFile)}[/]");
+            Console.WriteLine($"Output written to: {fullOutPath}");
             
             return new ExecutionResult 
             { 
@@ -209,7 +216,7 @@ public static class SecurityUtils
 
             // Restore solution first to ensure project.assets.json files exist
             AnsiConsole.MarkupLine("[dim]Restoring solution...[/]");
-            await ctx.Executor.ExecuteAsync("dotnet", $"restore \"{solution}\"", captureOutput: false, showCommand: false);
+            await ctx.Executor.ExecuteAsync("dotnet", $"restore \"{solution}\"", captureOutput: false, showCommand: true);
 
             var args = $"tool run nuget-license -i \"{solution}\" -t -o JsonPretty";
             var result = await ctx.Executor.ExecuteAsync("dotnet", args, captureOutput: false);
@@ -285,18 +292,19 @@ public static class SecurityUtils
             
             var json = System.Text.Json.JsonSerializer.Serialize(jsonObj, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(jsonFile, json);
-            
+
+            var fullMdPath = Path.GetFullPath(mdFile);
+            var fullJsonPath = Path.GetFullPath(jsonFile);
+
             AnsiConsole.MarkupLine("[green]License reports created with nuget-license:[/]");
-            AnsiConsole.MarkupLine($"[dim]  Markdown:   {Markup.Escape(mdFile)}[/]");
-            AnsiConsole.MarkupLine($"[dim]  JSON    : {Markup.Escape(jsonFile)}[/]");
-            
-            Utils.OpenFile(mdFile);
-            
-            return new ExecutionResult 
-            { 
-                Success = true, 
-                ExitCode = 0, 
-                Duration = DateTime.Now - startTime 
+            AnsiConsole.MarkupLine($"[dim]  Markdown:   {Markup.Escape(fullMdPath)}[/]");
+            AnsiConsole.MarkupLine($"[dim]  JSON    : {Markup.Escape(fullJsonPath)}[/]");
+
+            return new ExecutionResult
+            {
+                Success = true,
+                ExitCode = 0,
+                Duration = DateTime.Now - startTime
             };
         }
         catch (Exception ex)

@@ -80,7 +80,7 @@ public class DockerCli
 
     private async Task<ExecutionResult> ExecuteDockerCommandAsync(string args)
     {
-        return await _executor.ExecuteAsync("docker", args, showCommand: false);
+        return await _executor.ExecuteAsync("docker", args, showCommand: true);
     }
 
     private async Task EnsureNetworkAsync()
@@ -93,7 +93,7 @@ public class DockerCli
         }
 
         AnsiConsole.MarkupLine($"[cyan]Ensuring docker network '{networkName}' exists[/]");
-        var result = await _executor.ExecuteAsync("docker", $"network ls --format '{{{{.Name}}}}'", showCommand: false);
+        var result = await _executor.ExecuteAsync("docker", $"network ls --format '{{{{.Name}}}}'", showCommand: true);
         
         if (result.Success && result.Output.Contains(networkName))
         {
@@ -101,7 +101,7 @@ public class DockerCli
             return;
         }
 
-        var createResult = await _executor.ExecuteAsync("docker", $"network create {networkName}", showCommand: false);
+        var createResult = await _executor.ExecuteAsync("docker", $"network create {networkName}", showCommand: true);
         if (createResult.Success)
         {
             AnsiConsole.MarkupLine($"[green]Created network {networkName}[/]");
@@ -189,8 +189,8 @@ public class DockerCli
 
         AnsiConsole.MarkupLine($"[cyan]Running container:[/] [green]{containerName}[/]");
 
-        await _executor.ExecuteAsync("docker", $"stop {containerName}", showCommand: false);
-        await _executor.ExecuteAsync("docker", $"rm {containerName}", showCommand: false);
+        await _executor.ExecuteAsync("docker", $"stop {containerName}", showCommand: true);
+        await _executor.ExecuteAsync("docker", $"rm {containerName}", showCommand: true);
 
         var logsDir = Path.Combine(Directory.GetCurrentDirectory(), "logs");
         if (!Directory.Exists(logsDir))
@@ -223,7 +223,7 @@ public class DockerCli
         try
         {
             var format = "{{.ID}};{{.Names}};{{.Status}};{{.Ports}}";
-            var result = await _executor.ExecuteAsync("docker", $"ps --filter name={containerName} --format \"{format}\"", showCommand: false);
+            var result = await _executor.ExecuteAsync("docker", $"ps --filter name={containerName} --format \"{format}\"", showCommand: true);
             
             if (result.Success && !string.IsNullOrEmpty(result.Output))
             {
@@ -258,13 +258,13 @@ public class DockerCli
 
         AnsiConsole.MarkupLine($"[cyan]Removing container:[/] [green]{containerName}[/]");
         
-        await _executor.ExecuteAsync("docker", $"stop {containerName}", showCommand: false);
+        await _executor.ExecuteAsync("docker", $"stop {containerName}", showCommand: true);
         var removeResult = await ExecuteDockerCommandAsync($"rm -f {containerName}");
 
         if (removeNetwork && !string.IsNullOrEmpty(networkName))
         {
             AnsiConsole.MarkupLine($"[cyan]Attempting to remove network:[/] [green]{networkName}[/]");
-            await _executor.ExecuteAsync("docker", $"network rm {networkName}", showCommand: false);
+            await _executor.ExecuteAsync("docker", $"network rm {networkName}", showCommand: true);
         }
 
         return removeResult;
@@ -285,7 +285,7 @@ public class DockerCli
         var containers = new List<ContainerInfo>();
         
         var format = "{{.Names}}|{{.Image}}|{{.Status}}|{{.ID}}";
-        var result = await _executor.ExecuteAsync("docker", $"ps --format \"{format}\"", showCommand: false);
+        var result = await _executor.ExecuteAsync("docker", $"ps --format \"{format}\"", showCommand: true);
         
         if (result.Success && !string.IsNullOrEmpty(result.Output))
         {
@@ -318,7 +318,7 @@ public class DockerCli
         try
         {
             var format = "{{ index .Config.Labels \"com.docker.compose.service\" }}";
-            var result = await _executor.ExecuteAsync("docker", $"inspect --format \"{format}\" {containerName}", showCommand: false);
+            var result = await _executor.ExecuteAsync("docker", $"inspect --format \"{format}\" {containerName}", showCommand: true);
             
             if (result.Success && !string.IsNullOrEmpty(result.Output) && !result.Output.Contains("<no value>"))
             {
@@ -356,7 +356,7 @@ public class DockerCli
         if (pull)
         {
             AnsiConsole.MarkupLine("[cyan]Pulling images...[/]");
-            await _executor.ExecuteAsync("docker", $"compose -f {composeFile} pull", showCommand: false);
+            await _executor.ExecuteAsync("docker", $"compose -f {composeFile} pull", showCommand: true);
         }
 
         AnsiConsole.MarkupLine($"[cyan]Starting compose stack:[/] [green]{composeFile}[/]");
@@ -406,7 +406,7 @@ public class DockerCli
             foreach (var img in images)
             {
                 AnsiConsole.MarkupLine($"[cyan]Removing image:[/] [green]{img}[/]");
-                await _executor.ExecuteAsync("docker", $"rmi {img}", showCommand: false);
+                await _executor.ExecuteAsync("docker", $"rmi {img}", showCommand: true);
             }
         }
 
