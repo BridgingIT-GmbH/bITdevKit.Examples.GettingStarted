@@ -513,71 +513,71 @@ public static class DiagnosticsUtils
             try
             {
                 var cpuFile = Path.Combine(outDir, $"cpuQuick_{processId}_{DateTime.Now:yyyyMMdd_HHmmss}.nettrace");
-                AnsiConsole.MarkupLine($"[cyan][Quick] CPU trace (5s) for PID {processId}[/]");
+                AnsiConsole.MarkupLine($"[cyan][[Quick]] CPU trace (5s) for PID {processId}[/]");
                 var args = $"trace collect --process-id {processId} --providers Microsoft-DotNETCore-SampleProfiler:1 --duration 00:00:05 -o \"{cpuFile}\"";
                 var result = await ctx.Executor.ExecuteAsync("dotnet", args);
                 
                 if (result.ExitCode == 0)
                 {
-                    AnsiConsole.MarkupLine($"[green][Quick] CPU trace saved: {Markup.Escape(cpuFile)}[/]");
+                    AnsiConsole.MarkupLine($"[green][[Quick]] CPU trace saved: {Markup.Escape(cpuFile)}[/]");
                 }
                 else
                 {
                     errors.Add("CPU trace failed");
-                    AnsiConsole.MarkupLine($"[yellow][Quick] CPU trace error[/]");
+                    AnsiConsole.MarkupLine($"[yellow][[Quick]] CPU trace error[/]");
                 }
             }
             catch (Exception ex)
             {
                 errors.Add(ex.Message);
-                AnsiConsole.MarkupLine($"[yellow][Quick] CPU trace error: {Markup.Escape(ex.Message)}[/]");
+                AnsiConsole.MarkupLine($"[yellow][[Quick]] CPU trace error: {Markup.Escape(ex.Message)}[/]");
             }
             
             // GC trace (5s)
             try
             {
                 var gcFile = Path.Combine(outDir, $"gcQuick_{processId}_{DateTime.Now:yyyyMMdd_HHmmss}.nettrace");
-                AnsiConsole.MarkupLine($"[cyan][Quick] GC trace (5s) for PID {processId}[/]");
+                AnsiConsole.MarkupLine($"[cyan][[Quick]] GC trace (5s) for PID {processId}[/]");
                 var args = $"trace collect --process-id {processId} --providers \"Microsoft-DotNETCore-SampleProfiler:1,System.Runtime:4\" --duration 00:00:05 -o \"{gcFile}\"";
                 var result = await ctx.Executor.ExecuteAsync("dotnet", args);
                 
                 if (result.ExitCode == 0)
                 {
-                    AnsiConsole.MarkupLine($"[green][Quick] GC trace saved: {Markup.Escape(gcFile)}[/]");
+                    AnsiConsole.MarkupLine($"[green][[Quick]] GC trace saved: {Markup.Escape(gcFile)}[/]");
                 }
                 else
                 {
                     errors.Add("GC trace failed");
-                    AnsiConsole.MarkupLine($"[yellow][Quick] GC trace error[/]");
+                    AnsiConsole.MarkupLine($"[yellow][[Quick]] GC trace error[/]");
                 }
             }
             catch (Exception ex)
             {
                 errors.Add(ex.Message);
-                AnsiConsole.MarkupLine($"[yellow][Quick] GC trace error: {Markup.Escape(ex.Message)}[/]");
+                AnsiConsole.MarkupLine($"[yellow][[Quick]] GC trace error: {Markup.Escape(ex.Message)}[/]");
             }
             
             // ASP.NET metrics (6s)
             try
             {
-                AnsiConsole.MarkupLine($"[cyan][Quick] ASP.NET metrics (6s) for PID {processId}[/]");
+                AnsiConsole.MarkupLine($"[cyan][[Quick]] ASP.NET metrics (6s) for PID {processId}[/]");
                 var args = $"counters monitor --process-id {processId} --counters Microsoft.AspNetCore.Hosting --refresh-interval 1 --duration 6";
                 var result = await ctx.Executor.ExecuteAsync("dotnet", args);
                 
                 if (result.ExitCode == 0)
                 {
-                    AnsiConsole.MarkupLine("[green][Quick] ASP.NET metrics sampling complete[/]");
+                    AnsiConsole.MarkupLine("[green][[Quick]] ASP.NET metrics sampling complete[/]");
                 }
                 else
                 {
                     errors.Add("ASP.NET metrics failed");
-                    AnsiConsole.MarkupLine($"[yellow][Quick] ASP.NET metrics error[/]");
+                    AnsiConsole.MarkupLine($"[yellow][[Quick]] ASP.NET metrics error[/]");
                 }
             }
             catch (Exception ex)
             {
                 errors.Add(ex.Message);
-                AnsiConsole.MarkupLine($"[yellow][Quick] ASP.NET metrics error: {Markup.Escape(ex.Message)}[/]");
+                AnsiConsole.MarkupLine($"[yellow][[Quick]] ASP.NET metrics error: {Markup.Escape(ex.Message)}[/]");
             }
             
             if (errors.Count > 0)
