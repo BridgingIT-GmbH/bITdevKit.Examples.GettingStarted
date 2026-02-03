@@ -580,7 +580,7 @@ public static class TaskRegistry
             {
                 Key = "bench",
                 Label = "Run Benchmarks",
-                Description = "Run benchmark project (auto-detect)",
+                Description = "Run benchmark project (auto-select module, or choose from multiple)",
                 Category = "Performance & Diagnostics",
                 Execute = async (ctx) => await DiagnosticsUtils.RunBenchmarksAsync(ctx)
             },
@@ -588,7 +588,7 @@ public static class TaskRegistry
             {
                 Key = "bench-select",
                 Label = "Run Selected Benchmarks",
-                Description = "Select and run specific benchmark project",
+                Description = "Select and run specific benchmark project module",
                 Category = "Performance & Diagnostics",
                 Execute = async (ctx) => await DiagnosticsUtils.RunSelectedBenchmarksAsync(ctx)
             },

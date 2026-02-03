@@ -15,14 +15,21 @@ public static class DiagnosticsUtils
         try
         {
             var benchmarkProjects = Utils.FindFiles(ctx.RootDir, "*Benchmarks.csproj", recursive: true);
-            
+
             if (benchmarkProjects.Count == 0)
             {
                 AnsiConsole.MarkupLine("[yellow]No benchmark project (*Benchmarks.csproj) found[/]");
                 return new ExecutionResult { Success = true, ExitCode = 0, Duration = DateTime.Now - startTime };
             }
-            
-            var benchProject = benchmarkProjects.First();
+
+            var benchProject = benchmarkProjects.Count == 1 ? benchmarkProjects.First() : await Prompts.SelectBenchmarkProjectAsync(benchmarkProjects);
+
+            if (string.IsNullOrEmpty(benchProject))
+            {
+                AnsiConsole.MarkupLine("[yellow]Benchmark selection cancelled[/]");
+                return new ExecutionResult { Success = false, ExitCode = 1, Duration = DateTime.Now - startTime };
+            }
+
             AnsiConsole.MarkupLine($"[cyan]Running benchmarks:[/] {Markup.Escape(benchProject)}");
             
             var args = $"run --project \"{benchProject}\" -c Release -- --filter \"*\" --anyCategories \"*\"";
