@@ -1034,6 +1034,14 @@ public static class TaskRegistry
             // ===== Docker & Containers =====
             new BdkTask
             {
+                Key = "docker-build-debug",
+                Label = "Docker Build (Debug)",
+                Description = "Build image in Debug configuration",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => await ctx.DockerCli.BuildImageAsync("Debug", false)
+            },
+            new BdkTask
+            {
                 Key = "docker-build-release",
                 Label = "Docker Build (Release)",
                 Description = "Build image in Release configuration",
