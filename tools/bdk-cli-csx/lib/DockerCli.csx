@@ -433,6 +433,48 @@ public class DockerCli
         return await ExecuteDockerCommandAsync("images");
     }
 
+    public async Task<ExecutionResult> CleanupAllAsync()
+    {
+        AnsiConsole.MarkupLine("[yellow]This will remove ALL Docker resources:[/]");
+        AnsiConsole.MarkupLine("  - Stopped containers");
+        AnsiConsole.MarkupLine("  - Unused images");
+        AnsiConsole.MarkupLine("  - Unused volumes");
+        AnsiConsole.MarkupLine("  - Unused networks");
+        AnsiConsole.MarkupLine("  - Build cache");
+
+        var confirm = AnsiConsole.Confirm("[yellow]Are you sure? This cannot be undone.[/]", false);
+        if (!confirm)
+        {
+            AnsiConsole.MarkupLine("[yellow]Cleanup cancelled[/]");
+            return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+        }
+
+        AnsiConsole.MarkupLine("[cyan]Cleaning up Docker resources...[/]");
+
+        // Remove stopped containers
+        AnsiConsole.MarkupLine("[dim]Removing stopped containers...[/]");
+        await _executor.ExecuteAsync("docker", "container prune -f", showCommand: false);
+
+        // Remove unused images
+        AnsiConsole.MarkupLine("[dim]Removing unused images...[/]");
+        await _executor.ExecuteAsync("docker", "image prune -a -f", showCommand: false);
+
+        // Remove unused volumes
+        AnsiConsole.MarkupLine("[dim]Removing unused volumes...[/]");
+        await _executor.ExecuteAsync("docker", "volume prune -f", showCommand: false);
+
+        // Remove unused networks
+        AnsiConsole.MarkupLine("[dim]Removing unused networks...[/]");
+        await _executor.ExecuteAsync("docker", "network prune -f", showCommand: false);
+
+        // Remove build cache
+        AnsiConsole.MarkupLine("[dim]Removing build cache...[/]");
+        await _executor.ExecuteAsync("docker", "builder prune -a -f", showCommand: false);
+
+        AnsiConsole.MarkupLine("[green]Docker cleanup complete[/]");
+        return new ExecutionResult { Success = true, ExitCode = 0, Duration = TimeSpan.Zero };
+    }
+
     public async Task<ExecutionResult> InspectContainerAsync(string containerName)
     {
         if (string.IsNullOrEmpty(containerName))

@@ -1034,83 +1034,119 @@ public static class TaskRegistry
             // ===== Docker & Containers =====
             new BdkTask
             {
-                Key = "docker-build-debug",
-                Label = "Docker Build (Debug)",
+                Key = "docker-image-build-run-debug",
+                Label = "Docker Image Build & Run (Debug)",
+                Description = "Build and run image in Debug configuration",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => 
+                {
+                    var buildResult = await ctx.DockerCli.BuildImageAsync("Debug", false);
+                    if (!buildResult.Success)
+                        return buildResult;
+                    return await ctx.DockerCli.RunContainerAsync();
+                }
+            },
+            new BdkTask
+            {
+                Key = "docker-image-build-run-release",
+                Label = "Docker Image Build & Run (Release)",
+                Description = "Build and run image in Release configuration",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => 
+                {
+                    var buildResult = await ctx.DockerCli.BuildImageAsync("Release", false);
+                    if (!buildResult.Success)
+                        return buildResult;
+                    return await ctx.DockerCli.RunContainerAsync();
+                }
+            },
+            new BdkTask
+            {
+                Key = "docker-image-build-debug",
+                Label = "Docker Image Build (Debug)",
                 Description = "Build image in Debug configuration",
                 Category = "Docker & Containers",
                 Execute = async (ctx) => await ctx.DockerCli.BuildImageAsync("Debug", false)
             },
             new BdkTask
             {
-                Key = "docker-build-release",
-                Label = "Docker Build (Release)",
+                Key = "docker-image-build-release",
+                Label = "Docker Image Build (Release)",
                 Description = "Build image in Release configuration",
                 Category = "Docker & Containers",
                 Execute = async (ctx) => await ctx.DockerCli.BuildImageAsync("Release", false)
             },
             new BdkTask
             {
-                Key = "docker-run",
-                Label = "Docker Run",
+                Key = "docker-container-run",
+                Label = "Docker Container Run",
                 Description = "Run container (assumes image built)",
                 Category = "Docker & Containers",
                 Execute = async (ctx) => await ctx.DockerCli.RunContainerAsync()
             },
             new BdkTask
             {
-                Key = "docker-stop",
-                Label = "Docker Stop",
+                Key = "docker-container-stop",
+                Label = "Docker Container Stop",
                 Description = "Stop container",
                 Category = "Docker & Containers",
                 Execute = async (ctx) => await ctx.DockerCli.StopContainerAsync()
             },
             new BdkTask
             {
-                Key = "docker-remove",
-                Label = "Docker Remove",
+                Key = "docker-container-remove",
+                Label = "Docker Container Remove",
                 Description = "Remove (stop & force delete) container",
                 Category = "Docker & Containers",
                 Execute = async (ctx) => await ctx.DockerCli.RemoveContainerAsync(false)
             },
             new BdkTask
             {
-                Key = "docker-remove-image",
-                Label = "Docker Remove Image",
+                Key = "docker-image-remove",
+                Label = "Docker Image Remove",
                 Description = "Remove container and image",
                 Category = "Docker & Containers",
                 Execute = async (ctx) => await ctx.DockerCli.RemoveImageAsync()
             },
             new BdkTask
             {
-                Key = "compose-up-pull",
-                Label = "Compose Up",
+                Key = "docker-compose-up",
+                Label = "Docker Compose Up",
                 Description = "Start docker compose stack",
                 Category = "Docker & Containers",
                 Execute = async (ctx) => await ctx.DockerCli.ComposeUpAsync()
             },
             new BdkTask
             {
-                Key = "compose-recreate",
-                Label = "Compose Recreate",
+                Key = "docker-compose-recreate",
+                Label = "Docker Compose Recreate",
                 Description = "Recreate all compose services",
                 Category = "Docker & Containers",
                 Execute = async (ctx) => await ctx.DockerCli.ComposeRecreateAsync()
             },
             new BdkTask
             {
-                Key = "compose-down",
-                Label = "Compose Down",
+                Key = "docker-compose-down",
+                Label = "Docker Compose Down",
                 Description = "Stop docker compose stack (keep volumes)",
                 Category = "Docker & Containers",
                 Execute = async (ctx) => await ctx.DockerCli.ComposeDownAsync()
             },
             new BdkTask
             {
-                Key = "compose-down-clean",
-                Label = "Compose Down Clean",
+                Key = "docker-compose-down-clean",
+                Label = "Docker Compose Down Clean",
                 Description = "Stop stack & remove volumes/images",
                 Category = "Docker & Containers",
                 Execute = async (ctx) => await ctx.DockerCli.ComposeDownCleanAsync()
+            },
+            new BdkTask
+            {
+                Key = "docker-cleanup-all",
+                Label = "Docker Cleanup All",
+                Description = "Clean up ALL Docker resources (containers, images, volumes, networks)",
+                Category = "Docker & Containers",
+                Execute = async (ctx) => await ctx.DockerCli.CleanupAllAsync()
             }
         };
     }
