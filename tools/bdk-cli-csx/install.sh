@@ -45,16 +45,16 @@ if [[ ":$PATH:" != *":$DOTNET_TOOLS_PATH:"* ]]; then
     echo ""
     echo "⚠️  .NET tools directory is not in your PATH"
     echo ""
-    
+
     if [[ -n "$SHELL_RC" ]] && [[ -f "$SHELL_RC" ]]; then
         read -p "Would you like to add it to $SHELL_RC? [y/N] " -n 1 -r
         echo ""
-        
+
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             echo "" >> "$SHELL_RC"
             echo "# Add .NET Core SDK tools to PATH" >> "$SHELL_RC"
             echo "export PATH=\"\$PATH:\$HOME/.dotnet/tools\"" >> "$SHELL_RC"
-            
+
             echo "✓ Added to $SHELL_RC"
             echo ""
             echo "Please run: source $SHELL_RC"
@@ -67,7 +67,7 @@ if [[ ":$PATH:" != *":$DOTNET_TOOLS_PATH:"* ]]; then
         echo "Please add this to your shell profile:"
         echo "  export PATH=\"\$PATH:\$HOME/.dotnet/tools\""
     fi
-    
+
     # Temporarily add to current session
     export PATH="$PATH:$DOTNET_TOOLS_PATH"
 else
