@@ -92,6 +92,13 @@
         "dotnet-outdated"
       ],
       "rollForward": false
+    },
+    "dotnet-inspect": {
+      "version": "0.1.14",
+      "commands": [
+        "dotnet-inspect"
+      ],
+      "rollForward": false
     }
   }
 }
