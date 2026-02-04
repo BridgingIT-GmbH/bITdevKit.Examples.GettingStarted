@@ -79,7 +79,6 @@ An application built using .NET 10 and following a Domain-Driven Design (DDD) ap
       - [Using the Generated Client](#using-the-generated-client)
       - [Generating TypeScript Client](#generating-typescript-client)
     - [Resources](#resources)
-  - [License](#license)
 
 ## Features
 
@@ -1093,9 +1092,3 @@ kiota generate \
 - [Kiota Documentation](https://learn.microsoft.com/en-us/openapi/kiota/overview)
 - [Kiota GitHub Repository](https://github.com/microsoft/kiota)
 - [ASP.NET Core OpenAPI](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/)
-
----
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.

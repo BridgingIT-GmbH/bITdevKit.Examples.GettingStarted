@@ -27,14 +27,14 @@ This document provides AI agents with concise, high-signal context about this re
 ### Skills Usage Policy
 
 - **ALWAYS check for and use available skills** when the user's request matches a skill's description.
-- Skills are located in `.github/skills/` and `.opencode/skills/` directories.
+- Skills are located in `.agents/skills/` directories.
 - Each skill provides a tested, standardized approach to specific tasks.
 - Using skills ensures consistency, follows best practices, and reduces errors.
 - Use the `find-skills` skill to discover available skills when you're unsure which skill applies to your task.
 
 ### Available Skills
 
-All 15 skills available in `.github/skills/`:
+All 15 skills available in `.agents/skills/`:
 
 - `adr-writer`: Write Architectural Decision Records following MADR format
 - `changelog-generator`: Auto-generate user-facing changelogs from git commits
@@ -244,7 +244,6 @@ Example prompt:
 
 ```text
 / (root)
-  .github/copilot-instructions.md
   .editorconfig
   README.md
   src/
