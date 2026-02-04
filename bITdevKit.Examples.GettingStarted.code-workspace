@@ -1,13 +1,13 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-    ],
-    "settings": {
+  "folders": [
+    {
+      "path": ".",
+    },
+  ],
+  "settings": {
     "dotnet.defaultSolution": "bITdevKit.Examples.GettingStarted.slnx",
-      "peacock.color": "#150b20",
-      "entityframework.project": "src\\Modules\\CoreModule\\CoreModule.Infrastructure",
+    "peacock.color": "#150b20",
+    "entityframework.project": "src\\Modules\\CoreModule\\CoreModule.Infrastructure",
     "entityframework.startupProject": "src\\Presentation.Web.Server",
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#2e1846",
@@ -27,6 +27,10 @@
         "titleBar.activeForeground": "#e7e7e7",
         "titleBar.inactiveBackground": "#150b2099",
         "titleBar.inactiveForeground": "#e7e7e799"
-    }
-    }
+    },
+    "chat.agentSkillsLocations": {
+      ".agents/skills": true,
+      "~/.agents/skills": true,
+    },
+  },
 }
