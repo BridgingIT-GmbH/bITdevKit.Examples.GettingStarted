@@ -74,7 +74,7 @@ sequenceDiagram
 - **User Interaction**: The user updates the `SearchText` filter, triggering `SetSearchText`.
 - **State Update**: `SetSearchText` updates the state via `RestoreSnapshot`, which calls `SetCurrentState`.
 - **Notification**: `SetCurrentState` fires the `StateChanged` event, notifying the component.
-- **Reaction**: The componentï¿½s `OnFilterStateChanged` handler is called with the new state.
+- **Reaction**: The component’s `OnFilterStateChanged` handler is called with the new state.
 - **Persistence**: The debouncer saves the updated state to storage.
 - **Cleanup**: The component unsubscribes from events during disposal.
 
@@ -350,7 +350,7 @@ private async Task LoadCustomers()
 
 ### 10. Lifecycle Management
 
-- **Scoped Lifetime**: `AppState<T>` instances are typically scoped, meaning theyï¿½re created when a new DI scope begins (e.g., a new page load) and disposed when the scope ends.
+- **Scoped Lifetime**: `AppState<T>` instances are typically scoped, meaning they’re created when a new DI scope begins (e.g., a new page load) and disposed when the scope ends.
 - **Disposal**: Ensure components unsubscribe from events in `Dispose` to avoid memory leaks. `AppState<T>` itself disposes the debouncer in its `Dispose` method.
 
 ## Best Practices
