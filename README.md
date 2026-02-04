@@ -12,8 +12,8 @@ An application built using .NET 10 and following a Domain-Driven Design (DDD) ap
   - [Frameworks and Libraries](#frameworks-and-libraries)
   - [Getting Started](#getting-started)
     - [Running the Application](#running-the-application)
-  - [Architecture Deep Dive](#architecture-deep-dive)
-    - [Clean Architecture Overview](#clean-architecture-overview)
+  - [Architecture](#architecture)
+    - [Overview](#overview)
     - [Layer Responsibilities](#layer-responsibilities)
       - [Domain Layer (Core)](#domain-layer-core)
       - [Application Layer](#application-layer)
@@ -127,49 +127,83 @@ The application will automatically migrate the database on startup (via Database
 
 ---
 
-## Architecture Deep Dive
+## Architecture
 
 The bITdevKit GettingStarted project implements **Clean/Onion Architecture** principles combined with **Domain-Driven Design (DDD)** and a **Modular Monolith** approach. This section explains the architectural decisions, layer responsibilities and how components interact.
 
 > **Architectural Decisions**: For detailed rationale and alternatives considered for key architectural choices, see the [Architectural Decision Records (ADRs)](./docs/ADR/README.md) in the `/docs/ADR` directory. Key ADRs include Clean Architecture boundaries ([ADR-0001](./docs/ADR/0001-clean-onion-architecture.md)), Result pattern ([ADR-0002](./docs/ADR/0002-result-pattern-error-handling.md)), Modular Monolith structure ([ADR-0003](./docs/ADR/0003-modular-monolith-architecture.md)), and implementation patterns for repositories ([ADR-0004](./docs/ADR/0004-repository-decorator-behaviors.md)), jobs ([ADR-0015](./docs/ADR/0015-background-jobs-quartz-scheduling.md)), logging ([ADR-0016](./docs/ADR/0016-logging-observability-strategy.md)), and testing ([ADR-0013](./docs/ADR/0013-unit-testing-high-coverage-strategy.md), [ADR-0017](./docs/ADR/0017-integration-testing-strategy.md)).
 
-### Clean Architecture Overview
+### Overview
 
 Clean Architecture enforces strict dependency rules where **inner layers never depend on outer layers**. Dependencies flow inward toward the domain core, ensuring business logic remains independent of infrastructure concerns and delivery mechanisms.
 
 ```mermaid
 graph TB
-    subgraph "Outer Layer: Infrastructure & Presentation"
-        UI[Web API Endpoints<br/>Presentation Layer]
-        DB[Entity Framework<br/>SQL Server]
-        EXT[External Services<br/>Email, Payment, etc.]
+    Client([HTTP Client]) --> Endpoints
+
+    subgraph Presentation["Presentation Layer (Outer)"]
+        Endpoints[Endpoints<br/>Minimal APIs]
+        DTOs[Request/Response DTOs]
     end
 
-    subgraph "Application Layer"
-        CMD[Commands & Queries]
-        HAND[Handlers]
-        BEHAV[Pipeline Behaviors]
+    subgraph Application["Application Layer"]
+        Requester[IRequester<br/>Mediator]
+        CMD[Commands & Queries<br/>CQRS]
+        BEHAV[Pipeline Behaviors<br/>Validation, Retry, Timeout]
+        HAND[Handlers<br/>Business Orchestration]
+        Jobs[Background Jobs<br/>CustomerExportJob]
     end
 
-    subgraph "Inner Core: Domain"
+    subgraph Domain["Domain Layer (Inner Core)"]
         AGG[Aggregates<br/>Customer]
         VO[Value Objects<br/>EmailAddress, CustomerNumber]
         EVENTS[Domain Events<br/>CustomerCreated]
         RULES[Business Rules<br/>EmailShouldBeUnique]
+        SPECS[Specifications<br/>Query Expressions]
     end
 
-    UI --> CMD
+    subgraph Infrastructure["Infrastructure Layer (Outer)"]
+        Repos[Repositories<br/>Generic Repository]
+        DB[(Entity Framework<br/>SQL Server)]
+        Scheduler[Job Scheduler<br/>Quartz]
+    end
+
+    %% Request Flow
+    Endpoints --> DTOs
+    DTOs --> Requester
+    Requester --> BEHAV
+    BEHAV --> CMD
     CMD --> HAND
+
+    %% Handler to Domain
     HAND --> AGG
-    HAND --> DB
+    HAND --> RULES
+    HAND --> SPECS
+
+    %% Jobs to Domain & Infrastructure
+    Jobs --> AGG
+    Jobs --> Repos
+    Jobs --> SPECS
+
+    %% Domain Internal
     AGG --> VO
     AGG --> EVENTS
-    HAND --> RULES
 
-    style AGG fill:#4CAF50
-    style VO fill:#4CAF50
-    style EVENTS fill:#4CAF50
-    style RULES fill:#4CAF50
+    %% Persistence Flow
+    HAND --> Repos
+    Repos --> DB
+    Scheduler -.triggers.-> Jobs
+
+    %% Styling
+    style Domain fill:#E8F5E9,stroke:#4CAF50,stroke-width:3px
+    style AGG fill:#66BB6A,color:#fff
+    style VO fill:#66BB6A,color:#fff
+    style EVENTS fill:#66BB6A,color:#fff
+    style RULES fill:#66BB6A,color:#fff
+    style SPECS fill:#66BB6A,color:#fff
+    style Application fill:#E3F2FD,stroke:#2196F3,stroke-width:2px
+    style Presentation fill:#F3E5F5,stroke:#9C27B0,stroke-width:2px
+    style Infrastructure fill:#FFF3E0,stroke:#FF9800,stroke-width:2px
 ```
 
 ### Layer Responsibilities
