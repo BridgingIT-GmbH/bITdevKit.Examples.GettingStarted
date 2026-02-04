@@ -5,13 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-01-29
+## [Unreleased] - 2026-02-04
 
 ### Added
 
+- **BDK CLI Installation Script**: PowerShell installer for streamlined BDK CLI setup
+- **Skill Discovery**: New find-skills skill and expanded skills list for faster capability discovery
+- **dotnet-inspect Tooling**: New dotnet-inspect configuration and documentation
+- **System Design Diagrams**: Comprehensive architecture and interaction diagrams in documentation
+- **BdkUI Banner**: ASCII art banner for improved CLI visual identity
+- **Testing Guides**: Unit and integration test authoring guides with templates and checklists
+- **Docker Tasking**: Docker CLI integration with build/run/compose tasks, cleanup, and log management
+- **OpenAPI Utilities**: Linting, client generation, and HTTP request file generation utilities
+- **EF Core Tasking**: DbContext discovery with module-specific script and bundle tasks
+- **BDK TUI**: Initial terminal UI support for BDK workflows
 - **Git Commit Skill**: New developer skill for creating conventional commits with automatic type/scope analysis, intelligent staging, and standardized message generation following the Conventional Commits specification
 - **Agent Skills Usage Policy**: Comprehensive guidelines in AGENTS.md documenting when and how to use available skills, with clear priority order to ensure consistent use of standardized workflows
-- **Value Object Creator Skill**: New developer skill for creating domain value objects with validation, equality, and Result<T> pattern following DDD principles
+- **Value Object Creator Skill**: New developer skill for creating domain value objects with validation, equality, and Result of T pattern following DDD principles
 - **Document Co-authoring Skill**: Interactive workflow skill to guide collaborative documentation creation through structured refinement and verification
 - **Development Container Support**: Added devcontainer configuration for consistent development environment setup
 - **Address Management**: Full support for managing customer addresses including:
@@ -19,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Primary address designation with automatic single-primary enforcement
   - Duplicate address prevention
   - Localized validation messages
-- **Enhanced Domain Validation**: 
+- **Enhanced Domain Validation**:
   - DateOfBirth validation with business rules in Customer aggregate
   - Duplicate address checks in AddAddress and UpdateAddress methods
   - EmailAddress value object with improved type safety
@@ -48,6 +58,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BDK CLI Refactor**: Modularized CLI scripts, consolidated publish tasks, and improved RID selection
+- **Documentation Digest**: Task updates to digest source code for LLM processing
+- **OpenAPI Linting**: Ruleset inclusion and improved license report paths
+- **Docker Output**: Enabled command output display and refined user messaging for Docker operations
+- **Task Registry Cleanup**: Removed alias tasks for a cleaner structure
+- **Documentation**: Added layer location references in README and updated ADR test command/category
 - **Type Safety Improvements**: Customer now uses EmailAddress value object directly instead of strings for email validation
 - **Customer Status**: Refactored from integer to string type for better readability and maintainability
 - **Private Constructors**: Customer aggregate now enforces creation through factory methods only
@@ -62,6 +78,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Diagnostics Messaging**: Improved CPU/GC/ASP.NET trace messages and benchmark selection clarity
+- **Task Discovery**: Enabled recursive project search for diagnostics and utility tasks
+- **OpenAPI DTO Docs**: Corrected line breaks in customer DTO descriptions
+- **Docker Defaults**: Updated default network name format
+- **Bdk TUI**: Fixed Bun path handling and permissions
 - **Domain Events**: Corrected CustomerUpdatedDomainEvent registration to properly use Customer aggregate
 - **Endpoint URLs**: Fixed customer creation endpoint URL in CustomerEndpoints
 - **Test Stability**: Database readiness checks in EndpointTestFixture for reliable test execution
@@ -71,7 +92,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- **Obsolete Code**: 
+- **Legacy TUI**: Removed old opentui implementation
+- **Obsolete Docs**: Removed outdated BDK CLI README
+- **Obsolete Code**:
   - Removed outdated Quartz migration files
   - Removed Process_UpdateEmailAddress_SuccessResult test
   - Cleaned up redundant content from AGENTS.md
@@ -88,7 +111,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [10.0.1] - 2025-11-18
 
-### Changed
+### Changed (10.0.1)
 
 - **Package Updates**: Updated all BridgingIT.DevKit packages to support .NET 10
 - **Build Pipeline**: Updated Azure Pipelines configuration for .NET 10 compatibility
