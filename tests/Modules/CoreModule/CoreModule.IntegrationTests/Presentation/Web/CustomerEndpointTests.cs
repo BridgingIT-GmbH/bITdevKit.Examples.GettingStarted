@@ -10,6 +10,7 @@ using System.Text.Json;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
 [IntegrationTest("Presentation.Web")]
+[Category("integration")]
 [Collection(nameof(EndpointCollection))]
 public class CustomerEndpointTests
 {

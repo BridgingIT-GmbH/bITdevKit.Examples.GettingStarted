@@ -10,15 +10,6 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentat
 /// </summary>
 public class CustomerUpdateStatusRequestModel
 {
-    private CustomerUpdateStatusRequestModel()
-    {
-    }
-
-    public CustomerUpdateStatusRequestModel(string status)
-    {
-        this.Status = status;
-    }
-
     /// <summary>
     /// Gets or sets the new status value for the customer.
     /// Valid values: "Lead", "Active", "Retired". See CustomerStatus enumeration for details.

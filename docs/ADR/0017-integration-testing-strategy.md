@@ -563,7 +563,7 @@ dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 ```yaml
 # GitHub Actions example
 - name: Run Integration Tests
-  run: dotnet test --filter "Category=Integration" --no-build --verbosity normal
+  run: dotnet test --filter "Category=IntegrationTest" --no-build --verbosity normal
   env:
     ASPNETCORE_ENVIRONMENT: IntegrationTest
 ```

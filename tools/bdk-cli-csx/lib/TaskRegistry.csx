@@ -88,7 +88,7 @@ public static class TaskRegistry
                 Label = "Build Server",
                 Description = "Build web server project",
                 Category = "Build & Maintenance",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var project = ctx.Config.DotnetPublishProject ?? "";
                     if (string.IsNullOrEmpty(project))
@@ -105,7 +105,7 @@ public static class TaskRegistry
                 Label = "Build Project",
                 Description = "Build a specific project",
                 Category = "Build & Maintenance",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var project = await Prompts.SelectProjectAsync(ctx, "Select a project to build:");
                     if (string.IsNullOrEmpty(project))
@@ -118,7 +118,7 @@ public static class TaskRegistry
                 Label = "Publish Server",
                 Description = "Publish web server with config, RID, and single-file options",
                 Category = "Build & Maintenance",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var project = ctx.Config.DotnetPublishProject ?? "";
                     if (string.IsNullOrEmpty(project))
@@ -126,33 +126,33 @@ public static class TaskRegistry
                         AnsiConsole.MarkupLine("[red]Error: DOTNET_PUBLISH_PROJECT not configured in .env[/]");
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     }
-                    
+
                     var config = await Prompts.SelectConfigurationAsync("Debug");
                     if (string.IsNullOrEmpty(config))
                     {
                         AnsiConsole.MarkupLine("[yellow]Configuration selection cancelled[/]");
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     }
-                    
+
                     var rid = await Prompts.SelectRidAsync("linux-x64");
                     if (string.IsNullOrEmpty(rid))
                     {
                         AnsiConsole.MarkupLine("[yellow]RID selection cancelled[/]");
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     }
-                    
+
                     var singleFile = await Prompts.SelectSingleFileAsync(false);
                     if (singleFile == null)
                     {
                         AnsiConsole.MarkupLine("[yellow]Single-file selection cancelled[/]");
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     }
-                    
+
                     AnsiConsole.MarkupLine($"[cyan]Publishing server:[/] {project}");
                     AnsiConsole.MarkupLine($"[dim]Configuration:[/] [cyan]{config}[/]");
                     AnsiConsole.MarkupLine($"[dim]RID:[/] [cyan]{rid}[/]");
                     AnsiConsole.MarkupLine($"[dim]Single-file:[/] [cyan]{singleFile.Value}[/]");
-                    
+
                     return await ctx.DotnetCli.PublishProjectRidAsync(project, config, rid, singleFile.Value, "");
                 }
             },
@@ -161,38 +161,38 @@ public static class TaskRegistry
                 Label = "Publish Project",
                 Description = "Publish a project with config, RID, and single-file options",
                 Category = "Build & Maintenance",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var project = await Prompts.SelectProjectAsync(ctx, "Select a project to publish:");
                     if (string.IsNullOrEmpty(project))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     var config = await Prompts.SelectConfigurationAsync("Debug");
                     if (string.IsNullOrEmpty(config))
                     {
                         AnsiConsole.MarkupLine("[yellow]Configuration selection cancelled[/]");
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     }
-                    
+
                     var rid = await Prompts.SelectRidAsync("linux-x64");
                     if (string.IsNullOrEmpty(rid))
                     {
                         AnsiConsole.MarkupLine("[yellow]RID selection cancelled[/]");
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     }
-                    
+
                     var singleFile = await Prompts.SelectSingleFileAsync(false);
                     if (singleFile == null)
                     {
                         AnsiConsole.MarkupLine("[yellow]Single-file selection cancelled[/]");
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
                     }
-                    
+
                     AnsiConsole.MarkupLine($"[cyan]Publishing project:[/] {project}");
                     AnsiConsole.MarkupLine($"[dim]Configuration:[/] [cyan]{config}[/]");
                     AnsiConsole.MarkupLine($"[dim]RID:[/] [cyan]{rid}[/]");
                     AnsiConsole.MarkupLine($"[dim]Single-file:[/] [cyan]{singleFile.Value}[/]");
-                    
+
                     return await ctx.DotnetCli.PublishProjectRidAsync(project, config, rid, singleFile.Value, "");
                 }
             },
@@ -201,7 +201,7 @@ public static class TaskRegistry
                 Label = "Run Server",
                 Description = "Run web server in development mode",
                 Category = "Build & Maintenance",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var project = ctx.Config.DotnetPublishProject ?? "";
                     if (string.IsNullOrEmpty(project))
@@ -218,7 +218,7 @@ public static class TaskRegistry
                 Label = "Run Project",
                 Description = "Run a specific project",
                 Category = "Build & Maintenance",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var project = await Prompts.SelectProjectAsync(ctx, "Select a project to run:");
                     if (string.IsNullOrEmpty(project))
@@ -231,7 +231,7 @@ public static class TaskRegistry
                 Label = "Watch Server",
                 Description = "Watch and hot-reload web server",
                 Category = "Build & Maintenance",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var project = ctx.Config.DotnetPublishProject ?? "";
                     if (string.IsNullOrEmpty(project))
@@ -283,13 +283,13 @@ public static class TaskRegistry
                 Label = "Analyzers Export",
                 Description = "Export analyzer report",
                 Category = "Build & Maintenance",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var reportPath = await Prompts.PromptTextAsync("Report path (optional):", "");
                     return await ctx.DotnetCli.AnalyzersExportAsync(reportPath);
                 }
             },
-            
+
             // ===== Testing =====
             new() {
                 Key = "test",
@@ -303,21 +303,35 @@ public static class TaskRegistry
                 Label = "Run Unit Tests",
                 Description = "Run unit tests only",
                 Category = "Testing",
-                Execute = async (ctx) => await ctx.DotnetCli.TestAsync("Category=unit")
+                Execute = async (ctx) => await ctx.DotnetCli.TestAsync("Category=UnitTest")
             },
             new() {
                 Key = "test-integration",
                 Label = "Run Integration Tests",
                 Description = "Run integration tests only",
                 Category = "Testing",
-                Execute = async (ctx) => await ctx.DotnetCli.TestAsync("Category=integration")
+                Execute = async (ctx) => await ctx.DotnetCli.TestAsync("Category=IntegrationTest")
+            },
+            new() {
+                Key = "test-architecture",
+                Label = "Run Architecture Tests",
+                Description = "Run architecture tests only",
+                Category = "Testing",
+                Execute = async (ctx) => await ctx.DotnetCli.TestAsync("Category=ArchitectureTest")
+            },
+            new() {
+                Key = "test-system",
+                Label = "Run System Tests",
+                Description = "Run system tests only",
+                Category = "Testing",
+                Execute = async (ctx) => await ctx.DotnetCli.TestAsync("Category=SystemTest")
             },
             new() {
                 Key = "test-unit-module",
                 Label = "Run Unit Tests (Module)",
                 Description = "Run unit tests for selected module",
                 Category = "Testing",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to run unit tests:");
                     if (string.IsNullOrEmpty(module))
@@ -330,7 +344,7 @@ public static class TaskRegistry
                 Label = "Run Integration Tests (Module)",
                 Description = "Run integration tests for selected module",
                 Category = "Testing",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to run integration tests:");
                     if (string.IsNullOrEmpty(module))
@@ -364,13 +378,13 @@ public static class TaskRegistry
 
                     var args = $"test \"{solution}\" --collect:\"XPlat Code Coverage\" --results-directory \"{runDir}\" --settings:coverlet.runsettings";
                     var result = await ctx.Executor.ExecuteAsync("dotnet", args);
-                    
+
                     if (result.ExitCode != 0)
                     {
                         AnsiConsole.MarkupLine("[red]Tests failed[/]");
                         return new ExecutionResult { Success = false, ExitCode = result.ExitCode, Duration = DateTime.Now - startTime };
                     }
-                    
+
                     var coverageFiles = Directory.GetFiles(runDir, "coverage.cobertura.xml", SearchOption.AllDirectories);
 
                     if (coverageFiles.Length == 0)
@@ -380,12 +394,12 @@ public static class TaskRegistry
                     }
 
                     AnsiConsole.MarkupLine($"[green]Found {coverageFiles.Length} coverage file(s) under {Markup.Escape(runDir)}[/]");
-                    
-                    return new ExecutionResult 
-                    { 
-                        Success = true, 
-                        ExitCode = 0, 
-                        Duration = DateTime.Now - startTime 
+
+                    return new ExecutionResult
+                    {
+                        Success = true,
+                        ExitCode = 0,
+                        Duration = DateTime.Now - startTime
                     };
                 }
             },
@@ -415,60 +429,60 @@ public static class TaskRegistry
 
                     var args = $"test \"{solution}\" --collect:\"XPlat Code Coverage\" --results-directory \"{runDir}\" --settings:coverlet.runsettings";
                     var result = await ctx.Executor.ExecuteAsync("dotnet", args);
-                    
+
                     if (result.ExitCode != 0)
                     {
                         AnsiConsole.MarkupLine("[red]Tests failed[/]");
                         return new ExecutionResult { Success = false, ExitCode = result.ExitCode, Duration = DateTime.Now - startTime };
                     }
-                    
+
                     var coverageFiles = Directory.GetFiles(runDir, "coverage.cobertura.xml", SearchOption.AllDirectories);
-                    
+
                     if (coverageFiles.Length == 0)
                     {
                         AnsiConsole.MarkupLine("[red]No coverage.cobertura.xml files found[/]");
                         return new ExecutionResult { Success = false, ExitCode = 2, Duration = DateTime.Now - startTime };
                     }
-                    
+
                     var reportRoot = Path.Combine(runDir, "report");
                     Directory.CreateDirectory(reportRoot);
                     var reportsArg = string.Join(';', coverageFiles);
                     var reportTypes = "HtmlInline_AzurePipelines;MarkdownSummaryGithub";
-                    
+
                     AnsiConsole.MarkupLine($"[cyan]Generating HTML report -> {Markup.Escape(reportRoot)}[/]");
-                    
+
                     args = $"tool run reportgenerator -- -reports:\"{reportsArg}\" -targetdir:\"{reportRoot}\" -reporttypes:{reportTypes}";
                     result = await ctx.Executor.ExecuteAsync("dotnet", args);
-                    
+
                     if (result.ExitCode != 0)
                     {
                         AnsiConsole.MarkupLine("[red]Report generation failed[/]");
                         return new ExecutionResult { Success = false, ExitCode = result.ExitCode, Duration = DateTime.Now - startTime };
                     }
-                    
+
                     var indexFile = Path.Combine(reportRoot, "index.html");
                     if (File.Exists(indexFile))
                     {
                         Utils.OpenFile(indexFile);
-                        return new ExecutionResult 
-                        { 
-                            Success = true, 
-                            ExitCode = 0, 
-                            Duration = DateTime.Now - startTime 
+                        return new ExecutionResult
+                        {
+                            Success = true,
+                            ExitCode = 0,
+                            Duration = DateTime.Now - startTime
                         };
                     }
-                    
+
                     AnsiConsole.MarkupLine("[yellow]Report generation completed but index.html not found[/]");
-                    
-                    return new ExecutionResult 
-                    { 
-                        Success = true, 
-                        ExitCode = 0, 
-                        Duration = DateTime.Now - startTime 
+
+                    return new ExecutionResult
+                    {
+                        Success = true,
+                        ExitCode = 0,
+                        Duration = DateTime.Now - startTime
                     };
                 }
             },
-            
+
             // ===== Utilities =====
             new BdkTask
             {
@@ -574,7 +588,7 @@ public static class TaskRegistry
                 Category = "Utilities",
                 Execute = async (ctx) => await MiscUtils.UpdateDocsAsync(ctx)
             },
-            
+
             // ===== Performance & Diagnostics =====
             new BdkTask
             {
@@ -656,7 +670,7 @@ public static class TaskRegistry
                 Category = "Performance & Diagnostics",
                 Execute = async (ctx) => await DiagnosticsUtils.ViewSpeedscopeAsync(ctx)
             },
-            
+
             // ===== Security & Compliance =====
             new BdkTask
             {
@@ -698,7 +712,7 @@ public static class TaskRegistry
                 Category = "Security & Compliance",
                 Execute = async (ctx) => await SecurityUtils.GenerateLicenseReportAsync(ctx)
             },
-            
+
             // ===== API & Spec =====
             new BdkTask
             {
@@ -732,7 +746,7 @@ public static class TaskRegistry
                 Category = "API & Spec",
                 Execute = async (ctx) => await OpenApiUtils.GenerateHttpRequestFilesAsync(ctx)
             },
-            
+
             // ===== EF & Persistence =====
             new BdkTask
             {
@@ -740,17 +754,17 @@ public static class TaskRegistry
                 Label = "EF Info",
                 Description = "Show DbContext info",
                 Category = "EF & Persistence",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module for EF info:");
                     if (string.IsNullOrEmpty(module))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
                     var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     return await ctx.DotnetCli.EfInfoAsync(module, dbContext);
                 }
             },
@@ -760,17 +774,17 @@ public static class TaskRegistry
                 Label = "EF List Migrations",
                 Description = "List migrations",
                 Category = "EF & Persistence",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to list migrations:");
                     if (string.IsNullOrEmpty(module))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
                     var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     return await ctx.DotnetCli.EfListAsync(module, dbContext);
                 }
             },
@@ -780,21 +794,21 @@ public static class TaskRegistry
                 Label = "EF Add Migration",
                 Description = "Add new migration",
                 Category = "EF & Persistence",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module for migration:");
                     if (string.IsNullOrEmpty(module))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
                     var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     var migrationName = await Prompts.PromptTextAsync("Enter migration name (blank = auto timestamp):", "");
                     if (string.IsNullOrEmpty(migrationName))
                         migrationName = "Migration_" + DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                    
+
                     return await ctx.DotnetCli.EfAddAsync(module, dbContext, migrationName);
                 }
             },
@@ -804,17 +818,17 @@ public static class TaskRegistry
                 Label = "EF Remove Migration",
                 Description = "Remove last migration",
                 Category = "EF & Persistence",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to remove migration:");
                     if (string.IsNullOrEmpty(module))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
                     var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     return await ctx.DotnetCli.EfRemoveAsync(module, dbContext);
                 }
             },
@@ -824,17 +838,17 @@ public static class TaskRegistry
                 Label = "EF Remove All Migrations",
                 Description = "Delete all migration files",
                 Category = "EF & Persistence",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to remove all migrations:");
                     if (string.IsNullOrEmpty(module))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
                     var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     return ctx.DotnetCli.EfRemoveAll(module, dbContext);
                 }
             },
@@ -844,17 +858,17 @@ public static class TaskRegistry
                 Label = "EF Apply Migrations",
                 Description = "Update database (apply migrations)",
                 Category = "EF & Persistence",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to apply migrations:");
                     if (string.IsNullOrEmpty(module))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
                     var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     return await ctx.DotnetCli.EfApplyAsync(module, dbContext);
                 }
             },
@@ -864,17 +878,17 @@ public static class TaskRegistry
                 Label = "EF Update Database",
                 Description = "Update database (alias for apply)",
                 Category = "EF & Persistence",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to update database:");
                     if (string.IsNullOrEmpty(module))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
                     var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     return await ctx.DotnetCli.EfApplyAsync(module, dbContext);
                 }
             },
@@ -884,17 +898,17 @@ public static class TaskRegistry
                 Label = "EF Recreate Database",
                 Description = "Drop and recreate database",
                 Category = "EF & Persistence",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to recreate database:");
                     if (string.IsNullOrEmpty(module))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
                     var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     return await ctx.DotnetCli.EfRecreateAsync(module, dbContext);
                 }
             },
@@ -904,17 +918,17 @@ public static class TaskRegistry
                 Label = "EF Undo Migration",
                 Description = "Undo last migration",
                 Category = "EF & Persistence",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to undo migration:");
                     if (string.IsNullOrEmpty(module))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
                     var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     return await ctx.DotnetCli.EfUndoAsync(module, dbContext);
                 }
             },
@@ -924,17 +938,17 @@ public static class TaskRegistry
                 Label = "EF Migration Status",
                 Description = "Show migration status",
                 Category = "EF & Persistence",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module for migration status:");
                     if (string.IsNullOrEmpty(module))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
                     var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     return await ctx.DotnetCli.EfStatusAsync(module, dbContext);
                 }
             },
@@ -944,17 +958,17 @@ public static class TaskRegistry
                 Label = "EF Reset Migrations",
                 Description = "Squash migrations into new baseline",
                 Category = "EF & Persistence",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to reset migrations:");
                     if (string.IsNullOrEmpty(module))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
                     var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     return await ctx.DotnetCli.EfResetAsync(module, dbContext);
                 }
             },
@@ -964,17 +978,17 @@ public static class TaskRegistry
                 Label = "EF Export SQL Script",
                 Description = "Export schema as SQL script",
                 Category = "EF & Persistence",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to export script:");
                     if (string.IsNullOrEmpty(module))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
                     var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     var defaultOutput = $".tmp/ef/efscript_{module.ToLower()}.sql";
                     var outputPath = await Prompts.PromptTextAsync("Output path:", defaultOutput);
                     return await ctx.DotnetCli.EfScriptAsync(module, dbContext, outputPath);
@@ -986,23 +1000,23 @@ public static class TaskRegistry
                 Label = "EF Export Bundle",
                 Description = "Export migration bundle",
                 Category = "EF & Persistence",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var module = await Prompts.SelectModuleForTaskAsync(ctx, "Select module to export bundle:");
                     if (string.IsNullOrEmpty(module))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     ctx.AvailableDbContexts = Prompts.DiscoverDbContexts(module);
                     var dbContext = await Prompts.SelectDbContextForTaskAsync(ctx, "Select DbContext:");
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
-                    
+
                     var defaultOutput = $".tmp/ef/efbundle_{module.ToLower()}.exe";
                     var outputPath = await Prompts.PromptTextAsync("Output path:", defaultOutput);
                     return await ctx.DotnetCli.EfBundleAsync(module, dbContext, outputPath);
                 }
             },
-            
+
             // ===== Docker & Containers =====
             new BdkTask
             {
@@ -1010,7 +1024,7 @@ public static class TaskRegistry
                 Label = "Docker Image Build & Run (Debug)",
                 Description = "Build and run image in Debug configuration",
                 Category = "Docker & Containers",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var buildResult = await ctx.DockerCli.BuildImageAsync("Debug", false);
                     if (!buildResult.Success)
@@ -1024,7 +1038,7 @@ public static class TaskRegistry
                 Label = "Docker Image Build & Run (Release)",
                 Description = "Build and run image in Release configuration",
                 Category = "Docker & Containers",
-                Execute = async (ctx) => 
+                Execute = async (ctx) =>
                 {
                     var buildResult = await ctx.DockerCli.BuildImageAsync("Release", false);
                     if (!buildResult.Success)
@@ -1154,7 +1168,7 @@ public static class TaskRegistry
             }
         };
     }
-    
+
     public static Dictionary<string, List<BdkTask>> GetTasksByCategory()
     {
         return GetAllTasks()
