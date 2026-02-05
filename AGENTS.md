@@ -247,13 +247,13 @@ Use workspace tasks when possible or dotnet tools; for ad-hoc commands:
 
 ```powershell
 # Build
-pwsh -NoProfile -File .\bdk.ps1 -Task build
+./bdk-cli.ps1 build
 
 # Unit tests
-pwsh -NoProfile -File .\bdk.ps1 -Task test-unit-all
+./bdk-cli.ps1 test-unit
 
 # Apply EF migrations
-pwsh -NoProfile -File .\bdk.ps1 -Task ef-apply
+./bdk-cli.ps1 ef-apply
 ```
 
 ## Alignment with `.github/copilot-instructions.md`
