@@ -1,6 +1,6 @@
 ---
 name: changelog-generator
-description: Automatically creates user-facing changelogs from git commits by analyzing commit history, categorizing changes, and transforming technical commits into clear, customer-friendly release notes. Turns hours of manual changelog writing into minutes of automated generation.
+description: Automatically creates or updates changelogs from git commits by analyzing commit history, categorizing changes and transforming technical commits into clear, customer-friendly release notes. Turns hours of manual changelog writing into minutes of automated generation.
 ---
 
 # Changelog Generator
@@ -31,6 +31,10 @@ This skill transforms technical git commits into polished, user-friendly changel
 ### Basic Usage
 
 From your project repository:
+
+```
+Update the changelog with recent commits
+```
 
 ```
 Create a changelog from commits since last release
@@ -90,14 +94,8 @@ guidelines from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## Tips
 
 - Run from your git repository root
+- Use an existing CHANGELOG.md as a basis and add new entries to it
 - Specify date ranges for focused changelogs
 - Use the The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) for consistent formatting
 - Review and adjust the generated changelog before publishing
 - Save output directly to CHANGELOG.md in the repo root.
-
-## Related Use Cases
-
-- Creating GitHub release notes
-- Writing app store update descriptions
-- Generating email updates for users
-- Creating social media announcement posts
