@@ -7,10 +7,12 @@ This document provides AI agents with concise, high-signal context about this re
 - **Name**: bITdevKit GettingStarted Example
 - **Purpose**: Demonstrates a modular, Domain-Driven Design (DDD) application using the bITdevKit on .NET 10.
 - **Primary Domain Concept**: Customer management lifecycle (create, update, list, delete, export job).
-- **Architecture**: Onion / Clean Architecture + Modular vertical slices (Domain, Application, Infrastructure, Presentation, Tests).
+- **Architecture**: Onion / Clean Architecture + Modular vertical slices (Domain, Application, Infrastructure, Presentation, Tests). Full details in [ARCHITECTURE.md](./ARCHITECTURE.md).
 - **Runtime**: ASP.NET Core minimal APIs, EF Core (SQL Server), Serilog.
 - **Modules**: Located under `src/Modules/<ModuleName>` (e.g., `CoreModule`). Each module is self-contained.
 - **Host**: Composition root in `src/Presentation.Web.Server` (`Program.cs`, DI wiring, middleware).
+- **Testing**: Unit tests in `tests/UnitTests`, integration tests in `tests/IntegrationTests`.
+- **Development Workflow**: Described in [README.md](./README.md) and reinforced in this document.
 
 ## Goals for Copilot
 
@@ -227,6 +229,7 @@ Example prompt:
   ./github/copilot-instructions.md
   AGENTS.md
   README.md
+  ARCHITECTURE.md
   .editorconfig
   src/
     Modules/CoreModule/
