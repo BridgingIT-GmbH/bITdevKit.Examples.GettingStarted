@@ -29,8 +29,8 @@
         "titleBar.inactiveForeground": "#e7e7e799"
     },
     "chat.agentSkillsLocations": {
-      ".agents/skills": true,
-      "~/.agents/skills": true,
+        ".agents/skills": true,
+        "~/.agents/skills": true
     },
   },
 }
