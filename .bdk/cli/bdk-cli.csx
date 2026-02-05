@@ -31,7 +31,7 @@ var scriptDirectory = Path.GetDirectoryName(scriptPath) ?? Directory.GetCurrentD
 
 if (!File.Exists(Path.Combine(scriptDirectory, "bdk-cli.csx")))
 {
-    scriptDirectory = Path.Combine(Directory.GetCurrentDirectory(), "tools", "bdk-cli-csx");
+    scriptDirectory = Path.Combine(Directory.GetCurrentDirectory(), ".bdk", "cli");
 }
 
 var repoRoot = Path.GetFullPath(Path.Combine(scriptDirectory, "../.."));
@@ -77,12 +77,12 @@ else if (args[0] == "help" || args[0] == "-h")
         table.AddColumn(new TableColumn("[cyan]Task[/]").Width(20));
         table.AddColumn(new TableColumn("[cyan]Description[/]").Width(50));
         table.AddColumn(new TableColumn("[cyan]Category[/]").Width(25));
-        
+
         foreach (var task in TaskRegistry.GetAllTasks().OrderBy(t => t.Category).ThenBy(t => t.Key))
         {
             table.AddRow(task.Key, task.Description, task.Category);
         }
-        
+
         AnsiConsole.Write(new Rule("[cyan]BDK CLI - Available Tasks[/]"));
         AnsiConsole.WriteLine();
         AnsiConsole.Write(table);
