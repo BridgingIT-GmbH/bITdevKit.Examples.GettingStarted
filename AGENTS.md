@@ -27,30 +27,10 @@ This document provides AI agents with concise, high-signal context about this re
 ### Skills Usage Policy
 
 - **ALWAYS check for and use available skills** when the user's request matches a skill's description.
-- Skills are located in `.github/skills/` and `.opencode/skills/` directories.
+- Skills are located in `.agents/skills/` directories.
 - Each skill provides a tested, standardized approach to specific tasks.
 - Using skills ensures consistency, follows best practices, and reduces errors.
 - Use the `find-skills` skill to discover available skills when you're unsure which skill applies to your task.
-
-### Available Skills
-
-All 15 skills available in `.github/skills/`:
-
-- `adr-writer`: Write Architectural Decision Records following MADR format
-- `changelog-generator`: Auto-generate user-facing changelogs from git commits
-- `doc-coauthoring`: Structured workflow for co-authoring documentation
-- `domain-add-aggregate`: Add new Domain Aggregates with full CRUD scaffolding across all layers
-- `dotnet-inspect`: Inspect .NET assemblies and NuGet packages, explore APIs, compare versions
-- `find-skills`: Discover and install agent skills
-- `git-commit`: Create conventional commits with proper type/scope analysis and intelligent staging
-- `integration-test-author`: Write endpoint tests using WebApplicationFactory and authenticated HttpClient
-- `mermaid-diagrams`: Create software diagrams (class, sequence, flowchart, C4, ERD, state, git graph, etc.)
-- `nuget-manager`: Manage NuGet packages safely in .NET projects
-- `review-architecture`: Verify DDD patterns and Clean Architecture boundaries
-- `review-code`: Comprehensive C#/.NET code reviews (clean code, security, testing, performance)
-- `skill-creator`: Create or update high-quality Agent Skills following agentskills.io standard
-- `unit-test-author`: Author xUnit unit tests for Domain and Application layers
-- `value-object-creator`: Create domain value objects with validation and Result creation
 
 ### When to Use Skills
 
@@ -244,9 +224,10 @@ Example prompt:
 
 ```text
 / (root)
-  .github/copilot-instructions.md
-  .editorconfig
+  ./github/copilot-instructions.md
+  AGENTS.md
   README.md
+  .editorconfig
   src/
     Modules/CoreModule/
       CoreModule.Domain/

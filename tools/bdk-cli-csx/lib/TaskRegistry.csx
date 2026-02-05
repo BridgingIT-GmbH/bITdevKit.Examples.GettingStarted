@@ -44,21 +44,21 @@ public static class TaskRegistry
             new() {
                 Key = "build",
                 Label = "Build Solution",
-                Description = "Build entire solution (Debug)",
+                Description = "Build solution in Debug configuration",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.BuildAsync()
             },
             new() {
                 Key = "build-release",
-                Label = "Build Release",
+                Label = "Build Solution (Release)",
                 Description = "Build solution in Release configuration",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.BuildReleaseAsync()
             },
             new() {
                 Key = "build-nr",
-                Label = "Build NoRestore",
-                Description = "Build without restoring packages",
+                Label = "Build Solution NoRestore",
+                Description = "Build solution without restoring packages",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.BuildNoRestoreAsync()
             },
@@ -244,18 +244,25 @@ public static class TaskRegistry
                 }
             },
             new() {
-                Key = "update-packages",
-                Label = "Update All Packages",
-                Description = "List and update all NuGet packages",
+                Key = "list-outdated-packages",
+                Label = "List outdated Packages",
+                Description = "List all outdated NuGet packages",
                 Category = "Build & Maintenance",
-                Execute = async (ctx) => await ctx.DotnetCli.UpdatePackagesAsync()
+                Execute = async (ctx) => await ctx.DotnetCli.ListOutdatedPackagesAsync()
             },
             new() {
-                Key = "update-packages-devkit",
-                Label = "Update DevKit Packages",
-                Description = "Update bITdevKit NuGet packages",
+                Key = "update-outdated-packages",
+                Label = "Update Packages",
+                Description = "Update all outdated NuGet packages",
                 Category = "Build & Maintenance",
-                Execute = async (ctx) => await ctx.DotnetCli.UpdatePackagesDevkitAsync()
+                Execute = async (ctx) => await ctx.DotnetCli.UpdateOutdatedPackagesAsync()
+            },
+            new() {
+                Key = "update-outdated-packages-devkit",
+                Label = "Update DevKit Packages",
+                Description = "Update outdated DevKit NuGet packages",
+                Category = "Build & Maintenance",
+                Execute = async (ctx) => await ctx.DotnetCli.UpdateOutdatedPackagesDevkitAsync()
             },
             new() {
                 Key = "format-apply",
