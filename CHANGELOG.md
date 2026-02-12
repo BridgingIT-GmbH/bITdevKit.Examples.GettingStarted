@@ -5,10 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-02-04
+## [Unreleased] - 2026-02-05
 
 ### Added
 
+- **Agents Directive**: Added a directive to guide AI agent usage in the repository
+- **Value Object Templates**: New templates and examples for domain value objects, including unit tests
 - **BDK CLI Installation Script**: PowerShell installer for streamlined BDK CLI setup
 - **Skill Discovery**: New find-skills skill and expanded skills list for faster capability discovery
 - **dotnet-inspect Tooling**: New dotnet-inspect configuration and documentation
@@ -58,6 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **EF Core Documentation**: Expanded guidance with detailed commands, best practices, and clearer formatting
+- **Agents Documentation**: Removed outdated skills section and updated file structure
 - **BDK CLI Refactor**: Modularized CLI scripts, consolidated publish tasks, and improved RID selection
 - **Documentation Digest**: Task updates to digest source code for LLM processing
 - **OpenAPI Linting**: Ruleset inclusion and improved license report paths
@@ -75,9 +79,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Test Coverage**: Improved overall test coverage with enhanced reporting using Coverlet
 - **Mapping Configuration**: Refactored Mapster configuration and logging order for better performance
 - **Command Classes**: Improved clarity and consistency in command summaries and validation messages
+- **Tooling Versions**: Updated dotnet tool versions in dotnet-tools.json
+- **OpenAPI Utilities**: Improved OpenApiUtils logging and error handling
+- **Dependencies and CLI**: Updated dependencies and enhanced CLI functionality
 
 ### Fixed
 
+- **Workspace Formatting**: Corrected indentation for agent skills locations
 - **Diagnostics Messaging**: Improved CPU/GC/ASP.NET trace messages and benchmark selection clarity
 - **Task Discovery**: Enabled recursive project search for diagnostics and utility tasks
 - **OpenAPI DTO Docs**: Corrected line breaks in customer DTO descriptions

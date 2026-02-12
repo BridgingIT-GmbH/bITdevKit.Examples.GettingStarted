@@ -12,6 +12,12 @@ An application built using .NET 10 and following a Domain-Driven Design (DDD) ap
   - [Frameworks and Libraries](#frameworks-and-libraries)
   - [Getting Started](#getting-started)
     - [Running the Application](#running-the-application)
+  - [Developer Guidelines](#developer-guidelines)
+    - [Commit Messages](#commit-messages)
+    - [Branching Strategy](#branching-strategy)
+      - [Features Development](#features-development)
+      - [PR Flow](#pr-flow)
+    - [EF Core Migrations](#ef-core-migrations)
   - [Architecture](#architecture)
     - [Overview](#overview)
     - [Layer Responsibilities](#layer-responsibilities)
@@ -123,6 +129,108 @@ Access points:
 - **Seq Dashboard** (if using containers): [http://localhost:15349](http://localhost:15349)
 
 The application will automatically migrate the database on startup (via DatabaseMigratorService in CoreModule) and seed initial data (via CoreModuleDomainSeederTask) in development mode.
+
+---
+
+## Developer Guidelines
+
+### Commit Messages
+
+Commit messages use this format:
+
+```text
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+Common types:
+
+| Type       | Purpose                        |
+| ---------- | ------------------------------ |
+| `feat`     | New feature                    |
+| `fix`      | Bug fix                        |
+| `docs`     | Documentation only             |
+| `style`    | Formatting/style (no logic)    |
+| `refactor` | Code refactor (no feature/fix) |
+| `perf`     | Performance improvement        |
+| `test`     | Add/update tests               |
+| `build`    | Build system/dependencies      |
+| `ci`       | CI/config changes              |
+| `chore`    | Maintenance/misc               |
+| `revert`   | Revert commit                  |
+
+Breaking changes are marked either with an exclamation mark after type/scope or with a `BREAKING CHANGE:` footer.
+
+```text
+feat(core): add customer export endpoint
+fix(core): handle missing email address
+docs: describe branching strategy
+
+feat!: remove deprecated endpoint
+
+feat: allow config to extend other configs
+
+BREAKING CHANGE: `extends` key behavior changed
+```
+
+### Branching Strategy
+
+[Trunk-based development](https://trunkbaseddevelopment.com/) with short-lived feature branches. Changes merge into `main` through Pull Requests (PRs). Keep branches small, rebase frequently, and merge quickly to reduce drift.
+
+> A source-control branching model, where developers collaborate on code in a single branch called ‘trunk/main’ *, resist any pressure to create other long-lived development branches by employing documented techniques. They therefore avoid merge hell, do not break the build, and live happily ever after.
+
+**Key rules**:
+
+- `main` is always releasable
+- Feature branches are short-lived and scoped to a single change
+- PRs are required for all merges to `main`
+- Commit messages follow the Conventional Commits standard described in [Commit Messages](#commit-messages)
+
+#### Features Development
+
+```mermaid
+gitGraph
+    commit id: "init"
+    branch feature/add-tasking
+    checkout feature/add-tasking
+    commit id: "implement"
+    commit id: "tests"
+    checkout main
+    merge feature/add-tasking tag: "PR merge"
+    commit id: "release"
+```
+
+#### PR Flow
+
+```mermaid
+flowchart LR
+    A[Create feature branch] --> B[Implement change]
+    B --> C[Open PR to main]
+    C --> D[Review and checks]
+    D -->|Approved| E[Merge to main]
+    D -->|Changes requested| B
+```
+
+### EF Core Migrations
+
+Use the tasks for migrations to keep the workflow consistent and repeatable:
+
+- Add a migration with the EF task for migration creation.
+- Apply migrations with the EF task for applying migrations or updating the database.
+- Keep migrations in the module infrastructure project and avoid direct edits unless a correction is required.
+- For the underlying `dotnet ef` command equivalents, see [src/Modules/CoreModule/CoreModule.Infrastructure/EntityFramework/README.md](src/Modules/CoreModule/CoreModule.Infrastructure/EntityFramework/README.md).
+
+Migrations are applied automatically on application startup in development mode:
+
+```csharp
+services.AddSqlServerDbContext<CoreModuleDbContext>(o => o
+      .UseConnectionString(moduleConfiguration.ConnectionStrings["Default"]))
+  .WithDatabaseMigratorService(o => o // create the database and apply existing migrations
+      .Enabled(environment.IsLocalDevelopment() || environment.IsContainerized()));
+```
 
 ---
 
@@ -552,7 +660,7 @@ The Modular Monolith pattern organizes code into self-contained vertical slices,
 
 #### Module Structure
 
-```
+```text
 src/Modules/CoreModule/
 ├── CoreModule.Domain/              # Business logic layer
 │   ├── Model/                      # Aggregates, Value Objects

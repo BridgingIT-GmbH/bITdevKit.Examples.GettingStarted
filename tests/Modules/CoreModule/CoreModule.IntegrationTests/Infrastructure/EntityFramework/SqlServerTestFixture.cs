@@ -57,8 +57,7 @@ public class SqlServerTestFixture : IAsyncLifetime
         try // Try starting docker test container
         {
             this.Log("Attempting to start SQL Server testcontainer...");
-            this.container = new MsSqlBuilder() // https://github.com/testcontainers/testcontainers-dotnet
-              .WithImage("mcr.microsoft.com/mssql/server:2022-CU10-ubuntu-22.04")
+            this.container = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU10-ubuntu-22.04") // https://github.com/testcontainers/testcontainers-dotnet
               .WithCleanUp(true).Build();
 
             await this.container.StartAsync();

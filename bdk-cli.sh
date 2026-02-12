@@ -5,7 +5,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TOOL_PATH="$SCRIPT_DIR/tools/bdk-cli-csx/bdk-cli.csx"
+TOOL_PATH="$SCRIPT_DIR/.bdk/cli/bdk-cli.csx"
 
 # Add .NET tools to PATH if not already present
 DOTNET_TOOLS_PATH="$HOME/.dotnet/tools"

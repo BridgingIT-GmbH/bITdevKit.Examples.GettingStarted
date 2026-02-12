@@ -11,7 +11,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ToolPath = Join-Path $ScriptDir "tools/bdk-cli-csx/bdk-cli.csx"
+$ToolPath = Join-Path $ScriptDir ".bdk/cli/bdk-cli.csx"
 
 # Check if dotnet-script is installed
 $dotnetScriptCheck = dotnet tool list --global | Select-String "dotnet-script"
