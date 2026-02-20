@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2026-02-05
+## [Unreleased] - 2026-02-20
 
 ### Added
 
+- **BDK CLI Launchers**: Added dedicated launcher scripts for both PowerShell and Bash to simplify command execution in different environments
 - **Agents Directive**: Added a directive to guide AI agent usage in the repository
 - **Value Object Templates**: New templates and examples for domain value objects, including unit tests
 - **BDK CLI Installation Script**: PowerShell installer for streamlined BDK CLI setup
@@ -60,6 +61,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **SDK Version**: Updated `global.json` to .NET SDK `10.0.103`
+- **Project Guidance**: Expanded `AGENTS.md` with deeper architecture, testing, and workflow guidance for contributors
 - **EF Core Documentation**: Expanded guidance with detailed commands, best practices, and clearer formatting
 - **Agents Documentation**: Removed outdated skills section and updated file structure
 - **BDK CLI Refactor**: Modularized CLI scripts, consolidated publish tasks, and improved RID selection
@@ -85,6 +88,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Documentation Formatting**: Removed an unnecessary fenced code block from `CODE_OF_CONDUCT.md`
+- **Skill Metadata**: Corrected an invalid character in skill naming metadata (`SKILL.md`)
 - **Workspace Formatting**: Corrected indentation for agent skills locations
 - **Diagnostics Messaging**: Improved CPU/GC/ASP.NET trace messages and benchmark selection clarity
 - **Task Discovery**: Enabled recursive project search for diagnostics and utility tasks
@@ -100,6 +105,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **Skill Documentation**: Removed obsolete `find-skills` documentation
 - **Legacy TUI**: Removed old opentui implementation
 - **Obsolete Docs**: Removed outdated BDK CLI README
 - **Obsolete Code**:
