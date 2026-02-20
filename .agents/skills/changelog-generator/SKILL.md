@@ -23,8 +23,35 @@ This skill transforms technical git commits into polished, user-friendly changel
 2. **Categorizes Changes**: Groups commits into logical categories (features, improvements, bug fixes, breaking changes, security)
 3. **Translates Technical → User-Friendly**: Converts developer commits into customer language
 4. **Formats Professionally**: Creates clean, structured changelog entries
-5. **Filters Noise**: Excludes internal commits (refactoring, tests, etc.)
+5. **Filters Noise**: Excludes internal (refactoring, tests, etc.) and documentation-only commits by default
 6. **Follows Best Practices**: Applies changelog guidelines and your brand voice
+
+## Default Filtering Policy (Product-Only)
+
+When generating changelogs, use **strict product relevance** by default.
+
+Include only changes that directly affect shipped behavior, user experience, API behavior, reliability, performance, security, or supported runtime/platform versions.
+
+Exclude by default:
+
+- Documentation-only changes (`docs:`, README, ADRs, guides, diagrams, CODE_OF_CONDUCT, AGENTS.md)
+- AI-agent and skill metadata/workflow changes (`.agents/`, `SKILL.md`, prompt/instruction tuning)
+- Internal housekeeping with no user impact (formatting, comment-only edits, rename-only refactors)
+- Test-only changes unless they fix a production defect or prevent a real regression
+- CI/CD, pipeline, and developer tooling changes unless they impact released product behavior
+- Changelog-only updates (`chore(changelog)`, `docs(changelog)`)
+
+Borderline rule:
+
+- If uncertain whether a commit is user-visible, **exclude it** and add a short note in a separate "Excluded/Internal" review list for human confirmation.
+
+## Commit Triage Workflow
+
+1. Collect commits in range (between tags, dates, or `last release..HEAD`).
+2. Drop merge commits and duplicate back-merges.
+3. Classify each commit as `product`, `internal`, or `docs-only`.
+4. Only summarize `product` commits in CHANGELOG sections.
+5. Keep language user-facing; avoid internal filenames unless needed for clarity.
 
 ## How to Use
 
@@ -96,6 +123,6 @@ guidelines from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Run from your git repository root
 - Use an existing CHANGELOG.md as a basis and add new entries to it
 - Specify date ranges for focused changelogs
-- Use the The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) for consistent formatting
+- Use [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) for consistent formatting
 - Review and adjust the generated changelog before publishing
 - Save output directly to CHANGELOG.md in the repo root.
