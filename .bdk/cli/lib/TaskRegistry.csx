@@ -80,14 +80,14 @@ public static class TaskRegistry
                 Key = "tool-restore",
                 Label = "Restore Tools",
                 Description = "Restore dotnet tools",
-                Category = "Build & Maintenance",
+                Category = "Utilities",
                 Execute = async (ctx) => await ctx.DotnetCli.ToolRestoreAsync()
             },
             new() {
                 Key = "update-tools",
                 Label = "Update Tools",
                 Description = "Update local dotnet tools from manifest",
-                Category = "Build & Maintenance",
+                Category = "Utilities",
                 Execute = async (ctx) => await ctx.DotnetCli.ToolUpdateAsync()
             },
             new() {
