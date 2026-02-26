@@ -415,5 +415,5 @@ FodyWeavers.xsd
 /.tmp/
 /logs/
 /TestOutput/
-/.dkx/nuget/
+/.artifacts/**
 /coverage-report/**

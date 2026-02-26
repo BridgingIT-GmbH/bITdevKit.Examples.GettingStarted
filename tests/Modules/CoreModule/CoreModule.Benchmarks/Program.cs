@@ -5,12 +5,15 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Benchmarks;
 
+using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Running;
 
 internal class Program
 {
     static void Main(string[] args)
     {
-        var _ = BenchmarkRunner.Run(typeof(Program).Assembly);
+        var artifactsPath = Path.Combine(AppContext.BaseDirectory, "BenchmarkDotNet.Artifacts");
+        var config = DefaultConfig.Instance.WithArtifactsPath(artifactsPath);
+        var _ = BenchmarkRunner.Run(typeof(Program).Assembly, config);
     }
 }

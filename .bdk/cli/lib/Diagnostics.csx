@@ -662,20 +662,16 @@ public static class DiagnosticsUtils
                 return;
             
             var projectDir = Path.GetDirectoryName(benchmarkProjectPath) ?? "";
-            var artifactRoot = Path.Combine(projectDir, "BenchmarkDotNet.Artifacts", "results");
-            
-            if (!Directory.Exists(artifactRoot))
+            var artifactsRoot = ctx.Config.ArtifactsDirectory ?? ".artifacts";
+            var artifactRoot = ResolveBenchmarkResultsDirectory(ctx, projectDir, artifactsRoot);
+
+            if (string.IsNullOrEmpty(artifactRoot))
             {
-                artifactRoot = Path.Combine(ctx.RootDir, "BenchmarkDotNet.Artifacts", "results");
-            }
-            
-            if (!Directory.Exists(artifactRoot))
-            {
-                AnsiConsole.MarkupLine($"[yellow]No BenchmarkDotNet results directory found: {Markup.Escape(artifactRoot)}[/]");
+                AnsiConsole.MarkupLine("[yellow]No BenchmarkDotNet results directory found[/]");
                 return;
             }
             
-            var outDir = Path.Combine(ctx.OutputDir, "benchmarks");
+            var outDir = Path.Combine(artifactsRoot, "benchmarks");
             Directory.CreateDirectory(outDir);
             
             var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
@@ -710,6 +706,52 @@ public static class DiagnosticsUtils
         catch (Exception ex)
         {
             AnsiConsole.MarkupLine($"[yellow]Failed exporting benchmark summary: {Markup.Escape(ex.Message)}[/]");
+        }
+    }
+
+    private static string ResolveBenchmarkResultsDirectory(TaskContext ctx, string projectDir, string artifactsRoot)
+    {
+        var candidates = new List<string>
+        {
+            Path.Combine(projectDir, "BenchmarkDotNet.Artifacts", "results"),
+            Path.Combine(ctx.RootDir, "BenchmarkDotNet.Artifacts", "results")
+        };
+
+        // Benchmark host now writes to AppContext.BaseDirectory/BenchmarkDotNet.Artifacts.
+        // This typically lands under <project>/bin/... and must be resolved dynamically.
+        var binDir = Path.Combine(projectDir, "bin");
+        if (Directory.Exists(binDir))
+        {
+            var internalCandidates = Directory.GetDirectories(binDir, "BenchmarkDotNet.Artifacts", SearchOption.AllDirectories)
+                .Select(path => Path.Combine(path, "results"))
+                .Where(Directory.Exists);
+            candidates.AddRange(internalCandidates);
+        }
+
+        // Keep this as a backward-compatible fallback for older benchmark runs.
+        candidates.Add(Path.Combine(artifactsRoot, "BenchmarkDotNet.Artifacts", "results"));
+
+        return candidates
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(Directory.Exists)
+            .OrderByDescending(GetDirectoryFreshnessUtc)
+            .FirstOrDefault() ?? "";
+    }
+
+    private static DateTime GetDirectoryFreshnessUtc(string directory)
+    {
+        try
+        {
+            var newestFile = Directory.GetFiles(directory, "*", SearchOption.AllDirectories)
+                .Select(File.GetLastWriteTimeUtc)
+                .DefaultIfEmpty(Directory.GetLastWriteTimeUtc(directory))
+                .Max();
+
+            return newestFile;
+        }
+        catch
+        {
+            return DateTime.MinValue;
         }
     }
     
