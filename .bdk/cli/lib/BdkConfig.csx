@@ -8,8 +8,7 @@ using Spectre.Console;
 /// </summary>
 public class BdkConfig
 {
-    public string OutputDirectory { get; set; } = ".tmp";
-    public string ArtifactsDirectory { get; set; } = ".artifacts";
+    public string OutputDirectory { get; set; } = ".artifacts";
     public string SourcesDirectory { get; set; } = "src";
     public string ModulesDirectory { get; set; } = "src/Modules";
     public string TestsDirectory { get; set; } = "tests";
@@ -51,9 +50,6 @@ public class BdkConfig
             {
                 case "OUTPUT_DIRECTORY":
                     config.OutputDirectory = value;
-                    break;
-                case "ARTIFACTS_DIRECTORY":
-                    config.ArtifactsDirectory = value;
                     break;
                 case "SOURCES_DIRECTORY":
                     config.SourcesDirectory = value;

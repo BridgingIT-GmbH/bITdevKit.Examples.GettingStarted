@@ -415,5 +415,6 @@ FodyWeavers.xsd
 /.tmp/
 /logs/
 /TestOutput/
-/.artifacts/**
 /coverage-report/**
+/.tmp/**
+/.artifacts/**

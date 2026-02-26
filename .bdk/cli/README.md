@@ -204,8 +204,7 @@ Configuration loader for `.env` file.
 **Supported Settings:**
 
 ```bash
-OUTPUT_DIRECTORY=.tmp
-ARTIFACTS_DIRECTORY=.artifacts
+OUTPUT_DIRECTORY=.artifacts
 SOURCES_DIRECTORY=src
 MODULES_DIRECTORY=src/Modules
 TESTS_DIRECTORY=tests

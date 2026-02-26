@@ -160,7 +160,7 @@ public static class TaskRegistry
                     AnsiConsole.MarkupLine($"[dim]RID:[/] [cyan]{rid}[/]");
                     AnsiConsole.MarkupLine($"[dim]Single-file:[/] [cyan]{singleFile.Value}[/]");
                     var outputDir = Path.Combine(
-                        ctx.Config.ArtifactsDirectory ?? ".artifacts",
+                        ctx.OutputDir,
                         "publish",
                         "server",
                         config.ToLowerInvariant(),
@@ -210,7 +210,7 @@ public static class TaskRegistry
                     AnsiConsole.MarkupLine($"[dim]Single-file:[/] [cyan]{singleFile.Value}[/]");
                     var projectName = Path.GetFileNameWithoutExtension(project);
                     var outputDir = Path.Combine(
-                        ctx.Config.ArtifactsDirectory ?? ".artifacts",
+                        ctx.OutputDir,
                         "publish",
                         projectName,
                         config.ToLowerInvariant(),
@@ -1022,7 +1022,7 @@ public static class TaskRegistry
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
 
-                    var defaultOutput = $".tmp/ef/efscript_{module.ToLower()}.sql";
+                    var defaultOutput = $"{ctx.OutputDir}/ef/efscript_{module.ToLower()}.sql";
                     var outputPath = await Prompts.PromptTextAsync("Output path:", defaultOutput);
                     return await ctx.DotnetCli.EfScriptAsync(module, dbContext, outputPath);
                 }
@@ -1044,7 +1044,7 @@ public static class TaskRegistry
                     if (string.IsNullOrEmpty(dbContext))
                         return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
 
-                    var defaultOutput = $".tmp/ef/efbundle_{module.ToLower()}.exe";
+                    var defaultOutput = $"{ctx.OutputDir}/ef/efbundle_{module.ToLower()}.exe";
                     var outputPath = await Prompts.PromptTextAsync("Output path:", defaultOutput);
                     return await ctx.DotnetCli.EfBundleAsync(module, dbContext, outputPath);
                 }

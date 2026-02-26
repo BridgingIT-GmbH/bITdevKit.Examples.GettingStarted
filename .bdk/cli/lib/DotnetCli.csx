@@ -432,7 +432,9 @@ public class DotnetCli
   public async Task<ExecutionResult> EfScriptAsync(string moduleName, string dbContext, string outputPath = "")
   {
     var moduleLower = moduleName.ToLower();
-    var output = string.IsNullOrEmpty(outputPath) ? $".tmp/ef/efscript_{moduleLower}.sql" : outputPath;
+    var output = string.IsNullOrEmpty(outputPath)
+      ? Path.Combine(_config.OutputDirectory, "ef", $"efscript_{moduleLower}.sql")
+      : outputPath;
     var infraProject = GetInfrastructureProjectPath(moduleName);
 
     var outputDir = Path.GetDirectoryName(output);
@@ -455,7 +457,9 @@ public class DotnetCli
   public async Task<ExecutionResult> EfBundleAsync(string moduleName, string dbContext, string outputPath = "")
   {
     var moduleLower = moduleName.ToLower();
-    var output = string.IsNullOrEmpty(outputPath) ? $".tmp/ef/efbundle_{moduleLower}.exe" : outputPath;
+    var output = string.IsNullOrEmpty(outputPath)
+      ? Path.Combine(_config.OutputDirectory, "ef", $"efbundle_{moduleLower}.exe")
+      : outputPath;
     var infraProject = GetInfrastructureProjectPath(moduleName);
 
     var outputDir = Path.GetDirectoryName(output);

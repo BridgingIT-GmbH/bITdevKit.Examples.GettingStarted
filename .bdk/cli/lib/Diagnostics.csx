@@ -504,7 +504,7 @@ public static class DiagnosticsUtils
                 return new ExecutionResult { Success = false, ExitCode = 1, Duration = DateTime.Now - startTime };
             }
             
-            var outDir = Path.Combine(ctx.RootDir, ".tmp", "diagnostics");
+            var outDir = Path.Combine(ctx.OutputDir, "diagnostics");
             Directory.CreateDirectory(outDir);
             
             var errors = new List<string>();
@@ -662,7 +662,7 @@ public static class DiagnosticsUtils
                 return;
             
             var projectDir = Path.GetDirectoryName(benchmarkProjectPath) ?? "";
-            var artifactsRoot = ctx.Config.ArtifactsDirectory ?? ".artifacts";
+            var artifactsRoot = ctx.OutputDir;
             var artifactRoot = ResolveBenchmarkResultsDirectory(ctx, projectDir, artifactsRoot);
 
             if (string.IsNullOrEmpty(artifactRoot))
