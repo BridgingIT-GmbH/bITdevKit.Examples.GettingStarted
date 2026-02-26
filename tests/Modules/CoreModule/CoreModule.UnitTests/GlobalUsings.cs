@@ -11,6 +11,7 @@ global using BridgingIT.DevKit.Domain.Repositories;
 global using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 global using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 global using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
+global using Dumpify;
 global using Mapster;
 global using Shouldly;
 global using Xunit;

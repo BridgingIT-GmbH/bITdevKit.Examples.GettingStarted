@@ -148,8 +148,13 @@ public class BdkUI
 
     private BdkTask ShowTaskMenu(string category)
     {
-        var tasks = _tasksByCategory[category];
-        var choices = tasks.Select(t => $"{t.Label} - {t.Description}").ToList();
+        var tasks = _tasksByCategory[category]
+            .OrderBy(t => t.Label, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        var labelWidth = tasks.Count == 0 ? 0 : tasks.Max(t => t.Label.Length);
+        var choices = tasks
+            .Select(t => $"{t.Label.PadRight(labelWidth)} - {t.Description}")
+            .ToList();
         choices.Add("← Back");
         choices.Add("✕ Exit");
 

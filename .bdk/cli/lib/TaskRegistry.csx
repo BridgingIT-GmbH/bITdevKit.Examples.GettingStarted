@@ -29,70 +29,70 @@ public static class TaskRegistry
             // ===== Build & Maintenance =====
             new() {
                 Key = "clean",
-                Label = "Clean Solution",
+                Label = "Solution Clean",
                 Description = "Clean build artifacts",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.CleanAsync()
             },
             new() {
                 Key = "restore",
-                Label = "Restore Packages",
+                Label = "Packages Restore",
                 Description = "Restore NuGet packages",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.RestoreAsync()
             },
             new() {
                 Key = "build",
-                Label = "Build Solution",
+                Label = "Solution Build",
                 Description = "Build solution in Debug configuration",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.BuildAsync()
             },
             new() {
                 Key = "build-release",
-                Label = "Build Solution (Release)",
+                Label = "Solution Build (Release)",
                 Description = "Build solution in Release configuration",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.BuildReleaseAsync()
             },
             new() {
                 Key = "build-nr",
-                Label = "Build Solution NoRestore",
+                Label = "Solution Build (No Restore)",
                 Description = "Build solution without restoring packages",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.BuildNoRestoreAsync()
             },
             new() {
                 Key = "pack",
-                Label = "Pack",
+                Label = "Solution Pack",
                 Description = "Create NuGet packages for entire solution",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.PackAsync()
             },
             new() {
                 Key = "pack-projects",
-                Label = "Pack Projects",
+                Label = "Projects Pack",
                 Description = "Create NuGet packages for all projects",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.PackProjectsAsync()
             },
             new() {
                 Key = "tool-restore",
-                Label = "Restore Tools",
+                Label = "Tools Restore",
                 Description = "Restore dotnet tools",
                 Category = "Utilities",
                 Execute = async (ctx) => await ctx.DotnetCli.ToolRestoreAsync()
             },
             new() {
                 Key = "update-tools",
-                Label = "Update Tools",
+                Label = "Tools Update",
                 Description = "Update local dotnet tools from manifest",
                 Category = "Utilities",
                 Execute = async (ctx) => await ctx.DotnetCli.ToolUpdateAsync()
             },
             new() {
                 Key = "server-build",
-                Label = "Build Server",
+                Label = "Server Build",
                 Description = "Build web server project",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) =>
@@ -109,7 +109,7 @@ public static class TaskRegistry
             },
             new() {
                 Key = "build-project",
-                Label = "Build Project",
+                Label = "Project Build",
                 Description = "Build a specific project",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) =>
@@ -122,7 +122,7 @@ public static class TaskRegistry
             },
             new() {
                 Key = "server-publish",
-                Label = "Publish Server",
+                Label = "Server Publish",
                 Description = "Publish web server with config, RID, and single-file options",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) =>
@@ -174,7 +174,7 @@ public static class TaskRegistry
             },
             new() {
                 Key = "publish-project",
-                Label = "Publish Project",
+                Label = "Project Publish",
                 Description = "Publish a project with config, RID, and single-file options",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) =>
@@ -224,7 +224,7 @@ public static class TaskRegistry
             },
             new() {
                 Key = "server-run-dev",
-                Label = "Run Server",
+                Label = "Server Run",
                 Description = "Run web server in development mode",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) =>
@@ -241,7 +241,7 @@ public static class TaskRegistry
             },
             new() {
                 Key = "run-project",
-                Label = "Run Project",
+                Label = "Project Run",
                 Description = "Run a specific project",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) =>
@@ -254,7 +254,7 @@ public static class TaskRegistry
             },
             new() {
                 Key = "server-watch",
-                Label = "Watch Server",
+                Label = "Server Watch",
                 Description = "Watch and hot-reload web server",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) =>
@@ -271,21 +271,21 @@ public static class TaskRegistry
             },
             new() {
                 Key = "list-outdated-packages",
-                Label = "List outdated Packages",
+                Label = "Packages Outdated List",
                 Description = "List all outdated NuGet packages",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.ListOutdatedPackagesAsync()
             },
             new() {
                 Key = "update-outdated-packages",
-                Label = "Update Packages",
+                Label = "Packages Outdated Update",
                 Description = "Update all outdated NuGet packages",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.UpdateOutdatedPackagesAsync()
             },
             new() {
                 Key = "update-outdated-packages-devkit",
-                Label = "Update DevKit Packages",
+                Label = "DevKit Packages Update",
                 Description = "Update outdated DevKit NuGet packages",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.UpdateOutdatedPackagesDevkitAsync()
@@ -306,7 +306,7 @@ public static class TaskRegistry
             },
             new() {
                 Key = "analyzers",
-                Label = "Analyzers",
+                Label = "Analyzers Run",
                 Description = "Run Roslyn analyzers",
                 Category = "Build & Maintenance",
                 Execute = async (ctx) => await ctx.DotnetCli.AnalyzersAsync()
@@ -326,42 +326,42 @@ public static class TaskRegistry
             // ===== Testing =====
             new() {
                 Key = "test",
-                Label = "Run All Tests",
+                Label = "Tests Run All",
                 Description = "Run all unit and integration tests",
                 Category = "Testing",
                 Execute = async (ctx) => await ctx.DotnetCli.TestAsync()
             },
             new() {
                 Key = "test-unit",
-                Label = "Run Unit Tests",
+                Label = "Tests Run Unit",
                 Description = "Run unit tests only",
                 Category = "Testing",
                 Execute = async (ctx) => await ctx.DotnetCli.TestAsync("Category=UnitTest")
             },
             new() {
                 Key = "test-integration",
-                Label = "Run Integration Tests",
+                Label = "Tests Run Integration",
                 Description = "Run integration tests only",
                 Category = "Testing",
                 Execute = async (ctx) => await ctx.DotnetCli.TestAsync("Category=IntegrationTest")
             },
             new() {
                 Key = "test-architecture",
-                Label = "Run Architecture Tests",
+                Label = "Tests Run Architecture",
                 Description = "Run architecture tests only",
                 Category = "Testing",
                 Execute = async (ctx) => await ctx.DotnetCli.TestAsync("Category=ArchitectureTest")
             },
             new() {
                 Key = "test-system",
-                Label = "Run System Tests",
+                Label = "Tests Run System",
                 Description = "Run system tests only",
                 Category = "Testing",
                 Execute = async (ctx) => await ctx.DotnetCli.TestAsync("Category=SystemTest")
             },
             new() {
                 Key = "test-unit-module",
-                Label = "Run Unit Tests (Module)",
+                Label = "Tests Run Unit (Module)",
                 Description = "Run unit tests for selected module",
                 Category = "Testing",
                 Execute = async (ctx) =>
@@ -374,7 +374,7 @@ public static class TaskRegistry
             },
             new() {
                 Key = "test-integration-module",
-                Label = "Run Integration Tests (Module)",
+                Label = "Tests Run Integration (Module)",
                 Description = "Run integration tests for selected module",
                 Category = "Testing",
                 Execute = async (ctx) =>
@@ -387,7 +387,7 @@ public static class TaskRegistry
             },
             new BdkTask {
                 Key = "coverage",
-                Label = "Code Coverage",
+                Label = "Coverage Run",
                 Description = "Run tests with coverage (cobertura)",
                 Category = "Testing",
                 Execute = async (ctx) =>
@@ -438,7 +438,7 @@ public static class TaskRegistry
             },
             new BdkTask {
                 Key = "coverage-html",
-                Label = "Code Coverage (HTML)",
+                Label = "Coverage Export (HTML)",
                 Description = "Run coverage and generate HTML report",
                 Category = "Testing",
                 Execute = async (ctx) =>
@@ -515,12 +515,142 @@ public static class TaskRegistry
                     };
                 }
             },
+            new BdkTask {
+                Key = "coverage-unit",
+                Label = "Coverage Run Unit",
+                Description = "Run unit tests with coverage (cobertura)",
+                Category = "Testing",
+                Execute = async (ctx) =>
+                {
+                    var startTime = DateTime.Now;
+                    var solution = ctx.SolutionPath;
+                    if (string.IsNullOrEmpty(solution))
+                    {
+                        AnsiConsole.MarkupLine("[red]Error: No solution file found[/]");
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    }
+
+                    var outDir = Path.Combine(ctx.OutputDir, "coverage");
+                    Directory.CreateDirectory(outDir);
+
+                    var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                    var runDir = Path.Combine(outDir, $"run_{timestamp}");
+                    Directory.CreateDirectory(runDir);
+
+                    AnsiConsole.MarkupLine($"[cyan]Running unit tests with coverage -> {Markup.Escape(runDir)}[/]");
+
+                    var args = $"test \"{solution}\" --filter \"Category=UnitTest\" --collect:\"XPlat Code Coverage\" --results-directory \"{runDir}\" --settings:coverlet.runsettings";
+                    var result = await ctx.Executor.ExecuteAsync("dotnet", args);
+
+                    if (result.ExitCode != 0)
+                    {
+                        AnsiConsole.MarkupLine("[red]Unit tests failed[/]");
+                        return new ExecutionResult { Success = false, ExitCode = result.ExitCode, Duration = DateTime.Now - startTime };
+                    }
+
+                    var coverageFiles = Directory.GetFiles(runDir, "coverage.cobertura.xml", SearchOption.AllDirectories);
+
+                    if (coverageFiles.Length == 0)
+                    {
+                        AnsiConsole.MarkupLine("[yellow]No coverage.cobertura.xml files found[/]");
+                        return new ExecutionResult { Success = false, ExitCode = 2, Duration = DateTime.Now - startTime };
+                    }
+
+                    AnsiConsole.MarkupLine($"[green]Found {coverageFiles.Length} coverage file(s) under {Markup.Escape(runDir)}[/]");
+
+                    return new ExecutionResult
+                    {
+                        Success = true,
+                        ExitCode = 0,
+                        Duration = DateTime.Now - startTime
+                    };
+                }
+            },
+            new BdkTask {
+                Key = "coverage-unit-html",
+                Label = "Coverage Export (HTML) Unit",
+                Description = "Run unit test coverage and generate HTML report",
+                Category = "Testing",
+                Execute = async (ctx) =>
+                {
+                    var startTime = DateTime.Now;
+                    var solution = ctx.SolutionPath;
+                    if (string.IsNullOrEmpty(solution))
+                    {
+                        AnsiConsole.MarkupLine("[red]Error: No solution file found[/]");
+                        return new ExecutionResult { Success = false, ExitCode = 1, Duration = TimeSpan.Zero };
+                    }
+
+                    var outDir = Path.Combine(ctx.OutputDir, "coverage");
+                    Directory.CreateDirectory(outDir);
+
+                    var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                    var runDir = Path.Combine(outDir, $"run_{timestamp}");
+                    Directory.CreateDirectory(runDir);
+
+                    AnsiConsole.MarkupLine($"[cyan]Running unit tests with coverage -> {Markup.Escape(runDir)}[/]");
+
+                    var args = $"test \"{solution}\" --filter \"Category=UnitTest\" --collect:\"XPlat Code Coverage\" --results-directory \"{runDir}\" --settings:coverlet.runsettings";
+                    var result = await ctx.Executor.ExecuteAsync("dotnet", args);
+
+                    if (result.ExitCode != 0)
+                    {
+                        AnsiConsole.MarkupLine("[red]Unit tests failed[/]");
+                        return new ExecutionResult { Success = false, ExitCode = result.ExitCode, Duration = DateTime.Now - startTime };
+                    }
+
+                    var coverageFiles = Directory.GetFiles(runDir, "coverage.cobertura.xml", SearchOption.AllDirectories);
+
+                    if (coverageFiles.Length == 0)
+                    {
+                        AnsiConsole.MarkupLine("[red]No coverage.cobertura.xml files found[/]");
+                        return new ExecutionResult { Success = false, ExitCode = 2, Duration = DateTime.Now - startTime };
+                    }
+
+                    var reportRoot = Path.Combine(runDir, "report");
+                    Directory.CreateDirectory(reportRoot);
+                    var reportsArg = string.Join(';', coverageFiles);
+                    var reportTypes = "HtmlInline_AzurePipelines;MarkdownSummaryGithub";
+
+                    AnsiConsole.MarkupLine($"[cyan]Generating HTML report -> {Markup.Escape(reportRoot)}[/]");
+
+                    args = $"tool run reportgenerator -- -reports:\"{reportsArg}\" -targetdir:\"{reportRoot}\" -reporttypes:{reportTypes}";
+                    result = await ctx.Executor.ExecuteAsync("dotnet", args);
+
+                    if (result.ExitCode != 0)
+                    {
+                        AnsiConsole.MarkupLine("[red]Report generation failed[/]");
+                        return new ExecutionResult { Success = false, ExitCode = result.ExitCode, Duration = DateTime.Now - startTime };
+                    }
+
+                    var indexFile = Path.Combine(reportRoot, "index.html");
+                    if (File.Exists(indexFile))
+                    {
+                        Utils.OpenFile(indexFile);
+                        return new ExecutionResult
+                        {
+                            Success = true,
+                            ExitCode = 0,
+                            Duration = DateTime.Now - startTime
+                        };
+                    }
+
+                    AnsiConsole.MarkupLine("[yellow]Report generation completed but index.html not found[/]");
+
+                    return new ExecutionResult
+                    {
+                        Success = true,
+                        ExitCode = 0,
+                        Duration = DateTime.Now - startTime
+                    };
+                }
+            },
 
             // ===== Utilities =====
             new BdkTask
             {
                 Key = "version",
-                Label = "Show .NET Version",
+                Label = "Version Show (.NET SDK)",
                 Description = "Display .NET SDK version",
                 Category = "Utilities",
                 Execute = async (ctx) => await ctx.DotnetCli.VersionAsync()
@@ -528,7 +658,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "docs-generate",
-                Label = "Digest Code",
+                Label = "Code Digest",
                 Description = "Compact source code for LLM digestion",
                 Category = "Utilities",
                 Execute = async (ctx) => await MiscUtils.GenerateDocsAsync(ctx)
@@ -536,7 +666,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "clean-ws",
-                Label = "Clean Workspace",
+                Label = "Workspace Clean",
                 Description = "Remove build/output artifact directories (bin/obj/node_modules/etc.)",
                 Category = "Utilities",
                 Execute = async (ctx) => await MiscUtils.CleanWorkspaceAsync(ctx)
@@ -544,7 +674,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "remove-headers",
-                Label = "Remove File Headers",
+                Label = "File Headers Remove",
                 Description = "Remove MIT license headers from all C# files in src/ and tests/",
                 Category = "Utilities",
                 Execute = async (ctx) => await MiscUtils.RemoveFileHeadersAsync(ctx)
@@ -552,7 +682,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "repl",
-                Label = "C# REPL",
+                Label = "REPL Run (C#)",
                 Description = "Run C# REPL (csharprepl)",
                 Category = "Utilities",
                 Execute = async (ctx) => await MiscUtils.RunCSharpReplAsync(ctx)
@@ -560,7 +690,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "kill-dotnet",
-                Label = "Kill .NET Process",
+                Label = "Process Kill",
                 Description = "Terminate a dotnet process (interactive selection or direct -ProcessId)",
                 Category = "Utilities",
                 Execute = async (ctx) => await MiscUtils.KillDotnetProcessAsync(ctx)
@@ -568,7 +698,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "minver",
-                Label = "Show MinVer",
+                Label = "Version Show (MinVer)",
                 Description = "Display semantic version computed by MinVer",
                 Category = "Utilities",
                 Execute = async (ctx) => await MiscUtils.ShowMinVerAsync(ctx)
@@ -576,7 +706,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "browser-devkit-docs",
-                Label = "Open DevKit Docs",
+                Label = "Browser Open (DevKit Docs)",
                 Description = "Open DevKit docs",
                 Category = "Utilities",
                 Execute = async (ctx) => await MiscUtils.OpenBrowserUrlAsync(ctx, "https://github.com/BridgingIT-GmbH/bITdevKit/tree/main/docs", "DevKit Docs")
@@ -584,7 +714,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "browser-seq",
-                Label = "Open SEQ Dashboard",
+                Label = "Browser Open (SEQ)",
                 Description = "Open SEQ logging dashboard",
                 Category = "Utilities",
                 Execute = async (ctx) => await MiscUtils.OpenBrowserUrlAsync(ctx, "http://localhost:15349", "SEQ Dashboard")
@@ -592,7 +722,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "browser-adminneo",
-                Label = "Open AdminNeo Dashboard",
+                Label = "Browser Open (AdminNeo)",
                 Description = "Open AdminNeo dashboard",
                 Category = "Utilities",
                 Execute = async (ctx) => await MiscUtils.OpenBrowserUrlAsync(ctx, "http://localhost:18089", "AdminNeo Dashboard")
@@ -600,7 +730,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "browser-server-kestrel",
-                Label = "Open Server (Kestrel)",
+                Label = "Browser Open (Server Kestrel)",
                 Description = "Open Server (Kestrel HTTPS)",
                 Category = "Utilities",
                 Execute = async (ctx) => await MiscUtils.OpenBrowserUrlAsync(ctx, "https://localhost:5001/scalar", "Server Kestrel")
@@ -608,7 +738,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "browser-server-docker",
-                Label = "Open Server (Docker)",
+                Label = "Browser Open (Server Docker)",
                 Description = "Open Server (Docker HTTP)",
                 Category = "Utilities",
                 Execute = async (ctx) => await MiscUtils.OpenBrowserUrlAsync(ctx, "http://localhost:8080/scalar", "Server Docker")
@@ -616,7 +746,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "docs-update",
-                Label = "Update DevKit Docs",
+                Label = "DevKit Docs Update",
                 Description = "Download latest DevKit docs",
                 Category = "Utilities",
                 Execute = async (ctx) => await MiscUtils.UpdateDocsAsync(ctx)
@@ -626,7 +756,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "bench",
-                Label = "Run Benchmarks",
+                Label = "Benchmarks Run",
                 Description = "Run benchmark project (auto-select module, or choose from multiple)",
                 Category = "Performance & Diagnostics",
                 Execute = async (ctx) => await DiagnosticsUtils.RunBenchmarksAsync(ctx)
@@ -634,7 +764,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "bench-select",
-                Label = "Run Selected Benchmarks",
+                Label = "Benchmarks Run (Selected)",
                 Description = "Select and run specific benchmark project module",
                 Category = "Performance & Diagnostics",
                 Execute = async (ctx) => await DiagnosticsUtils.RunSelectedBenchmarksAsync(ctx)
@@ -642,7 +772,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "trace-flame",
-                Label = "Flame Trace",
+                Label = "Trace Capture (Flame)",
                 Description = "Collect flame graph trace (SampleProfiler)",
                 Category = "Performance & Diagnostics",
                 Execute = async (ctx) => await DiagnosticsUtils.CollectFlameTraceAsync(ctx)
@@ -650,7 +780,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "trace-cpu",
-                Label = "CPU Trace",
+                Label = "Trace Capture (CPU)",
                 Description = "Collect CPU performance trace",
                 Category = "Performance & Diagnostics",
                 Execute = async (ctx) => await DiagnosticsUtils.CollectCpuTraceAsync(ctx)
@@ -658,7 +788,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "trace-gc",
-                Label = "GC Trace",
+                Label = "Trace Capture (GC)",
                 Description = "Collect GC-focused performance trace",
                 Category = "Performance & Diagnostics",
                 Execute = async (ctx) => await DiagnosticsUtils.CollectGcTraceAsync(ctx)
@@ -674,7 +804,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "gc-stats",
-                Label = "GC Stats",
+                Label = "GC Stats Show",
                 Description = "Monitor GC counters for 5 seconds",
                 Category = "Performance & Diagnostics",
                 Execute = async (ctx) => await DiagnosticsUtils.CollectGcStatsAsync(ctx)
@@ -682,7 +812,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "aspnet-metrics",
-                Label = "ASP.NET Metrics",
+                Label = "ASP.NET Metrics Show",
                 Description = "Monitor ASP.NET Core counters for 10 seconds",
                 Category = "Performance & Diagnostics",
                 Execute = async (ctx) => await DiagnosticsUtils.CollectAspnetMetricsAsync(ctx)
@@ -690,7 +820,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "diag-quick",
-                Label = "Quick Diagnostics",
+                Label = "Diagnostics Run Quick",
                 Description = "Combined CPU+GC trace + ASP.NET metrics (5s each)",
                 Category = "Performance & Diagnostics",
                 Execute = async (ctx) => await DiagnosticsUtils.RunQuickDiagnosticsAsync(ctx)
@@ -698,7 +828,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "speedscope-view",
-                Label = "View Speedscope",
+                Label = "Speedscope View",
                 Description = "Open speedscope profile in viewer",
                 Category = "Performance & Diagnostics",
                 Execute = async (ctx) => await DiagnosticsUtils.ViewSpeedscopeAsync(ctx)
@@ -708,7 +838,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "vulnerabilities",
-                Label = "Check Vulnerabilities",
+                Label = "Vulnerabilities Check",
                 Description = "List vulnerable packages",
                 Category = "Security & Compliance",
                 Execute = async (ctx) => await SecurityUtils.ListVulnerablePackagesAsync(ctx)
@@ -716,7 +846,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "vulnerabilities-deep",
-                Label = "Check Vulnerabilities (Deep)",
+                Label = "Vulnerabilities Check (Deep)",
                 Description = "List vulnerable packages (including transitive)",
                 Category = "Security & Compliance",
                 Execute = async (ctx) => await SecurityUtils.ListVulnerablePackagesDeepAsync(ctx)
@@ -724,7 +854,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "outdated",
-                Label = "Outdated Packages",
+                Label = "Packages Outdated Check",
                 Description = "List packages with updates available",
                 Category = "Security & Compliance",
                 Execute = async (ctx) => await SecurityUtils.ListOutdatedPackagesAsync(ctx)
@@ -732,7 +862,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "outdated-json",
-                Label = "Outdated Packages (JSON)",
+                Label = "Packages Outdated Export (JSON)",
                 Description = "Export outdated packages to JSON",
                 Category = "Security & Compliance",
                 Execute = async (ctx) => await SecurityUtils.ListOutdatedPackagesJsonAsync(ctx)
@@ -740,7 +870,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "licenses",
-                Label = "License Report",
+                Label = "Licenses Report Generate",
                 Description = "Generate license report (Markdown + JSON)",
                 Category = "Security & Compliance",
                 Execute = async (ctx) => await SecurityUtils.GenerateLicenseReportAsync(ctx)
@@ -750,7 +880,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "openapi-lint",
-                Label = "Lint OpenAPI",
+                Label = "OpenAPI Lint",
                 Description = "Lint OpenAPI spec with Spectral",
                 Category = "API & Spec",
                 Execute = async (ctx) => await OpenApiUtils.LintOpenApiAsync(ctx)
@@ -758,7 +888,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "openapi-client-dotnet",
-                Label = "Generate C# Client",
+                Label = "C# Client Generate",
                 Description = "Generate OpenAPI C# client with Kiota",
                 Category = "API & Spec",
                 Execute = async (ctx) => await OpenApiUtils.GenerateDotNetClientAsync(ctx)
@@ -766,7 +896,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "openapi-client-typescript",
-                Label = "Generate TypeScript Client",
+                Label = "TypeScript Client Generate",
                 Description = "Generate OpenAPI TypeScript client with Kiota",
                 Category = "API & Spec",
                 Execute = async (ctx) => await OpenApiUtils.GenerateTypeScriptClientAsync(ctx)
@@ -774,7 +904,7 @@ public static class TaskRegistry
             new BdkTask
             {
                 Key = "openapi-http",
-                Label = "Generate HTTP Requests",
+                Label = "HTTP Requests Generate",
                 Description = "Generate .http request files from spec",
                 Category = "API & Spec",
                 Execute = async (ctx) => await OpenApiUtils.GenerateHttpRequestFilesAsync(ctx)
