@@ -84,6 +84,13 @@ public static class TaskRegistry
                 Execute = async (ctx) => await ctx.DotnetCli.ToolRestoreAsync()
             },
             new() {
+                Key = "update-tools",
+                Label = "Update Tools",
+                Description = "Update local dotnet tools from manifest",
+                Category = "Build & Maintenance",
+                Execute = async (ctx) => await ctx.DotnetCli.ToolUpdateAsync()
+            },
+            new() {
                 Key = "server-build",
                 Label = "Build Server",
                 Description = "Build web server project",
@@ -152,8 +159,17 @@ public static class TaskRegistry
                     AnsiConsole.MarkupLine($"[dim]Configuration:[/] [cyan]{config}[/]");
                     AnsiConsole.MarkupLine($"[dim]RID:[/] [cyan]{rid}[/]");
                     AnsiConsole.MarkupLine($"[dim]Single-file:[/] [cyan]{singleFile.Value}[/]");
+                    var outputDir = Path.Combine(
+                        ctx.Config.ArtifactsDirectory ?? ".artifacts",
+                        "publish",
+                        "server",
+                        config.ToLowerInvariant(),
+                        rid,
+                        singleFile.Value ? "single-file" : "multi-file");
+                    Directory.CreateDirectory(outputDir);
+                    AnsiConsole.MarkupLine($"[dim]Output:[/] [cyan]{outputDir}[/]");
 
-                    return await ctx.DotnetCli.PublishProjectRidAsync(project, config, rid, singleFile.Value, "");
+                    return await ctx.DotnetCli.PublishProjectRidAsync(project, config, rid, singleFile.Value, outputDir);
                 }
             },
             new() {
@@ -192,8 +208,18 @@ public static class TaskRegistry
                     AnsiConsole.MarkupLine($"[dim]Configuration:[/] [cyan]{config}[/]");
                     AnsiConsole.MarkupLine($"[dim]RID:[/] [cyan]{rid}[/]");
                     AnsiConsole.MarkupLine($"[dim]Single-file:[/] [cyan]{singleFile.Value}[/]");
+                    var projectName = Path.GetFileNameWithoutExtension(project);
+                    var outputDir = Path.Combine(
+                        ctx.Config.ArtifactsDirectory ?? ".artifacts",
+                        "publish",
+                        projectName,
+                        config.ToLowerInvariant(),
+                        rid,
+                        singleFile.Value ? "single-file" : "multi-file");
+                    Directory.CreateDirectory(outputDir);
+                    AnsiConsole.MarkupLine($"[dim]Output:[/] [cyan]{outputDir}[/]");
 
-                    return await ctx.DotnetCli.PublishProjectRidAsync(project, config, rid, singleFile.Value, "");
+                    return await ctx.DotnetCli.PublishProjectRidAsync(project, config, rid, singleFile.Value, outputDir);
                 }
             },
             new() {

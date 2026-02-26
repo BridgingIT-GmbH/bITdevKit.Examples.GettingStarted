@@ -112,6 +112,65 @@ public class DotnetCli
     return _executor.ExecuteAsync("dotnet", "tool restore");
   }
 
+  public async Task<ExecutionResult> ToolUpdateAsync()
+  {
+    var startTime = DateTime.UtcNow;
+    var listResult = await _executor.ExecuteAsync("dotnet", "tool list --local", captureOutput: true);
+    if (!listResult.Success)
+    {
+      return new ExecutionResult
+      {
+        Success = false,
+        ExitCode = listResult.ExitCode,
+        Output = listResult.Output,
+        Error = listResult.Error,
+        Duration = DateTime.UtcNow - startTime
+      };
+    }
+
+    var packageIds = ParseLocalToolPackageIds(listResult.Output);
+    if (packageIds.Count == 0)
+    {
+      AnsiConsole.MarkupLine("[yellow]No local tools found in manifest[/]");
+      return new ExecutionResult
+      {
+        Success = true,
+        ExitCode = 0,
+        Duration = DateTime.UtcNow - startTime
+      };
+    }
+
+    var failedTools = new List<string>();
+    foreach (var packageId in packageIds)
+    {
+      AnsiConsole.MarkupLine($"[cyan]Updating tool:[/] {packageId}");
+      var result = await _executor.ExecuteAsync("dotnet", $"tool update --local {packageId}");
+      if (!result.Success)
+      {
+        failedTools.Add(packageId);
+      }
+    }
+
+    if (failedTools.Count > 0)
+    {
+      AnsiConsole.MarkupLine($"[red]Failed to update {failedTools.Count} tool(s):[/] {string.Join(", ", failedTools)}");
+      return new ExecutionResult
+      {
+        Success = false,
+        ExitCode = 1,
+        Duration = DateTime.UtcNow - startTime
+      };
+    }
+
+    AnsiConsole.MarkupLine($"[green]✓ Updated {packageIds.Count} local tool(s)[/]");
+    return new ExecutionResult
+    {
+      Success = true,
+      ExitCode = 0,
+      Duration = DateTime.UtcNow - startTime
+    };
+  }
+
   public Task<ExecutionResult> BuildProjectAsync(string projectPath, string configuration = "Debug", bool noRestore = false)
   {
     var args = $"build {projectPath} -c {configuration}";
@@ -124,7 +183,7 @@ public class DotnetCli
   {
     var args = $"publish {projectPath} -c {configuration}";
     if (!string.IsNullOrEmpty(outputDir))
-      args += $" -o {outputDir}";
+      args += $" -o \"{outputDir}\"";
     if (singleFile)
       args += " --self-contained false -p:PublishSingleFile=true";
     return _executor.ExecuteAsync("dotnet", args);
@@ -143,7 +202,7 @@ public class DotnetCli
     }
     if (!string.IsNullOrEmpty(outputDir))
     {
-      args += $" -o {outputDir}";
+      args += $" -o \"{outputDir}\"";
     }
     return _executor.ExecuteAsync("dotnet", args);
   }
@@ -210,6 +269,38 @@ public class DotnetCli
   {
     var testProjectType = kind == "unit" ? "UnitTests" : "IntegrationTests";
     return $"tests/Modules/{moduleName}/{moduleName}.{testProjectType}/{moduleName}.{testProjectType}.csproj";
+  }
+
+  private static List<string> ParseLocalToolPackageIds(string output)
+  {
+    var packageIds = new List<string>();
+    if (string.IsNullOrWhiteSpace(output))
+      return packageIds;
+
+    foreach (var line in output.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+    {
+      var trimmed = line.Trim();
+      if (string.IsNullOrWhiteSpace(trimmed))
+        continue;
+
+      if (trimmed.StartsWith("Package Id", StringComparison.OrdinalIgnoreCase) ||
+          trimmed.StartsWith("---", StringComparison.OrdinalIgnoreCase) ||
+          trimmed.StartsWith("No tools were found", StringComparison.OrdinalIgnoreCase))
+      {
+        continue;
+      }
+
+      var columns = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+      if (columns.Length < 2)
+        continue;
+
+      if (!char.IsDigit(columns[1][0]))
+        continue;
+
+      packageIds.Add(columns[0]);
+    }
+
+    return packageIds.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
   }
 
   // ===== EF Core Methods =====
