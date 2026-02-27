@@ -46,7 +46,7 @@ These instructions guide AI contributions to the bITdevKit GettingStarted Exampl
 ---
 ## 1. Project Identity
 - **Name**: bITdevKit GettingStarted Example
-- **Purpose**: Demonstrates a modular, Domain-Driven Design (DDD) application using the bITdevKit (bITdevKit) on .NET 9.
+- **Purpose**: Demonstrates a modular, Domain-Driven Design (DDD) application using the bITdevKit (bITdevKit) on .NET 10.
 - **Primary Domain Concept**: Customer management lifecycle (create, update, list, delete, export job).
 - **Architecture Style**: Onion / Clean Architecture + Modular (Module = vertical slice: Domain, Application, Infrastructure, Presentation, Tests).
 
@@ -61,8 +61,8 @@ Layers (outer depends inward; inner knows nothing about outer):
 Modules live in `src/Modules/<ModuleName>` (e.g., `CoreModule`) and must be self-contained; cross-module coupling should be minimized (communicate via abstractions / events where needed).
 
 ## 3. Key Frameworks & Packages
-- .NET 9 SDK (`global.json` pinned to 9.0.305).
-- bITdevKit packages (version 9.0.18) providing requester/notifier, repositories, startup tasks, job scheduling, module infrastructure.
+- .NET 10 SDK
+- bITdevKit packages (version 10.0.x) providing requester/notifier, repositories, startup tasks, job scheduling, module infrastructure.
 - EF Core (SQL Server), Serilog, Mapster, Quartz, FluentValidation, xUnit/NSubstitute/Shouldly.
 
 ## 4. Naming & Folder Conventions

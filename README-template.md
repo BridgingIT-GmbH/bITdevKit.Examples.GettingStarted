@@ -25,7 +25,7 @@ Each module contains the following projects:
 
 ### Prerequisites
 
-- .NET 9 SDK or later
+- .NET 10 SDK or later
 
 ### Install the Templates
 
@@ -183,7 +183,7 @@ If you encounter any issues with the templates:
 ### Project Creation Issues
 
 1. **Missing .NET SDK:**
-   - Make sure you have .NET 9 SDK or later installed
+   - Make sure you have .NET 10 SDK or later installed
    - Verify with: `dotnet --version`
 
 2. **Projects not added to solution automatically:**

@@ -11,6 +11,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Quartz;
 
+/// <summary>
+/// Job that exports all customers from the repository.
+/// <para>
+/// This job demonstrates background processing using Quartz.NET and bITdevKit's job scheduling infrastructure.
+/// It retrieves all customers from the repository and logs each export operation. Intended as a template for
+/// implementing real export logic to external systems or files. Configured with retry/backoff for transient failures.
+/// </para>
+/// </summary>
 [DisallowConcurrentExecution]
 public class CustomerExportJob(
     ILoggerFactory loggerFactory,
