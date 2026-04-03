@@ -1,5 +1,7 @@
 # Results Feature Documentation
 
+> Represent success, failure, messages, and errors explicitly with immutable Result types.
+
 [TOC]
 
 ## Overview
@@ -1125,6 +1127,8 @@ var result = await Result<TripBooking>.Success(new TripBooking())
 > pattern. These extensions wrap standard repository operations in Result objects, providing
 > consistent error handling and operation results across your application.
 
+This appendix shows Result-based repository usage. For the repository abstraction itself, see [Domain Repositories](./features-domain-repositories.md), and for reusable query criteria, see [Domain Specifications](./features-domain-specifications.md).
+
 ### Available Extensions
 
 1. Read-Only Repository Extensions (`GenericReadOnlyRepositoryResultExtensions`):
@@ -1990,7 +1994,7 @@ Avoid using Either for simple boolean conditions or null checks, as these scenar
 
 Either is implemented as a value type, providing thread-safety and immutability by design. It's memory-efficient and supports both synchronous and asynchronous operations. The implementation ensures that you can't accidentally access the wrong type without explicitly handling both cases, providing robust type safety at compile time.
 
-Here�s the updated appendix with `MapHttpOkAll` added to the list of mapping methods. It remains concise and includes C# usage examples, tailored for minimal API usage with `Mediator` responses.
+Here's the updated appendix with `MapHttpOkAll` added to the list of mapping methods. It remains concise and includes C# usage examples, tailored for minimal API usage with `Mediator` responses.
 
 ---
 

@@ -1,5 +1,7 @@
 # Domain Repositories Feature Documentation
 
+> Access aggregates through type-safe repositories with rich querying, paging, and loading options.
+
 [TOC]
 
 ## Overview
@@ -25,6 +27,8 @@ The repository pattern implementation provides:
 - **Type-Safe Includes**: `IncludeOption<TEntity, TProperty>` with `ThenInclude` support for nested navigation properties
 - **Multiple Implementations**: EntityFramework, Cosmos, Azure Storage, and in-memory implementations
 - **Specification Pattern**: Reusable query specifications for complex business rules
+
+This page focuses on how repositories consume specifications. For the specification model itself, see [Domain Specifications](./features-domain-specifications.md).
 
 ### Use Cases
 

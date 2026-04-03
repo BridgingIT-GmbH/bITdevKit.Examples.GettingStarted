@@ -11,6 +11,8 @@ Domain-Driven Design (DDD) is an approach to software development that focuses o
 
 bITDevKit provides building blocks to implement DDD patterns in .NET, allowing you to focus on business logic while the framework handles cross-cutting concerns. The framework promotes clean architecture with clear separation between domain, application, infrastructure, and presentation layers.
 
+If you want a broader map of the available guides, start with the [documentation index](INDEX.md).
+
 ## 2. Core Domain Building Blocks
 
 ### 2.1 Aggregates and Consistency Boundaries
@@ -36,13 +38,14 @@ public class Customer : AuditableAggregateRoot<CustomerId>, IConcurrency
 
 The `[TypedEntityId<Guid>]` attribute automatically generates a strongly-typed `CustomerId` wrapper, preventing accidental mixing of different entity IDs. Private setters enforce encapsulation - state changes happen through methods that validate invariants.
 
-*Reference: [Domain features documentation](features-domain.md)*
+*Reference: [Domain features documentation](features-domain.md), [Domain Repositories](features-domain-repositories.md), and [Domain Policies](features-domain-policies.md)*
 
 ### 2.2 Value Objects
 
 A **Value Object** is an immutable object identified by its attributes rather than identity. It encapsulates a domain concept without its own lifecycle. Value objects are ideal for concepts that don't need to be tracked individually.
 
 Benefits of value objects:
+
 - Self-validation on creation ensures validity
 - Prevents primitive obsession (overusing strings and primitives)
 - Enhances readability and type safety
@@ -77,11 +80,12 @@ public class EmailAddress : ValueObject
 
 The factory method `Create()` returns a `Result<EmailAddress>`, ensuring invalid email addresses cannot be constructed. The `GetAtomicValues()` method enables structural equality - two email addresses with the same value are considered equal.
 
-*Reference: [Domain features documentation](features-domain.md)*
+*Reference: [Domain features documentation](features-domain.md), [Results documentation](features-results.md), and [Common Serialization](common-serialization.md)*
 
 ### 2.3 Smart Enumerations
 
 Traditional C# enums have significant limitations:
+
 - No behavior or methods
 - Limited to numeric values
 - Cannot store additional metadata
@@ -109,12 +113,13 @@ public class CustomerStatus : Enumeration
 ```
 
 Smart enumerations can:
+
 - Store additional properties like `Description`
 - Contain business logic methods
 - Be used in switch expressions like regular enums
 - Support polymorphic behavior through inheritance
 
-*Reference: [Domain features documentation - Appendix A](features-domain.md)*
+*Reference: [Domain features documentation - Appendix A](features-domain.md), [Common Utilities](common-utilities.md), and [Common Serialization](common-serialization.md)*
 
 ### 2.4 Strongly-Typed Entity IDs
 
@@ -143,18 +148,20 @@ public async Task<Customer> GetCustomerAsync(Guid id)   // ❌ Wrong - could be 
 ```
 
 Benefits of typed IDs:
+
 - Compile-time type checking prevents mixing entity IDs
 - Self-documenting code (parameter names indicate entity type)
 - Easy to refactor (change from Guid to int without affecting callers)
 - Better IDE support (autocomplete knows which IDs are valid)
 
-*Reference: [Domain features documentation - Appendix B](features-domain.md)*
+*Reference: [Domain features documentation - Appendix B](features-domain.md), [Common Serialization](common-serialization.md), and [Common Mapping](common-mapping.md)*
 
 ### 2.5 Domain Events
 
 **Domain Events** capture significant domain occurrences in past-tense, immutable records. They decouple producers from consumers, enabling event-driven architecture and maintaining the single responsibility principle.
 
 When a domain event is raised:
+
 - The producer doesn't need to know who handles it
 - Multiple handlers can respond to the same event
 - Handlers can run asynchronously (e.g., sending email, updating cache)
@@ -186,7 +193,7 @@ public static Result<Customer> Create(
 
 Domain events are collected in the aggregate's `DomainEvents` collection and published via the outbox pattern, ensuring reliable delivery even if the transaction is rolled back.
 
-*Reference: [Domain Events documentation](features-domain-events.md)*
+*Reference: [Domain Events documentation](features-domain-events.md), [Messaging](features-messaging.md), and [Event Sourcing](features-event-sourcing.md)*
 
 ## 3. Application Layer Patterns
 
@@ -195,16 +202,19 @@ Domain events are collected in the aggregate's `DomainEvents` collection and pub
 The **CQRS pattern** separates read and write operations into distinct models. While this can mean separate read/write models in complex systems, bITDevKit uses a simplified approach where the same domain model serves both, but operations are clearly separated.
 
 **Commands** modify state (Create, Update, Delete):
+
 - Always return void or a result indicating success/failure
 - Execute use cases that change the system
 - Validate business rules before executing
 
 **Queries** read data without side effects:
+
 - Return data (typically DTOs or domain models)
 - Never modify state
 - Can be optimized for specific read scenarios
 
 Benefits of CQRS:
+
 - Clear separation of concerns (write vs read paths)
 - Independent scalability (optimize reads and writes differently)
 - Simplified handler testing (each has single responsibility)
@@ -261,19 +271,21 @@ public class CustomerCreateCommandHandler
 
 The `IRequester` interface acts as a mediator, dispatching commands and queries to their handlers while applying cross-cutting concerns through pipeline behaviors.
 
-*Reference: [Commands and Queries documentation](features-application-commands-queries.md)*
+*Reference: [Commands and Queries documentation](features-application-commands-queries.md), [Requester and Notifier](features-requester-notifier.md), and [Common Mapping](common-mapping.md)*
 
 ### 3.2 Result Pattern (Railway-Oriented Programming)
 
 The **Result pattern** replaces exception-based error handling with explicit success/failure types. This enables **railway-oriented programming** - operations compose cleanly with automatic error propagation.
 
 **Problems with exception-based error handling**:
+
 - Exceptions break control flow unexpectedly
 - Hard to distinguish business errors from technical failures
 - Try-catch blocks add noise to business logic
 - Error context gets lost as exceptions bubble up
 
 **Benefits of Result pattern**:
+
 - Explicit success/failure states
 - Error context preserved through call chain
 - Composable operations (functions can be chained)
@@ -298,6 +310,7 @@ return await repository.InsertResultAsync(customer)
 ```
 
 **Key Result operations**:
+
 - `Bind()`: Transform success value, returns Result
 - `Map()`: Convert to different type, returns Result
 - `Ensure()`: Validate condition, fails if false
@@ -306,7 +319,7 @@ return await repository.InsertResultAsync(customer)
 
 The pipeline automatically short-circuits on failure - subsequent operations are skipped, and the failure flows directly to the end. This is the "railway" metaphor: once you're on the failure track, you stay on it.
 
-*Reference: [Results documentation](features-results.md)*
+*Reference: [Results documentation](features-results.md), [Presentation Endpoints](features-presentation-endpoints.md), and [Exception Handling](features-presentation-exception-handling.md)*
 
 ### 3.3 Business Rules
 
@@ -321,18 +334,20 @@ var result = Rule
 ```
 
 Benefits of the Rules feature:
+
 - Reusable rules across different contexts
 - Composable rule chains
 - Clear separation of validation from domain logic
 - Integration with Result pattern for consistent error handling
 
 Rules can be:
+
 - Sync: Evaluate immediately
 - Async: Support asynchronous validation (e.g., checking external API)
 - Conditional: Only apply based on runtime conditions
 - Collection-based: Validate all items in a collection
 
-*Reference: [Rules documentation](features-rules.md)*
+*Reference: [Rules documentation](features-rules.md), [Domain Policies](features-domain-policies.md), and [Entity Permissions](features-entitypermissions.md)*
 
 ## 4. Infrastructure Layer
 
@@ -341,6 +356,7 @@ Rules can be:
 The repository pattern abstracts data access while the **behavior pattern** (decorator) adds cross-cutting concerns. This separation keeps business logic clean while automatically applying logging, tracing, auditing, and event publishing.
 
 Behaviors wrap repository calls in a chain, executing in a specific order. Each behavior can:
+
 - Pre-process the operation
 - Execute the operation
 - Post-process the result
@@ -357,6 +373,7 @@ graph LR
 ```
 
 **Behavior chain order** (important for correctness):
+
 1. **TracingBehavior**: Starts OpenTelemetry span for distributed tracing
 2. **LoggingBehavior**: Logs operation start/end with duration
 3. **AuditStateBehavior**: Sets audit metadata (CreatedBy, UpdatedDate, etc.)
@@ -372,12 +389,13 @@ services.AddEntityFrameworkRepository<Customer, CoreModuleDbContext>()
 ```
 
 **Why this order matters**:
+
 - Audit state must be set before persistence (so database has audit fields)
 - Outbox needs committed events (runs after repository saves)
 - Tracing spans the entire operation
 - Logging captures timing for the full operation
 
-*Reference: [Repository documentation](features-domain-repositories.md)*
+*Reference: [Repository documentation](features-domain-repositories.md), [Domain Events](features-domain-events.md), and [Common Observability Tracing](common-observability-tracing.md)*
 
 ### 4.2 ActiveEntity vs Repository Pattern
 
@@ -392,24 +410,27 @@ bITDevKit supports both persistence patterns. Choose based on your project's com
 | **Query Complexity** | Limited to embedded queries | Supports specifications, filtering |
 
 **When to use ActiveEntity**:
+
 - Simple CRUD scenarios
 - Rapid prototyping or MVP
 - Teams prefer code over abstractions
 - Query logic is straightforward
 
 **When to use Repository**:
+
 - Complex domain with multiple aggregates
 - Need for specifications and filtering
 - Strict separation of concerns required
 - Comprehensive test coverage needed
 
 Both patterns support:
+
 - Behaviors for cross-cutting concerns
 - Domain events
 - Typed entity IDs
 - Result pattern integration
 
-*Reference: [ActiveEntity documentation](features-domain-activeentity.md)*
+*Reference: [ActiveEntity documentation](features-domain-activeentity.md), [Domain Repositories](features-domain-repositories.md), and [Filtering](features-filtering.md)*
 
 ## 5. Modular Monolith Architecture
 
@@ -426,12 +447,14 @@ src/Modules/CoreModule/
 ```
 
 **Module characteristics**:
+
 - Self-contained DbContext and migrations
 - Own domain model, commands, queries, handlers
 - Independent endpoints and DTOs
 - Can be extracted to microservice if needed
 
 **Benefits of modular monolith**:
+
 - Clear ownership of business capabilities
 - Easier to understand and maintain
 - Gradual path to microservices if needed
@@ -448,17 +471,21 @@ Critical rules enforced by architecture tests (these tests run as part of your C
 4. **Presentation → Application**: Presentation uses application through `IRequester` mediator
 
 **Module boundaries**:
+
 - Modules cannot directly reference other modules' internal layers (Domain, Application, Infrastructure)
 - Modules can reference other modules' `.Contracts` projects for public APIs
 - Cross-module communication via integration events (async) or public APIs (sync)
 
 **Why these rules matter**:
+
 - Prevents circular dependencies
 - Keeps domain logic pure and testable
 - Makes refactoring safer (boundaries are clear)
 - Enables parallel development across modules
 
 *Reference: [Modules documentation](features-modules.md)*
+
+For the HTTP side of module boundaries and endpoint composition, also see [Presentation Endpoints](features-presentation-endpoints.md).
 
 ## 6. Request Flow Example
 
@@ -514,11 +541,14 @@ sequenceDiagram
 6. **Repository Persistence**: Entity saved with behavior chain (audit, logging, outbox)
 7. **Response Mapping**: Result mapped to HTTP response (201 Created with Location header)
 
+See also: [Presentation Endpoints](features-presentation-endpoints.md), [Requester and Notifier](features-requester-notifier.md), [Domain Events](features-domain-events.md), [Domain Repositories](features-domain-repositories.md), and [Results](features-results.md).
+
 ## 7. Getting Started Checklist
 
 For new developers joining a bITDevKit project, follow this checklist to understand and extend the codebase:
 
 **Domain Layer**:
+
 - [ ] Create new aggregate inheriting from `AggregateRoot<TId>`
 - [ ] Add `[TypedEntityId<T>]` attribute for type-safe IDs
 - [ ] Register domain events in `DomainEvents` collection
@@ -527,6 +557,7 @@ For new developers joining a bITDevKit project, follow this checklist to underst
 - [ ] Implement factory methods (e.g., `Create()`) that validate invariants
 
 **Application Layer**:
+
 - [ ] Create commands for write operations (inherit `RequestBase<TResponse>`)
 - [ ] Create queries for read operations (inherit `RequestBase<TResponse>`)
 - [ ] Implement handlers inheriting `RequestHandlerBase<TRequest, TResponse>`)
@@ -535,6 +566,7 @@ For new developers joining a bITDevKit project, follow this checklist to underst
 - [ ] Orchestrate domain logic in handlers (not repositories)
 
 **Infrastructure Layer**:
+
 - [ ] Configure DbContext with `AddDbContext<T>()`
 - [ ] Register repositories with `AddEntityFrameworkRepository<T, TContext>()`
 - [ ] Add behaviors: Tracing, Logging, Audit, Outbox
@@ -542,6 +574,7 @@ For new developers joining a bITDevKit project, follow this checklist to underst
 - [ ] Ensure migrations are applied via startup task
 
 **Presentation Layer**:
+
 - [ ] Create endpoints class inheriting from `EndpointsBase`
 - [ ] Use `IRequester.SendAsync()` to dispatch commands/queries
 - [ ] Map Results to HTTP responses (`.MapHttpCreated()`, `.MapHttpOk()`)
@@ -566,12 +599,13 @@ public Result<Customer> ChangeEmail(string email)
 ```
 
 **Builder methods**:
+
 - `Set()`: Change a property value
 - `Check()`: Validate condition before applying
 - `Register()`: Add domain event
 - `Apply()`: Commit changes and return result
 
-*Reference: [Domain documentation - Appendix C](features-domain.md)*
+*Reference: [Domain documentation - Appendix C](features-domain.md), [Domain Events](features-domain-events.md), and [Results](features-results.md)*
 
 ### 8.2 Specifications for Querying
 
@@ -585,12 +619,13 @@ var customers = await repository.FindAllAsync(spec);
 ```
 
 Benefits of specifications:
+
 - Reusable across queries and handlers
 - Composable (can combine with AND/OR)
 - Testable in isolation
 - Express domain query logic clearly
 
-*Reference: [Filtering documentation](features-filtering.md)*
+*Reference: [Domain Specifications documentation](features-domain-specifications.md) and [Filtering documentation](features-filtering.md)*
 
 ### 8.3 Transaction Scopes
 
@@ -606,13 +641,14 @@ await Result<Customer>.Success(customer)
 ```
 
 **How it works**:
+
 - Transaction starts lazily (on first async operation)
 - All operations execute within the transaction
 - On success: transaction commits
 - On failure: transaction rolls back
 - Integrates with Result pattern's railway-oriented flow
 
-*Reference: [Results documentation - Result Operation Scope](features-results.md)*
+*Reference: [Results documentation - Result Operation Scope](features-results.md), [Domain Repositories](features-domain-repositories.md), and [Common Observability Tracing](common-observability-tracing.md)*
 
 ## 9. Next Steps
 
@@ -622,6 +658,10 @@ This introduction provides a foundation for understanding DDD in bITDevKit. To d
 
 2. **Explore feature documentation** for detailed implementation guidance:
    - [Domain layer features](features-domain.md) - Aggregates, Value Objects, IDs
+   - [Domain events](features-domain-events.md) - Aggregate-raised events and the domain-event outbox
+   - [Event sourcing](features-event-sourcing.md) - Aggregate-event streams, snapshots, and event-store outbox processing
+   - [Domain specifications](features-domain-specifications.md) - Reusable query and selection criteria
+   - [Domain policies](features-domain-policies.md) - Contextual domain decisions and policy processing modes
    - [Application CQRS](features-application-commands-queries.md) - Commands, Queries, Handlers
    - [Repositories and behaviors](features-domain-repositories.md) - Data access patterns
    - [ActiveEntity alternative](features-domain-activeentity.md) - Embedded persistence
@@ -630,6 +670,10 @@ This introduction provides a foundation for understanding DDD in bITDevKit. To d
    - [Filtering specifications](features-filtering.md) - Query composition
    - [Entity permissions](features-entitypermissions.md) - Authorization at entity level
    - [Modules architecture](features-modules.md) - Modular monolith patterns
+   - [Presentation endpoints](features-presentation-endpoints.md) - Endpoint composition and HTTP mapping
+   - [Common mapping](common-mapping.md) - Mapping boundaries and DTO conversion
+   - [Common serialization](common-serialization.md) - Shared JSON and serializer conventions
+   - [Common utilities](common-utilities.md) - Shared helper types such as smart enumerations and ambient time access
 
 3. **Read module-specific documentation**: Each module's README contains implementation details for patterns in that module's context.
 

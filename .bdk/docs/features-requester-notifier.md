@@ -1,4 +1,6 @@
-﻿# Requester and Notifier Feature Documentation
+# Requester and Notifier Feature Documentation
+
+> Dispatch requests and notifications through handler pipelines with reusable cross-cutting behaviors.
 
 [TOC]
 
@@ -12,6 +14,8 @@ Two kinds of messages are supported:
 - **Notification Messages** (via `Notifier`): Dispatched to multiple handlers in a publish/subscribe (pub/sub) model, typically for domain events where multiple components need to react to an event (e.g., user registration, system updates).
 
 Using these components (requests for commands/queries and notifications for domain events) helps decrease coupling in the application by isolating message handling logic from the business logic of the application. For instance, a service can publish a domain event via the `Notifier` without knowing which components will handle it, and a command can be dispatched via the `Requester` without the caller needing to know the implementation details of the handler.
+
+Some of the cross-cutting behaviors described on this page rely on shared common infrastructure, especially [Common Caching](./common-caching.md) for cache-related behaviors and [Common Observability / Tracing](./common-observability-tracing.md) for broader instrumentation conventions around message processing flows.
 
 ### Challenges
 
@@ -1490,20 +1494,20 @@ The `Requester` and `Notifier` systems share similarities with the popular **Med
 
 ---
 
-# Appendix C: Generic Handlers in Requester and Notifier
+## Appendix C: Generic Handlers in Requester and Notifier
 
-## Overview
+### Overview
 
 Generic handlers in the `Requester` and `Notifier` systems enable handling of generic request/notification types (e.g., `GenericRequest<TData>`, `GenericNotification<TData>`) with a single handler, reducing code duplication. They are registered using `AddGenericHandlers`, which discovers open generic handlers, validates constraints, and registers closed handlers (e.g., `GenericDataProcessor<UserData>`).
 
-## Key Features
+### Key Features
 
 - **Automatic Discovery**: `AddGenericHandlers` scans assemblies for open generic handlers and discovers type arguments based on constraints.
 - **Constraint Validation**: Ensures type arguments meet constraints (e.g., `where TData : class, IDataItem`).
 
-## Setup with `AddGenericHandlers`
+### Setup with `AddGenericHandlers`
 
-### Requester
+#### Requester
 
 ```csharp
 services.AddRequester()
@@ -1512,7 +1516,7 @@ services.AddRequester()
     .WithBehavior<ValidationPipelineBehavior<,>>();
 ```
 
-### Notifier
+#### Notifier
 
 ```csharp
 services.AddNotifier()
@@ -1523,9 +1527,9 @@ services.AddNotifier()
 
 `AddGenericHandlers` discovers open generic handlers (e.g., `GenericDataProcessor<TData>`), finds type arguments (e.g., `UserData`, `OrderData`) that satisfy constraints, and registers closed handlers.
 
-## Examples
+### Examples
 
-### Generic Request Handler (Requester)
+#### Generic Request Handler (Requester)
 
 ```csharp
 public class ProcessDataRequest<TData> : RequestBase<string>
@@ -1562,7 +1566,7 @@ var userRequest = new ProcessDataRequest<UserData> { Data = new UserData { Id = 
 var result = await requester.SendAsync(userRequest); // "Processed: user123"
 ```
 
-### Generic Notification Handler (Notifier)
+#### Generic Notification Handler (Notifier)
 
 ```csharp
 public class GenericNotification<TData> : NotificationBase
@@ -1596,3 +1600,254 @@ public class GenericNotificationHandler<TData> : NotificationHandlerBase<Generic
 var userNotification = new GenericNotification<UserData> { Data = new UserData { Id = "user123" } };
 var result = await notifier.PublishAsync(userNotification); // Logs: "Handled: user123"
 ```
+
+---
+
+## Appendix D: Source-Generated Commands, Queries, and Events
+
+The source-generated authoring model lets you write a command, query, or event as a single partial type. This is a convenient way to define simple request/notification flows without needing separate message and handler classes. The source generators create the necessary boilerplate code, allowing you to focus on the business logic.
+
+### Quick Start
+
+> Add the `BridgingIT.DevKit.Common.Utilities.CodeGen` package as an analyzer reference in the application project that contains the commands and queries.
+
+- Use `[Command]` for commands.
+- Use `[Query]` for queries.
+- Use `[Event]` for notifications published through `INotifier`.
+- Add one or more `[Handle]` methods with your business logic.
+- Use validation attributes for simple property rules.
+- Use `[Validate]` when the validation needs full FluentValidation code.
+
+The `[Handle]` method is an instance method, so message properties can be used directly inside the method body.
+Services can be added as parameters and are resolved from DI.
+
+For a package reference, use:
+
+```xml
+<PackageReference Include="BridgingIT.DevKit.Common.Utilities.CodeGen"
+                  Version="x.y.z"
+                  PrivateAssets="all" />
+```
+
+### Command Without Response
+
+```csharp
+[Command]
+[HandlerRetry(3, 200)]
+public partial class DoSomethingCommand
+{
+    [ValidateNotEmpty("Message cannot be empty.")]
+    public string Message { get; set; }
+
+    [Handle]
+    private async Task<Result<Unit>> HandleAsync(CancellationToken cancellationToken)
+    {
+        await Task.Delay(100, cancellationToken);
+        return Success();
+    }
+}
+```
+
+### Command With Response
+
+```csharp
+public sealed class CreateUserCommandResult
+{
+    public Guid UserId { get; set; }
+
+    public string Username { get; set; }
+}
+
+[Command]
+[HandlerDatabaseTransaction(contextName: "Core")]
+public partial class CreateUserCommand
+{
+    [ValidateNotEmpty("Username cannot be empty.")]
+    public string Username { get; set; }
+
+    [Handle]
+    private async Task<Result<CreateUserCommandResult>> HandleAsync(
+        IGenericRepository<User> userRepository, // DI services can be injected as parameters
+        CancellationToken cancellationToken)
+    {
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            Username = Username
+        };
+
+        await userRepository.InsertAsync(user, cancellationToken);
+
+        return Success(new CreateUserCommandResult
+        {
+            UserId = user.Id,
+            Username = user.Username
+        });
+    }
+}
+```
+
+### Query With Response
+
+```csharp
+[Query]
+[HandlerTimeout(500)]
+public partial class GetUserQuery
+{
+    [ValidateNotEmpty("UserId cannot be empty.")]
+    public Guid UserId { get; set; }
+
+    [Handle]
+    private async Task<Result<User>> HandleAsync(
+        IGenericReadOnlyRepository<User> userRepository, // DI services can be injected as parameters
+        CancellationToken cancellationToken)
+    {
+        var user = await userRepository.FindOneAsync(
+            UserId,
+            cancellationToken: cancellationToken);
+
+        return user != null
+            ? Success(user)
+            : Failure($"User with ID {UserId} not found.");
+    }
+}
+```
+
+### Complex Validation With `[Validate]`
+
+When a rule is more complex than a simple property validator, use `[Validate]`:
+
+```csharp
+[Command]
+public partial class CreateOrderCommand
+{
+    [ValidateNotEmpty]
+    public List<OrderItem> Items { get; init; }
+
+    [Validate]
+    private static void Validate(InlineValidator<CreateOrderCommand> validator)
+    {
+        validator.RuleFor(x => x.Items) // Supports validation of the entire request object graph
+            .Must(items => items.Count <= 100)
+            .WithMessage("A maximum of 100 items is allowed.");
+    }
+
+    [Handle]
+    private Result<Unit> Handle()
+    {
+        return Success();
+    }
+}
+```
+
+### Notes
+
+- The response type is inferred from the `Result<T>` returned by `[Handle]`.
+- `Success(...)` and `Failure(...)` can be used directly inside `[Handle]`.
+- Existing handler policy attributes such as retry, timeout, authorization, and transactions still apply.
+- Generated validators continue to run through the normal Requester validation pipeline.
+
+### Event Quick Start
+
+Use `[Event]` to author a notification as a single partial type. Each `[Handle]` method becomes a generated `NotificationHandlerBase<TEvent>` implementation.
+
+```csharp
+[Event]
+[HandlerRetry(2, 100)]
+public partial class UserRegisteredEvent
+{
+    [ValidateNotEmpty("Email is required.")]
+    [ValidateEmail("Email must be valid.")]
+    public string Email { get; init; }
+
+    [Handle]
+    private Result Audit()
+    {
+        Console.WriteLine($"Audit user registration for {Email}");
+        return Success();
+    }
+
+    [Handle]
+    private async Task<Result> SendWelcomeEmailAsync(
+        IEmailService emailService,
+        CancellationToken cancellationToken)
+    {
+        await emailService.SendAsync(Email, cancellationToken);
+        return Success();
+    }
+}
+```
+
+### Event Validation With `[Validate]`
+
+For more complex event validation, use `[Validate]` with an `InlineValidator<TEvent>`:
+
+```csharp
+[Event]
+public partial class OrderImportedEvent
+{
+    [ValidateNotEmpty]
+    public List<string> OrderIds { get; init; }
+
+    [Validate]
+    private static void Validate(InlineValidator<OrderImportedEvent> validator)
+    {
+        validator.RuleFor(x => x.OrderIds)
+            .Must(ids => ids.Count <= 100)
+            .WithMessage("A maximum of 100 order ids is allowed.");
+    }
+
+    [Handle]
+    private Result Handle()
+    {
+        return Success();
+    }
+}
+```
+
+### Combining Generated and Manual Event Handlers
+
+Generated handlers do not replace the normal notifier pub/sub model. You can use multiple generated `[Handle]` methods and still add more manual `INotificationHandler<TEvent>` subscribers.
+
+```csharp
+[Event]
+public partial class CustomerSignedUpEvent
+{
+    public string Email { get; init; }
+
+    [Handle]
+    private Result Audit()
+    {
+        Console.WriteLine($"Audit: {Email}");
+        return Success();
+    }
+
+    [Handle]
+    private Result UpdateReadModel()
+    {
+        Console.WriteLine($"Projection updated for {Email}");
+        return Success();
+    }
+}
+
+public class CustomerSignedUpMetricsHandler : NotificationHandlerBase<CustomerSignedUpEvent>
+{
+    protected override Task<Result> HandleAsync(CustomerSignedUpEvent notification, PublishOptions options, CancellationToken cancellationToken)
+    {
+        Console.WriteLine($"Metrics tracked for {notification.Email}");
+        return Task.FromResult(Result.Success());
+    }
+}
+```
+
+### Event Notes
+
+- `[Event]` requires a top-level, non-generic, `partial` class.
+- Events can declare one or more `[Handle]` methods.
+- `[Handle]` methods must return `Result` or `Task<Result>`.
+- `PublishOptions` and `CancellationToken` can be declared as `[Handle]` parameters when needed.
+- Any other `[Handle]` parameters are resolved from DI.
+- If the event does not explicitly inherit `NotificationBase`, the generator adds it automatically.
+- Class-level notifier policy attributes such as retry, timeout, authorization, chaos, circuit breaker, and cache invalidation are copied to each generated handler.
+- Generated validators continue to run through the normal Notifier validation pipeline.
+- Manual `INotificationHandler<TEvent>` implementations continue to work alongside generated handlers.
