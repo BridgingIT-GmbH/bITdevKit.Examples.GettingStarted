@@ -825,7 +825,7 @@ graph TD
 ### Complete Request Flow
 
 ```text
-1. HTTO Request: POST /api/coremodule/customers
+1. HTTP Request: POST /api/coremodule/customers
 2. UseHttpsRedirection → Ensure HTTPS
 3. UseRequestCorrelation → Assign correlation ID
 4. UseRequestModuleContext → Set context to CoreModule
