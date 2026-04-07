@@ -13,6 +13,10 @@
 
   <ItemGroup>
     <PackageReference Include="BridgingIT.DevKit.Common.Mapping" />
+    <PackageReference Include="BridgingIT.DevKit.Common.Utilities.CodeGen">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="BridgingIT.DevKit.Application.JobScheduling" />
   </ItemGroup>
 

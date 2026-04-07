@@ -62,7 +62,7 @@ sequenceDiagram
  participant Client
  participant Endpoint as CustomerEndpoints
  participant Requester as IRequester
- participant Handler as CustomerCreateCommandHandler
+ participant Handler as CustomerCreateCommand [Handle]
  participant Repo as IGenericRepository
  participant Db as CoreModuleDbContext
  Client->>Endpoint: POST /api/coremodule/customers
@@ -80,7 +80,7 @@ sequenceDiagram
 ## Key Building Blocks
 
 - **Domain (`CoreModule.Domain`)**: `Customer` aggregate maintains invariants with value objects (`EmailAddress`, `CustomerNumber`) and emits `CustomerCreatedDomainEvent` and `CustomerUpdatedDomainEvent`. Guards prevent invalid transitions and register events whenever meaningful changes occur.
-- **Application (`CoreModule.Application`)**: Command/query records (`CustomerCreateCommand`, `CustomerFindAllQuery`) include nested FluentValidation validators. Handlers orchestrate rule checks, sequence generation, repository operations and mapping back to `CustomerModel`. Background jobs (e.g., `CustomerExportJob`) live in the Application layer.
+- **Application (`CoreModule.Application`)**: Command/query records (`CustomerCreateCommand`, `CustomerFindAllQuery`) encapsulate validation and handling close to the request type. Both commands and queries can use source-generated validation attributes, inline `[Validate]` methods, and inline `[Handle]` methods. Handler logic orchestrates rule checks, sequence generation, repository operations and mapping back to `CustomerModel`. Background jobs (e.g., `CustomerExportJob`) live in the Application layer.
 - **Infrastructure (`CoreModule.Infrastructure`)**: `CoreModuleDbContext` extends `ModuleDbContextBase`, registers the `CustomerNumbers` sequence and exposes `DbSet<Customer>`. Repository behaviors (tracing, logging, audit state, outbox) are chained during module registration.
 - **Presentation (`CoreModule.Presentation`)**: Minimal API endpoints in `Web/Endpoints/CustomerEndpoints.cs` secure the route group `api/coremodule/customers`, map request DTOs and delegate to the requester. `CoreModuleMapperRegister` wires Mapster conversions.
 
@@ -98,26 +98,34 @@ sequenceDiagram
 
 ## Handler Implementation Example
 
-This section shows the complete implementation of `CustomerCreateCommandHandler` as a concrete example of the handler pattern in CoreModule.
+This section shows the complete implementation of `CustomerCreateCommand` as a concrete example of the source-generated handler pattern in CoreModule.
 
 ### Complete Handler Code
 
 ```csharp
-public class CustomerCreateCommandHandler(
-    ILogger<CustomerCreateCommandHandler> logger,
-    IMapper mapper,
-    IGenericRepository<Customer> repository,
-    ISequenceNumberGenerator numberGenerator,
-    TimeProvider timeProvider)
-    : RequestHandlerBase<CustomerCreateCommand, CustomerModel>(logger)
+[Command]
+public partial class CustomerCreateCommand
 {
-    protected override async Task<Result<CustomerModel>> HandleAsync(
-        CustomerCreateCommand request,
+    public CustomerModel Model { get; set; }
+
+    [Validate]
+    private static void Validate(InlineValidator<CustomerCreateCommand> validator)
+    {
+        validator.RuleFor(c => c.Model).NotNull();
+    }
+
+    [Handle]
+    private async Task<Result<CustomerModel>> HandleAsync(
+        ILogger<CustomerCreateCommand> logger,
+        IMapper mapper,
+        IGenericRepository<Customer> repository,
+        ISequenceNumberGenerator numberGenerator,
+        TimeProvider timeProvider,
         SendOptions options,
         CancellationToken cancellationToken) =>
             await Result<CustomerModel>
                 // STEP 1: Create context to accumulate state
-                .Bind<CustomerCreateContext>(() => new(request.Model))
+                .Bind<CustomerCreateContext>(() => new(Model))
                 
                 // STEP 2: Inline validation
                 .Ensure((ctx) => ctx.Model.FirstName != ctx.Model.LastName,
@@ -131,17 +139,18 @@ public class CustomerCreateCommandHandler(
                     .CheckAsync(ct), cancellationToken: cancellationToken)
                 
                 // STEP 4: Generate sequence number (module-specific)
-                .BindResultAsync(this.GenerateSequenceAsync, this.CaptureNumber, cancellationToken)
+                .BindResultAsync((ctx, ct) => GenerateSequenceAsync(ctx, numberGenerator, ct), CaptureNumber(timeProvider), cancellationToken)
                 
                 // STEP 5: Create domain aggregate
-                .Bind(this.CreateEntity)
+                .Bind(CreateEntity)
                 
                 // STEP 6: Persist to repository (triggers behavior chain)
-                .BindResultAsync(this.PersistEntityAsync, this.CapturePersistedEntity, cancellationToken)
+                .BindResultAsync((ctx, ct) => PersistEntityAsync(ctx, repository, ct), CapturePersistedEntity, cancellationToken)
                 .Log(logger, "Customer {Id} created", r => [r.Value.Entity.Id])
                 
                 // STEP 7: Map to DTO
-                .Map(this.ToModel);
+                .Map(ctx => ctx.Entity)
+                .MapResult<Customer, CustomerModel>(mapper);
 
     // Context pattern: accumulates state across pipeline steps
     private class CustomerCreateContext(CustomerModel model)
@@ -152,16 +161,17 @@ public class CustomerCreateCommandHandler(
     }
 
     // Helper methods (extracted for testability)
-    private async Task<Result<CustomerNumber>> GenerateSequenceAsync(CustomerCreateContext ctx, CancellationToken ct) =>
-        await numberGenerator.NextAsync(timeProvider.GetUtcNow().Year, ct);
+    private static async Task<Result<long>> GenerateSequenceAsync(CustomerCreateContext ctx, ISequenceNumberGenerator numberGenerator, CancellationToken ct) =>
+        await numberGenerator.GetNextAsync(CodeModuleConstants.CustomerNumberSequenceName, "core", ct);
 
-    private CustomerCreateContext CaptureNumber(CustomerCreateContext ctx, CustomerNumber number)
-    {
-        ctx.Number = number;
-        return ctx;
-    }
+    private static Func<CustomerCreateContext, long, CustomerCreateContext> CaptureNumber(TimeProvider timeProvider) =>
+        (ctx, seq) =>
+        {
+            ctx.Number = CustomerNumber.Create(timeProvider.GetUtcNow().UtcDateTime, seq).Value;
+            return ctx;
+        };
 
-    private Result<CustomerCreateContext> CreateEntity(CustomerCreateContext ctx)
+    private static Result<CustomerCreateContext> CreateEntity(CustomerCreateContext ctx)
     {
         var createResult = Customer.Create(ctx.Model.FirstName, ctx.Model.LastName, ctx.Model.Email, ctx.Number);
         if (createResult.IsFailure)
@@ -171,17 +181,14 @@ public class CustomerCreateCommandHandler(
         return ctx;
     }
 
-    private async Task<Result<Customer>> PersistEntityAsync(CustomerCreateContext ctx, CancellationToken ct) =>
+    private static async Task<Result<Customer>> PersistEntityAsync(CustomerCreateContext ctx, IGenericRepository<Customer> repository, CancellationToken ct) =>
         await repository.InsertResultAsync(ctx.Entity, ct).AnyContext();
 
-    private CustomerCreateContext CapturePersistedEntity(CustomerCreateContext ctx, Customer entity)
+    private static CustomerCreateContext CapturePersistedEntity(CustomerCreateContext ctx, Customer entity)
     {
         ctx.Entity = entity;
         return ctx;
     }
-
-    private CustomerModel ToModel(CustomerCreateContext ctx) =>
-        mapper.Map<Customer, CustomerModel>(ctx.Entity);
 }
 ```
 
@@ -197,15 +204,19 @@ public class CustomerCreateCommandHandler(
 
 **Query Handler** (simpler, read-only):
 ```csharp
-public class CustomerFindAllQueryHandler(IMapper mapper, IGenericRepository<Customer> repository)
-    : RequestHandlerBase<CustomerFindAllQuery, IEnumerable<CustomerModel>>
+[Query]
+public partial class CustomerFindAllQuery
 {
-    protected override async Task<Result<IEnumerable<CustomerModel>>> HandleAsync(
-        CustomerFindAllQuery request,
+    public FilterModel Filter { get; set; }
+
+    [Handle]
+    private async Task<Result<IEnumerable<CustomerModel>>> HandleAsync(
+        IMapper mapper,
+        IGenericRepository<Customer> repository,
         SendOptions options,
         CancellationToken cancellationToken) =>
             await repository
-                .FindAllResultAsync(request.Filter, cancellationToken: cancellationToken)
+                .FindAllResultAsync(Filter, cancellationToken: cancellationToken)
                 .Map(mapper.Map<Customer, CustomerModel>);
 }
 ```
@@ -224,10 +235,10 @@ await Result<CustomerModel>
 ### Handler Checklist
 
 When creating a new handler in CoreModule:
-1. Inherit from `RequestHandlerBase<TRequest, TResponse>`
-2. Inject dependencies (logger, mapper, repository, domain services)
+1. Add `[Command]` or `[Query]` to the request type
+2. Inject dependencies through the `[Handle]` method signature
 3. Use context pattern if multiple steps accumulate state
-4. Validate input with `Ensure` and `Unless` (fail fast)
+4. Validate input with validation attributes or `[Validate]` plus `Ensure`/`Unless`
 5. Modify aggregate/entities using domain methods
 6. Persist via repository Result methods
 7. Map aggregate to DTO before returning

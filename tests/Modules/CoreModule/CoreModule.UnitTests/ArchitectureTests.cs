@@ -54,7 +54,7 @@ public class ArchitectureTests : IClassFixture<ArchitectureFixture>
     /// </para>
     /// <para>
     /// EXAMPLE VIOLATIONS:
-    /// - CustomerCreateCommandHandler constructor: CustomerCreateCommandHandler(CoreModuleDbContext context)
+    /// - CustomerCreateCommand [Handle] dependencies including CoreModuleDbContext directly
     /// - Command using: using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
     /// - Handler calling: context.Database.ExecuteSqlRaw("DELETE FROM...")
     /// </para>
@@ -142,7 +142,7 @@ public class ArchitectureTests : IClassFixture<ArchitectureFixture>
     /// EXAMPLE VIOLATIONS:
     /// - Customer entity: public static Result&lt;Customer&gt; Create(CustomerCreateCommand command)
     /// - Domain event: CustomerCreatedDomainEvent { CustomerModel Model { get; } }
-    /// - Value object: EmailAddress.Create using CustomerCreateCommand.Validator
+    /// - Value object: EmailAddress.Create using CustomerCreateCommand validation logic
     /// - Domain rule: new EmailShouldBeUniqueRule referencing ICustomerApplicationService
     /// </para>
     /// <para>
@@ -517,7 +517,7 @@ public class ArchitectureTests : IClassFixture<ArchitectureFixture>
     /// EXAMPLE VIOLATIONS (when other modules exist):
     /// - using BridgingIT.DevKit.Examples.GettingStarted.Modules.InventoryModule.Domain;
     /// - using BridgingIT.DevKit.Examples.GettingStarted.Modules.InventoryModule.Application;
-    /// - CustomerCreateCommandHandler(IGenericRepository&lt;Customer&gt; repo, IGenericRepository&lt;Product&gt; productRepo)
+    /// - CustomerCreateCommand [Handle] injecting both IGenericRepository&lt;Customer&gt; and IGenericRepository&lt;Product&gt;
     /// - Direct call: var product = await inventoryModule.GetProduct(productId)
     /// </para>
     /// <para>
@@ -579,22 +579,26 @@ public class ArchitectureTests : IClassFixture<ArchitectureFixture>
     /// <code>
     /// // ALLOWED: Reference public contract
     /// using InventoryModule.Contracts;
-    /// public class CustomerCreateCommandHandler
+    /// public partial class CustomerCreateCommand
     /// {
     ///     private readonly IProductAvailabilityService productService; // From InventoryModule.Contracts
     ///
-    ///     public async Task Handle(CustomerCreateCommand command)
+    ///     [Handle]
+    ///     private async Task<Result<CustomerModel>> HandleAsync(IProductAvailabilityService productService)
     ///     {
-    ///         var productResult = await productService.GetProductAsync(command.ProductId);
+    ///         var productResult = await productService.GetProductAsync(ProductId);
     ///         // ...
     ///     }
     /// }
     ///
     /// // FORBIDDEN: Direct reference to internal domain
     /// using InventoryModule.Domain;
-    /// public class CustomerCreateCommandHandler
+    /// public partial class CustomerCreateCommand
     /// {
-    ///     private readonly IGenericRepository&lt;Product&gt; productRepo; // Product is internal to InventoryModule
+    ///     [Handle]
+    ///     private Task<Result<CustomerModel>> HandleAsync(IGenericRepository&lt;Product&gt; productRepo) // Product is internal to InventoryModule
+    ///     {
+    ///     }
     /// }
     /// </code>
     /// <para>

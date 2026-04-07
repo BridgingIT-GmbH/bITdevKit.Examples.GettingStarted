@@ -6,23 +6,61 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Query for retrieving a single <see cref="Customer"/> Aggregate by its unique identifier.
+/// Handler for processing <see cref="CustomerFindOneQuery"/>.
+/// Loads a single customer from the repository by ID, audits/logs the operation,
+/// and maps the domain entity (<see cref="Customer"/>) to a DTO (<see cref="CustomerModel"/>).
 /// </summary>
-/// <param name="id">The string representation of the Aggregate's identifier.</param>
-public class CustomerFindOneQuery(string id) : RequestBase<CustomerModel>
+/// <remarks>
+/// - Configured with retry (<see cref="HandlerRetryAttribute"/>) for transient failures.
+/// - Configured with timeout (<see cref="HandlerTimeoutAttribute"/>) to bound maximum execution time.
+/// - Uses <see cref="IGenericRepository{Customer}"/> and domain-specific <see cref="CustomerId"/> value object
+///   to perform the lookup.
+/// </remarks>
+// [HandlerRetry(2, 100)]   // retry twice, wait 100ms between retries
+// [HandlerTimeout(500)]    // timeout after 500ms execution
+[Query]
+public partial class CustomerFindOneQuery
 {
-    /// <summary>Gets or sets the Aggregate id.</summary>
-    public string Id { get; } = id;
-
-    /// <summary>Validation rules for <see cref="CustomerFindOneQuery"/>.</summary>
-    public class Validator : AbstractValidator<CustomerFindOneQuery>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CustomerFindOneQuery"/> class.
+    /// </summary>
+    /// <param name="id">The string representation of the Aggregate's identifier.</param>
+    public CustomerFindOneQuery(string id)
     {
-        public Validator()
-        {
-            this.RuleFor(c => c.Id).MustNotBeDefaultOrEmptyGuid()
-                .WithMessage("Invalid guid.");
-        }
+        Id = id;
     }
+
+    /// <summary>Gets or sets the Aggregate id.</summary>
+    [ValidateNotEmptyGuid("Invalid guid.")]
+    public string Id { get; }
+
+    /// <summary>
+    /// Handles the <see cref="CustomerFindOneQuery"/> request.
+    /// </summary>
+    /// <param name="logger">Logger used for audit and diagnostic information.</param>
+    /// <param name="mapper">Mapper used to convert the aggregate to the application model.</param>
+    /// <param name="repository">Repository used to look up the customer aggregate.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>
+    /// A <see cref="Result{CustomerModel}"/> containing the mapped aggregate  if found, or an error result if the aggregate does not exist.
+    /// </returns>
+    [Handle]
+    private async Task<Result<CustomerModel>> HandleAsync(
+        ILogger<CustomerFindOneQuery> logger,
+        IMapper mapper,
+        IGenericRepository<Customer> repository,
+        CancellationToken cancellationToken) =>
+            // Load the customer from the repository by ID
+            await repository.FindOneResultAsync(CustomerId.Create(Id), cancellationToken: cancellationToken)
+
+            // Side effects (audit/logging)
+            .Log(logger, "AUDIT - Customer {CustomerId} retrieved for {Email}", r => [r.Value.Id, r.Value.Email])
+
+            // Map retrieved Aggregate -> Model
+            .MapResult<Customer, CustomerModel>(mapper)
+            .Log(logger, "AUDIT - Customer {CustomerId} retrieved for {Email}", r => [r.Value.Id, r.Value.Email]);
 }

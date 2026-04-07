@@ -6,10 +6,10 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application;
 
 /// <summary>
-/// Tests for <see cref="CustomerFindAllQueryHandler"/> validating customer retrieval scenarios.
+/// Tests for <see cref="CustomerFindAllQuery"/> validating customer retrieval scenarios.
 /// </summary>
 [UnitTest("Application")]
-public class CustomerFindAllQueryHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
+public class CustomerFindAllQueryTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
     /// <summary>Verifies successful retrieval of all customers.</summary>
     [Fact]

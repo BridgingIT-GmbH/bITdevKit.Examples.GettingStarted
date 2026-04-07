@@ -6,11 +6,11 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application;
 
 /// <summary>
-/// Tests for <see cref="CustomerCreateCommandHandler"/> validating customer creation scenarios
+/// Tests for <see cref="CustomerCreateCommand"/> validating customer creation scenarios
 /// including success cases, validation failures, and business rule enforcement.
 /// </summary>
 [UnitTest("Application")]
-public class CustomerCreateCommandHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
+public class CustomerCreateCommandTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
     /// <summary>Verifies successful customer creation with valid data.</summary>
     [Fact]

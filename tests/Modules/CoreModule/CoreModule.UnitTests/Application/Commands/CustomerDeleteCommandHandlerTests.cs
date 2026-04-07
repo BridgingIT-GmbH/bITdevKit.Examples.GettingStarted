@@ -6,11 +6,11 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application;
 
 /// <summary>
-/// Tests for <see cref="CustomerDeleteCommandHandler"/> validating customer deletion scenarios
+/// Tests for <see cref="CustomerDeleteCommand"/> validating customer deletion scenarios
 /// including successful deletion, invalid IDs, and non-existent customers.
 /// </summary>
 [UnitTest("Application")]
-public class CustomerDeleteCommandHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
+public class CustomerDeleteCommandTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
     /// <summary>Verifies successful deletion of an existing customer.</summary>
     [Fact]

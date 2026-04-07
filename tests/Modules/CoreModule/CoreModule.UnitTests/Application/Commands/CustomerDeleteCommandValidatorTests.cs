@@ -49,7 +49,7 @@ public class CustomerDeleteCommandValidatorTests
     public void Validate_EmptyCustomerId_ShouldHaveValidationError()
     {
         // Arrange
-            var command = new CustomerDeleteCommand("");
+        var command = new CustomerDeleteCommand("");
 
         // Act
         var result = this.validator.TestValidate(command);

@@ -6,62 +6,181 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Command to update an existing <see cref="Customer"/> Aggregate.
 /// </summary>
-public class CustomerUpdateCommand(CustomerModel model) : RequestBase<CustomerModel>
+/// <summary>
+/// Handler for <see cref="CustomerUpdateCommand"/>.
+/// Maps DTO -> domain, checks business rules, updates the entity in the repository,
+/// and maps back to <see cref="CustomerModel"/> for returning to the client.
+/// </summary>
+/// <remarks>
+/// - Configured with retry (<see cref="HandlerRetryAttribute"/>) and timeout (<see cref="HandlerTimeoutAttribute"/>).
+/// - Rule validation similar to <see cref="CustomerCreateCommand"/>, but must consider
+///   excluding the current customer when checking uniqueness (TODO noted).
+/// </remarks>
+//[HandlerRetry(2, 100)]   // retry on transient failures
+//[HandlerTimeout(500)]    // max execution 500ms
+[Command]
+public partial class CustomerUpdateCommand
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CustomerUpdateCommand"/> class.
+    /// </summary>
+    /// <param name="model">The model that contains data for the Aggregate to update.</param>
+    public CustomerUpdateCommand(CustomerModel model)
+    {
+        Model = model;
+    }
+
     /// <summary>Gets or sets the Model (<see cref="CustomerModel"/>) that contains data for the Aggregate to update.</summary>
-    public CustomerModel Model { get; set; } = model;
+    public CustomerModel Model { get; set; }
 
     /// <summary>Validation rules for <see cref="CustomerUpdateCommand"/>.</summary>
-    public class Validator : AbstractValidator<CustomerUpdateCommand>
+    [Validate]
+    private static void Validate(InlineValidator<CustomerUpdateCommand> validator)
     {
-        public Validator()
+        validator.RuleFor(c => c.Model).NotNull();
+        validator.When(c => c.Model != null, () =>
         {
-            this.RuleFor(c => c.Model).NotNull();
-
-            this.RuleFor(c => c.Model.Id).MustNotBeDefaultOrEmptyGuid()
+            validator.RuleFor(c => c.Model.Id).MustNotBeDefaultOrEmptyGuid()
                 .WithMessage(Resources.Validator_InvalidValue);
-
-            this.RuleFor(c => c.Model.FirstName)
+            validator.RuleFor(c => c.Model.FirstName)
                 .NotNull().NotEmpty().WithMessage(Resources.Validator_MustNotBeEmpty);
-
-            this.RuleFor(c => c.Model.LastName)
+            validator.RuleFor(c => c.Model.LastName)
                 .NotNull().NotEmpty().WithMessage(Resources.Validator_MustNotBeEmpty);
-
-            this.RuleFor(c => c.Model.Email)
+            validator.RuleFor(c => c.Model.Email)
                 .NotNull().NotEmpty().WithMessage(Resources.Validator_MustNotBeEmpty);
-
-            // Address validation rules
-            this.RuleFor(c => c.Model.Addresses)
+            validator.RuleFor(c => c.Model.Addresses) // Address validation rules
                 .Must(addresses => addresses.IsNullOrEmpty() || addresses.Count(a => a.IsPrimary) == 1)
                 .WithMessage(Resources.Validator_OnePrimaryAddressRequired);
-
-            this.RuleForEach(c => c.Model.Addresses).ChildRules(address =>
+            validator.RuleForEach(c => c.Model.Addresses).ChildRules(address =>
             {
                 address.RuleFor(a => a.Line1)
                     .NotEmpty().WithMessage(Resources.Validator_MustNotBeEmpty)
                     .MaximumLength(256).WithMessage(Resources.Validator_MustNotExceed256Characters);
-
                 address.RuleFor(a => a.Line2)
                     .MaximumLength(256).WithMessage(Resources.Validator_MustNotExceed256Characters);
-
                 address.RuleFor(a => a.City)
                     .NotEmpty().WithMessage(Resources.Validator_MustNotBeEmpty)
                     .MaximumLength(100).WithMessage(Resources.Validator_MustNotExceed100Characters);
-
                 address.RuleFor(a => a.Country)
                     .NotEmpty().WithMessage(Resources.Validator_MustNotBeEmpty)
                     .MaximumLength(100).WithMessage(Resources.Validator_MustNotExceed100Characters);
-
                 address.RuleFor(a => a.Name)
                     .MaximumLength(128).WithMessage(Resources.Validator_MustNotExceed128Characters);
-
                 address.RuleFor(a => a.PostalCode)
                     .MaximumLength(20).WithMessage(Resources.Validator_MustNotExceed20Characters);
             });
+        });
+    }
+
+    /// <summary>
+    /// Handles the <see cref="CustomerUpdateCommand"/>. Steps:
+    /// 1. Map DTO to <see cref="Customer"/> aggregate.
+    /// 2. Validate inline rules (basic invariants, e.g., names not empty).
+    /// 3. Persist changes via repository update.
+    /// 4. Perform audit/logging side-effects.
+    /// 5. Map updated domain aggregate to <see cref="CustomerModel"/>.
+    /// </summary>
+    [Handle]
+    private async Task<Result<CustomerModel>> HandleAsync(
+        ILogger<CustomerUpdateCommand> logger,
+        IMapper mapper,
+        IGenericRepository<Customer> repository,
+        CancellationToken cancellationToken) =>
+            // STEP 1 - Load existing entity
+            await repository.FindOneResultAsync(CustomerId.Create(Model.Id), cancellationToken: cancellationToken)
+            //.Unless((e) => e?.AuditState?.IsDeleted() == true, new NotFoundError("Entity already deleted"))
+
+            // STEP 2 — Validate request model
+            .UnlessAsync(async (e, ct) => await Rule
+                .Add(RuleSet.IsNotEmpty(e.FirstName)) // also validated in domain
+                .Add(RuleSet.IsNotEmpty(e.LastName)) // also validated in domain
+                .Add(RuleSet.NotEqual(e.LastName, "notallowed")) // also validated in domain
+                //.Add(new EmailShouldBeUniqueRule(e.Email, repository)) // TODO: Check unique email excluding the current entity (currently disabled)
+                .CheckAsync(cancellationToken), cancellationToken: cancellationToken)
+
+            // STEP 3 - Apply changes to Aggregate from request model
+            .Bind(e => UpdateAggregate(e, Model))
+
+            // STEP 4 — Save updated Aggregate to repository
+            .BindAsync(async (e, ct) =>
+                await repository.UpdateResultAsync(e, ct), cancellationToken)
+
+            // STEP 5 — Side effects (audit/logging)
+            .Log(logger, "AUDIT - Customer {Id} updated for {Email}", r => [r.Value.Id, r.Value.Email.Value])
+
+            // STEP 6 — Map updated Aggregate -> Model
+            .MapResult<Customer, CustomerModel>(mapper)
+            .Log(logger, "Aggregate mapped to {@Model}", r => [r.Value]);
+
+    /// <summary>
+    /// Updates the customer's basic properties (name, email, birth date, status).
+    /// </summary>
+    /// <param name="customer">The customer aggregate to update.</param>
+    /// <param name="model">The customer model containing the updated values.</param>
+    /// <returns>The updated customer wrapped in a Result.</returns>
+    private Result<Customer> UpdateAggregate(Customer customer, CustomerModel model) =>
+        // Setup the customer update chain.
+        Result<Customer>.Success(customer)
+            .Bind(e => e.ChangeName(model.FirstName, model.LastName))
+            .Bind(e => EmailAddress.Create(model.Email).Bind(email => e.ChangeEmail(email)))
+            .Bind(e => e.ChangeBirthDate(model.DateOfBirth))
+            .Bind(e => e.ChangeStatus(model.Status))
+            .Bind(e => ChangeAddresses(customer, model))
+            .Tap(e => e.ConcurrencyVersion = Guid.Parse(model.ConcurrencyVersion)); // set concurrency version for optimistic concurrency check
+
+    /// <summary>
+    /// Processes address changes by comparing the specified addresses with existing ones.
+    /// Removes Customer addresses not in the specified addresses, adds new addresses and updates existing addresses.
+    /// </summary>
+    /// <param name="customer">The customer aggregate to update.</param>
+    /// <param name="model">The customer model containing the updated values.</param>
+    /// <returns>The updated customer wrapped in a Result.</returns>
+    private Result<Customer> ChangeAddresses(Customer customer, CustomerModel model)
+    {
+        // Setup the address update chain.
+        return Result<Customer>.Success(customer)
+            .When(_ => model.Addresses.SafeAny(), r => r
+                .Bind(c => RemoveMissing(c, model.Addresses))
+                .Bind(c => AddOrChange(c, model.Addresses))
+                .Bind(c => SetPrimary(c, model.Addresses)));
+
+        // Removes addresses from the customer that are not present in the provided address models.
+        Result<Customer> RemoveMissing(Customer customer, List<CustomerAddressModel> addressModels)
+        {
+            var keepIds = addressModels
+                .Where(m => !string.IsNullOrWhiteSpace(m.Id))
+                .Select(m => AddressId.Create(m.Id)).ToList();
+            var removeIds = customer.Addresses.Select(a => a.Id).Except(keepIds).ToList();
+            foreach (var id in removeIds)
+            {
+                var result = customer.RemoveAddress(id);
+                if (result.IsFailure) return result;
+            }
+            return Result<Customer>.Success(customer);
         }
+
+        // Processes the provided address models to add new addresses or update existing ones.
+        Result<Customer> AddOrChange(Customer customer, List<CustomerAddressModel> addressModels)
+        {
+            foreach (var m in addressModels)
+            {
+                var result = string.IsNullOrWhiteSpace(m.Id)
+                    ? customer.AddAddress(m.Name, m.Line1, m.Line2, m.PostalCode, m.City, m.Country)
+                    : customer.ChangeAddress(m.Id, m.Name, m.Line1, m.Line2, m.PostalCode, m.City, m.Country);
+                if (result.IsFailure) return result;
+            }
+            return Result<Customer>.Success(customer);
+        }
+
+        // Sets the primary address of the customer based on the provided address models.
+        Result<Customer> SetPrimary(Customer customer, List<CustomerAddressModel> addressModels) =>
+            addressModels.Find(m => m.IsPrimary).Match(
+                some: m => customer.SetPrimaryAddress(m.Id),
+                none: () => Result<Customer>.Success(customer));
     }
 }

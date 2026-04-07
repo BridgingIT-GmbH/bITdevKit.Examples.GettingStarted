@@ -37,15 +37,18 @@ public class CustomerUpdateCommandValidatorTests
         result.ShouldNotHaveAnyValidationErrors();
     }
 
-    /// <summary>Verifies validator throws exception for null model.</summary>
+    /// <summary>Verifies validation error for null model.</summary>
     [Fact]
-    public void Validate_NullModel_ThrowsException()
+    public void Validate_NullModel_ShouldHaveValidationError()
     {
         // Arrange
         var command = new CustomerUpdateCommand(null);
 
-        // Act & Assert
-        Should.Throw<NullReferenceException>(() => this.validator.TestValidate(command));
+        // Act
+        var result = this.validator.TestValidate(command);
+
+        // Assert
+        result.ShouldHaveValidationErrorFor(c => c.Model);
     }
 
     /// <summary>Verifies validation error for empty GUID ID.</summary>

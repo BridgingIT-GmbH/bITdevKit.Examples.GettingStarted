@@ -6,11 +6,11 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.UnitTests.Application;
 
 /// <summary>
-/// Tests for <see cref="CustomerUpdateCommandHandler"/> validating customer update scenarios
+/// Tests for <see cref="CustomerUpdateCommand"/> validating customer update scenarios
 /// including field updates, validation failures, concurrency conflicts, and business rules.
 /// </summary>
 [UnitTest("Application")]
-public class CustomerUpdateCommandHandlerTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
+public class CustomerUpdateCommandTests(ITestOutputHelper output) : CoreModuleTestsBase(output)
 {
     /// <summary>Verifies successful update of customer with valid data and concurrency token.</summary>
     [Fact]

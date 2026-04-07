@@ -6,32 +6,66 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Command to change a Aggregate status to any valid <see cref="Domain.Model.CustomerStatus"/>.
 /// </summary>
-/// <param name="id">The string representation of the Aggregate's identifier.</param>
-/// <param name="status">Target status value (e.g., "Lead", "Active", "Retired").</param>
-public class CustomerUpdateStatusCommand(string id, string status) : RequestBase<CustomerModel>
+/// <summary>
+/// Handler for <see cref="CustomerUpdateStatusCommand"/>. Loads the customer, changes status, persists and returns updated DTO.
+/// </summary>
+//[HandlerRetry(2, 100)]
+//[HandlerTimeout(500)]
+[Command]
+public partial class CustomerUpdateStatusCommand
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CustomerUpdateStatusCommand"/> class.
+    /// </summary>
+    /// <param name="id">The string representation of the Aggregate's identifier.</param>
+    /// <param name="status">Target status value (e.g., "Lead", "Active", "Retired").</param>
+    public CustomerUpdateStatusCommand(string id, string status)
+    {
+        Id = id;
+        Status = status;
+    }
+
     /// <summary>Gets or sets the Aggregate id.</summary>
-    public string Id { get; set; } = id;
+    [ValidateNotEmptyGuid("Invalid guid.")]
+    public string Id { get; set; }
 
     /// <summary>Gets or sets target status value.</summary>
-    public string Status { get; set; } = status;
+    [ValidateNotEmpty("Invalid status value. Valid values: Lead, Active, Retired.")]
+    public string Status { get; set; } // TODO: use CustomerStatus Enumeration instead of string to enforce valid values at compile time
 
     /// <summary>Validator ensuring valid id and status.</summary>
-    public class Validator : AbstractValidator<CustomerUpdateStatusCommand>
+    [Validate]
+    private static void Validate(InlineValidator<CustomerUpdateStatusCommand> validator)
     {
-        public Validator()
-        {
-            this.RuleFor(c => c.Id).MustNotBeDefaultOrEmptyGuid()
-                .WithMessage("Invalid guid.");
-
-            this.RuleFor(c => c.Status)
-                .NotEmpty()
-                .Must(value => CustomerStatus.GetAll().Any(s => s.Value == value))
-                .WithMessage("Invalid status value. Valid values: Lead, Active, Retired.");
-        }
+        validator.RuleFor(c => c.Status)
+            .Must(value => CustomerStatus.GetAll().Any(s => s.Value == value))
+            .WithMessage("Invalid status value. Valid values: Lead, Active, Retired.");
     }
+
+    [Handle]
+    private async Task<Result<CustomerModel>> HandleAsync(
+        ILogger<CustomerUpdateStatusCommand> logger,
+        IMapper mapper,
+        IGenericRepository<Customer> repository,
+        CancellationToken cancellationToken) =>
+            // STEP 1 - Load existing entity
+            await repository.FindOneResultAsync(CustomerId.Create(Id), cancellationToken: cancellationToken)
+
+            // STEP 2 - Change status (idempotent if same)
+            .Bind(e => e.ChangeStatus(Status))
+
+            // STEP 3 - Update in repository
+            .BindAsync(async (e, ct) =>
+                await repository.UpdateResultAsync(e, ct), cancellationToken)
+
+            // STEP 4 — Side effects (audit/logging)
+            .Log(logger, "AUDIT - Customer {Id} status updated for {Email}", r => [r.Value.Id, r.Value.Email.Value])
+
+            // STEP 5 — Map updated Aggregate -> Model
+            .MapResult<Customer, CustomerModel>(mapper);
 }
