@@ -3,7 +3,11 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
+global using System.Collections.Generic;
 global using System.Diagnostics.CodeAnalysis;
+global using System.Threading;
+global using System.Threading.Tasks;
 global using BridgingIT.DevKit.Common;
 global using BridgingIT.DevKit.Domain.Repositories;
 global using FluentValidation;
+global using Microsoft.Extensions.Logging;

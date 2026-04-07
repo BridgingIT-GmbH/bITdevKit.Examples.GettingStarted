@@ -6,7 +6,6 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Command to change a Aggregate status to any valid <see cref="Domain.Model.CustomerStatus"/>.

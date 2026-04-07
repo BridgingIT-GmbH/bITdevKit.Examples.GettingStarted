@@ -5,9 +5,7 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
-using System.Collections.Generic;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Query for retrieving all <see cref="Customer"/> Aggregates.

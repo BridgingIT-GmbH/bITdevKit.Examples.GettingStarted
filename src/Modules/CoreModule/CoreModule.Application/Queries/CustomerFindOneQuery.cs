@@ -6,7 +6,6 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Query for retrieving a single <see cref="Customer"/> Aggregate by its unique identifier.

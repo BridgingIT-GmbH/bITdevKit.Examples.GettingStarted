@@ -8,7 +8,6 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Applicati
 using BridgingIT.DevKit.Application.JobScheduling;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Quartz;
 
 /// <summary>

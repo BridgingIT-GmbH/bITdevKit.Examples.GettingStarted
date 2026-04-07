@@ -6,7 +6,6 @@
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Command to update an existing <see cref="Customer"/> Aggregate.
