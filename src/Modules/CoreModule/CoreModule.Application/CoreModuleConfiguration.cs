@@ -14,7 +14,6 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Applicati
 /// #### Binding and validation
 /// This configuration class is typically bound and validated in the module setup:
 /// <code>
-/// // In your module bootstrap (e.g. CoreModule.cs)
 /// var moduleConfiguration = this.Configure&lt;CoreModuleConfiguration, CoreModuleConfiguration.Validator&gt;(
 ///     services, configuration);
 /// </code>

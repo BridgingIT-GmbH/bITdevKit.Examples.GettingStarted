@@ -39,9 +39,6 @@ public class CoreModuleDomainSeederTask(
 
         this.logger.LogInformation("{LogKey} seed core (task={StartupTaskType})", "IFR", this.GetType().PrettyName());
 
-        //using var scope = scopeFactory.CreateScope();
-        //var customerRepository = scope.ServiceProvider.GetRequiredService<IGenericRepository<Customer>>();
-
         await this.SeedCustomers(customerRepository, cancellationToken);
     }
 

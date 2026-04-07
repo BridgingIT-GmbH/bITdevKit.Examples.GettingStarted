@@ -5,12 +5,9 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
-using System.Threading;
-using System.Threading.Tasks;
 using BridgingIT.DevKit.Domain;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Events;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Handles <see cref="CustomerUpdatedDomainEvent"/> notifications.

@@ -2,17 +2,84 @@
     "version": "0.2.0",
     "configurations": [
         {
-          "name": "Launch and Debug Standalone Blazor WebAssembly App",
-          "type": "blazorwasm",
-          "request": "launch",
-          "url": "https://localhost:5001",
-          "browser": "edge",
-          "cwd": "${workspaceFolder}/src/Presentation.Web.Server",
-          // "hosted": true,
-          // "program": "${workspaceFolder}/src/Presentation.Web.Server/bin/Debug/net8.0/BridgingIT.DevKit.Examples.Presentation.Web.Server.dll",
-          "env": {
-            "ASPNETCORE_ENVIRONMENT": "Development"
-          }
+            "name": "Presentation.Web.Server Debug",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "dotnet - Server [Build Debug]",
+            "program": "${workspaceFolder}/src/Presentation.Web.Server/bin/Debug/net10.0/BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server.dll",
+            "args": [
+                "--urls",
+                "https://localhost:5001;http://localhost:5000"
+            ],
+            "cwd": "${workspaceFolder}/src/Presentation.Web.Server",
+            "stopAtEntry": false,
+            "justMyCode": true,
+            "console": "internalConsole",
+            "envFile": "${workspaceFolder}/.vscode/api.env",
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https://localhost:5001\\S*)",
+                "uriFormat": "%s"
+            },
+            "presentation": {
+                "group": "api",
+                "order": 1,
+                "hidden": false
+            }
+        },
+        {
+            "name": "Presentation.Web.Server Run",
+            "type": "coreclr",
+            "request": "launch",
+            "noDebug": true,
+            "preLaunchTask": "dotnet - Server [Build Debug]",
+            "program": "${workspaceFolder}/src/Presentation.Web.Server/bin/Debug/net10.0/BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server.dll",
+            "args": [
+                "--urls",
+                "https://localhost:5001;http://localhost:5000"
+            ],
+            "cwd": "${workspaceFolder}/src/Presentation.Web.Server",
+            "justMyCode": true,
+            "console": "internalConsole",
+            "envFile": "${workspaceFolder}/.vscode/api.env",
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https://localhost:5001\\S*)",
+                "uriFormat": "%s"
+            },
+            "presentation": {
+                "group": "api",
+                "order": 2,
+                "hidden": false
+            }
+        },
+        {
+            "name": "Presentation.Web.Server Attach",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:pickProcess}",
+            "justMyCode": true,
+            "presentation": {
+                "group": "api",
+                "order": 3,
+                "hidden": false
+            }
+        },
+        {
+            "name": "CoreModule.Benchmarks Run",
+            "type": "coreclr",
+            "request": "launch",
+            "noDebug": true,
+            "preLaunchTask": "dotnet - Benchmarks [CoreModule Build Release]",
+            "program": "${workspaceFolder}/tests/Modules/CoreModule/CoreModule.Benchmarks/bin/Release/net10.0/CoreModule.Benchmarks.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/tests/Modules/CoreModule/CoreModule.Benchmarks",
+            "console": "integratedTerminal",
+            "presentation": {
+                "group": "benchmarks",
+                "order": 1,
+                "hidden": false
+            }
         }
     ]
 }
