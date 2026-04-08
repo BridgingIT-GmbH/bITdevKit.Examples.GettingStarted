@@ -2728,13 +2728,39 @@
       }
     },
     "securitySchemes": {
-      "Bearer": {
+      "OAuth2": {
         "type": "oauth2",
-        "description": "The JWT token in the format: Bearer {token}"
+        "description": "Authenticate using the OAuth2 authorization code flow.",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://localhost:5001/api/_system/identity/connect/authorize",
+            "tokenUrl": "https://localhost:5001/api/_system/identity/connect/token",
+            "scopes": {
+              "openid": "Request the openid scope.",
+              "profile": "Request the profile scope.",
+              "email": "Request the email scope.",
+              "roles": "Request the roles scope."
+            }
+          }
+        }
+      },
+      "Bearer": {
+        "type": "http",
+        "description": "The JWT token in the format: Bearer {token}",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     }
   },
   "security": [
+    {
+      "OAuth2": [
+        "openid",
+        "profile",
+        "email",
+        "roles"
+      ]
+    },
     {
       "Bearer": [ ]
     }

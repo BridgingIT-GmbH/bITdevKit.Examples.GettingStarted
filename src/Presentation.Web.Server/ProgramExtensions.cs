@@ -5,6 +5,7 @@
 
 namespace Microsoft.Extensions.DependencyInjection;
 
+using BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server.OpenApi;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using OpenTelemetry.Exporter;
@@ -87,7 +88,7 @@ public static class ProgramExtensions
                 }))
              .AddSchemaTransformer<DiagnosticSchemaTransformer>()
              .AddSchemaTransformer<ResultProblemDetailsSchemaTransformer>()
-             .AddDocumentTransformer<BearerSecurityRequirementDocumentTransformer>();
+             .AddDocumentTransformer<ScalarSecurityDocumentTransformer>();
         });
     }
 
@@ -158,8 +159,11 @@ public static class ProgramExtensions
             o.OpenApiRoutePattern = "/openapi.json";
             o.WithTitle("Web API")
              .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
-             .AddPreferredSecuritySchemes(JwtBearerDefaults.AuthenticationScheme)
-             .AddAuthorizationCodeFlow(JwtBearerDefaults.AuthenticationScheme, f =>
+             .AddPreferredSecuritySchemes(ScalarSecurityDocumentTransformer.OAuth2SchemeName)
+             .AddOAuth2Authentication(
+                ScalarSecurityDocumentTransformer.OAuth2SchemeName,
+                s => s.WithDefaultScopes(["openid", "profile", "email", "roles"]))
+             .AddAuthorizationCodeFlow(ScalarSecurityDocumentTransformer.OAuth2SchemeName, f =>
              {
                  var idpOptions = app.Services.GetService<FakeIdentityProviderEndpointsOptions>();
                  var idpClient = idpOptions?.Clients?.FirstOrDefault(c => string.Equals(c.Name, "Scalar", StringComparison.OrdinalIgnoreCase));
