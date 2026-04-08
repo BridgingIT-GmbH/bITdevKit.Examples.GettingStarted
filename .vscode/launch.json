@@ -66,6 +66,37 @@
             }
         },
         {
+            "name": "Presentation.Web.Server Watch",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "dotnet watch --project \"${workspaceFolder}/src/Presentation.Web.Server/Presentation.Web.Server.csproj\" run -- --urls \"https://localhost:5001;http://localhost:5000\"",
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "presentation": {
+                "group": "api",
+                "order": 4,
+                "hidden": false
+            }
+        },
+        {
+            "name": "Presentation.Web.Server Docker Run",
+            "type": "node-terminal",
+            "request": "launch",
+            "preLaunchTask": "docker - Server [Prepare Run]",
+            "command": "docker run --rm --name bit_devkit_gettingstarted-web-vscode --network bit_devkit_gettingstarted -p 8080:8080 --env-file \"${workspaceFolder}/.vscode/docker-api.env\" bit_devkit_gettingstarted-web:vscode",
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+http://\\[::\\]:(8080)",
+                "uriFormat": "http://localhost:%s/index.html"
+            },
+            "presentation": {
+                "group": "api",
+                "order": 5,
+                "hidden": false
+            }
+        },
+        {
             "name": "CoreModule.Benchmarks Run",
             "type": "coreclr",
             "request": "launch",
