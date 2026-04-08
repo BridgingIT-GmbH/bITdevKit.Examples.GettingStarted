@@ -1,116 +1,131 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Presentation.Web.Server Debug",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "dotnet - Server [Build Debug]",
-            "program": "${workspaceFolder}/src/Presentation.Web.Server/bin/Debug/net10.0/BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server.dll",
-            "args": [
-                "--urls",
-                "https://localhost:5001;http://localhost:5000"
-            ],
-            "cwd": "${workspaceFolder}/src/Presentation.Web.Server",
-            "stopAtEntry": false,
-            "justMyCode": true,
-            "console": "internalConsole",
-            "envFile": "${workspaceFolder}/.vscode/api.env",
-            "serverReadyAction": {
-                "action": "openExternally",
-                "pattern": "\\bNow listening on:\\s+(https://localhost:5001\\S*)",
-                "uriFormat": "%s"
-            },
-            "presentation": {
-                "group": "api",
-                "order": 1,
-                "hidden": false
-            }
-        },
-        {
-            "name": "Presentation.Web.Server Run",
-            "type": "coreclr",
-            "request": "launch",
-            "noDebug": true,
-            "preLaunchTask": "dotnet - Server [Build Debug]",
-            "program": "${workspaceFolder}/src/Presentation.Web.Server/bin/Debug/net10.0/BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server.dll",
-            "args": [
-                "--urls",
-                "https://localhost:5001;http://localhost:5000"
-            ],
-            "cwd": "${workspaceFolder}/src/Presentation.Web.Server",
-            "justMyCode": true,
-            "console": "internalConsole",
-            "envFile": "${workspaceFolder}/.vscode/api.env",
-            "serverReadyAction": {
-                "action": "openExternally",
-                "pattern": "\\bNow listening on:\\s+(https://localhost:5001\\S*)",
-                "uriFormat": "%s"
-            },
-            "presentation": {
-                "group": "api",
-                "order": 2,
-                "hidden": false
-            }
-        },
-        {
-            "name": "Presentation.Web.Server Attach",
-            "type": "coreclr",
-            "request": "attach",
-            "processId": "${command:pickProcess}",
-            "justMyCode": true,
-            "presentation": {
-                "group": "api",
-                "order": 3,
-                "hidden": false
-            }
-        },
-        {
-            "name": "Presentation.Web.Server Watch",
-            "type": "node-terminal",
-            "request": "launch",
-            "command": "dotnet watch --project \"${workspaceFolder}/src/Presentation.Web.Server/Presentation.Web.Server.csproj\" run -- --urls \"https://localhost:5001;http://localhost:5000\"",
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            },
-            "presentation": {
-                "group": "api",
-                "order": 4,
-                "hidden": false
-            }
-        },
-        {
-            "name": "Presentation.Web.Server Docker Run",
-            "type": "node-terminal",
-            "request": "launch",
-            "preLaunchTask": "docker - Server [Prepare Run]",
-            "command": "docker run --rm --name bit_devkit_gettingstarted-web-vscode --network bit_devkit_gettingstarted -p 8080:8080 --env-file \"${workspaceFolder}/.vscode/docker-api.env\" bit_devkit_gettingstarted-web:vscode",
-            "serverReadyAction": {
-                "action": "openExternally",
-                "pattern": "\\bNow listening on:\\s+http://\\[::\\]:(8080)",
-                "uriFormat": "http://localhost:%s/index.html"
-            },
-            "presentation": {
-                "group": "api",
-                "order": 5,
-                "hidden": false
-            }
-        },
-        {
-            "name": "CoreModule.Benchmarks Run",
-            "type": "coreclr",
-            "request": "launch",
-            "noDebug": true,
-            "preLaunchTask": "dotnet - Benchmarks [CoreModule Build Release]",
-            "program": "${workspaceFolder}/tests/Modules/CoreModule/CoreModule.Benchmarks/bin/Release/net10.0/CoreModule.Benchmarks.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}/tests/Modules/CoreModule/CoreModule.Benchmarks",
-            "console": "integratedTerminal",
-            "presentation": {
-                "group": "benchmarks",
-                "order": 1,
-                "hidden": false
-            }
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    // Launch the API with the debugger attached and open https://localhost:5001.
+    {
+      "name": "Presentation.Web.Server Debug",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "dotnet - Server [Build Debug]",
+      "program": "${workspaceFolder}/src/Presentation.Web.Server/bin/Debug/net10.0/BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server.dll",
+      "args": ["--urls", "https://localhost:5001;http://localhost:5000"],
+      "cwd": "${workspaceFolder}/src/Presentation.Web.Server",
+      "stopAtEntry": false,
+      "justMyCode": true,
+      "console": "internalConsole",
+      "envFile": "${workspaceFolder}/.vscode/api.env",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https://localhost:5001\\S*)",
+        "uriFormat": "%s"
+      },
+      "presentation": {
+        "group": "api",
+        "order": 1,
+        "hidden": false
+      }
+    },
+    // Launch the API without debugging and open https://localhost:5001.
+    {
+      "name": "Presentation.Web.Server Run",
+      "type": "coreclr",
+      "request": "launch",
+      "noDebug": true,
+      "preLaunchTask": "dotnet - Server [Build Debug]",
+      "program": "${workspaceFolder}/src/Presentation.Web.Server/bin/Debug/net10.0/BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server.dll",
+      "args": ["--urls", "https://localhost:5001;http://localhost:5000"],
+      "cwd": "${workspaceFolder}/src/Presentation.Web.Server",
+      "justMyCode": true,
+      "console": "internalConsole",
+      "envFile": "${workspaceFolder}/.vscode/api.env",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https://localhost:5001\\S*)",
+        "uriFormat": "%s"
+      },
+      "presentation": {
+        "group": "api",
+        "order": 2,
+        "hidden": false
+      }
+    },
+    // Start dotnet watch, then attach to the child "dotnet run" process for hot reload debugging.
+    // Pick the process whose command line contains BITDEVKIT_VSCODE_PROFILE=Presentation.Web.Server.Watch.
+    {
+      "name": "Presentation.Web.Server Watch + Attach (pick dotnet run child)",
+      "type": "coreclr",
+      "request": "attach",
+      "preLaunchTask": "dotnet - Server [Watch]",
+      "processId": "${command:pickProcess}",
+      "justMyCode": true,
+      "presentation": {
+        "group": "api",
+        "order": 3,
+        "hidden": false
+      }
+    },
+    // Start dotnet watch for hot reload only, without attaching the debugger.
+    {
+      "name": "Presentation.Web.Server Watch (hot reload only)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "dotnet watch --project \"${workspaceFolder}/src/Presentation.Web.Server/Presentation.Web.Server.csproj\" run -- --urls \"https://localhost:5001;http://localhost:5000\"",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "presentation": {
+        "group": "api",
+        "order": 4,
+        "hidden": false
+      }
+    },
+    // Attach to an already running API process started outside this launch configuration.
+    {
+      "name": "Presentation.Web.Server Attach (manual)",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:pickProcess}",
+      "justMyCode": true,
+      "presentation": {
+        "group": "api",
+        "order": 5,
+        "hidden": false
+      }
+    },
+    // Build and run the API container, then open http://localhost:8080/index.html.
+    {
+      "name": "Presentation.Web.Server Docker Run",
+      "type": "node-terminal",
+      "request": "launch",
+      "preLaunchTask": "docker - Server [Prepare Run]",
+      "command": "docker run --rm --name bit_devkit_gettingstarted-web-vscode --network bit_devkit_gettingstarted -p 8080:8080 --env-file \"${workspaceFolder}/.vscode/docker-api.env\" bit_devkit_gettingstarted-web:vscode",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+http://\\[::\\]:(8080)",
+        "uriFormat": "http://localhost:%s/index.html"
+      },
+      "presentation": {
+        "group": "api",
+        "order": 6,
+        "hidden": false
+      }
+    },
+    // Run the BenchmarkDotNet console project from an optimized Release build.
+    {
+      "name": "CoreModule.Benchmarks Run",
+      "type": "coreclr",
+      "request": "launch",
+      "noDebug": true,
+      "preLaunchTask": "dotnet - Benchmarks [CoreModule Build Release]",
+      "program": "${workspaceFolder}/tests/Modules/CoreModule/CoreModule.Benchmarks/bin/Release/net10.0/CoreModule.Benchmarks.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/tests/Modules/CoreModule/CoreModule.Benchmarks",
+      "console": "integratedTerminal",
+      "presentation": {
+        "group": "benchmarks",
+        "order": 1,
+        "hidden": false
+      }
+    }
+  ]
 }
