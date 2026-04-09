@@ -52,7 +52,7 @@ builder.Services.AddTimeProvider();
 
 // ===============================================================================================
 // Configure OpenAPI generation (openapi.json)
-builder.Services.AddAppOpenApi();
+builder.Services.AddAppOpenApi(builder.Configuration);
 
 // ===============================================================================================
 // Configure CORS
