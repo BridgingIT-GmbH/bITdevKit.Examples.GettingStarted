@@ -13,7 +13,7 @@
       "stopAtEntry": false,
       "justMyCode": true,
       "console": "internalConsole",
-      "envFile": "${workspaceFolder}/.vscode/api.env",
+      "envFile": "${workspaceFolder}/.vscode/launch.env",
       "serverReadyAction": {
         "action": "openExternally",
         "pattern": "\\bNow listening on:\\s+(https://localhost:5001\\S*)",
@@ -37,7 +37,7 @@
       "cwd": "${workspaceFolder}/src/Presentation.Web.Server",
       "justMyCode": true,
       "console": "internalConsole",
-      "envFile": "${workspaceFolder}/.vscode/api.env",
+      "envFile": "${workspaceFolder}/.vscode/launch.env",
       "serverReadyAction": {
         "action": "openExternally",
         "pattern": "\\bNow listening on:\\s+(https://localhost:5001\\S*)",
@@ -98,7 +98,7 @@
       "type": "node-terminal",
       "request": "launch",
       "preLaunchTask": "docker - Server [Prepare Run]",
-      "command": "docker run --rm --name bit_devkit_gettingstarted-web-vscode --network bit_devkit_gettingstarted -p 8080:8080 --env-file \"${workspaceFolder}/.vscode/docker-api.env\" bit_devkit_gettingstarted-web:vscode",
+      "command": "docker run --rm --name bit_devkit_gettingstarted-web-vscode --network bit_devkit_gettingstarted -p 8080:8080 --env-file \"${workspaceFolder}/.vscode/launch-docker.env\" bit_devkit_gettingstarted-web:vscode",
       "serverReadyAction": {
         "action": "openExternally",
         "pattern": "\\bNow listening on:\\s+http://\\[::\\]:(8080)",
