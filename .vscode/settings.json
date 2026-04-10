@@ -1,3 +1,35 @@
 {
-  "dotnet.defaultSolution": "bITdevKit.Examples.GettingStarted.slnx"
+  "dotnet.defaultSolution": "bITdevKit.Examples.GettingStarted.slnx",
+  "editor.formatOnSave": false,
+  "[csharp]": {
+    "editor.defaultFormatter": "ms-dotnettools.csharp",
+    "editor.formatOnSave": false
+  },
+  "files.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "**/BenchmarkDotNet.Artifacts": true,
+    "**/TestResults": true,
+    "**/logs": true
+  },
+  "search.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "**/BenchmarkDotNet.Artifacts": true,
+    "**/TestResults": true,
+    "**/logs": true
+  },
+  "files.watcherExclude": {
+    "**/bin/**": true,
+    "**/obj/**": true,
+    "**/BenchmarkDotNet.Artifacts/**": true,
+    "**/TestResults/**": true,
+    "**/logs/**": true
+  },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    "appsettings.json": "appsettings.*.json",
+    "*.csproj": "*.csproj.user,*.deps.json,*.runtimeconfig.json"
+  }
 }

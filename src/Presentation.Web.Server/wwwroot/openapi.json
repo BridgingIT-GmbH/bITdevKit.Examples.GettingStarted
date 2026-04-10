@@ -465,10 +465,11 @@
     "/api/_system/jobs": {
       "get": {
         "tags": [
-          "_system/jobs"
+          "_System.JobScheduling"
         ],
+        "summary": "Get all jobs",
         "description": "Retrieves a list of all scheduled jobs.",
-        "operationId": "GetJobs",
+        "operationId": "_System.JobScheduling.GetJobs",
         "responses": {
           "200": {
             "description": "OK",
@@ -499,10 +500,11 @@
     "/api/_system/jobs/{jobName}/{jobGroup}": {
       "get": {
         "tags": [
-          "_system/jobs"
+          "_System.JobScheduling"
         ],
+        "summary": "Get job details",
         "description": "Retrieves details for a specific job.",
-        "operationId": "GetJob",
+        "operationId": "_System.JobScheduling.GetJob",
         "parameters": [
           {
             "name": "jobName",
@@ -558,10 +560,11 @@
     "/api/_system/jobs/{jobName}/{jobGroup}/runs": {
       "get": {
         "tags": [
-          "_system/jobs"
+          "_System.JobScheduling"
         ],
+        "summary": "Get job run history",
         "description": "Retrieves execution history for a specific job with optional filters.",
-        "operationId": "GetJobRuns",
+        "operationId": "_System.JobScheduling.GetJobRuns",
         "parameters": [
           {
             "name": "jobName",
@@ -661,10 +664,11 @@
       },
       "delete": {
         "tags": [
-          "_system/jobs"
+          "_System.JobScheduling"
         ],
+        "summary": "Purge old job run history",
         "description": "Purges job run history older than a specified date.",
-        "operationId": "PurgeJobRuns",
+        "operationId": "_System.JobScheduling.PurgeJobRuns",
         "parameters": [
           {
             "name": "jobName",
@@ -719,10 +723,11 @@
     "/api/_system/jobs/{jobName}/{jobGroup}/stats": {
       "get": {
         "tags": [
-          "_system/jobs"
+          "_System.JobScheduling"
         ],
+        "summary": "Get job run statistics",
         "description": "Retrieves aggregated statistics for a job’s execution history.",
-        "operationId": "GetJobRunStats",
+        "operationId": "_System.JobScheduling.GetJobRunStats",
         "parameters": [
           {
             "name": "jobName",
@@ -784,10 +789,11 @@
     "/api/_system/jobs/{jobName}/{jobGroup}/triggers": {
       "get": {
         "tags": [
-          "_system/jobs"
+          "_System.JobScheduling"
         ],
+        "summary": "Get job triggers",
         "description": "Retrieves all triggers associated with a specific job.",
-        "operationId": "GetJobTriggers",
+        "operationId": "_System.JobScheduling.GetJobTriggers",
         "parameters": [
           {
             "name": "jobName",
@@ -836,10 +842,11 @@
     "/api/_system/jobs/{jobName}/{jobGroup}/trigger": {
       "post": {
         "tags": [
-          "_system/jobs"
+          "_System.JobScheduling"
         ],
+        "summary": "Trigger job immediately",
         "description": "Triggers a job to run immediately with optional data.",
-        "operationId": "TriggerJob",
+        "operationId": "_System.JobScheduling.TriggerJob",
         "parameters": [
           {
             "name": "jobName",
@@ -911,10 +918,11 @@
     "/api/_system/jobs/{jobName}/{jobGroup}/pause": {
       "post": {
         "tags": [
-          "_system/jobs"
+          "_System.JobScheduling"
         ],
+        "summary": "Pause a job",
         "description": "Pauses the execution of a specific job.",
-        "operationId": "PauseJob",
+        "operationId": "_System.JobScheduling.PauseJob",
         "parameters": [
           {
             "name": "jobName",
@@ -970,10 +978,11 @@
     "/api/_system/jobs/{jobName}/{jobGroup}/resume": {
       "post": {
         "tags": [
-          "_system/jobs"
+          "_System.JobScheduling"
         ],
+        "summary": "Resume a paused job",
         "description": "Resumes the execution of a paused job.",
-        "operationId": "ResumeJob",
+        "operationId": "_System.JobScheduling.ResumeJob",
         "parameters": [
           {
             "name": "jobName",
@@ -1029,10 +1038,11 @@
     "/api/_system/jobs/{jobName}/{jobGroup}/interrupt": {
       "post": {
         "tags": [
-          "_system/jobs"
+          "_System.JobScheduling"
         ],
+        "summary": "Interrupt a running job",
         "description": "Interrupts the execution of a currently running job.",
-        "operationId": "InterruptJob",
+        "operationId": "_System.JobScheduling.InterruptJob",
         "parameters": [
           {
             "name": "jobName",
@@ -1088,9 +1098,9 @@
     "/api/_system": {
       "get": {
         "tags": [
-          "_system"
+          "_System"
         ],
-        "operationId": "System.Get",
+        "operationId": "_System.Get",
         "responses": {
           "200": {
             "description": "OK",
@@ -1121,9 +1131,9 @@
     "/api/_system/echo": {
       "get": {
         "tags": [
-          "_system"
+          "_System"
         ],
-        "operationId": "System.GetEcho",
+        "operationId": "_System.GetEcho",
         "responses": {
           "200": {
             "description": "OK",
@@ -1151,9 +1161,9 @@
     "/api/_system/info": {
       "get": {
         "tags": [
-          "_system"
+          "_System"
         ],
-        "operationId": "System.GetInfo",
+        "operationId": "_System.GetInfo",
         "responses": {
           "200": {
             "description": "OK",
@@ -1181,9 +1191,9 @@
     "/api/_system/modules": {
       "get": {
         "tags": [
-          "_system"
+          "_System"
         ],
-        "operationId": "System.GetModules",
+        "operationId": "_System.GetModules",
         "responses": {
           "200": {
             "description": "OK",
@@ -1214,10 +1224,11 @@
     "/api/_system/identity/connect/.well-known/openid-configuration": {
       "get": {
         "tags": [
-          "_system/identity/connect"
+          "_System.IdentityProvider"
         ],
+        "summary": "OIDC Discovery Document",
         "description": "Returns the OpenID Connect discovery document.",
-        "operationId": "System.IdentityProvider.WellKnownConfiguration",
+        "operationId": "_System.IdentityProvider.WellKnownConfiguration",
         "responses": {
           "200": {
             "description": "OK",
@@ -1235,10 +1246,11 @@
     "/api/_system/identity/connect/authorize": {
       "get": {
         "tags": [
-          "_system/identity/connect"
+          "_System.IdentityProvider"
         ],
+        "summary": "Authorization",
         "description": "Shows the signin page for user selection.",
-        "operationId": "System.IdentityProvider.Authorize",
+        "operationId": "_System.IdentityProvider.Authorize",
         "parameters": [
           {
             "name": "response_type",
@@ -1303,10 +1315,11 @@
     "/api/_system/identity/connect/authorize/callback": {
       "get": {
         "tags": [
-          "_system/identity/connect"
+          "_System.IdentityProvider"
         ],
+        "summary": "Authorization Callback",
         "description": "Handles the user selection and generates authorization code.",
-        "operationId": "System.IdentityProvider.AuthorizeCallback",
+        "operationId": "_System.IdentityProvider.AuthorizeCallback",
         "parameters": [
           {
             "name": "email",
@@ -1378,10 +1391,11 @@
     "/api/_system/identity/connect/token": {
       "post": {
         "tags": [
-          "_system/identity/connect"
+          "_System.IdentityProvider"
         ],
+        "summary": "Token",
         "description": "Issues tokens for various grant types.",
-        "operationId": "System.IdentityProvider.Token",
+        "operationId": "_System.IdentityProvider.Token",
         "requestBody": {
           "content": {
             "application/x-www-form-urlencoded": {
@@ -1493,10 +1507,11 @@
     "/api/_system/identity/connect/userinfo": {
       "get": {
         "tags": [
-          "_system/identity/connect"
+          "_System.IdentityProvider"
         ],
+        "summary": "UserInfo",
         "description": "Returns information about the authenticated user.",
-        "operationId": "System.IdentityProvider.UserInfo",
+        "operationId": "_System.IdentityProvider.UserInfo",
         "responses": {
           "200": {
             "description": "OK",
@@ -1524,10 +1539,11 @@
     "/api/_system/identity/connect/logout": {
       "get": {
         "tags": [
-          "_system/identity/connect"
+          "_System.IdentityProvider"
         ],
+        "summary": "Logout",
         "description": "Handles user logout.",
-        "operationId": "System.IdentityProvider.Logout",
+        "operationId": "_System.IdentityProvider.Logout",
         "parameters": [
           {
             "name": "id_token_hint",
@@ -1564,10 +1580,11 @@
     "/api/_system/identity/connect/debuginfo": {
       "get": {
         "tags": [
-          "_system/identity/connect"
+          "_System.IdentityProvider"
         ],
+        "summary": "Debug Information",
         "description": "Returns debug information about the identity provider configuration.",
-        "operationId": "System.IdentityProvider.DebugInfo",
+        "operationId": "_System.IdentityProvider.DebugInfo",
         "responses": {
           "200": {
             "description": "OK",
@@ -2728,13 +2745,39 @@
       }
     },
     "securitySchemes": {
-      "Bearer": {
+      "OAuth2": {
         "type": "oauth2",
-        "description": "The JWT token in the format: Bearer {token}"
+        "description": "Authenticate using the OAuth2 authorization code flow.",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://localhost:5001/api/_system/identity/connect/authorize",
+            "tokenUrl": "https://localhost:5001/api/_system/identity/connect/token",
+            "scopes": {
+              "openid": "Request the openid scope.",
+              "profile": "Request the profile scope.",
+              "email": "Request the email scope.",
+              "roles": "Request the roles scope."
+            }
+          }
+        }
+      },
+      "Bearer": {
+        "type": "http",
+        "description": "The JWT token in the format: Bearer {token}",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     }
   },
   "security": [
+    {
+      "OAuth2": [
+        "openid",
+        "profile",
+        "email",
+        "roles"
+      ]
+    },
     {
       "Bearer": [ ]
     }
@@ -2744,13 +2787,13 @@
       "name": "CoreModule.Customers"
     },
     {
-      "name": "_system/jobs"
+      "name": "_System.JobScheduling"
     },
     {
-      "name": "_system"
+      "name": "_System"
     },
     {
-      "name": "_system/identity/connect"
+      "name": "_System.IdentityProvider"
     }
   ]
 }

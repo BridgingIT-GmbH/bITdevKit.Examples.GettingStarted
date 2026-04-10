@@ -5,8 +5,8 @@
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Options;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -74,9 +74,15 @@ public static class ProgramExtensions
     /// <summary>
     /// Configure OpenAPI generation (openapi.json).
     /// </summary>
-    public static IServiceCollection AddAppOpenApi(this IServiceCollection services)
+    public static IServiceCollection AddAppOpenApi(this IServiceCollection services, IConfiguration configuration)
     {
         // https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/aspnetcore-openapi
+        var securityOptions = new OpenApiSecurityOptions
+        {
+            Authority = configuration["Authentication:Authority"]
+        };
+        services.AddSingleton(Options.Create(securityOptions)); // used by OpenApiSecurityDocumentTransformer
+
         return services.AddOpenApi(o =>
         {
             o.AddDocumentTransformer<DiagnosticDocumentTransformer>()
@@ -87,7 +93,7 @@ public static class ProgramExtensions
                 }))
              .AddSchemaTransformer<DiagnosticSchemaTransformer>()
              .AddSchemaTransformer<ResultProblemDetailsSchemaTransformer>()
-             .AddDocumentTransformer<BearerSecurityRequirementDocumentTransformer>();
+             .AddDocumentTransformer<OpenApiSecurityDocumentTransformer>();
         });
     }
 
@@ -99,9 +105,10 @@ public static class ProgramExtensions
         // https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/health-checks
         services.AddHealthChecks()
             .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy()); // liveness
-            // .AddSqlServer(configuration.GetConnectionString("Default"),
-            // name: "sql", failureStatus: HealthStatus.Unhealthy, timeout: TimeSpan.FromSeconds(2))
-            // .AddRedis(configuration.GetConnectionString("Redis"), "redis")
+
+        // .AddSqlServer(configuration.GetConnectionString("Default"),
+        // name: "sql", failureStatus: HealthStatus.Unhealthy, timeout: TimeSpan.FromSeconds(2))
+        // .AddRedis(configuration.GetConnectionString("Redis"), "redis")
 
         return services;
     }
@@ -153,21 +160,40 @@ public static class ProgramExtensions
     /// </summary>
     public static WebApplication MapScalar(this WebApplication app)
     {
+        var securityOptions = app.Services.GetRequiredService<IOptions<OpenApiSecurityOptions>>().Value;
+
         app.MapScalarApiReference(o =>
         {
             o.OpenApiRoutePattern = "/openapi.json";
             o.WithTitle("Web API")
-             .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
-             .AddPreferredSecuritySchemes(JwtBearerDefaults.AuthenticationScheme)
-             .AddAuthorizationCodeFlow(JwtBearerDefaults.AuthenticationScheme, f =>
-             {
-                 var idpOptions = app.Services.GetService<FakeIdentityProviderEndpointsOptions>();
-                 var idpClient = idpOptions?.Clients?.FirstOrDefault(c => string.Equals(c.Name, "Scalar", StringComparison.OrdinalIgnoreCase));
-                 f.ClientId = idpClient?.ClientId;
-                 f.AuthorizationUrl = $"{idpOptions?.Issuer}/api/_system/identity/connect/authorize";
-                 f.TokenUrl = $"{idpOptions?.Issuer}/api/_system/identity/connect/token";
-                 f.RedirectUri = idpClient?.RedirectUris?.FirstOrDefault();
-             });
+             .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+
+            if (securityOptions.AddOAuth2Scheme)
+            {
+                o.AddPreferredSecuritySchemes(securityOptions.OAuth2SchemeName);
+            }
+            else if (securityOptions.AddBearerScheme)
+            {
+                o.AddPreferredSecuritySchemes(securityOptions.BearerSchemeName);
+            }
+
+            if (securityOptions.AddOAuth2Scheme &&
+                !string.IsNullOrWhiteSpace(securityOptions.AuthorizationUrl) &&
+                !string.IsNullOrWhiteSpace(securityOptions.TokenUrl))
+            {
+                o.AddOAuth2Authentication(
+                    securityOptions.OAuth2SchemeName,
+                    s => s.WithDefaultScopes(securityOptions.Scopes ?? []))
+                 .AddAuthorizationCodeFlow(securityOptions.OAuth2SchemeName, f =>
+                 {
+                     var idpOptions = app.Services.GetService<FakeIdentityProviderEndpointsOptions>();
+                     var idpClient = idpOptions?.Clients?.FirstOrDefault(c => string.Equals(c.Name, "Scalar", StringComparison.OrdinalIgnoreCase));
+                     f.ClientId = idpClient?.ClientId;
+                     f.AuthorizationUrl = securityOptions.AuthorizationUrl;
+                     f.TokenUrl = securityOptions.TokenUrl;
+                     f.RedirectUri = idpClient?.RedirectUris?.FirstOrDefault();
+                 });
+            }
         });
 
         return app;
