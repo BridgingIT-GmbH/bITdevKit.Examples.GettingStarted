@@ -8,6 +8,13 @@ using Spectre.Console;
 
 public static class MiscUtils
 {
+    private static readonly HashSet<string> ExcludedDocsDirectories = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "adr",
+        "assets",
+        "designs"
+    };
+
     public static async Task<ExecutionResult> GenerateDocsAsync(TaskContext ctx)
     {
         var startTime = DateTime.Now;
@@ -393,6 +400,7 @@ public static class MiscUtils
             // }
 
             Directory.CreateDirectory(docsDir);
+            RemoveExcludedDocsDirectories(docsDir);
 
             // Use GitHub API
             using var client = new System.Net.Http.HttpClient();
@@ -413,7 +421,7 @@ public static class MiscUtils
 
             Console.WriteLine($"Found {files.Count} items in docs folder");
 
-            await DownloadGitHubFilesAsync(files, docsDir, "https://raw.githubusercontent.com/BridgingIT-GmbH/bITdevKit/main/docs/");
+            await DownloadGitHubFilesAsync(files, docsDir);
 
             Console.WriteLine($"DevKit documentation downloaded to: {Markup.Escape(docsDir)}");
 
@@ -426,16 +434,25 @@ public static class MiscUtils
         }
     }
 
-    private static async Task DownloadGitHubFilesAsync(List<GitHubFile> files, string docsDir, string baseUrl)
+    private static async Task DownloadGitHubFilesAsync(List<GitHubFile> files, string docsDir, string relativeDocsPath = "")
     {
         foreach (var file in files)
         {
             if (file.type == "dir")
             {
+                if (ExcludedDocsDirectories.Contains(file.name))
+                {
+                    Console.WriteLine($"  Skipping excluded directory {file.name}/");
+                    continue;
+                }
+
                 var subdir = Path.Combine(docsDir, file.name);
                 Directory.CreateDirectory(subdir);
 
-                var subUrl = $"https://api.github.com/repos/BridgingIT-GmbH/bITdevKit/contents/docs/{file.name}?ref=main";
+                var subPath = string.IsNullOrWhiteSpace(relativeDocsPath)
+                    ? file.name
+                    : $"{relativeDocsPath}/{file.name}";
+                var subUrl = $"https://api.github.com/repos/BridgingIT-GmbH/bITdevKit/contents/docs/{subPath}?ref=main";
 
                 using var client = new System.Net.Http.HttpClient();
                 client.DefaultRequestHeaders.Add("User-Agent", "BDK-CLI");
@@ -450,13 +467,15 @@ public static class MiscUtils
                 if (subFiles != null && subFiles.Count > 0)
                 {
                     Console.WriteLine($"  Entering {file.name}/");
-                    await DownloadGitHubFilesAsync(subFiles, subdir, $"{baseUrl}{file.name}/");
+                    await DownloadGitHubFilesAsync(subFiles, subdir, subPath);
                 }
             }
             else
             {
                 var filePath = Path.Combine(docsDir, file.name);
-                var fileUrl = $"{baseUrl}{file.name}";
+                var fileUrl = string.IsNullOrWhiteSpace(file.download_url)
+                    ? $"https://raw.githubusercontent.com/BridgingIT-GmbH/bITdevKit/main/docs/{(string.IsNullOrWhiteSpace(relativeDocsPath) ? file.name : $"{relativeDocsPath}/{file.name}")}"
+                    : file.download_url;
 
                 Console.WriteLine($"  Downloading {file.name}...");
 
@@ -468,6 +487,30 @@ public static class MiscUtils
 
                 var content = await fileResponse.Content.ReadAsByteArrayAsync();
                 File.WriteAllBytes(filePath, content);
+            }
+        }
+    }
+
+    private static void RemoveExcludedDocsDirectories(string docsDir)
+    {
+        if (!Directory.Exists(docsDir))
+            return;
+
+        var excludedDirectories = Directory.GetDirectories(docsDir, "*", SearchOption.AllDirectories)
+            .Where(dir => ExcludedDocsDirectories.Contains(Path.GetFileName(dir)))
+            .OrderByDescending(dir => dir.Length)
+            .ToList();
+
+        foreach (var directory in excludedDirectories)
+        {
+            try
+            {
+                Directory.Delete(directory, true);
+                Console.WriteLine($"Removed excluded directory {directory}");
+            }
+            catch
+            {
+                // Ignore stale folders that cannot be deleted.
             }
         }
     }
