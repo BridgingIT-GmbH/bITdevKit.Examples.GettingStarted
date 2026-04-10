@@ -67,7 +67,7 @@ Create an ADR when making decisions about:
 # Copy the template below to a new file
 # Use 4-digit numbering: 0013, 0014, etc.
 # Use hyphen-separated naming
-cp docs/ADR/TEMPLATE.md docs/ADR/0013-your-decision-title.md
+cp docs/adr/TEMPLATE.md docs/adr/0013-your-decision-title.md
 ```
 
 ### Step 2: Fill in the Sections

@@ -1,6 +1,28 @@
-# AGENTS.md
+# AGENTS.md – Instructions for All AI Agents
 
-This document provides AI agents with concise, high-signal context about this repository to produce high-quality, maintainable code and helpful developer assistance. It complements `.github/copilot-instructions.md` with a broader perspective on architecture, patterns, workflows, and conventions. The project heavily uses the bITdevKit — refer to the official docs: [bITdevKit Documentation](https://github.com/BridgingIT-GmbH/bITdevKit/tree/main/docs).
+This document provides AI agents with concise, high-signal context about this repository to produce high-quality, maintainable code and helpful developer assistance. It complements `.github/copilot-instructions.md` with a broader perspective on architecture, patterns, workflows, and conventions.
+
+## bITdevKit Documentation Guidance (Important)
+
+This project consumes the **bITdevKit** exclusively via NuGet packages (BridgingIT.DevKit.*).
+All official bITdevKit documentation is available in the **`.bdk/docs/`** folder.
+
+**Primary knowledge source for bITdevKit**:
+
+- **`BDK_KNOWLEDGE_BASE.md`** (located in `.bdk/docs/`) is the master instruction file for all AI agents.
+- Always start any bITdevKit-related request by reading `.bdk/docs/BDK_KNOWLEDGE_BASE.md` first.
+- Then follow its routing instructions: **First read `.bdk/docs/INDEX.md`** and treat it **purely as a routing table**.
+- Use the index to determine which file in `.bdk/docs/` contains the relevant guidance.
+- Also consult the XML documentation from the bITdevKit NuGet packages.
+
+**Priority Order for bITdevKit topics**:
+
+1. `.bdk/docs/BDK_KNOWLEDGE_BASE.md`
+2. `.bdk/docs/INDEX.md` (pure routing table)
+3. Specific file in `.bdk/docs/` referenced by the index
+4. XML documentation embedded in the BDK assemblies
+
+The project heavily uses the bITdevKit — refer to the available docs located in `.bdk/docs/`.
 
 ## Project Overview
 
@@ -19,7 +41,7 @@ This document provides AI agents with concise, high-signal context about this re
 - Generate concise, idiomatic C# 10+ (.NET 10) code following DDD and clean architecture.
 - Respect layering boundaries and module isolation; avoid cross-layer leakage.
 - Prefer repository abstractions and specifications over direct DbContext access in Application code.
-- Use existing devkit features (requester, notifier, pipeline behaviors) instead of re-inventing infrastructure.
+- Use existing bITdevKit features (requester, notifier, pipeline behaviors) instead of re-inventing infrastructure.
 - Produce testable changes with unit/integration tests where meaningful.
 
 ## Agent Skills
@@ -145,7 +167,7 @@ test: add domain tests for task status transitions
 - Containers are supported via Docker. Compose files and scripts exist in the repo.
 - When adding cloud-related code (e.g., Azure), follow the Azure best practices guidance in `azure.instructions.md` (extension resource). Do not assume AKS/Terraform unless explicitly requested.
 - Publishing: use Server publish tasks (`Server [publish]`, `Server [publish release]`) when needed.
-- For DevKit patterns and module infrastructure, consult the DevKit docs: [bITdevKit Documentation](https://github.com/BridgingIT-GmbH/bITdevKit/tree/main/docs).
+- For bITdevKit patterns and module infrastructure, always consult the documentation in `.bdk/docs/`.
 
 ## Observability & Logging
 
@@ -167,47 +189,9 @@ test: add domain tests for task status transitions
 
 ## Architectural Decision Records (ADRs)
 
-The project maintains comprehensive ADRs documenting key architectural decisions. Reference these when working on related features:
+The project maintains comprehensive ADRs documenting key architectural decisions. Reference these when working on related features.
 
-**Core Architecture**:
-
-- [ADR-0001](./docs/ADR/0001-clean-onion-architecture.md): Clean/Onion Architecture with Strict Layer Boundaries
-- [ADR-0002](./docs/ADR/0002-result-pattern-error-handling.md): Result Pattern for Error Handling
-- [ADR-0003](./docs/ADR/0003-modular-monolith-architecture.md): Modular Monolith Architecture
-- [ADR-0004](./docs/ADR/0004-repository-decorator-behaviors.md): Repository Pattern with Decorator Behaviors
-- [ADR-0005](./docs/ADR/0005-requester-notifier-mediator-pattern.md): Requester/Notifier (Mediator) Pattern
-
-**Domain & Data**:
-
-- [ADR-0006](./docs/ADR/0006-outbox-pattern-domain-events.md): Outbox Pattern for Domain Events
-- [ADR-0007](./docs/ADR/0007-entity-framework-core-code-first-migrations.md): Entity Framework Core with Code-First Migrations
-- [ADR-0008](./docs/ADR/0008-typed-entity-ids-source-generators.md): Typed Entity IDs using Source Generators
-- [ADR-0012](./docs/ADR/0012-domain-logic-in-domain-layer.md): Domain Logic Encapsulation in Domain Layer
-- [ADR-0019](./docs/ADR/0019-specification-pattern-repository-queries.md): Specification Pattern for Repository Queries
-
-**Application Layer**:
-
-- [ADR-0009](./docs/ADR/0009-fluentvalidation-strategy.md): FluentValidation Strategy
-- [ADR-0010](./docs/ADR/0010-mapster-object-mapping.md): Mapster for Object Mapping
-- [ADR-0011](./docs/ADR/0011-application-logic-in-commands-queries.md): Application Logic in Commands & Queries
-
-**Presentation & API**:
-
-- [ADR-0014](./docs/ADR/0014-minimal-api-endpoints-dto-exposure.md): Minimal API Endpoints with DTO Exposure
-
-**Infrastructure & Operations**:
-
-- [ADR-0015](./docs/ADR/0015-background-jobs-quartz-scheduling.md): Background Jobs & Scheduling with Quartz.NET
-- [ADR-0016](./docs/ADR/0016-logging-observability-strategy.md): Logging & Observability Strategy (Serilog)
-- [ADR-0018](./docs/ADR/0018-dependency-injection-service-lifetimes.md): Dependency Injection & Service Lifetime Management
-- [ADR-0020](./docs/ADR/0020-jwt-bearer-authentication-authorization.md): JWT Bearer Authentication & Authorization Strategy
-
-**Testing**:
-
-- [ADR-0013](./docs/ADR/0013-unit-testing-high-coverage-strategy.md): Unit Testing Strategy with High Coverage Goals
-- [ADR-0017](./docs/ADR/0017-integration-testing-strategy.md): Integration Testing Strategy
-
-See [docs/ADR/README.md](./docs/ADR/README.md) for the complete list and ADR creation guidelines.
+See [docs/adr/INDEX.md](./docs/adr/INDEX.md) for the complete list and ADR creation guidelines.
 
 ## Internal APIs & Shared Code
 
@@ -253,35 +237,18 @@ Example prompt:
 / (root)
   ./github/copilot-instructions.md
   AGENTS.md
-  README.md
   ARCHITECTURE.md
-  .editorconfig
-  src/
-    Modules/CoreModule/
-      CoreModule.Domain/
-      CoreModule.Application/
-      CoreModule.Infrastructure/
-      CoreModule.Presentation/
-      CoreModule-README.md
-    Presentation.Web.Server/
-  tests/
-    UnitTests/
-    IntegrationTests/
-```
-
-## Quick Commands (PowerShell)
-
-Use workspace tasks when possible or dotnet tools; for ad-hoc commands:
-
-```powershell
-# Build
-./bdk-cli.ps1 build
-
-# Unit tests
-./bdk-cli.ps1 test-unit
-
-# Apply EF migrations
-./bdk-cli.ps1 ef-apply
+  CHANGELOG.md
+  BDK_KNOWLEDGE_BASE.md
+  README.md
+  docs/
+    adr/
+      INDEX.md
+    INDEX.md
+    ...
+  .bdk/docs/
+    INDEX.md
+    ...
 ```
 
 ## Alignment with `.github/copilot-instructions.md`

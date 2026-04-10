@@ -384,13 +384,13 @@ public static class MiscUtils
             var docsDir = Path.Combine(ctx.RootDir, ".bdk", "docs");
 
             // Clean existing docs folder FIRST
-            if (Directory.Exists(docsDir))
-            {
-                foreach (var file in Directory.GetFiles(docsDir, "*", SearchOption.AllDirectories))
-                    try { File.Delete(file); } catch { }
-                foreach (var dir in Directory.GetDirectories(docsDir, "*", SearchOption.AllDirectories))
-                    try { Directory.Delete(dir, true); } catch { }
-            }
+            // if (Directory.Exists(docsDir))
+            // {
+            //     foreach (var file in Directory.GetFiles(docsDir, "*", SearchOption.AllDirectories))
+            //         try { File.Delete(file); } catch { }
+            //     foreach (var dir in Directory.GetDirectories(docsDir, "*", SearchOption.AllDirectories))
+            //         try { Directory.Delete(dir, true); } catch { }
+            // }
 
             Directory.CreateDirectory(docsDir);
 
