@@ -75,7 +75,7 @@ public static class BdkDocumentationResources
         Title = "bITdevKit Documentation Index",
         UriTemplate = "bdk://docs/index",
         MimeType = "text/markdown")]
-    [Description("Returns the live bITdevKit documentation index from GitHub. Use this index as the routing table for other documentation lookups.")]
+    [Description("Returns the bITdevKit documentation index from GitHub. Use this index as the routing map for specific documentation lookups.")]
     public static async Task<string> GetIndex(IServiceProvider services, CancellationToken cancellationToken)
     {
         var documentation = services.GetRequiredService<BdkDocumentationService>();
@@ -92,7 +92,7 @@ public static class BdkDocumentationTools
         ReadOnly = true,
         Idempotent = true,
         UseStructuredContent = true)]
-    [Description("Routes a bITdevKit documentation query through the live GitHub INDEX.md file and returns the best matching documentation page.")]
+    [Description("Finds the best matching bITdevKit documentation.")]
     public static async Task<BdkDocumentationResponse> GetBdkDocs(
         [Description("The documentation topic or question to look up, for example 'presentation endpoints' or 'requester notifier'.")]
         string query,
@@ -109,7 +109,7 @@ public static class BdkDocumentationTools
         ReadOnly = true,
         Idempotent = true,
         UseStructuredContent = true)]
-    [Description("Combines live bdk docs routing with project-aware guidance, including suggested files based on module structure and topic.")]
+    [Description("Finds project-aware bITdevKit guidance, including suggested files based on module structure and topic.")]
     public static async Task<BdkRepositoryHelpResponse> GetBdkRepoHelp(
         [Description("The development task or topic, for example 'add a module', 'requester behavior', or 'presentation endpoints'.")]
         string query,
