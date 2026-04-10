@@ -2,27 +2,34 @@
 
 This document provides AI agents with concise, high-signal context about this repository to produce high-quality, maintainable code and helpful developer assistance. It complements `.github/copilot-instructions.md` with a broader perspective on architecture, patterns, workflows, and conventions.
 
-## bITdevKit Documentation Guidance (Important)
+### bITdevKit Documentation Guidance (Critical)
 
-This project consumes the **bITdevKit** exclusively via NuGet packages (BridgingIT.DevKit.*).
-All official bITdevKit documentation is available in the **`.bdk/docs/`** folder.
+This project consumes the **bITdevKit** exclusively via NuGet packages (`BridgingIT.DevKit.*`).
 
-**Primary knowledge source for bITdevKit**:
+**All official bITdevKit documentation is located in `.bdk/docs/`**.
 
-- **`BDK_KNOWLEDGE_BASE.md`** (located in `.bdk/docs/`) is the master instruction file for all AI agents.
-- Always start any bITdevKit-related request by reading `.bdk/docs/BDK_KNOWLEDGE_BASE.md` first.
-- Then follow its routing instructions: **First read `.bdk/docs/INDEX.md`** and treat it **purely as a routing table**.
-- Use the index to determine which file in `.bdk/docs/` contains the relevant guidance.
-- Also consult the XML documentation from the bITdevKit NuGet packages.
+**Core Rule**:
+Always base your answers about bITdevKit on the documentation in `.bdk/docs/`. Never guess, invent, or extrapolate bITdevKit behavior.
+
+**Routing Strategy (Mandatory)**:
+
+For any request involving the bITdevKit:
+
+1. **First read `.bdk/docs/INDEX.md`**.
+2. Treat `.bdk/docs/INDEX.md` **exclusively as a routing table / feature map**.
+3. Use it to identify the exact documentation file that contains the relevant information.
+4. Read that specific file from the `.bdk/docs/` folder.
+5. Also consult the XML documentation on the public classes, interfaces, extension methods, and behaviors from the installed bITdevKit NuGet packages.
 
 **Priority Order for bITdevKit topics**:
 
-1. `.bdk/docs/BDK_KNOWLEDGE_BASE.md`
-2. `.bdk/docs/INDEX.md` (pure routing table)
-3. Specific file in `.bdk/docs/` referenced by the index
-4. XML documentation embedded in the BDK assemblies
+1. `.bdk/docs/INDEX.md` (pure routing table – read first on bITdevKit requests)
+2. The specific file in `.bdk/docs/` referenced by the index
+3. XML documentation embedded in the bITdevKit assemblies
 
-The project heavily uses the bITdevKit — refer to the available docs located in `.bdk/docs/`.
+The project heavily uses the bITdevKit — always consult the documentation in `.bdk/docs/` first.
+
+---
 
 ## Project Overview
 
