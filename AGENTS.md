@@ -4,16 +4,16 @@ This document provides AI agents with concise, high-signal context about this re
 
 ### bITdevKit Documentation Guidance (Critical)
 
-This project consumes the **bITdevKit** exclusively via NuGet packages (`BridgingIT.DevKit.*`).
+This project consumes the **bITdevKit** (BDK) exclusively via NuGet packages (`BridgingIT.DevKit.*`).
 
-**All official bITdevKit documentation is located in `.bdk/docs/`**.
+**All official bITdevKit (BDK) documentation is located in `.bdk/docs/`**.
 
 **Core Rule**:
 Always base your answers about bITdevKit on the documentation in `.bdk/docs/`. Never guess, invent, or extrapolate bITdevKit behavior.
 
 **Routing Strategy (Mandatory)**:
 
-For any request involving the bITdevKit:
+For any request involving the bITdevKit (BDK), follow this process:
 
 1. **First read `.bdk/docs/INDEX.md`**.
 2. Treat `.bdk/docs/INDEX.md` **exclusively as a routing table / feature map**.
