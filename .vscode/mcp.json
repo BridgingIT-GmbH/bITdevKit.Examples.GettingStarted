@@ -2,15 +2,9 @@
   "servers": {
     "bdk-mcp": {
       "type": "stdio",
-      "command": "dotnet",
+      "command": "dotnet-script",
       "cwd": "${workspaceFolder}",
-      "args": [
-        "tool",
-        "run",
-        "dotnet-script",
-        "--",
-        ".bdk/mcp/bdk-mcp.csx"
-      ]
+      "args": [".bdk/mcp/bdk-mcp.csx"]
     }
   }
 }
