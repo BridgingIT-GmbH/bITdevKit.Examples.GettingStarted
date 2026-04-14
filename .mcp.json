@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "bdk-mcp": {
+      "type": "stdio",
+      "command": "dotnet-script",
+      "args": [
+        ".bdk/mcp/bdk-mcp.csx"
+      ]
+    }
+  }
+}
