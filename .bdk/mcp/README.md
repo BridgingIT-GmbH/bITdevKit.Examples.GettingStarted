@@ -11,6 +11,62 @@ The live `INDEX.md` file is treated as the routing table. The server uses it to 
 
 This MCP is optimized for prompts that use `bdk` as shorthand as well as `bITdevKit`.
 
+## Documentation Routing Concept
+
+The MCP treats the bITdevKit `INDEX.md` as the authoritative routing table. Instead of guessing which markdown file might contain the answer, it resolves the topic through the index first and then loads the matching page.
+
+```mermaid
+flowchart TD
+    U[Agent] --> Q{What is needed?}
+    Q -->|Docs lookup| D[get_bdk_docs]
+    Q -->|Open routing table| R[bdk://docs/index]
+    Q -->|Repo-aware guidance| P[get_bdk_proj]
+
+    D --> I[Fetch GitHub INDEX.md]
+    R --> I
+    P --> I
+
+    I --> M[Match topic with INDEX entries<br/>plus bdk synonyms]
+    M --> S[Select best documentation page]
+    S --> G[Fetch matching docs/*.md from GitHub]
+    G --> C[Cache response<br/>fallback to stale cache on fetch failure]
+    C --> A[Return ranked matches<br/>summary, confidence, route reason]
+
+    P --> H[Scan local repo structure]
+    H --> F[Suggest relevant module files]
+    F --> A
+```
+
+The flow above shows the routing concept. This sequence view shows the actual runtime interaction between the caller, the MCP server, GitHub-hosted documentation, and the local repository.
+
+```mermaid
+sequenceDiagram
+    actor U as Copilot Agent
+    participant M as bdk-mcp
+    participant I as GitHub INDEX.md
+    participant D as GitHub docs/*.md
+    participant R as Local Repository
+
+    U->>M: get_bdk_docs("presentation endpoints")
+    M->>I: Fetch live INDEX.md
+    I-->>M: Routing table
+    M->>M: Rank matches with synonyms
+    M->>D: Fetch best matching page
+    alt Live fetch succeeds
+        D-->>M: Markdown document
+    else Live fetch fails
+        M->>M: Reuse stale cache if available
+    end
+    M-->>U: Ranked matches, summary, confidence
+
+    U->>M: get_bdk_proj("presentation endpoints")
+    M->>I: Fetch live INDEX.md
+    I-->>M: Routing table
+    M->>R: Scan module structure
+    R-->>M: Suggested files
+    M-->>U: Docs answer plus repo file hints
+```
+
 ## What It Does
 
 - Exposes the MCP resource `bdk://docs/index`
