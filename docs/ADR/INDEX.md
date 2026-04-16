@@ -40,6 +40,7 @@ We use the **MADR (Markdown Architectural Decision Records)** format for consist
 | [ADR-0018](0018-dependency-injection-service-lifetimes.md) | Dependency Injection & Service Lifetime Management | Accepted |
 | [ADR-0019](0019-specification-pattern-repository-queries.md) | Specification Pattern for Repository Queries | Accepted |
 | [ADR-0020](0020-jwt-bearer-authentication-authorization.md) | JWT Bearer Authentication & Authorization Strategy | Accepted |
+| [ADR-0021](0021-bitdevkit-as-the-application-foundation.md) | bITdevKit as the Application Foundation | Accepted |
 
 ## When to Write an ADR
 
