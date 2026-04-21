@@ -91,9 +91,14 @@ public class CustomerEndpoints : EndpointsBase
             async ([FromServices] IRequester requester,
                    [FromRoute] string id,
                    [FromBody] CustomerModel model, CancellationToken ct)
-                   => (await requester
-                    .SendAsync(new CustomerUpdateCommand(model), cancellationToken: ct))
-                    .MapHttpOk())
+                   =>
+                   {
+                       return id == model.Id
+                           ? (await requester
+                                .SendAsync(new CustomerUpdateCommand(model), cancellationToken: ct))
+                                .MapHttpOk()
+                           : Results.BadRequest("The ID in the route must match the ID in the request model.");
+                   })
             .WithName("CoreModule.Customers.Update")
             .WithSummary("Update an existing customer")
             .WithDescription("Updates all details of an existing customer. Requires the customer ID in both the route and the request body. The concurrencyVersion must match to prevent conflicting updates (optimistic concurrency). Returns 409 Conflict if the version doesn't match.")
