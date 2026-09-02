@@ -3,12 +3,11 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-using BridgingIT.DevKit.Application.JobScheduling;
 using Hellang.Middleware.ProblemDetails;
 
 // ===============================================================================================
 // Configure the host
-var builder = WebApplication.CreateBuilder(args);
+var builder = DevKitWebApplication.CreateBuilder(args);
 builder.Host.ConfigureLogging();
 builder.Services.AddConsoleCommandsInteractive();
 
@@ -23,15 +22,6 @@ builder.Services.AddRequester()
     .AddHandlers().WithDefaultBehaviors();
 builder.Services.AddNotifier()
     .AddHandlers().WithDefaultBehaviors();
-
-// ===============================================================================================
-// Configure the job scheduling service. https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-jobscheduling.md
-builder.Services.AddJobScheduling(o => o
-    .StartupDelay(builder.Configuration["JobScheduling:StartupDelay"]), builder.Configuration) // wait some time before starting the scheduler
-    .WithSqlServerStore(builder.Configuration["JobScheduling:Quartz:quartz.dataSource.default.connectionString"])
-    .WithBehavior<ModuleScopeJobSchedulingBehavior>()
-    .AddEndpoints()
-    .AddConsoleCommands();
 
 // ===============================================================================================
 // Configure the mapping service.
@@ -70,7 +60,7 @@ builder.Services.AddHealthChecks(builder.Configuration);
 
 // ===============================================================================================
 // Configure Observability
-builder.Services.AddOpenTelemetry(builder);
+builder.Services.AddOpenTelemetry(builder.WebApplicationBuilder);
 
 // ===============================================================================================
 // Configure the HTTP request pipeline

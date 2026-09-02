@@ -5,6 +5,7 @@
 
 namespace Microsoft.Extensions.DependencyInjection;
 
+using BridgingIT.DevKit.Application.Jobs;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation.Web;
 using Microsoft.AspNetCore.Builder;
@@ -37,12 +38,23 @@ public class CoreModuleModule() : WebModuleBase("CoreModule")
             .WithTask<CoreModuleDomainSeederTask>(o => o
                 .Enabled(environment.IsLocalDevelopment() || environment.IsContainerized()));
 
-        // job scheduling setup
-        services.AddJobScheduling(o => o
-           .StartupDelay(configuration["JobScheduling:StartupDelay"]), configuration) // wait some time before starting the scheduler
-           .WithJob<CustomerExportJob>()
-               .Cron(CronExpressions.EveryMinute)
-               .Named($"{this.Name}_{nameof(CustomerExportJob)}").RegisterScoped();
+        // jobs setup
+        services.AddJobScheduler(configuration)
+            .StartupDelay(TimeSpan.FromSeconds(30))
+            .WithJob<CustomerExportJob>(CustomerExportJob.JobName, job => job
+                .Description("Exports all customers from the repository.")
+                .Module(this.Name)
+                .UseLifetime(ServiceLifetime.Scoped)
+                .WithConcurrency(1)
+                .WithRetry(retry => retry
+                    .MaxAttempts(3)
+                    .FixedDelay(TimeSpan.FromSeconds(1)))
+                .AddTrigger(CustomerExportJob.TriggerName, trigger => trigger
+                    .Cron(CronExpressions.EveryMinute)))
+            .WithEntityFramework<CoreModuleDbContext>()
+            .WithBehavior<ModuleScopeBehavior>()
+            .AddEndpoints()
+            .AddConsoleCommands();
 
         // // entity framework setup
         services.AddSqlServerDbContext<CoreModuleDbContext>(o => o

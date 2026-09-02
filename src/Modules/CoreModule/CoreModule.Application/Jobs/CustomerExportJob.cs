@@ -5,51 +5,49 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 
-using BridgingIT.DevKit.Application.JobScheduling;
+using BridgingIT.DevKit.Application.Jobs;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
-using Microsoft.Extensions.DependencyInjection;
-using Quartz;
 
 /// <summary>
 /// Job that exports all customers from the repository.
 /// <para>
-/// This job demonstrates background processing using Quartz.NET and bITdevKit's job scheduling infrastructure.
+/// This job demonstrates background processing using bITdevKit's Jobs infrastructure.
 /// It retrieves all customers from the repository and logs each export operation. Intended as a template for
 /// implementing real export logic to external systems or files. Configured with retry/backoff for transient failures.
 /// </para>
 /// </summary>
-[DisallowConcurrentExecution]
 public class CustomerExportJob(
-    ILoggerFactory loggerFactory,
-    IServiceScopeFactory scopeFactory) : JobBase(loggerFactory), IRetryJobScheduling
+    ILogger<CustomerExportJob> logger,
+    IGenericRepository<Customer> repository) : JobBase
 {
-    RetryJobSchedulingOptions IRetryJobScheduling.Options => new()
-    {
-        Attempts = 3,
-        Backoff = TimeSpan.FromSeconds(1)
-    };
+    public const string JobName = "CoreModule_CustomerExportJob";
 
-    public override async Task Process(
-        IJobExecutionContext context,
+    public const string TriggerName = "cron";
+
+    public override async Task<Result> ExecuteAsync(
+        IJobExecutionContext<Unit> context,
         CancellationToken cancellationToken = default)
     {
-        using var scope = scopeFactory.CreateScope();
-        var repository = scope.ServiceProvider.GetRequiredService<IGenericRepository<Customer>>();
-
-        this.Logger.LogInformation("{JobName}: Starting customer export operation", nameof(CustomerExportJob));
+        logger.LogInformation("{JobName}: Starting customer export operation", JobName);
 
         var customersResult = await repository.FindAllResultAsync(cancellationToken: cancellationToken);
         if (customersResult.IsFailure)
         {
-            this.Logger.LogError("{JobName}: Failed to retrieve customers for export: {CustomerResult}", nameof(CustomerExportJob), customersResult.ToString());
+            logger.LogError("{JobName}: Failed to retrieve customers for export: {CustomerResult}", JobName, customersResult.ToString());
 
-            return;
+            return Result.Failure(customersResult.Messages, customersResult.Errors);
         }
 
-        foreach (var customer in customersResult.Value)
+        var customers = customersResult.Value.ToList();
+        foreach (var customer in customers)
         {
-            this.Logger.LogInformation("{JobName}: Exporting customer (id={CustomerID}, email={CustomerEmail})", nameof(CustomerExportJob), customer.Id, customer.Email);
+            logger.LogInformation("{JobName}: Exporting customer (id={CustomerId})", JobName, customer.Id);
             // Here you would add the logic to export the customer data to an external system or file
         }
+
+        var message = $"Customer export completed. Customers={customers.Count}";
+        context.Messages.Add(message);
+
+        return Result.Success(message);
     }
 }

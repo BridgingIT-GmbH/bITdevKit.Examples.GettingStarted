@@ -8,6 +8,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Integrati
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Domain.Model;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
+using BridgingIT.DevKit.Infrastructure.EntityFramework.Jobs;
 using Microsoft.EntityFrameworkCore;
 
 [IntegrationTest("Infrastructure.EntityFramework")]
@@ -75,5 +76,41 @@ public class CoreModuleDbContextTests
         // Assert
         sequence.ShouldNotBeNull();
         sequence.StartValue.ShouldBe(100000);
+    }
+
+    /// <summary>
+    /// Validates that the durable Jobs entities required by <see cref="IJobsContext"/> are part of the EF model.
+    /// </summary>
+    [Fact]
+    public void Jobs_Model_MapsRequiredEntities()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<CoreModuleDbContext>()
+            .UseSqlServer("Server=localhost;Database=jobs_model_test;Trusted_Connection=True;TrustServerCertificate=True")
+            .Options;
+        using var ctx = new CoreModuleDbContext(options);
+        var entityTypes = new[]
+        {
+            typeof(JobAcceptedEventEntity),
+            typeof(JobBatchEntity),
+            typeof(JobBatchHistoryEntity),
+            typeof(JobBatchOccurrenceEntity),
+            typeof(JobExecutionEntity),
+            typeof(JobExecutionHistoryEntity),
+            typeof(JobLeaseEntity),
+            typeof(JobOccurrenceDependencyEntity),
+            typeof(JobOccurrenceEntity),
+            typeof(JobRuntimeStateEntity),
+            typeof(JobTriggerRuntimeStateEntity)
+        };
+
+        // Act and assert
+        foreach (var entityType in entityTypes)
+        {
+            var mappedEntity = ctx.Model.FindEntityType(entityType);
+            mappedEntity.ShouldNotBeNull();
+            mappedEntity.GetSchema().ShouldBe("core");
+            mappedEntity.GetTableName().ShouldStartWith("__Jobs_");
+        }
     }
 }

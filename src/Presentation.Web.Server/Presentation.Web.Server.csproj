@@ -28,7 +28,6 @@
   <ItemGroup>
     <PackageReference Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" />
     <PackageReference Include="BridgingIT.DevKit.Presentation.Web" />
-    <PackageReference Include="BridgingIT.DevKit.Presentation.Web.JobScheduling" />
     <PackageReference Include="BridgingIT.DevKit.Presentation.Serilog" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
@@ -54,7 +53,6 @@
     <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="Serilog.Sinks.File" />
     <PackageReference Include="Serilog.Sinks.Seq" />
-    <PackageReference Include="Quartz.Serialization.Json" />
   </ItemGroup>
 
   <ItemGroup>

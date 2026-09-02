@@ -24,7 +24,7 @@ public class CustomerEndpointTests
         this.fixture.Attach(output);
         this.fixture.Options(new()
         {
-            TokenEndpoint = "/api/_system/identity/connect/token",
+            TokenEndpoint = "/_bdk/api/identity/connect/token",
             ClientId = "test-client",
             Username = "clever.dragon@example.com",
             Password = "fantasy",

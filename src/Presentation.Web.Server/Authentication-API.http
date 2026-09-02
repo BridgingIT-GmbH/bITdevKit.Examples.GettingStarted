@@ -5,11 +5,11 @@
 ## https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-identityprovider.md  ##
 ## ----------------------------------------------------------------------------------------- ##
 ## Endpoints covered:                                                                        ##
-##  GET    /api/_system/identity/connect/.well-known/openid-configuration (Discovery)        ##
-##  POST   /api/_system/identity/connect/token            (Token endpoint - ROPC)            ##
-##  GET    /api/_system/identity/connect/userinfo         (User info)                        ##
-##  POST   /api/_system/identity/token                    (Refresh token)                    ##
-##  GET    /api/_system/identity/authorize                (Authorization code flow)          ##
+##  GET    /_bdk/api/identity/connect/.well-known/openid-configuration (Discovery)           ##
+##  POST   /_bdk/api/identity/connect/token            (Token endpoint - ROPC)               ##
+##  GET    /_bdk/api/identity/connect/userinfo         (User info)                           ##
+##  POST   /_bdk/api/identity/connect/token            (Refresh token)                       ##
+##  GET    /_bdk/api/identity/connect/authorize        (Authorization code flow)             ##
 ##                                                                                           ##
 ## Variables: (see http-client.env.json)                                                     ##
 ##  -client_id          The OAuth client identifier                                          ##
@@ -24,13 +24,13 @@
 
 #############################################
 ### 1. Discovery Endpoint - OpenID Configuration
-GET {{baseUrl}}/api/_system/identity/connect/.well-known/openid-configuration
+GET {{baseUrl}}/_bdk/api/identity/connect/.well-known/openid-configuration
 Content-Type: application/json
 
 #############################################
 ### 2. Resource Owner Password Flow
 # @name login
-POST {{baseUrl}}/api/_system/identity/connect/token
+POST {{baseUrl}}/_bdk/api/identity/connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=password
@@ -41,14 +41,14 @@ grant_type=password
 
 #############################################
 ### 3. Get User Info using Access Token
-GET {{baseUrl}}/api/_system/identity/connect/userinfo
+GET {{baseUrl}}/_bdk/api/identity/connect/userinfo
 Authorization: Bearer {{login.response.body.$.access_token}}
 Content-Type: application/json
 
 #############################################
 ### 4. Refresh Access Token
 # @name refresh
-POST {{baseUrl}}/api/_system/identity/connect/token
+POST {{baseUrl}}/_bdk/api/identity/connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=refresh_token
@@ -59,8 +59,8 @@ grant_type=refresh_token
 ### 5. Authorization Code Flow
 ### 5.1 Get Authorization Code (Browser Required)
 ### Copy this URL to browser:
-### https://localhost:5001/api/_system/identity/connect/authorize?response_type=code&client_id=blazor-wasm&scope=openid%20profile%20email%20roles&redirect_uri=https%3A%2F%2Flocalhost%3A5001%2Fauthentication%2Flogin-callback&state=random123
-GET {{baseUrl}}/api/_system/identity/connect/authorize
+### https://localhost:5001/_bdk/api/identity/connect/authorize?response_type=code&client_id=blazor-wasm&scope=openid%20profile%20email%20roles&redirect_uri=https%3A%2F%2Flocalhost%3A5001%2Fauthentication%2Flogin-callback&state=random123
+GET {{baseUrl}}/_bdk/api/identity/connect/authorize
     ?response_type=code
     &client_id={{auth_client_id}}
     &scope=openid profile email roles
@@ -68,7 +68,7 @@ GET {{baseUrl}}/api/_system/identity/connect/authorize
     &state=random123
 
 ### 5.2 Exchange Code for Token
-POST {{baseUrl}}/api/_system/identity/connect/token
+POST {{baseUrl}}/_bdk/api/identity/connect/token
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=authorization_code

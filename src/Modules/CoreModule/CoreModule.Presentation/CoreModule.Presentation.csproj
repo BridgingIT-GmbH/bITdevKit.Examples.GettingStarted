@@ -15,6 +15,7 @@
     <PackageReference Include="BridgingIT.DevKit.Common.Mapping" />
     <PackageReference Include="BridgingIT.DevKit.Presentation.Web" />
     <PackageReference Include="BridgingIT.DevKit.Presentation.Serilog" />
+    <PackageReference Include="BridgingIT.DevKit.Presentation.Web.Jobs" />
   </ItemGroup>
 
   <ItemGroup>

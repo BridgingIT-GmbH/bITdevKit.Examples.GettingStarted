@@ -10,7 +10,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Integrati
 /// </summary>
 public class EndpointTestFixtureOptions
 {
-    public string TokenEndpoint { get; set; } = "/api/_system/identity/connect/token";
+    public string TokenEndpoint { get; set; } = "/_bdk/api/identity/connect/token";
 
     public string ClientId { get; set; } = "test-client";
 
