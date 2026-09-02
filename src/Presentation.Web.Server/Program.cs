@@ -6,15 +6,14 @@
 using Hellang.Middleware.ProblemDetails;
 
 // ===============================================================================================
-// Configure the host
-var builder = DevKitWebApplication.CreateBuilder(args);
-builder.Host.ConfigureLogging();
-builder.Services.AddConsoleCommandsInteractive();
-
-// ===============================================================================================
-// Configure the modules. https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-modules.md
-builder.Services.AddModules(builder.Configuration, builder.Environment)
-    .WithModule<CoreModuleModule>();
+// Create the app host
+var builder = DevKitWebApplication.CreateBuilder(args)
+    .AddConfiguration()
+    .AddLogging()
+    .AddModules(modules => modules
+        .WithModule(new CoreModuleModule()))
+        //WithModule<CoreModuleModule>())
+    .AddMcp();
 
 // ===============================================================================================
 // Configure the requester and notifier services. https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-requester-notifier.md
@@ -53,14 +52,20 @@ builder.Services.AddCors(builder.Configuration);
 builder.Services.AddScoped<ICurrentUserAccessor, HttpCurrentUserAccessor>();
 builder.Services.AddJwtBearerAuthentication(builder.Configuration); //.AddCookieAuthentication(); // optional cookie authentication for web applications
 builder.Services.AddAppIdentityProvider(builder.Environment.IsLocalDevelopment() || builder.Environment.IsContainerized(), builder.Configuration);
+builder.Services.AddAppDashboard(builder.Environment.IsLocalDevelopment() || builder.Environment.IsContainerized(), builder.Configuration);
 
 // ===============================================================================================
 // Configure Health Checks
 builder.Services.AddHealthChecks(builder.Configuration);
 
 // ===============================================================================================
-// Configure Observability
-builder.Services.AddOpenTelemetry(builder.WebApplicationBuilder);
+// Configure Metrics and Observability
+builder.Services.AddMetrics(options => options
+    .Enabled()
+    .AddEndpoints());
+builder.Services.AddAppOpenTelemetry(builder.Configuration, builder.Environment);
+
+builder.Services.AddConsoleCommandsInteractive();
 
 // ===============================================================================================
 // Configure the HTTP request pipeline
@@ -82,6 +87,7 @@ app.UseStaticFiles();
 app.UseRequestCorrelation();
 app.UseRequestModuleContext();
 app.UseRequestLogging();
+app.UseRequestMetrics();
 
 app.UseCors(builder.Configuration);
 app.UseProblemDetails();

@@ -33,6 +33,7 @@ public static class ProgramExtensions
     public static RequesterBuilder WithDefaultBehaviors(this RequesterBuilder builder)
     {
         return builder // https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-requester-notifier.md#part-3-pipeline-behaviors
+            .WithBehavior(typeof(MetricsRequestBehavior<,>))
             .WithBehavior(typeof(TracingBehavior<,>))
             .WithBehavior(typeof(ModuleScopeBehavior<,>))
             .WithBehavior(typeof(ValidationPipelineBehavior<,>))
@@ -46,6 +47,8 @@ public static class ProgramExtensions
     public static NotifierBuilder WithDefaultBehaviors(this NotifierBuilder builder)
     {
         return builder // https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-requester-notifier.md#part-3-pipeline-behaviors
+            .WithBehavior(typeof(MetricsNotificationBehavior<,>))
+            .WithBehavior(typeof(MetricsNotificationHandlerBehavior<,>))
             .WithBehavior(typeof(TracingBehavior<,>))
             .WithBehavior(typeof(ModuleScopeBehavior<,>))
             .WithBehavior(typeof(ValidationPipelineBehavior<,>))
@@ -68,7 +71,27 @@ public static class ProgramExtensions
             //    "blazor-wasm",
             //    $"{builder.Configuration["Authentication:Authority"]}/authentication/login-callback", $"{builder.Configuration["Authentication:Authority"]}/authentication/logout-callback")
             .WithClient("test", "test-client")
-            .WithClient("Scalar", "scalar", $"{configuration["Authentication:Authority"]}/scalar/")); // trailing slash is needed for login popup to close!?
+            .WithClient("Scalar", "scalar", $"{configuration["Authentication:Authority"]}/scalar/") // trailing slash is needed for login popup to close!?
+            .WithClient(
+                "bdk dashboard",
+                "dashboard",
+                $"{configuration["Authentication:Authority"]}/_bdk/dashboard/signin-oidc"));
+    }
+
+    /// <summary>
+    /// Configure the DevKit dashboard shell and the Jobs dashboard pages.
+    /// </summary>
+    public static IServiceCollection AddAppDashboard(this IServiceCollection services, bool enabled, IConfiguration configuration)
+    {
+        var authority = configuration["Authentication:Authority"]?.TrimEnd('/');
+
+        return services.AddDashboard(options => options
+            .Enabled(enabled)
+            .Authorize(authorization => authorization
+                .UseOpenIdConnect(authority, openIdConnect => openIdConnect
+                    .WithMetadataAddress($"{authority}/_bdk/api/identity/connect/.well-known/openid-configuration"))
+                .RequireRole(Role.Administrators))
+            .WithPluginAssemblyContaining<BridgingIT.DevKit.Presentation.Web.Jobs.Dashboard.DashboardEndpoints>());
     }
 
     /// <summary>
@@ -116,21 +139,28 @@ public static class ProgramExtensions
     /// <summary>
     /// Configure OpenTelemetry metrics, tracing, and OTLP exporter.
     /// </summary>
-    public static IServiceCollection AddOpenTelemetry(this IServiceCollection services, WebApplicationBuilder builder)
+    public static IServiceCollection AddAppOpenTelemetry(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IHostEnvironment environment)
     {
         // https://learn.microsoft.com/en-us/dotnet/core/diagnostics/observability-with-otel
-        builder.Services.AddOpenTelemetry()
-            .ConfigureResource(r => r.AddService(builder.Configuration["OpenTelemetry:ServiceName"]))
+        services.AddOpenTelemetry()
+            .ConfigureResource(r => r.AddService(configuration["OpenTelemetry:ServiceName"]))
             .WithMetrics(metrics =>
             {
-                metrics.AddAspNetCoreInstrumentation();
-                metrics.AddMeter("Microsoft.AspNetCore.Hosting");
-                metrics.AddMeter("Microsoft.AspNetCore.Server.Kestrel");
-                // TODO: allow for extra meters via configuration
+                metrics.AddRuntimeInstrumentation()
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddMeter(
+                        Metrics.MeterName,
+                        "Microsoft.AspNetCore.Hosting",
+                        "Microsoft.AspNetCore.Server.Kestrel",
+                        "System.Net.Http");
             })
             .WithTracing(tracing =>
             {
-                if (builder.Environment.IsLocalDevelopment()) // TODO: make configurable via configuration also the samplers
+                if (environment.IsLocalDevelopment()) // TODO: make configurable via configuration also the samplers
                 {
                     tracing.SetSampler(new AlwaysOnSampler());
                 }
@@ -140,7 +170,7 @@ public static class ProgramExtensions
                 tracing.AddSqlClientInstrumentation();
                 //tracing.AddConsoleExporter(); // TODO: enable via configuration
 
-                var otlpEndpoint = builder.Configuration["OpenTelemetry:ExporterEndpoint"];
+                var otlpEndpoint = configuration["OpenTelemetry:ExporterEndpoint"];
                 if (otlpEndpoint != null)
                 {
                     Serilog.Log.Information("Configuring OpenTelemetry OTLP Exporter with endpoint: {OtlpEndpoint}", otlpEndpoint);

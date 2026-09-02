@@ -5388,10 +5388,555 @@
           }
         }
       }
+    },
+    "/_bdk/api/metrics": {
+      "get": {
+        "tags": [
+          "_bdk.Metrics"
+        ],
+        "operationId": "_bdk.Metrics.Get",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/_bdk/api/metrics/bdk": {
+      "get": {
+        "tags": [
+          "_bdk.Metrics"
+        ],
+        "operationId": "_bdk.Metrics.GetBdk",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricsSnapshotModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/_bdk/api/metrics/dotnet": {
+      "get": {
+        "tags": [
+          "_bdk.Metrics"
+        ],
+        "operationId": "_bdk.Metrics.GetDotNet",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DotNetMetricsSnapshotModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/_bdk/api/metrics/aspnet": {
+      "get": {
+        "tags": [
+          "_bdk.Metrics"
+        ],
+        "operationId": "_bdk.Metrics.GetAspNet",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AspNetMetricsSnapshotModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/_bdk/api/metrics/aspnet/routes": {
+      "get": {
+        "tags": [
+          "_bdk.Metrics"
+        ],
+        "operationId": "_bdk.Metrics.GetAspNetRoutes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AspNetRouteMetricsSnapshotModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/_bdk/api/metrics/overview": {
+      "get": {
+        "tags": [
+          "_bdk.Metrics"
+        ],
+        "operationId": "_bdk.Metrics.GetOverview",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricsOverviewSnapshotModel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AspNetMetricsSnapshotModel": {
+        "type": "object",
+        "properties": {
+          "totalRequests": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "trackedRouteCount": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "activeRequests": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "maxObservedConcurrentRequests": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "failedRequests": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "failureRatePercent": {
+            "type": "number",
+            "format": "double"
+          },
+          "averageLatencyMs": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalLatencyMs": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "requestsPerMinute": {
+            "type": "number",
+            "format": "double"
+          },
+          "status1xx": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status2xx": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status3xx": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status4xx": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status5xx": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lastRequestAtUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "capturedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "processStartedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "uptimeSeconds": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "AspNetRouteMetricsModel": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "route": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "requestCount": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status1xx": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status2xx": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status3xx": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status4xx": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status5xx": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "failureCount": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "failureRatePercent": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalLatencyMs": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "averageLatencyMs": {
+            "type": "number",
+            "format": "double"
+          },
+          "lastRequestAtUtc": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "AspNetRouteMetricsSnapshotModel": {
+        "type": "object",
+        "properties": {
+          "trackedRouteCount": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "routes": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/AspNetRouteMetricsModel"
+            }
+          },
+          "capturedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "processStartedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "uptimeSeconds": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "BdkFeatureSnapshotModel": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "counters": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "current": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "durations": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "$ref": "#/components/schemas/BdkHistogramSnapshotModel"
+            }
+          },
+          "successTotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "failureTotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "currentTotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "topThroughput": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/MetricValueModel"
+            }
+          },
+          "topCurrent": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/MetricValueModel"
+            }
+          },
+          "topFailures": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/MetricValueModel"
+            }
+          },
+          "latencyHighlights": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/MetricLatencyModel"
+            }
+          }
+        }
+      },
+      "BdkHistogramSnapshotModel": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sum": {
+            "type": "number",
+            "format": "double"
+          },
+          "average": {
+            "type": "number",
+            "format": "double"
+          },
+          "max": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "BdkMetricDescriptorModel": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "feature": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "kind": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "unit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "CompositeSpecification": {
         "type": "object",
         "properties": {
@@ -5635,6 +6180,87 @@
             "items": {
               "type": "string"
             }
+          }
+        }
+      },
+      "DotNetMetricsSnapshotModel": {
+        "type": "object",
+        "properties": {
+          "cpuUsagePercent": {
+            "type": "number",
+            "format": "double"
+          },
+          "workingSetMb": {
+            "type": "number",
+            "format": "double"
+          },
+          "privateMemoryMb": {
+            "type": "number",
+            "format": "double"
+          },
+          "managedMemoryMb": {
+            "type": "number",
+            "format": "double"
+          },
+          "heapSizeMb": {
+            "type": "number",
+            "format": "double"
+          },
+          "fragmentedMemoryMb": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalAllocatedMb": {
+            "type": "number",
+            "format": "double"
+          },
+          "gen0Collections": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "gen1Collections": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "gen2Collections": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "threadCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "workerThreadsUsed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "workerThreadsAvailable": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ioThreadsUsed": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ioThreadsAvailable": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pendingWorkItems": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "capturedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "processStartedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "uptimeSeconds": {
+            "type": "number",
+            "format": "double"
           }
         }
       },
@@ -6838,6 +7464,229 @@
           "Custom"
         ]
       },
+      "MetricLatencyModel": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "count": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sum": {
+            "type": "number",
+            "format": "double"
+          },
+          "average": {
+            "type": "number",
+            "format": "double"
+          },
+          "max": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "MetricsOverviewFeatureModel": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "successTotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "failureTotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "currentTotal": {
+            "type": "number",
+            "format": "double"
+          },
+          "topThroughput": {
+            "$ref": "#/components/schemas/MetricValueModel"
+          },
+          "topCurrent": {
+            "$ref": "#/components/schemas/MetricValueModel"
+          },
+          "slowestSeries": {
+            "$ref": "#/components/schemas/MetricLatencyModel"
+          }
+        }
+      },
+      "MetricsOverviewSnapshotModel": {
+        "type": "object",
+        "properties": {
+          "summaryCards": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          "features": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "$ref": "#/components/schemas/MetricsOverviewFeatureModel"
+            }
+          },
+          "topFailures": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/MetricValueModel"
+            }
+          },
+          "topThroughput": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/MetricValueModel"
+            }
+          },
+          "topCurrent": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/MetricValueModel"
+            }
+          },
+          "latencyHighlights": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/MetricLatencyModel"
+            }
+          },
+          "capturedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "processStartedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "uptimeSeconds": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "MetricsSnapshotModel": {
+        "type": "object",
+        "properties": {
+          "meter": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "features": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "$ref": "#/components/schemas/BdkFeatureSnapshotModel"
+            }
+          },
+          "availableMetrics": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/BdkMetricDescriptorModel"
+            }
+          },
+          "topFailures": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/MetricValueModel"
+            }
+          },
+          "topThroughput": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/MetricValueModel"
+            }
+          },
+          "topCurrent": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/MetricValueModel"
+            }
+          },
+          "latencyHighlights": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/MetricLatencyModel"
+            }
+          },
+          "capturedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "processStartedAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "uptimeSeconds": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "MetricValueModel": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "value": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
       "OAuth2Error": {
         "type": "object",
         "properties": {
@@ -7388,6 +8237,9 @@
     },
     {
       "name": "_bdk.IdentityProvider"
+    },
+    {
+      "name": "_bdk.Metrics"
     }
   ]
 }

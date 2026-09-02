@@ -13,6 +13,7 @@
     <PackageVersion Include="BridgingIT.DevKit.Domain.CodeGen" Version="10.0.111" />
     <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework" Version="10.0.111" />
     <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" Version="10.0.111" />
+    <PackageVersion Include="BridgingIT.DevKit.Presentation.Configuration" Version="10.0.111" />
     <PackageVersion Include="BridgingIT.DevKit.Presentation.Web" Version="10.0.111" />
     <PackageVersion Include="BridgingIT.DevKit.Presentation.Web.Jobs" Version="10.0.111" />
     <PackageVersion Include="BridgingIT.DevKit.Presentation.Serilog" Version="10.0.111" />

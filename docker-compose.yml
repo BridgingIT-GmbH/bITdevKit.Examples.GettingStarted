@@ -158,23 +158,6 @@ services:
     networks:
       - ${NETWORK_NAME}
 
-  # ==============================================================================
-  # .NET Aspire Dashboard - Observability dashboard for .NET apps
-  # Port: ${ASPIRE_DASHBOARD_PORT} -> 18888 (browser UI), ${ASPIRE_OTLP_PORT} -> 18889 (OTLP endpoint)
-  # Web interface: http://localhost:${ASPIRE_DASHBOARD_PORT}
-  # OTLP endpoint: http://localhost:${ASPIRE_OTLP_PORT}
-  # aspire-dashboard:
-  #   image: mcr.microsoft.com/dotnet/aspire-dashboard:latest
-  #   container_name: ${CONTAINER_PREFIX}_aspire-dashboard
-  #   restart: unless-stopped
-  #   ports:
-  #     - "${ASPIRE_DASHBOARD_PORT}:18888"
-  #     - "${ASPIRE_OTLP_PORT}:18889"
-  #   environment:
-  #     DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: "true"
-  #   networks:
-  #     - ${NETWORK_NAME}
-
 volumes:
   mssql:
     name: ${CONTAINER_PREFIX}_mssql

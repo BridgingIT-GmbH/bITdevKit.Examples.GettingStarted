@@ -1,4 +1,5 @@
-# FileStorage Feature Documentation
+
+# File Storage
 
 > Read, write, move, and monitor files through extensible storage providers and behaviors.
 
@@ -6,19 +7,115 @@
 
 ## Overview
 
-Managing file storage presents challenges due to inconsistent APIs across storage systems, complex requirements for secure file handling, the need for progress reporting during long operations, robust error handling, thread safety concerns, and the demand for extensibility to support new providers or custom functionality.
+Storage systems expose different APIs and failure behavior. Applications also need secure file handling, progress reporting for long operations, predictable error handling, thread safety, and support for custom providers.
 
-The `FileStorage` feature addresses these through the `IFileStorageProvider` interface for abstracting file operations, a fluent DI setup with `AddFileStorage`, and the `Result` pattern for error handling and messaging. It supports progress reporting via `IProgress<FileProgress>` and metadata management with `FileMetadata`. The feature is designed to be extensible, allowing developers to implement custom providers or extend functionality with behaviors. Additionally, it supports notifications for real-time monitoring (used by `FileMonitoring`) through the `SupportsNotifications` property. Besides the existing `WriteFileAsync` push model, the abstraction also supports `OpenWriteFileAsync` for scenarios where callers want to stream bytes directly into the destination.
+The `FileStorage` feature defines file operations through `IFileStorageProvider`, registers providers through `AddFileStorage`, and returns failures through `Result`. `IProgress<FileProgress>` reports progress, while `FileMetadata` carries file metadata. Applications can add providers and behaviors. Providers with `SupportsNotifications` can notify `FileMonitoring` about changes. Callers can push content with `WriteFileAsync` or stream bytes into a destination returned by `OpenWriteFileAsync`.
 
 Available providers included:
+
 - Local Files (e.g., `C:\data\file.txt` or `/var/data/file.txt`)
 - Network Shares (e.g., Windows UNC paths)
-- Azure Files 
-- Azure Blob Storage 
+- Azure Files
+- Azure Blob Storage
+- Entity Framework backed storage
 
-### Architecture
+## Challenges
 
-The `FileStorage` subsystem is built around the `IFileStorageProvider` interface, which defines core file operations. Providers like `LocalFileStorageProvider`, `InMemoryFileStorageProvider`, and others implement this interface. The `IFileStorageFactory` resolves providers by name, and extensions like `FileStorageProviderCompressionExtensions` and `FileStorageProviderCrossExtensions` add advanced functionality such as compression and cross-provider operations. Behaviors can be applied to providers to add cross-cutting concerns like logging or retry logic.
+File systems, shares, databases, and cloud stores expose different APIs and failure modes. Applications still need one way to stream content, manage directories and metadata, report progress, handle expected failures, and move files across providers.
+
+## Solution
+
+`IFileStorageProvider` defines Result-native file and directory operations. `AddFileStorage(...)` registers named providers and optional behaviors, while `IFileStorageProviderFactory` resolves the configured provider at runtime. Extensions add compression, serialization, and cross-provider transfers without expanding provider implementations.
+
+## Key Features
+
+- named local, in-memory, network, Azure, and Entity Framework providers
+- stream-based read, write, and open-write operations
+- file and directory metadata, checksums, paging, and health checks
+- logging, retry, caching, metrics, and custom behaviors
+- progress reporting and cross-provider copy or move helpers
+- optional REST endpoints, monitoring, and scheduled scans
+
+## Architecture
+
+Application code resolves an `IFileStorageProvider` from the factory. Behaviors decorate the provider contract, and provider implementations translate paths and operations to their native store. File Monitoring composes providers with location handlers, event stores, and processors; the scheduled scan job calls the same monitoring service.
+
+## Use Cases
+
+- read and write files without binding application code to a storage SDK
+- move files between local, database-backed, and cloud providers
+- expose a controlled provider surface over HTTP
+- monitor a location in real time or through on-demand scans
+- persist a virtual file system in an application database
+
+## Basic Usage
+
+This example registers one singleton in-memory provider, writes UTF-8 content, checks both results, disposes the returned stream, and returns the stored text.
+
+```csharp
+using System.Text;
+using BridgingIT.DevKit.Application.Storage;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddFileStorage(factory => factory
+    .RegisterProvider("memory", storage => storage
+        .UseInMemory("MemoryFiles")
+        .WithLifetime(ServiceLifetime.Singleton)));
+
+var app = builder.Build();
+
+app.MapPut("/files/{name}", async (
+    string name,
+    IFileStorageProviderFactory factory,
+    CancellationToken cancellationToken) =>
+{
+    var storage = factory.CreateProvider("memory");
+    await using var source = new MemoryStream(
+        Encoding.UTF8.GetBytes($"File: {name}"),
+        writable: false);
+
+    var written = await storage.WriteFileAsync(
+        name,
+        source,
+        cancellationToken: cancellationToken);
+
+    if (written.IsFailure)
+    {
+        return Results.Problem(string.Join(
+            "; ",
+            written.Errors.Select(error => error.Message)));
+    }
+
+    var read = await storage.ReadFileAsync(
+        name,
+        cancellationToken: cancellationToken);
+
+    if (read.IsFailure)
+    {
+        return Results.Problem(string.Join(
+            "; ",
+            read.Errors.Select(error => error.Message)));
+    }
+
+    await using var content = read.Value;
+    using var reader = new StreamReader(
+        content,
+        Encoding.UTF8,
+        leaveOpen: true);
+    var text = await reader.ReadToEndAsync(cancellationToken);
+
+    return Results.Ok(new { Path = name, Content = text });
+});
+
+app.Run();
+```
+
+`PUT /files/example.txt` returns `File: example.txt`. The in-memory provider retains files only while its singleton instance remains alive.
+
+## Architecture details
+
+The `FileStorage` subsystem is built around the `IFileStorageProvider` interface, which defines core file operations. Providers like `LocalFileStorageProvider`, `InMemoryFileStorageProvider`, `EntityFrameworkFileStorageProvider<TContext>`, and others implement this interface. The `IFileStorageProviderFactory` resolves providers by name, and extensions like `FileStorageProviderCompressionExtensions` and `FileStorageProviderCrossExtensions` add advanced functionality such as compression and cross-provider operations. Behaviors can be applied to providers to add cross-cutting concerns like logging or retry logic.
 
 Below is a high-level architecture diagram:
 
@@ -37,7 +134,7 @@ classDiagram
         +CheckHealthAsync(token) Task~Result~
     }
 
-    class IFileStorageFactory {
+    class IFileStorageProviderFactory {
         +CreateProvider(name) IFileStorageProvider
     }
 
@@ -55,6 +152,17 @@ classDiagram
         +Files : ConcurrentDictionary
     }
 
+    class EntityFrameworkFileStorageProvider~TContext~ {
+        +LocationName : string
+        +SupportsNotifications : bool
+    }
+
+    class IFileStorageContext {
+        +StorageFiles : DbSet
+        +StorageFileContents : DbSet
+        +StorageDirectories : DbSet
+    }
+
     class FileStorageProviderCompressionExtensions {
         +WriteCompressedFileAsync(provider, path, content, progress, options, token) Task~Result~
         +ReadCompressedFile(provider, path, password, progress, options, token) Task~Result~Stream~~
@@ -68,25 +176,28 @@ classDiagram
     IFileStorageProvider <|.. BaseFileStorageProvider
     BaseFileStorageProvider <|-- LocalFileStorageProvider
     BaseFileStorageProvider <|-- InMemoryFileStorageProvider
+    BaseFileStorageProvider <|-- EntityFrameworkFileStorageProvider~TContext~
+    EntityFrameworkFileStorageProvider~TContext~ --> IFileStorageContext : requires
     IFileStorageProvider --> FileStorageProviderCompressionExtensions : Extends
     IFileStorageProvider --> FileStorageProviderCrossExtensions : Extends
-    IFileStorageFactory --> IFileStorageProvider : Resolves
+    IFileStorageProviderFactory --> IFileStorageProvider : Resolves
 ```
 
-### Use Cases
+## Use case details
 
 - **Basic File Operations**: Read, write, delete, and check file existence across different storage systems.
 - **Metadata Management**: Retrieve and update file metadata for indexing or auditing purposes.
 - **Bulk Operations**: Copy, move, or delete multiple files within or across providers with progress reporting.
 - **Compression**: Compress files or directories into archives (e.g., ZIP) and decompress them, supporting password protection for decompression.
 - **Cross-Provider Transfers**: Copy or move files between different storage providers (e.g., from local to cloud storage).
+- **Database-backed Virtual Filesystems**: Persist files and directories in the application database through Entity Framework when a separate blob store or file share is unnecessary.
 - **Health Monitoring**: Check the health of storage providers to ensure availability.
 
-## Usage
+## Detailed usage
 
-### Setting Up a Provider with Dependency Injection (DI)
+### Setting up a provider with dependency injection
 
-Configure `FileStorage` using `Microsoft.Extensions.DependencyInjection` with the `AddFileStorage` method, which supports a fluent API for registering named providers, applying behaviors, and setting lifetimes. Providers are resolved via `IFileStorageFactory`.
+Configure `FileStorage` using `Microsoft.Extensions.DependencyInjection` with the `AddFileStorage` method, which supports a fluent API for registering named providers, applying behaviors, and setting lifetimes. Providers are resolved via `IFileStorageProviderFactory`.
 
 ```csharp
 services.AddFileStorage(c => c
@@ -98,20 +209,20 @@ services.AddFileStorage(c => c
     })
     .RegisterProvider("local", builder =>
     {
-        builder.UseLocal(Path.Combine(Path.GetTempPath(), "TestStorage_" + Guid.NewGuid().ToString()), "TestLocal")
+        builder.UseLocal("TestLocal", Path.Combine(Path.GetTempPath(), "TestStorage_" + Guid.NewGuid().ToString()))
                .WithLogging()
                .WithLifetime(ServiceLifetime.Singleton);
     })
     .RegisterProvider("network", builder =>
     {
-        builder.UseWindowsNetwork(@"\\server\docs", "NetworkStorage", "username", "password", "domain")
+        builder.UseWindowsNetwork("NetworkStorage", @"\\server\docs", "username", "password", "domain")
                .WithLogging()
                .WithRetry(new RetryOptions { MaxRetries = 3 })
                .WithLifetime(ServiceLifetime.Singleton);
     })
     .RegisterProvider("azureBlob", builder =>
     {
-        builder.UseAzureBlob("connection-string", "container-name", "AzureBlobStorage")
+        builder.UseAzureBlob("AzureBlobStorage", "connection-string", "container-name")
                .WithCaching(new CachingOptions { CacheDuration = TimeSpan.FromMinutes(10) })
                .WithLifetime(ServiceLifetime.Scoped);
     }));
@@ -119,9 +230,9 @@ services.AddFileStorage(c => c
 // Use the factory to resolve providers
 public class FileService
 {
-    private readonly IFileStorageFactory factory;
+    private readonly IFileStorageProviderFactory factory;
 
-    public FileService(IFileStorageFactory factory)
+    public FileService(IFileStorageProviderFactory factory)
     {
         this.factory = factory;
     }
@@ -134,15 +245,141 @@ public class FileService
 }
 ```
 
-This registers "inMemory", "local", "network", and "azureBlob" providers with behaviors and lifetimes, resolved by `IFileStorageFactory`.
+This registers "inMemory", "local", "network", and "azureBlob" providers with behaviors and lifetimes, resolved by `IFileStorageProviderFactory`.
 
-### Using Providers
+`AddFileStorage(...)` also registers a single standard ASP.NET Core health check for all configured providers:
+
+```text
+FileStorage
+```
+
+The check resolves every provider name from `IFileStorageProviderFactory`, calls each provider's `CheckHealthAsync(...)`, and reports failures with the failed provider names and error details in the health-check data. The health check is tagged with `ready`, `storage`, and `files`.
+
+### Setting up the Entity Framework provider
+
+Use the Entity Framework provider when files should live in the same relational database as the rest of your application state.
+
+1. Make your `DbContext` implement `IFileStorageContext`.
+2. Add the three required `DbSet<>` properties.
+3. Register the provider with `UseEntityFramework<TContext>(...)`.
+4. Create and apply your own application migration for the storage tables.
+
+```csharp
+public class AppDbContext(DbContextOptions<AppDbContext> options)
+    : DbContext(options), IFileStorageContext
+{
+    public DbSet<FileStorageFileEntity> StorageFiles { get; set; }
+
+    public DbSet<FileStorageFileContentEntity> StorageFileContents { get; set; }
+
+    public DbSet<FileStorageDirectoryEntity> StorageDirectories { get; set; }
+}
+
+services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+services.AddFileStorage(factory => factory
+    .RegisterProvider("db", builder => builder
+        .UseEntityFramework<AppDbContext>(
+            "DatabaseFiles",
+            "Entity Framework file storage",
+            options => options
+                .LeaseDuration(TimeSpan.FromSeconds(30))
+                .RetryCount(3)
+                .RetryBackoff(TimeSpan.FromMilliseconds(250))
+                .PageSize(100)
+                .MaximumBufferedContentSize(ByteSize.Megabytes(4)))
+        .WithLogging()
+        .WithLifetime(ServiceLifetime.Singleton)));
+```
+
+#### Entity Framework provider behavior
+
+- Uses three tables: `__Storage_Files`, `__Storage_FileContents`, and `__Storage_Directories`
+- Resolves a fresh scoped `DbContext` per operation, so singleton provider lifetime is safe
+- Stores directory rows explicitly, including empty directories
+- Uses `ListFilesAsync(..., continuationToken)` with an opaque seek-based continuation token
+- Returns `SupportsNotifications = false`
+- Buffers `WriteFileAsync` and `OpenWriteFileAsync` content in memory before the final database commit
+- Preserves exact bytes for text payloads when possible and falls back to binary payload storage when a text-looking file cannot be round-tripped losslessly
+
+#### Entity Framework provider options
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `LeaseDuration` | `00:00:30` | Lease window for row-level mutation coordination |
+| `RetryCount` | `3` | Total replay-safe attempts for transient database contention |
+| `RetryBackoff` | `00:00:00.250` | Base backoff used for retry delay calculation |
+| `PageSize` | `100` | Default page size for `ListFilesAsync` |
+| `MaximumBufferedContentSize` | `null` | Optional write-size limit before buffered writes are rejected |
+
+#### Entity Framework provider notes
+
+- The feature does **not** ship library-owned migrations. Your application owns schema evolution after implementing `IFileStorageContext`.
+- The provider is Entity Framework-level and works across supported relational providers. This repository includes integration coverage for SQLite, SQL Server, and PostgreSQL.
+- Because writes are buffered before commit, set `MaximumBufferedContentSize(...)` when you want predictable limits for large uploads.
+- The provider supports cross-provider copy/move and the existing compression, traversal, text, and object extension methods through the normal `IFileStorageProvider` contract.
+
+### Exposing providers through REST endpoints
+
+Use `Presentation.Web.Storage` when you want registered providers to be reachable through HTTP. The endpoint package registers **one global storage endpoint surface** and resolves the target provider by route segment through `IFileStorageProviderFactory.CreateProvider(...)`.
+
+```csharp
+services.AddFileStorage(factory => factory
+    .RegisterProvider("documents", builder => builder
+        .UseEntityFramework<AppDbContext>(
+            "DatabaseFiles",
+            "Entity Framework file storage")
+        .WithLifetime(ServiceLifetime.Singleton)))
+    .AddEndpoints(options => options
+        .RequireAuthorization()
+        .GroupPath("/_bdk/api")
+        .GroupTag("_bdk.Storage"));
+```
+
+#### REST endpoint behavior
+
+- Works with **any** `IFileStorageProvider`, not only the Entity Framework provider
+- Uses `/_bdk/api/storage/files/{providerName}` by default when `GroupPath` is not specified
+- Publishes one endpoint set for all registered providers, with the provider selected from the sanitized route segment
+- Supports provider info, health checks, file/directory existence checks, file listing, directory listing, metadata, checksum, create/delete directory, delete file, file download, raw file upload, and file-event query/scan routes when storage monitoring is configured for that provider
+- Raw uploads write the request body directly to the provider-backed path; send them as `application/octet-stream`
+
+#### Common routes
+
+| Route | Purpose |
+| --- | --- |
+| `GET /_bdk/api/{provider}/provider` | Provider information |
+| `GET /_bdk/api/{provider}/health` | Provider health |
+| `GET /_bdk/api/{provider}/directories?path=...&recursive=true` | List directories |
+| `POST /_bdk/api/{provider}/directories?path=...` | Create directory |
+| `DELETE /_bdk/api/{provider}/directories?path=...&recursive=true` | Delete directory |
+| `GET /_bdk/api/{provider}/files?path=...&recursive=true` | List files |
+| `GET /_bdk/api/{provider}/files/content?path=...` | Download file content |
+| `PUT /_bdk/api/{provider}/files/content?path=...` | Upload or overwrite file content |
+| `GET /_bdk/api/{provider}/files/metadata?path=...` | Read file metadata |
+| `GET /_bdk/api/{provider}/files/checksum?path=...` | Read checksum |
+| `DELETE /_bdk/api/{provider}/files?path=...` | Delete file |
+| `GET /_bdk/api/{provider}/events?path=...&eventType=...&fromDate=...&tillDate=...&take=...` | Query stored file events for the provider-backed monitoring location |
+| `POST /_bdk/api/{provider}/events/scan?waitForProcessing=true&searchPattern=...&maxFilesToScan=...&skipChecksum=false` | Trigger an on-demand monitoring scan and return detected events |
+
+#### Endpoint notes
+
+- Use `RequireAuthorization`, `RequireRoles`, or `RequirePolicy` on `FileStorageEndpointsOptions` when the storage surface should not be public.
+- Prefer `services.AddFileStorage(...).AddEndpoints(...)` when wiring providers and HTTP access together; `AddFileStorageEndpoints(...)` remains available when endpoint registration needs to happen separately.
+- The endpoint layer resolves the named provider through `factory.CreateProvider(...)`, so HTTP callers always go through the same behaviors, lifetime, retries, and provider composition as in-process callers.
+- File-event routes require `AddFileMonitoring(...)` plus `UseProvider(...)` for the same provider name. Without monitoring registration, the event routes return `503`.
+- The endpoint group disables antiforgery so generated clients and operational dashboards can call the unsafe file and scan routes with bearer tokens.
+- The provider info route intentionally lives at `/provider` so it does not collide with other fixed `_bdk` endpoints such as `/_bdk/api/info`.
+- The DoFiesta example uses this endpoint package to back both the Operations > Files and Operations > File Events dashboards against the `"documents"` Entity Framework provider, and the WASM client consumes the generated Kiota client directly via `BackendApiClient.Api._bdk_["documents"]`.
+
+### Using providers
 
 The `IFileStorageProvider` interface defines core file operations, returning `Result` or `Result<T>` for error handling and messaging. Use the factory-resolved provider to perform operations.
 
-#### Core Methods
+#### Core methods
 
-- **FileExistsAsync(string path, IProgress<FileProgress> progress, CancellationToken token)**: Checks if a file exists at `path`. Returns `Task<Result>` indicating success or failure with errors (e.g., `FileSystemError` for missing files).
+- `FileExistsAsync(string path, IProgress<FileProgress> progress, CancellationToken token)`: Checks if a file exists at `path`. Returns `Task<Result>` indicating success or failure with errors (e.g., `FileSystemError` for missing files).
 
   ```csharp
   var provider = factory.CreateProvider("local");
@@ -150,7 +387,7 @@ The `IFileStorageProvider` interface defines core file operations, returning `Re
   existsResult.ShouldBeSuccess("File should exist");
   ```
 
-- **ReadFileAsync(string path, IProgress<FileProgress> progress, CancellationToken token)**: Reads a file as a `Stream`. Returns `Task<Result<Stream>>` with the stream or errors (e.g., `PermissionError`).
+- `ReadFileAsync(string path, IProgress<FileProgress> progress, CancellationToken token)`: Reads a file as a `Stream`. Returns `Task<Result<Stream>>` with the stream or errors (e.g., `PermissionError`).
 
   ```csharp
   var readResult = await provider.ReadFileAsync("data.txt", null, CancellationToken.None);
@@ -159,14 +396,14 @@ The `IFileStorageProvider` interface defines core file operations, returning `Re
   new StreamReader(stream).ReadToEnd().ShouldBe("Test content");
   ```
 
-- **WriteFileAsync(string path, Stream content, IProgress<FileProgress> progress, CancellationToken token)**: Writes `content` to `path`. Use this when the caller already has a source stream. Returns `Task<Result>` with success or errors (e.g., `FileSystemError`).
+- `WriteFileAsync(string path, Stream content, IProgress<FileProgress> progress, CancellationToken token)`: Writes `content` to `path`. Use this when the caller already has a source stream. Returns `Task<Result>` with success or errors (e.g., `FileSystemError`).
 
   ```csharp
   var writeResult = await provider.WriteFileAsync("data.txt", new MemoryStream(Encoding.UTF8.GetBytes("Test content")), null, CancellationToken.None);
   writeResult.ShouldBeSuccess("Write should succeed");
   ```
 
-- **OpenWriteFileAsync(string path, bool useTemporaryWrite, IProgress<FileProgress> progress, CancellationToken token)**: Opens a writable stream for `path`. Use this when the caller wants to write directly into the provider without first materializing a full source stream. Open failures are returned in the `Result`; write, flush, or dispose failures surface from the returned stream. `useTemporaryWrite: false` writes directly to the final path and may expose partial content, while `useTemporaryWrite: true` requests staged publish semantics when the provider supports it.
+- `OpenWriteFileAsync(string path, bool useTemporaryWrite, IProgress<FileProgress> progress, CancellationToken token)`: Opens a writable stream for `path`. Use this when the caller wants to write directly into the provider without first materializing a full source stream. Open failures are returned in the `Result`; write, flush, or dispose failures surface from the returned stream. `useTemporaryWrite: false` writes directly to the final path and may expose partial content, while `useTemporaryWrite: true` requests staged publish semantics when the provider supports it.
 
   ```csharp
   var openResult = await provider.OpenWriteFileAsync("feeds/data.csv", useTemporaryWrite: false, progress: null, CancellationToken.None);
@@ -178,7 +415,7 @@ The `IFileStorageProvider` interface defines core file operations, returning `Re
   await writer.WriteLineAsync("1,Sample");
   ```
 
-- **DeleteFileAsync(string path, IProgress<FileProgress> progress, CancellationToken token)**: Deletes a file at `path`. Returns `Task<Result>` with success or errors (e.g., `PermissionError`).
+- `DeleteFileAsync(string path, IProgress<FileProgress> progress, CancellationToken token)`: Deletes a file at `path`. Returns `Task<Result>` with success or errors (e.g., `PermissionError`).
 
   ```csharp
   var deleteResult = await provider.DeleteFileAsync("data.txt", null, CancellationToken.None);
@@ -227,28 +464,28 @@ The `IFileStorageProvider` interface defines core file operations, returning `Re
   files.ShouldContain("data.txt");
   ```
 
-- **CopyFileAsync(string sourcePath, string destinationPath, IProgress<FileProgress> progress, CancellationToken token)**: Copies a file from `sourcePath` to `destinationPath` within the same provider. Returns `Task<Result>` with success or errors.
+- `CopyFileAsync(string sourcePath, string destinationPath, IProgress<FileProgress> progress, CancellationToken token)`: Copies a file from `sourcePath` to `destinationPath` within the same provider. Returns `Task<Result>` with success or errors.
 
   ```csharp
   var copyResult = await provider.CopyFileAsync("data.txt", "data_copy.txt", null, CancellationToken.None);
   copyResult.ShouldBeSuccess("Copy should succeed");
   ```
 
-- **RenameFileAsync(string path, string destinationPath, IProgress<FileProgress> progress, CancellationToken token)**: Renames a file from `path` to `destinationPath` within the same provider. Returns `Task<Result>` with success or errors.
+- `RenameFileAsync(string path, string destinationPath, IProgress<FileProgress> progress, CancellationToken token)`: Renames a file from `path` to `destinationPath` within the same provider. Returns `Task<Result>` with success or errors.
 
   ```csharp
   var renameResult = await provider.RenameFileAsync("data.txt", "renamed.txt", null, CancellationToken.None);
   renameResult.ShouldBeSuccess("Rename should succeed");
   ```
 
-- **MoveFileAsync(string path, string destinationPath, IProgress<FileProgress> progress, CancellationToken token)**: Moves a file from `path` to `destinationPath` within the same provider. Returns `Task<Result>` with success or errors.
+- `MoveFileAsync(string path, string destinationPath, IProgress<FileProgress> progress, CancellationToken token)`: Moves a file from `path` to `destinationPath` within the same provider. Returns `Task<Result>` with success or errors.
 
   ```csharp
   var moveResult = await provider.MoveFileAsync("data.txt", "moved.txt", null, CancellationToken.None);
   moveResult.ShouldBeSuccess("Move should succeed");
   ```
 
-- **CopyFilesAsync(IEnumerable<(string SourcePath, string DestinationPath)> filePairs, IProgress<FileProgress> progress, CancellationToken token)**: Copies multiple files within the same provider. Returns `Task<Result>` with success or partial failure (e.g., `PartialOperationError`).
+- `CopyFilesAsync(IEnumerable<(string SourcePath, string DestinationPath)> filePairs, IProgress<FileProgress> progress, CancellationToken token)`: Copies multiple files within the same provider. Returns `Task<Result>` with success or partial failure (e.g., `PartialOperationError`).
 
   ```csharp
   var filePairs = new[] { ("data1.txt", "copy1.txt"), ("data2.txt", "copy2.txt") };
@@ -256,7 +493,7 @@ The `IFileStorageProvider` interface defines core file operations, returning `Re
   copyFilesResult.ShouldBeSuccess("Bulk copy should succeed");
   ```
 
-- **DeleteFilesAsync(IEnumerable<string> paths, IProgress<FileProgress> progress, CancellationToken token)**: Deletes multiple files. Returns `Task<Result>` with success or partial failure.
+- `DeleteFilesAsync(IEnumerable<string> paths, IProgress<FileProgress> progress, CancellationToken token)`: Deletes multiple files. Returns `Task<Result>` with success or partial failure.
 
   ```csharp
   var paths = new[] { "data1.txt", "data2.txt" };
@@ -264,7 +501,7 @@ The `IFileStorageProvider` interface defines core file operations, returning `Re
   deleteFilesResult.ShouldBeSuccess("Bulk delete should succeed");
   ```
 
-- **MoveFilesAsync(IEnumerable<(string SourcePath, string DestinationPath)> filePairs, IProgress<FileProgress> progress, CancellationToken token)**: Moves multiple files within the same provider. Returns `Task<Result>` with success or partial failure.
+- `MoveFilesAsync(IEnumerable<(string SourcePath, string DestinationPath)> filePairs, IProgress<FileProgress> progress, CancellationToken token)`: Moves multiple files within the same provider. Returns `Task<Result>` with success or partial failure.
 
   ```csharp
   var moveFilesResult = await provider.MoveFilesAsync(filePairs, null, CancellationToken.None);
@@ -308,7 +545,7 @@ The `IFileStorageProvider` interface defines core file operations, returning `Re
   healthResult.ShouldBeSuccess("Health check should succeed");
   ```
 
-#### Implementing a Custom Provider
+#### Implementing a custom provider
 
 For custom storage systems (e.g., a proprietary cloud storage API), implement the `IFileStorageProvider` interface by inheriting from `BaseFileStorageProvider` and overriding the necessary methods. Below is a minimal example:
 
@@ -364,11 +601,11 @@ services.AddFileStorage(c => c
     }));
 ```
 
-### Using Extensions
+### Using extensions
 
-The `FileStorage` subsystem provides extension methods to enhance `IFileStorageProvider` with advanced functionality, returning `Result` or `Result<T>`. These extensions support progress reporting and handle errors gracefully, covering scenarios like compression and cross-provider operations.
+The `FileStorage` subsystem extends `IFileStorageProvider` with compression, cross-provider operations, and progress reporting. The extension methods return `Result` or `Result<T>` for expected failures.
 
-#### Compressing and Decompressing Files
+#### Compressing and decompressing files
 
 Compress a file or directory into an archive (e.g., ZIP, GZip, Tar), optionally configuring compression options:
 
@@ -395,11 +632,11 @@ var uncompressResult = await provider.UncompressAsync("archive.zip", "output_dir
 uncompressResult.ShouldBeSuccess("Directory decompression should succeed");
 ```
 
-#### Cross-Provider Operations
+#### Cross-provider operations
 
 The `FileStorageProviderCrossExtensions` class provides methods to perform operations across different `IFileStorageProvider` instances, such as copying or moving files between providers (e.g., from a local file system to an in-memory provider). These methods support progress reporting and handle errors using the `Result` pattern.
 
-- **CopyFileAsync(IFileStorageProvider sourceProvider, string sourcePath, IFileStorageProvider destinationProvider, string destinationPath, IProgress<FileProgress> progress, CancellationToken token)**: Copies a file from the source provider to the destination provider. Returns `Task<Result>` with success or errors (e.g., `FileSystemError`, `PermissionError`).
+- `CopyFileAsync(IFileStorageProvider sourceProvider, string sourcePath, IFileStorageProvider destinationProvider, string destinationPath, IProgress<FileProgress> progress, CancellationToken token)`: Copies a file from the source provider to the destination provider. Returns `Task<Result>` with success or errors (e.g., `FileSystemError`, `PermissionError`).
 
   ```csharp
   var sourceProvider = factory.CreateProvider("local");
@@ -416,7 +653,7 @@ The `FileStorageProviderCrossExtensions` class provides methods to perform opera
   existsResult.ShouldBeSuccess("File should exist in destination provider");
   ```
 
-- **CopyFilesAsync(IFileStorageProvider sourceProvider, IFileStorageProvider destinationProvider, IEnumerable<(string SourcePath, string DestinationPath)> filePairs, IProgress<FileProgress> progress, CancellationToken token)**: Copies multiple files between providers in a batch. Returns `Task<Result>` with success or partial failure (e.g., `PartialOperationError`).
+- `CopyFilesAsync(IFileStorageProvider sourceProvider, IFileStorageProvider destinationProvider, IEnumerable<(string SourcePath, string DestinationPath)> filePairs, IProgress<FileProgress> progress, CancellationToken token)`: Copies multiple files between providers in a batch. Returns `Task<Result>` with success or partial failure (e.g., `PartialOperationError`).
 
   ```csharp
   var filePairs = new[]
@@ -443,7 +680,7 @@ The `FileStorageProviderCrossExtensions` class provides methods to perform opera
   }
   ```
 
-- **MoveFileAsync(IFileStorageProvider sourceProvider, string sourcePath, IFileStorageProvider destinationProvider, string destinationPath, IProgress<FileProgress> progress, CancellationToken token)**: Moves a file by copying it to the destination provider and deleting it from the source provider. Returns `Task<Result>` with success or errors.
+- `MoveFileAsync(IFileStorageProvider sourceProvider, string sourcePath, IFileStorageProvider destinationProvider, string destinationPath, IProgress<FileProgress> progress, CancellationToken token)`: Moves a file by copying it to the destination provider and deleting it from the source provider. Returns `Task<Result>` with success or errors.
 
   ```csharp
   await sourceProvider.WriteFileAsync("move.txt", new MemoryStream(Encoding.UTF8.GetBytes("Move content")), null, CancellationToken.None);
@@ -458,7 +695,7 @@ The `FileStorageProviderCrossExtensions` class provides methods to perform opera
   sourceExists.ShouldBeFailure("File should not exist in source provider");
   ```
 
-- **MoveFilesAsync(IFileStorageProvider sourceProvider, IFileStorageProvider destinationProvider, IEnumerable<(string SourcePath, string DestinationPath)> filePairs, IProgress<FileProgress> progress, CancellationToken token)**: Moves multiple files between providers in a batch. Returns `Task<Result>` with success or partial failure.
+- `MoveFilesAsync(IFileStorageProvider sourceProvider, IFileStorageProvider destinationProvider, IEnumerable<(string SourcePath, string DestinationPath)> filePairs, IProgress<FileProgress> progress, CancellationToken token)`: Moves multiple files between providers in a batch. Returns `Task<Result>` with success or partial failure.
 
   ```csharp
   var moveFilesResult = await sourceProvider.MoveFilesAsync(destProvider, filePairs, progress, CancellationToken.None);
@@ -474,7 +711,7 @@ The `FileStorageProviderCrossExtensions` class provides methods to perform opera
   }
   ```
 
-#### Handling Errors and Progress
+#### Handling errors and progress
 
 Use `Result` for error handling and `IProgress<FileProgress>` for progress reporting in both compression and cross-provider operations:
 
@@ -492,12 +729,15 @@ copyErrorResult.ShouldBeFailure("Should fail with non-existent source file");
 copyErrorResult.Messages.ShouldContain(m => m.Contains("Copied 0/1 files, 1 failed"));
 ```
 
-### Best Practices
+### Best practices
 
 - **Configure via DI**: Register providers with `AddFileStorage` for loose coupling and easy provider switching.
+- **Own EF Migrations in the App**: When using `UseEntityFramework<TContext>`, add the storage tables through your consuming application's normal migration workflow.
 - **Leverage Extensions**: Use `FileStorageProviderCompressionExtensions` for compression and `FileStorageProviderCrossExtensions` for cross-provider operations like copying or moving files between storage systems.
 - **Handle Results**: Always check `Result.IsSuccess` and inspect `Messages` or `Errors` for detailed feedback.
 - **Report Progress**: Use `IProgress<FileProgress>` to provide feedback during long-running operations, such as bulk cross-provider copies or compression tasks.
+- **Tune Buffered Writes**: For the Entity Framework provider, configure `MaximumBufferedContentSize(...)` if uploads may become large enough to pressure memory.
+- **Do Not Expect Notifications from EF Storage**: The Entity Framework provider is fully usable for file operations, but it reports `SupportsNotifications = false`.
 - **Test Across Providers**: Verify functionality with `InMemoryFileStorageProvider`, `LocalFileStorageProvider`, and custom providers to ensure compatibility, especially for cross-provider operations.
 
 ## Appendix A: FileMonitoring
@@ -506,7 +746,7 @@ copyErrorResult.Messages.ShouldContain(m => m.Contains("Copied 0/1 files, 1 fail
 
 The `FileMonitoring` feature builds on `FileStorage` to provide real-time and on-demand monitoring of file changes in specified locations. It uses `IFileStorageProvider` to access files and detect changes, generating `FileEvent` instances (e.g., Added, Changed, Deleted) that are processed by a chain of `IFileEventProcessor` implementations. The `IFileMonitoringService` orchestrates monitoring across multiple locations, each managed by an `ILocationHandler`. Event processing rates can be controlled using a `RateLimiter`, configured via `LocationOptions.RateLimit`.
 
-#### FileEvent Structure
+#### `FileEvent` structure
 
 The `FileEvent` class represents a detected file change, with the following key properties:
 
@@ -565,7 +805,7 @@ classDiagram
 
 ### Usage
 
-#### Setting Up FileMonitoring
+#### Setting up FileMonitoring
 
 Configure `FileMonitoring` using `AddFileMonitoring` with a fluent API to specify locations, providers, and processors:
 
@@ -576,7 +816,7 @@ services.AddFileMonitoring(monitoring =>
         .UseLocal("Docs", Path.Combine(Path.GetTempPath(), "Docs"), options =>
         {
             options.FileFilter = "*.txt";
-            options.FileBlackListFilter = ["*.tmp"]
+            options.FileBlackListFilter = ["*.tmp"];
             options.RateLimit = RateLimitOptions.HighSpeed; // Configure event processing rate
             options.UseProcessor<FileLoggerProcessor>();
             options.UseProcessor<FileMoverProcessor>(config =>
@@ -588,7 +828,7 @@ var monitoringService = serviceProvider.GetRequiredService<IFileMonitoringServic
 await monitoringService.StartAsync(CancellationToken.None);
 ```
 
-#### On-Demand Scanning
+#### On-demand scanning
 
 Perform an on-demand scan to detect changes:
 
@@ -605,7 +845,7 @@ var scanContext = await monitoringService.ScanLocationAsync("Docs", scanOptions,
 Console.WriteLine($"Detected {scanContext.Events.Count} events");
 ```
 
-#### Real-Time Monitoring
+#### Real-time monitoring
 
 Real-time monitoring is enabled by default (unless `UseOnDemandOnly` is set). The `LocalLocationHandler` uses `FileSystemWatcher` to detect changes:
 
@@ -618,7 +858,7 @@ var events = await store.GetFileEventsAsync("test.txt");
 events.ShouldNotBeEmpty();
 ```
 
-#### Pausing and Resuming Monitoring
+#### Pausing and resuming monitoring
 
 Control real-time monitoring by pausing and resuming the `ILocationHandler`:
 
@@ -637,7 +877,7 @@ eventsAfterResume.ShouldNotBeEmpty();
 eventsAfterResume.First().EventType.ShouldBe(FileEventType.Changed);
 ```
 
-### Best Practices
+### Best practices
 
 - **Use Appropriate Providers**: Ensure the `IFileStorageProvider` supports notifications for real-time monitoring (e.g., `LocalFileStorageProvider` with `SupportsNotifications = true`).
 - **Configure Processors**: Chain multiple `IFileEventProcessor` instances to handle events (e.g., logging, moving files).
@@ -649,44 +889,48 @@ eventsAfterResume.First().EventType.ShouldBe(FileEventType.Changed);
 
 ### Overview
 
-The `FileMonitoringLocationScanJob` is a scheduled job that triggers on-demand scans for a specified location using the `IFileMonitoringService`. It integrates with the `JobScheduling` feature to run scans at defined intervals, supporting retry logic and configurable scan options. The job is annotated with `[DisallowConcurrentExecution]`, ensuring that only one instance runs at a time to prevent overlapping scans.
+The `FileMonitoringLocationScanJob` is a scheduled job that triggers on-demand scans for a specified location using the `IFileMonitoringService`. It integrates with the `Application.Jobs` feature to run scans at defined intervals, supporting retry logic and configurable scan options. Configure job-level concurrency when overlapping scans must be prevented.
 
 ### Usage
 
-#### Registering the Job
+#### Registering the job
 
-Register the `FileMonitoringLocationScanJob` using the `AddJobScheduling` extension, specifying the location name and scan options via job data:
+Register the `FileMonitoringLocationScanJob` using `AddJobScheduler`, specifying the location name and scan options via the typed `FileMonitoringLocationScanJobData` payload:
 
 ```csharp
-services.AddJobScheduling(c => c.StartupDelay(5000), configuration)
-        .WithJob<FileMonitoringLocationScanJob>()
+services.AddJobScheduler()
+    .WithJob<FileMonitoringLocationScanJob>("scan_inbound", job => job
+        .Description("Scans the inbound location.")
+        .WithConcurrency(1)
+        .WithRetry(retry => retry.MaxAttempts(3).FixedDelay(TimeSpan.FromSeconds(1)))
+        .AddTrigger("schedule", trigger => trigger
             .Cron(CronExpressions.EveryMinute)
-            .Named("scan_inbound")
-            .WithData(DataKeys.LocationName, "inbound")         // mandatory
-            .WithData(DataKeys.DelayPerFile, "00:00:01")        // optional
-            .WithData(DataKeys.WaitForProcessing, "true")       // optional
-            .WithData(DataKeys.BatchSize, "10")                 // optional
-            .WithData(DataKeys.ProgressIntervalPercentage, "5") // optional
-            .WithData(DataKeys.FileFilter, ".txt")              // optional
-            .WithData(DataKeys.FileBlackListFilter, ".tmp;*.log") // optional
-            .WithData(DataKeys.MaxFilesToScan, "100")           // optional
-            .WithData(DataKeys.Timeout, "00:01:00")             // optional
-            .RegisterScoped();
-});
+            .Data(new FileMonitoringLocationScanJobData
+            {
+                LocationName = "inbound",
+                DelayPerFile = TimeSpan.FromSeconds(1),
+                WaitForProcessing = true,
+                BatchSize = 10,
+                ProgressIntervalPercentage = 5,
+                FileFilter = ".txt",
+                FileBlackListFilter = [".tmp", "*.log"],
+                MaxFilesToScan = 100,
+                Timeout = TimeSpan.FromMinutes(1)
+            })));
 ```
 
 - **Cron Schedule**: `CronExpressions.EveryMinute` runs the job every minute.
-- **Job Data**: `DataKeys` define the location name and scan options (e.g., `DelayPerFile`, `BatchSize`).
-- **Retry Logic**: The job implements `IRetryJobScheduling` with 3 retry attempts and a 1-second backoff.
+- **Job Data**: `FileMonitoringLocationScanJobData` defines the location name and scan options (e.g., `DelayPerFile`, `BatchSize`).
+- **Retry Logic**: Configure retry through the Jobs registration with `WithRetry(...)`.
 
-#### How It Works
+#### How it works
 
-1. The job retrieves the location name from the job data (`DataKeys.LocationName`).
-2. It constructs a `FileScanOptions` object based on the job data, setting properties like `DelayPerFile`, `BatchSize`, and `Timeout`.
+1. The job retrieves the location name from `FileMonitoringLocationScanJobData.LocationName`.
+2. It constructs a `FileScanOptions` object based on the typed data, setting properties like `DelayPerFile`, `BatchSize`, and `Timeout`.
 3. It calls `IFileMonitoringService.ScanLocationAsync` to perform the scan, logging progress and events.
 4. Events are logged using structured logging (`TypedLogger`), capturing details like files scanned, events detected, and elapsed time.
 
-#### Example Log Output
+#### Example log output
 
 ```bash
 STR job: scan started (location=inbound)
@@ -695,9 +939,9 @@ STR job: scan completed (location=inbound, eventCount=5)
 STR job: event processed (location=inbound, eventType=Added, filePath=file1.txt, size=1024, detected=2025-03-28T12:00:00Z)
 ```
 
-#### Retry Handling
+#### Retry handling
 
-The job implements `IRetryJobScheduling` with 3 attempts and a 1-second backoff. If a scan fails (e.g., due to a transient error), the job will retry up to 3 times:
+Configure retries on the Jobs registration. For example, `WithRetry(retry => retry.MaxAttempts(3).FixedDelay(TimeSpan.FromSeconds(1)))` retries transient scan failures up to 3 times:
 
 ```bash
 STR job: scan started (location=inbound)
@@ -706,7 +950,7 @@ STR job: scan started (location=inbound)
 STR job: scan completed (location=inbound, eventCount=5)
 ```
 
-### Best Practices
+### Best practices
 
 - **Set Appropriate Options**: Configure `DelayPerFile` and `BatchSize` to manage load during scans.
 - **Monitor Logs**: Use the structured logs to track scan progress and events.

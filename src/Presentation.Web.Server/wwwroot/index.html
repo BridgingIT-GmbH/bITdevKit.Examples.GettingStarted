@@ -3,284 +3,612 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>BridgingIT.DevKit.Examples.GettingStarted API</title>
+    <meta name="color-scheme" content="dark light">
+    <title>BDK GettingStarted</title>
     <base href="/" />
 
-    <!-- Inline SVG Favicon - Bootstrap code-square icon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect fill='%231a4151' width='16' height='16'/><path fill='%23d35a24' d='M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z'/><path fill='%23d35a24' d='M6.854 4.646a.5.5 0 0 1 0 .708L4.207 8l2.647 2.646a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 0 1 .708 0zm2.292 0a.5.5 0 0 0 0 .708L11.793 8l-2.647 2.646a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708 0z'/></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect fill='%23111010' width='16' height='16'/><path fill='%23fd971f' d='M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z'/><path fill='%23fd971f' d='M6.854 4.646a.5.5 0 0 1 0 .708L4.207 8l2.647 2.646a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 0 1 .708 0zm2.292 0a.5.5 0 0 0 0 .708L11.793 8l-2.647 2.646a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708 0z'/></svg>">
 
     <script>
-        (function() { // prevents screen flashing on navigation
-            const theme = localStorage.getItem('theme') || 'system';
-            const effectiveTheme = theme === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme;
-            document.documentElement.setAttribute('data-bs-theme', effectiveTheme);
+        (function() {
+            const storedTheme = localStorage.getItem('theme');
+            document.documentElement.setAttribute('data-bs-theme', storedTheme === 'light' ? 'light' : 'dark');
         })();
     </script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
     <style>
         :root {
-            --bs-primary: #1a4151;
-            --bs-primary-rgb: 26,65,81;
-            --bs-secondary: #d35a24;
-            --bs-secondary-rgb: 211,90,36;
+            --bs-primary: #66d9ef;
+            --bs-primary-rgb: 102, 217, 239;
+            --bs-secondary: #fd971f;
+            --bs-secondary-rgb: 253, 151, 31;
+            --bs-body-bg: #151414;
+            --bs-body-color: #f8f8f2;
+            --bs-secondary-color: #a59f99;
+            --bs-tertiary-bg: #1d1c1c;
+            --bs-secondary-bg: #242222;
+            --bs-border-color: #302d2d;
+            --bdk-surface: #171616;
+            --bdk-surface-muted: #1d1c1c;
+            --bdk-header-bg: #171616;
+            --bdk-code-bg: #0f0e0e;
+            --bdk-panel-border: rgba(248, 248, 242, .12);
+            --bdk-panel-border-hover: rgba(248, 248, 242, .18);
+            --bdk-active-bg: rgba(var(--bs-secondary-rgb), .12);
+            --bdk-active-fg: var(--bs-secondary);
+            --bdk-texture-rgb: 248, 248, 242;
+            --bs-border-radius: .125rem;
+            --bs-border-radius-sm: .1rem;
+            --bs-border-radius-lg: .2rem;
         }
 
-        [data-bs-theme="dark"] {
-            --bs-primary: #2d5a6b;
-            --bs-primary-rgb: 45,90,107;
-            --bs-secondary: #ff7d45;
-            --bs-secondary-rgb: 255,125,69;
+        [data-bs-theme="light"] {
+            --bs-primary: #0f62fe;
+            --bs-primary-rgb: 15, 98, 254;
+            --bs-secondary: #8a3ffc;
+            --bs-secondary-rgb: 138, 63, 252;
+            --bs-body-bg: #f7f7f2;
+            --bs-body-color: #171717;
+            --bs-secondary-color: #5f5b50;
+            --bs-tertiary-bg: #efeee7;
+            --bs-secondary-bg: #e5e3db;
+            --bs-border-color: #cbc8bd;
+            --bdk-surface: #fffef8;
+            --bdk-surface-muted: #efeee7;
+            --bdk-header-bg: #f7f7f2;
+            --bdk-code-bg: #eceae0;
+            --bdk-panel-border: rgba(23, 23, 23, .16);
+            --bdk-panel-border-hover: rgba(23, 23, 23, .24);
+            --bdk-active-bg: rgba(var(--bs-primary-rgb), .1);
+            --bdk-active-fg: var(--bs-primary);
+            --bdk-texture-rgb: 23, 23, 23;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
+            min-height: 100%;
+            margin: 0;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
             font-size: .875rem;
+            background: var(--bs-body-bg);
         }
 
-        .navbar {
-            height: 3.5rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            background-color: var(--bs-primary) !important;
-        }
-
-        [data-bs-theme="dark"] .navbar {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .navbar-brand {
-            padding-top: .5rem;
-            padding-bottom: .5rem;
-            height: 3.5rem;
-            font-size: 1.2rem;
-            max-width: 440px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        @media (min-width: 768px) {
-            .navbar-brand {
-                max-width: none;
-                overflow: visible;
-                text-overflow: clip;
-                white-space: normal;
-            }
-        }
-
-        .theme-toggle {
-            padding: 0.5rem;
-            background: none;
-            border: none;
-            color: var(--bs-navbar-color);
-        }
-
-            .theme-toggle:hover {
-                color: var(--bs-navbar-hover-color);
-            }
-
-            .theme-toggle i {
-                font-size: 1.25rem;
-            }
-
-        [data-bs-theme="dark"] .light-icon,
-        [data-bs-theme="light"] .dark-icon {
-            display: none !important;
-        }
-
-        [data-bs-theme="light"] .light-icon,
-        [data-bs-theme="dark"] .dark-icon {
-            display: inline-block !important;
-        }
-
-        .container-fluid {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .card {
-            border: 1px solid var(--bs-border-color);
-            transition: all 0.3s ease;
-        }
-
-            .card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-                border-color: var(--bs-secondary);
-            }
-
-        [data-bs-theme="light"] .card {
-            background-color: var(--bs-tertiary-bg);
-        }
-
-        [data-bs-theme="dark"] .card {
-            border: 1px solid var(--bs-border-color);
-            background-color: var(--bs-dark-bg-subtle);
-        }
-
-            [data-bs-theme="dark"] .card:hover {
-                box-shadow: 0 8px 16px rgba(255, 255, 255, 0.1);
-                border-color: var(--bs-secondary);
-            }
-
-        .btn-primary {
-            background-color: var(--bs-primary);
-            border-color: var(--bs-primary);
-        }
-
-            .btn-primary:hover {
-                background-color: var(--bs-secondary);
-                border-color: var(--bs-secondary);
-            }
-
-        .btn-outline-secondary {
-            color: var(--bs-secondary);
-            border-color: var(--bs-secondary);
-        }
-
-            .btn-outline-secondary:hover {
-                background-color: var(--bs-secondary);
-                border-color: var(--bs-secondary);
-                color: #fff;
-            }
-
-        .btn-primary, .btn-outline-primary,
-        .btn-secondary, .btn-outline-secondary {
-            --bs-btn-color: #fff;
-            --bs-btn-border-color: var(--bs-primary);
-            --bs-btn-hover-color: #fff;
-            --bs-btn-hover-bg: var(--bs-secondary);
-            --bs-btn-hover-border-color: var(--bs-secondary);
-            --bs-btn-active-color: #fff;
-            --bs-btn-active-bg: var(--bs-secondary);
-            --bs-btn-active-border-color: var(--bs-secondary);
-            --bs-btn-disabled-color: var(--bs-primary);
-            --bs-btn-disabled-border-color: var(--bs-primary);
-        }
-
-        .badge {
-            --bs-badge-color: #fff;
-            --bs-badge-bg: var(--bs-secondary);
-        }
-
-        .badge {
-            background-color: var(--bs-primary) !important;
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 1040;
+            pointer-events: none;
+            background:
+                repeating-linear-gradient(to bottom, rgba(var(--bdk-texture-rgb), .04), rgba(var(--bdk-texture-rgb), .04) 1px, transparent 1px, transparent 4px),
+                linear-gradient(90deg, rgba(var(--bdk-texture-rgb), .022) 1px, transparent 1px);
+            background-size: auto, 48px 48px;
+            mix-blend-mode: soft-light;
+            opacity: .5;
         }
 
         a {
             color: var(--bs-primary);
         }
 
-            a:hover {
-                color: var(--bs-secondary);
-            }
-
-        .hero-section {
-            padding: 3rem 0 2rem;
-            text-align: center;
-            border-bottom: 2px solid var(--bs-border-color);
-            position: relative;
+        a:hover {
+            color: var(--bs-secondary);
         }
 
-            .hero-section::after {
-                content: '';
-                position: absolute;
-                bottom: -2px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 80px;
-                height: 2px;
-                background: var(--bs-secondary);
-            }
-
-        .tech-badge {
-            display: inline-block;
-            padding: 0.4rem 0.75rem;
-            margin: 0.25rem;
-            font-size: 0.8rem;
-            font-weight: 500;
-            border-radius: 0.375rem;
-        }
-
-        .quick-link-card {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-            height: 100%;
-        }
-
-            .quick-link-card .card {
-                height: 100%;
-                cursor: pointer;
-            }
-
-            .quick-link-card .card-body {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                padding: 1.25rem;
-            }
-
-            .quick-link-card i {
-                font-size: 2rem;
-                margin-bottom: 0.5rem;
-                color: var(--bs-secondary);
-            }
-
-            .quick-link-card h6 {
-                margin: 0;
-                font-size: 0.85rem;
-                text-align: center;
-            }
-
-        .feature-card .card-body {
-            padding: 1.5rem;
-        }
-
-        .feature-icon-wrapper {
-            flex-shrink: 0;
-        }
-
-            .feature-icon-wrapper i {
-                font-size: 2rem;
-                color: var(--bs-secondary);
-            }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .section-header {
-            margin-bottom: 1.5rem;
-        }
-
-            .section-header h4 i {
-                color: var(--bs-secondary);
-            }
-
-        .alert-primary {
-            border-left: 4px solid var(--bs-secondary);
-            background-color: rgba(var(--bs-secondary-rgb), 0.1);
-        }
-
-            .alert-primary .bi {
-                color: var(--bs-secondary);
-            }
-
-        .status-bar {
-            padding: 0.75rem 0;
+        .app-header {
+            min-height: 3.15rem;
+            background-color: var(--bdk-header-bg);
+            background-image: linear-gradient(rgba(var(--bdk-texture-rgb), .025) 50%, transparent 50%);
+            background-size: 100% 4px;
             border-bottom: 1px solid var(--bs-border-color);
         }
 
-        .bg-success {
-            background-color: #16a34a !important;
+        .header-inner {
+            max-width: 1440px;
+            min-height: 3.15rem;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
         }
 
-        .bg-info {
-            background-color: var(--bs-secondary) !important;
+        .brand {
+            min-width: 0;
+            display: flex;
+            align-items: baseline;
+            gap: .6rem;
+            color: var(--bs-body-color);
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: .02em;
+        }
+
+        .brand:hover {
+            color: var(--bs-body-color);
+        }
+
+        .brand-page,
+        .brand-separator {
+            color: var(--bs-secondary-color);
+            font-weight: 500;
+        }
+
+        .header-tools {
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+        }
+
+        .header-action,
+        .theme-toggle {
+            min-height: 1.7rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem;
+            padding: .22rem .5rem;
+            color: var(--bs-body-color);
+            background: transparent;
+            border: 1px solid var(--bs-border-color);
+            border-radius: .1rem;
+            text-decoration: none;
+            font-size: .74rem;
+            line-height: 1.2;
+        }
+
+        .header-action i,
+        .theme-toggle i {
+            color: var(--bdk-active-fg);
+        }
+
+        .header-action:hover,
+        .theme-toggle:hover {
+            color: var(--bdk-active-fg);
+            background: var(--bdk-active-bg);
+            border-color: var(--bdk-panel-border-hover);
+        }
+
+        .theme-toggle {
+            cursor: pointer;
+        }
+
+        .page-shell {
+            width: min(1440px, 100%);
+            margin: 0 auto;
+            padding: 1.5rem 1rem 3rem;
+        }
+
+        .eyebrow,
+        .panel-kicker,
+        .section-kicker,
+        .feature-number {
+            color: var(--bs-secondary-color);
+            font-size: .68rem;
+            font-weight: 700;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+        }
+
+        .hero-panel {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr);
+            background: transparent;
+            border: 1px solid var(--bdk-panel-border);
+            border-radius: .1rem;
+        }
+
+        .hero-copy {
+            padding: clamp(1.5rem, 4vw, 3.75rem);
+            background: var(--bdk-surface);
+            border-right: 1px solid var(--bdk-panel-border);
+        }
+
+        .hero-copy h1 {
+            max-width: 850px;
+            margin: .75rem 0 1rem;
+            font-size: clamp(2rem, 4.6vw, 4.5rem);
+            line-height: 1.02;
+            letter-spacing: -.055em;
+        }
+
+        .hero-copy .lead {
+            max-width: 760px;
+            margin-bottom: 1.75rem;
+            color: var(--bs-secondary-color);
+            font-size: clamp(.95rem, 1.2vw, 1.1rem);
+            line-height: 1.7;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .6rem;
+        }
+
+        .btn-bdk-primary,
+        .btn-bdk-outline {
+            min-height: 2.55rem;
+            padding: .6rem .85rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            border: 1px solid var(--bdk-active-fg);
+            border-radius: .1rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+        }
+
+        .btn-bdk-primary {
+            color: var(--bdk-active-fg);
+            background: var(--bdk-active-bg);
+        }
+
+        .btn-bdk-primary:hover {
+            color: #111;
+            background: var(--bdk-active-fg);
+            border-color: var(--bdk-active-fg);
+        }
+
+        .btn-bdk-outline {
+            color: var(--bs-body-color);
+            background: transparent;
+            border-color: var(--bs-border-color);
+        }
+
+        .btn-bdk-outline:hover {
+            color: var(--bs-primary);
+            background: rgba(var(--bs-primary-rgb), .08);
+            border-color: var(--bs-primary);
+        }
+
+        .runtime-panel {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            background: var(--bdk-code-bg);
+        }
+
+        .runtime-heading {
+            padding: .7rem .8rem;
+            border-bottom: 1px solid var(--bdk-panel-border);
+        }
+
+        .runtime-title {
+            margin-top: .25rem;
+            font-size: .85rem;
+            font-weight: 700;
+        }
+
+        .runtime-link {
+            flex: 1;
+            min-height: 5.75rem;
+            padding: .8rem;
+            display: grid;
+            grid-template-columns: 2rem minmax(0, 1fr) auto;
+            align-items: center;
+            gap: .65rem;
+            color: inherit;
+            text-decoration: none;
+            border-bottom: 1px solid var(--bdk-panel-border);
+        }
+
+        .runtime-link:last-child {
+            border-bottom: 0;
+        }
+
+        .runtime-link:hover {
+            color: inherit;
+            background: var(--bdk-active-bg);
+        }
+
+        .runtime-link.featured {
+            box-shadow: inset 3px 0 var(--bdk-active-fg);
+        }
+
+        .runtime-icon {
+            color: var(--bdk-active-fg);
+            font-size: 1.2rem;
+        }
+
+        .runtime-label {
+            display: block;
+            margin-bottom: .2rem;
+            color: var(--bs-body-color);
+            font-weight: 700;
+        }
+
+        .runtime-description {
+            display: block;
+            color: var(--bs-secondary-color);
+            font-size: .7rem;
+        }
+
+        .runtime-arrow {
+            color: var(--bs-secondary-color);
+        }
+
+        .section {
+            padding-top: 2rem;
+        }
+
+        .section-heading {
+            margin-bottom: .75rem;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .section-heading h2 {
+            margin: .2rem 0 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: .01em;
+        }
+
+        .section-heading p {
+            max-width: 580px;
+            margin: 0;
+            color: var(--bs-secondary-color);
+            font-size: .72rem;
+            text-align: right;
+        }
+
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+            border-top: 1px solid var(--bdk-panel-border);
+            border-left: 1px solid var(--bdk-panel-border);
+        }
+
+        .quick-link {
+            min-height: 7.75rem;
+            padding: .8rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: inherit;
+            background: transparent;
+            border-right: 1px solid var(--bdk-panel-border);
+            border-bottom: 1px solid var(--bdk-panel-border);
+            text-decoration: none;
+        }
+
+        .quick-link:hover {
+            color: inherit;
+            background: var(--bdk-surface-muted);
+            box-shadow: inset 0 -2px var(--bdk-active-fg);
+        }
+
+        .quick-link.dashboard-link {
+            background: var(--bdk-active-bg);
+            box-shadow: inset 0 2px var(--bdk-active-fg);
+        }
+
+        .quick-link > i {
+            color: var(--bdk-active-fg);
+            font-size: 1.2rem;
+        }
+
+        .quick-link-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .5rem;
+            font-weight: 700;
+        }
+
+        .quick-link-title i {
+            color: var(--bs-secondary-color);
+        }
+
+        .quick-link-description {
+            margin-top: .3rem;
+            display: block;
+            color: var(--bs-secondary-color);
+            font-size: .68rem;
+            line-height: 1.4;
+        }
+
+        .info-layout {
+            display: grid;
+            grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+            border: 1px solid var(--bdk-panel-border);
+            border-radius: .1rem;
+        }
+
+        .intro-panel {
+            padding: clamp(1.25rem, 3vw, 2.25rem);
+            background: var(--bdk-surface);
+            border-right: 1px solid var(--bdk-panel-border);
+        }
+
+        .intro-panel h2 {
+            margin: .45rem 0 .85rem;
+            font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+        }
+
+        .intro-panel p {
+            color: var(--bs-secondary-color);
+            line-height: 1.65;
+        }
+
+        .guide-note {
+            margin-top: 1.25rem;
+            padding: .7rem .8rem;
+            display: flex;
+            align-items: flex-start;
+            gap: .65rem;
+            background: var(--bdk-code-bg);
+            border: 1px solid var(--bdk-panel-border);
+            border-left: 3px solid var(--bs-primary);
+            font-size: .72rem;
+            line-height: 1.5;
+        }
+
+        .guide-note i {
+            color: var(--bs-primary);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            background: var(--bdk-code-bg);
+        }
+
+        .feature-item {
+            min-height: 8.75rem;
+            padding: .85rem;
+            border-right: 1px solid var(--bdk-panel-border);
+            border-bottom: 1px solid var(--bdk-panel-border);
+        }
+
+        .feature-item:nth-child(2n) {
+            border-right: 0;
+        }
+
+        .feature-item:nth-last-child(-n + 2) {
+            border-bottom: 0;
+        }
+
+        .feature-topline {
+            margin-bottom: .65rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .feature-topline i {
+            color: var(--bdk-active-fg);
+            font-size: 1.1rem;
+        }
+
+        .feature-item h3 {
+            margin-bottom: .4rem;
+            font-size: .82rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .feature-item p {
+            margin: 0;
+            color: var(--bs-secondary-color);
+            font-size: .69rem;
+            line-height: 1.5;
+        }
+
+        .stack-panel {
+            padding: .75rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: .4rem;
+            background: transparent;
+            border: 1px solid var(--bdk-panel-border);
+            border-radius: .1rem;
+        }
+
+        .tech-badge {
+            padding: .3rem .5rem;
+            color: var(--bs-secondary-color);
+            background: var(--bdk-code-bg);
+            border: 1px solid var(--bdk-panel-border-hover);
+            border-radius: .1rem;
+            font-size: .68rem;
+            font-weight: 700;
+        }
+
+        .page-footer {
+            margin-top: 2rem;
+            padding-top: .75rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            color: var(--bs-secondary-color);
+            border-top: 1px solid var(--bdk-panel-border);
+            font-size: .65rem;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+        }
+
+        @media (max-width: 991.98px) {
+            .hero-panel,
+            .info-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-copy,
+            .intro-panel {
+                border-right: 0;
+                border-bottom: 1px solid var(--bdk-panel-border);
+            }
+
+            .runtime-link {
+                min-height: 5rem;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .page-shell {
+                padding-top: 1rem;
+            }
+
+            .brand-page,
+            .theme-label {
+                display: none;
+            }
+
+            .header-action,
+            .theme-toggle {
+                width: 2rem;
+                padding: .22rem;
+            }
+
+            .header-action span {
+                display: none;
+            }
+
+            .hero-copy h1 {
+                letter-spacing: -.04em;
+            }
+
+            .section-heading {
+                display: block;
+            }
+
+            .section-heading p {
+                margin-top: .45rem;
+                text-align: left;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-item,
+            .feature-item:nth-child(2n),
+            .feature-item:nth-last-child(-n + 2) {
+                min-height: auto;
+                border-right: 0;
+                border-bottom: 1px solid var(--bdk-panel-border);
+            }
+
+            .feature-item:last-child {
+                border-bottom: 0;
+            }
+
+            .page-footer {
+                display: block;
+                line-height: 1.7;
+            }
         }
     </style>
 </head>
@@ -288,368 +616,253 @@
 <body>
     <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
 
-    <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
-        <a class="navbar-brand me-0 px-3" href="/" title="BridgingIT.DevKit.Examples.GettingStarted API">
-            BridgingIT.DevKit.Examples.GettingStarted API
-        </a>
-        <div class="navbar-nav">
-            <div class="nav-item text-nowrap">
-                <button class="btn btn-link nav-link px-3 theme-toggle" type="button" aria-label="Toggle theme">
-                    <i class="bi bi-sun-fill light-icon"></i>
-                    <i class="bi bi-moon-fill dark-icon"></i>
+    <header class="app-header sticky-top">
+        <div class="header-inner">
+            <a class="brand" href="/" aria-label="BDK GettingStarted home">
+                <span>BDK</span>
+                <span class="brand-separator">/</span>
+                <span class="brand-page">GettingStarted</span>
+            </a>
+            <div class="header-tools" aria-label="Application tools">
+                <a class="header-action" href="/_bdk/dashboard" aria-label="Open DevKit Dashboard">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                    <span>Dashboard</span>
+                </a>
+                <button class="theme-toggle" type="button" aria-label="Switch to light theme" title="Switch theme">
+                    <i class="bi bi-circle-half"></i>
+                    <span class="theme-label">Dark</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <div class="container-fluid">
-        <main id="main-content" class="col-12 px-md-4">
-            <!-- Status Bar -->
-            <!-- <div class="status-bar d-flex justify-content-end align-items-center">
-                <div class="d-flex gap-2">
-                    <span class="badge bg-success status-badge">
-                        <i class="bi bi-check-circle"></i>API Online
-                    </span>
-                    <span class="badge bg-info status-badge">
-                        <i class="bi bi-box"></i>v1.0.0
-                    </span>
-                </div>
-            </div> -->
-
-            <!-- Hero Section -->
-            <div class="hero-section">
-                <!-- <h1 class="display-4 fw-bold mb-3">BridgingIT.DevKit API</h1> -->
-                <p class="lead text-muted mb-4">Domain-Driven Design Example with Clean Architecture</p>
-                <div class="d-flex justify-content-center gap-3 flex-wrap">
-                    <a href="/scalar" class="btn btn-primary btn-lg">
-                        <i class="bi bi-rocket-takeoff me-2"></i>Get Started
+    <main id="main-content" class="page-shell">
+        <section class="hero-panel" aria-labelledby="hero-title">
+            <div class="hero-copy">
+                <div class="eyebrow">Reference application / Modular DDD</div>
+                <h1 id="hero-title">GettingStarted with bITdevKit.</h1>
+                <p class="lead">
+                    A runnable .NET 10 example for building modular, domain-driven applications with clean boundaries, durable jobs, and observable runtime behavior.
+                </p>
+                <div class="hero-actions">
+                    <a href="/_bdk/dashboard" class="btn-bdk-primary">
+                        <i class="bi bi-speedometer2"></i>
+                        Open DevKit Dashboard
+                        <i class="bi bi-arrow-right"></i>
                     </a>
-                    <a href="https://github.com/BridgingIT-GmbH/bITdevKit/tree/main/docs" class="btn btn-outline-secondary btn-lg" target="_blank">
-                        <i class="bi bi-github me-2"></i>Documentation
+                    <a href="/scalar" class="btn-bdk-outline">
+                        <i class="bi bi-braces"></i>
+                        Explore the API
                     </a>
                 </div>
             </div>
-
-            <!-- Welcome Section -->
-            <div class="py-4">
-                <div class="section-header">
-                    <h4><i class="bi bi-house-door me-2"></i>Welcome</h4>
+            <aside class="runtime-panel" aria-label="Runtime entry points">
+                <div class="runtime-heading">
+                    <div class="panel-kicker">Local runtime</div>
+                    <div class="runtime-title">Operational entry points</div>
                 </div>
-                <p class="lead mb-3">
-                    This is a demonstration API built with .NET 10 and bITdevKit, showcasing
-                    a opinionated, modular, Domain-Driven Design (DDD) application following Clean Architecture principles.
-                </p>
-                <p>
-                    The REST API provides customer management capabilities with a full CRUD implementation, demonstrating best practices for enterprise application development.
-                </p>
-                <div class="alert alert-primary d-flex align-items-start mt-3" role="alert">
-                    <i class="bi bi-info-circle-fill me-3 fs-5 flex-shrink-0"></i>
-                    <div>
-                        <strong>New to bITdevKit or DDD?</strong> Check out our <a href="https://github.com/BridgingIT-GmbH/bITdevKit/tree/main/docs/introduction-ddd-guide.md" class="alert-link">Introduction Guide</a>
-                        to learn about bITdevKit, Domain-Driven Design and Clean Architecture patterns.
+                <a class="runtime-link featured" href="/_bdk/dashboard">
+                    <i class="bi bi-grid-3x3-gap runtime-icon"></i>
+                    <span>
+                        <span class="runtime-label">DevKit Dashboard</span>
+                        <span class="runtime-description">Inspect identity, health, jobs, metrics, and runtime tools.</span>
+                    </span>
+                    <i class="bi bi-arrow-up-right runtime-arrow"></i>
+                </a>
+                <a class="runtime-link" href="/scalar">
+                    <i class="bi bi-code-square runtime-icon"></i>
+                    <span>
+                        <span class="runtime-label">Scalar API</span>
+                        <span class="runtime-description">Explore the HTTP surface and execute requests.</span>
+                    </span>
+                    <i class="bi bi-arrow-up-right runtime-arrow"></i>
+                </a>
+                <a class="runtime-link" href="/health">
+                    <i class="bi bi-heart-pulse runtime-icon"></i>
+                    <span>
+                        <span class="runtime-label">Health endpoint</span>
+                        <span class="runtime-description">Read the current application health response.</span>
+                    </span>
+                    <i class="bi bi-arrow-up-right runtime-arrow"></i>
+                </a>
+            </aside>
+        </section>
+
+        <section class="section" aria-labelledby="quick-start-title">
+            <div class="section-heading">
+                <div>
+                    <div class="section-kicker">01 / Navigate</div>
+                    <h2 id="quick-start-title">Quick access</h2>
+                </div>
+                <p>Move directly from the example to its operational, API, and documentation surfaces.</p>
+            </div>
+            <div class="quick-grid">
+                <a href="/_bdk/dashboard" class="quick-link dashboard-link" aria-label="Open DevKit Dashboard">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>
+                        <span class="quick-link-title">Dashboard <i class="bi bi-arrow-right-short"></i></span>
+                        <span class="quick-link-description">Runtime operations and diagnostics</span>
+                    </span>
+                </a>
+                <a href="/scalar" class="quick-link" aria-label="Open Scalar API UI">
+                    <i class="bi bi-code-square"></i>
+                    <span>
+                        <span class="quick-link-title">Scalar UI <i class="bi bi-arrow-up-right"></i></span>
+                        <span class="quick-link-description">Interactive API reference</span>
+                    </span>
+                </a>
+                <a href="/openapi.json" class="quick-link" aria-label="Open OpenAPI specification">
+                    <i class="bi bi-file-earmark-code"></i>
+                    <span>
+                        <span class="quick-link-title">OpenAPI <i class="bi bi-arrow-up-right"></i></span>
+                        <span class="quick-link-description">Generated API contract</span>
+                    </span>
+                </a>
+                <a href="/health" class="quick-link" aria-label="View health check status">
+                    <i class="bi bi-heart-pulse"></i>
+                    <span>
+                        <span class="quick-link-title">Health <i class="bi bi-arrow-up-right"></i></span>
+                        <span class="quick-link-description">Application readiness signal</span>
+                    </span>
+                </a>
+                <a href="/readme" class="quick-link" aria-label="View README documentation">
+                    <i class="bi bi-book"></i>
+                    <span>
+                        <span class="quick-link-title">README <i class="bi bi-arrow-up-right"></i></span>
+                        <span class="quick-link-description">Local setup and example guide</span>
+                    </span>
+                </a>
+                <a href="http://localhost:15349" class="quick-link" target="_blank" rel="noopener" aria-label="Open Seq log dashboard">
+                    <i class="bi bi-list-ul"></i>
+                    <span>
+                        <span class="quick-link-title">Seq Logs <i class="bi bi-box-arrow-up-right"></i></span>
+                        <span class="quick-link-description">Structured application logs</span>
+                    </span>
+                </a>
+                <a href="https://github.com/BridgingIT-GmbH/bITdevKit" class="quick-link" target="_blank" rel="noopener" aria-label="View bITdevKit documentation on GitHub">
+                    <i class="bi bi-github"></i>
+                    <span>
+                        <span class="quick-link-title">DevKit Docs <i class="bi bi-box-arrow-up-right"></i></span>
+                        <span class="quick-link-description">Guides, features, and source</span>
+                    </span>
+                </a>
+            </div>
+        </section>
+
+        <section class="section" aria-labelledby="example-title">
+            <div class="section-heading">
+                <div>
+                    <div class="section-kicker">02 / Explore</div>
+                    <h2 id="example-title">Inside the example</h2>
+                </div>
+                <p>A compact application that shows how the core DevKit patterns work together.</p>
+            </div>
+            <div class="info-layout">
+                <div class="intro-panel">
+                    <div class="panel-kicker">Customer management module</div>
+                    <h2>From domain model to running system.</h2>
+                    <p>
+                        The REST API demonstrates a complete customer lifecycle using modular architecture, explicit result handling, persistence behaviors, and background processing.
+                    </p>
+                    <p class="mb-0">
+                        Use the source alongside the running dashboard and API explorer to connect each architectural pattern to its runtime behavior.
+                    </p>
+                    <div class="guide-note">
+                        <i class="bi bi-info-circle"></i>
+                        <span>
+                            New to bITdevKit or DDD? Start with the
+                            <a href="https://github.com/BridgingIT-GmbH/bITdevKit/tree/main/docs/introduction-ddd-guide.md" target="_blank" rel="noopener">Introduction Guide</a>.
+                        </span>
                     </div>
+                </div>
+                <div class="feature-grid">
+                    <article class="feature-item">
+                        <div class="feature-topline"><span class="feature-number">01</span><i class="bi bi-bricks"></i></div>
+                        <h3>Modular architecture</h3>
+                        <p>Self-contained modules keep features cohesive and application boundaries explicit.</p>
+                    </article>
+                    <article class="feature-item">
+                        <div class="feature-topline"><span class="feature-number">02</span><i class="bi bi-layers"></i></div>
+                        <h3>Clean architecture</h3>
+                        <p>Domain, Application, Infrastructure, and Presentation remain clearly separated.</p>
+                    </article>
+                    <article class="feature-item">
+                        <div class="feature-topline"><span class="feature-number">03</span><i class="bi bi-arrow-left-right"></i></div>
+                        <h3>CQRS and requester</h3>
+                        <p>Command and query handlers make application operations focused and testable.</p>
+                    </article>
+                    <article class="feature-item">
+                        <div class="feature-topline"><span class="feature-number">04</span><i class="bi bi-broadcast"></i></div>
+                        <h3>Domain events</h3>
+                        <p>Events decouple domain decisions from their downstream reactions.</p>
+                    </article>
+                    <article class="feature-item">
+                        <div class="feature-topline"><span class="feature-number">05</span><i class="bi bi-database"></i></div>
+                        <h3>Repository behaviors</h3>
+                        <p>Composable behaviors add logging, auditing, and event publication to persistence.</p>
+                    </article>
+                    <article class="feature-item">
+                        <div class="feature-topline"><span class="feature-number">06</span><i class="bi bi-check-circle"></i></div>
+                        <h3>Result pattern</h3>
+                        <p>Expected failures stay explicit without relying on exceptions for control flow.</p>
+                    </article>
+                    <article class="feature-item">
+                        <div class="feature-topline"><span class="feature-number">07</span><i class="bi bi-diagram-3"></i></div>
+                        <h3>Rich domain model</h3>
+                        <p>Aggregates, value objects, enumerations, and rules keep business logic close.</p>
+                    </article>
+                    <article class="feature-item">
+                        <div class="feature-topline"><span class="feature-number">08</span><i class="bi bi-calendar-event"></i></div>
+                        <h3>DevKit Jobs</h3>
+                        <p>Durable jobs provide scheduling, retries, history, and distributed execution.</p>
+                    </article>
                 </div>
             </div>
+        </section>
 
-            <!-- Quick Start Section -->
-            <div class="py-4">
-                <div class="section-header">
-                    <h4><i class="bi bi-lightning-charge me-2"></i>Quick Start</h4>
-                </div>
-                <div class="row g-3">
-                    <div class="col-6 col-md-4 col-lg-2">
-                        <a href="/readme" class="quick-link-card" aria-label="View README documentation">
-                            <div class="card">
-                                <div class="card-body">
-                                    <i class="bi bi-book"></i>
-                                    <h6>README</h6>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-6 col-md-4 col-lg-2">
-                        <a href="/scalar" class="quick-link-card" aria-label="Open Scalar API UI">
-                            <div class="card">
-                                <div class="card-body">
-                                    <i class="bi bi-code-square"></i>
-                                    <h6>Scalar UI</h6>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-6 col-md-4 col-lg-2">
-                        <a href="/openapi.json" class="quick-link-card" aria-label="Download OpenAPI specification">
-                            <div class="card">
-                                <div class="card-body">
-                                    <i class="bi bi-file-earmark-code"></i>
-                                    <h6>OpenAPI</h6>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-6 col-md-4 col-lg-2">
-                        <a href="/health" class="quick-link-card" aria-label="View health check status">
-                            <div class="card">
-                                <div class="card-body">
-                                    <i class="bi bi-heart-pulse"></i>
-                                    <h6>Health</h6>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-6 col-md-4 col-lg-2">
-                        <a href="http://localhost:15349" class="quick-link-card" target="_blank" aria-label="Open Seq log dashboard">
-                            <div class="card">
-                                <div class="card-body">
-                                    <i class="bi bi-list-ul"></i>
-                                    <h6>Seq Logs</h6>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    <div class="col-6 col-md-4 col-lg-2">
-                        <a href="https://github.com/BridgingIT-GmbH/bITdevKit" class="quick-link-card" target="_blank" aria-label="View bITdevKit documentation on GitHub">
-                            <div class="card">
-                                <div class="card-body">
-                                    <i class="bi bi-github"></i>
-                                    <h6>Docs</h6>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
+        <section class="section" aria-labelledby="stack-title">
+            <div class="section-heading">
+                <div>
+                    <div class="section-kicker">03 / Stack</div>
+                    <h2 id="stack-title">Built with</h2>
                 </div>
             </div>
-
-            <!-- Features Section -->
-            <div class="py-4">
-                <div class="section-header">
-                    <h4><i class="bi bi-stars me-2"></i>Features</h4>
-                </div>
-                <div class="row g-3">
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card feature-card h-100">
-                            <div class="card-body">
-                                <div class="d-flex align-items-start gap-3">
-                                    <div class="feature-icon-wrapper">
-                                        <i class="bi bi-bricks"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title mb-2">Modular Architecture</h5>
-                                        <p class="card-text text-muted">
-                                            Vertical slice architecture with self-contained modules for better separation of concerns and maintainability.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card feature-card h-100">
-                            <div class="card-body">
-                                <div class="d-flex align-items-start gap-3">
-                                    <div class="feature-icon-wrapper">
-                                        <i class="bi bi-layers"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title mb-2">Clean Architecture</h5>
-                                        <p class="card-text text-muted">
-                                            Onion architecture with clear boundaries between Domain, Application, Infrastructure and Presentation layers.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card feature-card h-100">
-                            <div class="card-body">
-                                <div class="d-flex align-items-start gap-3">
-                                    <div class="feature-icon-wrapper">
-                                        <i class="bi bi-arrow-left-right"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title mb-2">CQRS Pattern</h5>
-                                        <p class="card-text text-muted">
-                                            Separate Command and Query handlers using the Requester/Notifier pattern for optimized read and write operations.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card feature-card h-100">
-                            <div class="card-body">
-                                <div class="d-flex align-items-start gap-3">
-                                    <div class="feature-icon-wrapper">
-                                        <i class="bi bi-broadcast"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title mb-2">Domain Events</h5>
-                                        <p class="card-text text-muted">
-                                            Event-driven architecture with domain events for loose coupling and reactive business logic.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card feature-card h-100">
-                            <div class="card-body">
-                                <div class="d-flex align-items-start gap-3">
-                                    <div class="feature-icon-wrapper">
-                                        <i class="bi bi-database"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title mb-2">Repository Pattern</h5>
-                                        <p class="card-text text-muted">
-                                            Generic repositories with decorator behaviors for logging, auditing and domain event publishing.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card feature-card h-100">
-                            <div class="card-body">
-                                <div class="d-flex align-items-start gap-3">
-                                    <div class="feature-icon-wrapper">
-                                        <i class="bi bi-check-circle"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title mb-2">Result Pattern</h5>
-                                        <p class="card-text text-muted">
-                                            Railway-oriented programming with Result types for explicit error handling without exceptions.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card feature-card h-100">
-                            <div class="card-body">
-                                <div class="d-flex align-items-start gap-3">
-                                    <div class="feature-icon-wrapper">
-                                        <i class="bi bi-diagram-3"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title mb-2">Domain Model</h5>
-                                        <p class="card-text text-muted">
-                                            Rich domain models with aggregates, value objects, smart enumerations and business rules for encapsulating business logic.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card feature-card h-100">
-                            <div class="card-body">
-                                <div class="d-flex align-items-start gap-3">
-                                    <div class="feature-icon-wrapper">
-                                        <i class="bi bi-calendar-event"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="card-title mb-2">DevKit Jobs</h5>
-                                        <p class="card-text text-muted">
-                                            DevKit-native durable background jobs with scheduling, retries, execution history, and distributed execution support.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="stack-panel">
+                <span class="tech-badge">.NET 10</span>
+                <span class="tech-badge">ASP.NET Core</span>
+                <span class="tech-badge">Entity Framework Core</span>
+                <span class="tech-badge">SQL Server</span>
+                <span class="tech-badge">Mapster</span>
+                <span class="tech-badge">FluentValidation</span>
+                <span class="tech-badge">Serilog</span>
+                <span class="tech-badge">bITdevKit Jobs</span>
+                <span class="tech-badge">xUnit</span>
+                <span class="tech-badge">bITdevKit</span>
             </div>
+        </section>
 
-            <!-- Tech Stack Section -->
-            <div class="py-4 mb-4">
-                <div class="section-header">
-                    <h4><i class="bi bi-stack me-2"></i>Tech Stack</h4>
-                </div>
-                <div class="d-flex flex-wrap">
-                    <span class="badge tech-badge">.NET 10</span>
-                    <span class="badge tech-badge">ASP.NET Core</span>
-                    <span class="badge tech-badge">Entity Framework Core</span>
-                    <span class="badge tech-badge">SQL Server</span>
-                    <span class="badge tech-badge">Mapster</span>
-                    <span class="badge tech-badge">FluentValidation</span>
-                    <span class="badge tech-badge">Serilog</span>
-                    <span class="badge tech-badge">bITdevKit Jobs</span>
-                    <span class="badge tech-badge">xUnit</span>
-                    <span class="badge tech-badge">bITdevKit</span>
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <!-- <footer class="py-3 my-4 border-top">
-                <p class="text-center text-muted mb-0">
-                    &copy; Copyright BridgingIT GmbH - All Rights Reserved
-                </p>
-            </footer> -->
-        </main>
-    </div>
+        <footer class="page-footer">
+            <span>BridgingIT.DevKit.Examples.GettingStarted</span>
+            <span>Reference application / .NET 10</span>
+        </footer>
+    </main>
 
     <script>
-        const themeManager = {
-            themes: {
-                light: 'light',
-                dark: 'dark',
-                system: 'system'
-            },
+        const themeToggle = document.querySelector('.theme-toggle');
+        const themeLabel = document.querySelector('.theme-label');
 
-            initialize() {
-                this.applyTheme(this.getCurrentTheme());
-                this.setupSystemThemeListener();
-                this.setupToggleButton();
-            },
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeLabel.textContent = theme === 'dark' ? 'Dark' : 'Light';
+            themeToggle.setAttribute('aria-label', `Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`);
+        }
 
-            getSystemTheme() {
-                return window.matchMedia('(prefers-color-scheme: dark)').matches ? this.themes.dark : this.themes.light;
-            },
-
-            getCurrentTheme() {
-                return localStorage.getItem('theme') || this.themes.system;
-            },
-
-            applyTheme(theme) {
-                const effectiveTheme = theme === this.themes.system ? this.getSystemTheme() : theme;
-                document.documentElement.setAttribute('data-bs-theme', effectiveTheme);
-                localStorage.setItem('theme', theme);
-            },
-
-            setupSystemThemeListener() {
-                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-                    if (this.getCurrentTheme() === this.themes.system) {
-                        this.applyTheme(this.themes.system);
-                    }
-                });
-            },
-
-            setupToggleButton() {
-                const toggleButton = document.querySelector('.theme-toggle');
-                toggleButton.addEventListener('click', () => {
-                    const currentTheme = this.getCurrentTheme();
-                    switch (currentTheme) {
-                        case this.themes.light:
-                            this.applyTheme(this.themes.dark);
-                            break;
-                        case this.themes.dark:
-                            this.applyTheme(this.themes.system);
-                            break;
-                        default:
-                            this.applyTheme(this.themes.light);
-                    }
-                });
-            }
-        };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            themeManager.initialize();
+        themeToggle.addEventListener('click', () => {
+            applyTheme(document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark');
         });
+
+        applyTheme(document.documentElement.getAttribute('data-bs-theme') || 'dark');
     </script>
 </body>
 </html>

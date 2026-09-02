@@ -71,10 +71,26 @@ public class CoreModuleModule() : WebModuleBase("CoreModule")
                 .StartupDelay("00:00:15")
                 .PurgeOnStartup());
 
+        // Needs nuget package: BridgingIT.DevKit.Infrastructure.EntityFramework.Postgres
+        // services.AddPostgresDbContext<CoreModuleDbContext>(o => o
+        //         .UseConnectionString(moduleConfiguration.ConnectionStrings["Default"])
+        //         .UseLogger(true, true) // TODO: does not work together with a ModuleDbContextBase
+        //         /*.UseSimpleLogger()*/)
+        //     .WithSequenceNumberGenerator()
+        //     .WithDatabaseMigratorService(o => o // create the database and apply existing migrations
+        //         .Enabled(environment.IsLocalDevelopment() || environment.IsContainerized()))
+        //         //.DeleteOnStartup(environment.IsLocalDevelopment() || environment.IsContainerized()))
+        //     .WithOutboxDomainEventService(o => o
+        //         .ProcessingInterval("00:00:30")
+        //         .ProcessingModeImmediate() // forwards the outbox event, through a queue, directly to the outbox worker
+        //         .StartupDelay("00:00:15")
+        //         .PurgeOnStartup());
+
         // repository setup
         services.AddEntityFrameworkRepository<Customer, CoreModuleDbContext>()
             .WithBehavior<RepositoryTracingBehavior<Customer>>() // tracing of repository operations
             .WithBehavior<RepositoryLoggingBehavior<Customer>>() // logging of repository operations
+            .WithBehavior<RepositoryMetricsBehavior<Customer>>() // metrics for repository operations
             .WithBehavior<RepositoryAuditStateBehavior<Customer>>() // audit state (created/modified/deleted) and soft delete
             .WithBehavior<RepositoryOutboxDomainEventBehavior<Customer, CoreModuleDbContext>>(); // outbox pattern for domain events
             //.WithBehavior<RepositoryDomainEventPublisherBehavior<Customer>>(); // direct publishing of domain events
