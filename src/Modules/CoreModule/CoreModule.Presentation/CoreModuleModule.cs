@@ -3,7 +3,7 @@
 // Use of this source code is governed by an MIT-style license that can be
 // found in the LICENSE file at https://github.com/bridgingit/bitdevkit/license
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
 
 using BridgingIT.DevKit.Application.Jobs;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework;
@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 [ExcludeFromCodeCoverage]
 public class CoreModuleModule() : WebModuleBase("CoreModule")
@@ -56,7 +57,7 @@ public class CoreModuleModule() : WebModuleBase("CoreModule")
             .AddEndpoints()
             .AddConsoleCommands();
 
-        // // entity framework setup
+        // entity framework setup
         services.AddSqlServerDbContext<CoreModuleDbContext>(o => o
                 .UseConnectionString(moduleConfiguration.ConnectionStrings["Default"])
                 .UseLogger(true, true) // TODO: does not work together with a ModuleDbContextBase
@@ -70,21 +71,6 @@ public class CoreModuleModule() : WebModuleBase("CoreModule")
                 .ProcessingModeImmediate() // forwards the outbox event, through a queue, directly to the outbox worker
                 .StartupDelay("00:00:15")
                 .PurgeOnStartup());
-
-        // Needs nuget package: BridgingIT.DevKit.Infrastructure.EntityFramework.Postgres
-        // services.AddPostgresDbContext<CoreModuleDbContext>(o => o
-        //         .UseConnectionString(moduleConfiguration.ConnectionStrings["Default"])
-        //         .UseLogger(true, true) // TODO: does not work together with a ModuleDbContextBase
-        //         /*.UseSimpleLogger()*/)
-        //     .WithSequenceNumberGenerator()
-        //     .WithDatabaseMigratorService(o => o // create the database and apply existing migrations
-        //         .Enabled(environment.IsLocalDevelopment() || environment.IsContainerized()))
-        //         //.DeleteOnStartup(environment.IsLocalDevelopment() || environment.IsContainerized()))
-        //     .WithOutboxDomainEventService(o => o
-        //         .ProcessingInterval("00:00:30")
-        //         .ProcessingModeImmediate() // forwards the outbox event, through a queue, directly to the outbox worker
-        //         .StartupDelay("00:00:15")
-        //         .PurgeOnStartup());
 
         // repository setup
         services.AddEntityFrameworkRepository<Customer, CoreModuleDbContext>()

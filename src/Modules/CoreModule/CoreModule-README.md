@@ -87,8 +87,10 @@ sequenceDiagram
 ## Configuration And Runtime Services
 
 `CoreModuleModule.Register()` configures:
+
 - Startup tasks via `CoreModuleDomainSeederTask`
-- Job scheduling with Quartz (`CustomerExportJob` on `CronExpressions.EveryMinute`)
+- DevKit Jobs with durable EF storage (`CustomerExportJob` on `CronExpressions.EveryMinute`)
+- Application dashboard page for creating, viewing, editing, and deleting customers through existing commands and queries
 - SQL Server `CoreModuleDbContext` with logging, migrations, and sequence number generator
 - Outbox processing (30 second interval, 15 second startup delay)
 - Repository behaviors (tracing, logging, audit state, outbox domain events)
@@ -203,6 +205,7 @@ public partial class CustomerCreateCommand
 ### Other Handler Patterns
 
 **Query Handler** (simpler, read-only):
+
 ```csharp
 [Query]
 public partial class CustomerFindAllQuery
@@ -222,6 +225,7 @@ public partial class CustomerFindAllQuery
 ```
 
 **Update Handler** (with concurrency check):
+
 ```csharp
 await Result<CustomerModel>
     .BindResultAsync(async ct => await repository.FindOneResultAsync(request.Model.Id, ct))
@@ -235,6 +239,7 @@ await Result<CustomerModel>
 ### Handler Checklist
 
 When creating a new handler in CoreModule:
+
 1. Add `[Command]` or `[Query]` to the request type
 2. Inject dependencies through the `[Handle]` method signature
 3. Use context pattern if multiple steps accumulate state
@@ -335,6 +340,7 @@ public partial class CustomerUpdatedDomainEvent(Customer model) : DomainEventBas
 ### Event Registration in Aggregate
 
 **During Creation**:
+
 ```csharp
 public static Result<Customer> Create(string firstName, string lastName, string email, CustomerNumber number)
 {
@@ -349,6 +355,7 @@ public static Result<Customer> Create(string firstName, string lastName, string 
 ```
 
 **During Updates** (using ApplyChange pattern):
+
 ```csharp
 public Result<Customer> ChangeEmail(string email)
 {
@@ -410,6 +417,7 @@ The outbox worker polls `OutboxDomainEvents` table, deserializes events, dispatc
 ### Testing Events
 
 **Unit Test - Event Registration**:
+
 ```csharp
 [Fact]
 public void Create_ShouldRegisterCustomerCreatedEvent()
@@ -425,6 +433,7 @@ public void Create_ShouldRegisterCustomerCreatedEvent()
 ```
 
 **Integration Test - Outbox Persistence**:
+
 ```csharp
 [Fact]
 public async Task InsertCustomer_ShouldPersistEventToOutbox()
@@ -498,6 +507,7 @@ dotnet ef migrations add <MigrationName> --context CoreModuleDbContext --output-
 ```
 
 Example:
+
 ```bash
 dotnet ef migrations add AddCustomerPhoneNumber --context CoreModuleDbContext ...
 ```
@@ -517,16 +527,19 @@ Connects via `appsettings.json`, checks `__EFMigrationsHistory`, applies pending
 #### Common Tasks
 
 **Revert migration**:
+
 ```bash
 dotnet ef database update <TargetMigration> --project ... --startup-project ...
 ```
 
 **Remove last migration** (before applied):
+
 ```bash
 dotnet ef migrations remove --project ... --startup-project ...
 ```
 
 **Generate SQL script** (for production):
+
 ```bash
 dotnet ef migrations script --project ... --startup-project ... --output migrations.sql
 ```
@@ -539,7 +552,7 @@ More details: [Microsoft EF Core Migrations Documentation](https://learn.microso
 
 ### Test Structure
 
-```
+```text
 tests/Modules/CoreModule/
 ├── CoreModule.UnitTests/              # Domain, handlers, mappings
 ├── CoreModule.IntegrationTests/       # Endpoints, persistence
@@ -549,6 +562,7 @@ tests/Modules/CoreModule/
 ### Example Tests
 
 **Handler Unit Test**:
+
 ```csharp
 [Fact]
 public async Task Process_ValidRequest_SuccessResult()
@@ -565,6 +579,7 @@ public async Task Process_ValidRequest_SuccessResult()
 ```
 
 **Endpoint Integration Test**:
+
 ```csharp
 [Fact]
 public async Task POST_Customer_Returns201Created()

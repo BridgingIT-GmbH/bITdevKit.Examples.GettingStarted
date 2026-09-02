@@ -1,0 +1,262 @@
+@using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application
+@inherits DashboardPageSlice
+
+@{
+    var pagePath = this.Dashboard.Url("customer-management");
+    var contentPath = this.Dashboard.Url("customer-management", "content");
+    var createPath = DashboardPath.Combine(pagePath, "create");
+    var updatePath = DashboardPath.Combine(pagePath, "update");
+    var deletePath = DashboardPath.Combine(pagePath, "delete");
+}
+
+<div class="d-flex justify-content-between align-items-center py-2 mb-3 border-bottom">
+    <div>
+        <h4 class="m-0">Customer Management</h4>
+        <div class="text-muted small">Review and maintain the GettingStarted customer records</div>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <button type="button" id="gettingstarted-customer-create" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i>New customer
+        </button>
+        <span id="gettingstarted-customers-refresh-status" class="text-muted small">
+            Updated @DateTimeOffset.UtcNow.LocalDateTime.ToString("T", CultureInfo.InvariantCulture)
+        </span>
+        <button type="button" id="gettingstarted-customers-refresh" class="btn btn-outline-secondary btn-sm" title="Refresh customers">
+            <i class="bi bi-arrow-clockwise"></i>
+        </button>
+    </div>
+</div>
+
+<div id="gettingstarted-customers-alert" class="alert d-none py-2" role="alert"></div>
+
+<div id="gettingstarted-customers-content">
+    <div class="text-muted small py-2">Loading customers...</div>
+</div>
+
+<div class="modal fade" id="gettingstarted-customer-editor-modal" tabindex="-1" aria-labelledby="gettingstarted-customer-editor-title" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form id="gettingstarted-customer-editor-form">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="gettingstarted-customer-editor-title">Edit customer</h5>
+                        <div id="gettingstarted-customer-editor-number" class="text-muted small"></div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="gettingstarted-customer-first-name" class="form-label">First name</label>
+                            <input id="gettingstarted-customer-first-name" class="form-control" required maxlength="128" />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="gettingstarted-customer-last-name" class="form-label">Last name</label>
+                            <input id="gettingstarted-customer-last-name" class="form-control" required maxlength="128" />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="gettingstarted-customer-email" class="form-label">Email</label>
+                            <input id="gettingstarted-customer-email" class="form-control" type="email" required maxlength="256" />
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label for="gettingstarted-customer-birth-date" class="form-label">Date of birth</label>
+                            <input id="gettingstarted-customer-birth-date" class="form-control" type="date" />
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label for="gettingstarted-customer-status" class="form-label">Status</label>
+                            <select id="gettingstarted-customer-status" class="form-select">
+                                <option value="Lead">Lead</option>
+                                <option value="Active">Active</option>
+                                <option value="Retired">Retired</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <span id="gettingstarted-customer-editor-status" class="text-muted small me-auto"></span>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button id="gettingstarted-customer-save" type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>Save changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="gettingstarted-customer-delete-modal" tabindex="-1" aria-labelledby="gettingstarted-customer-delete-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="gettingstarted-customer-delete-title">Delete customer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-1">Delete <strong id="gettingstarted-customer-delete-name"></strong>?</p>
+                <p class="text-muted small mb-0">This permanently removes the customer and cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <span id="gettingstarted-customer-delete-status" class="text-danger small me-auto"></span>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button id="gettingstarted-customer-delete-confirm" type="button" class="btn btn-danger">
+                    <i class="bi bi-trash me-1"></i>Delete customer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (() => {
+        const contentElement = document.getElementById('gettingstarted-customers-content');
+        const alertElement = document.getElementById('gettingstarted-customers-alert');
+        const formElement = document.getElementById('gettingstarted-customer-editor-form');
+        const modalElement = document.getElementById('gettingstarted-customer-editor-modal');
+        const saveElement = document.getElementById('gettingstarted-customer-save');
+        const editorTitleElement = document.getElementById('gettingstarted-customer-editor-title');
+        const editorNumberElement = document.getElementById('gettingstarted-customer-editor-number');
+        const editorStatusElement = document.getElementById('gettingstarted-customer-editor-status');
+        const deleteModalElement = document.getElementById('gettingstarted-customer-delete-modal');
+        const deleteNameElement = document.getElementById('gettingstarted-customer-delete-name');
+        const deleteStatusElement = document.getElementById('gettingstarted-customer-delete-status');
+        const deleteConfirmElement = document.getElementById('gettingstarted-customer-delete-confirm');
+        let selectedCustomer = null;
+        let customerToDelete = null;
+
+        const refresher = window.bdkDashboard.createRefresher({
+            contentUrl: '@contentPath',
+            contentSelector: '#gettingstarted-customers-content',
+            statusSelector: '#gettingstarted-customers-refresh-status',
+            refreshButtonSelector: '#gettingstarted-customers-refresh'
+        });
+
+        function showAlert(message, isError) {
+            alertElement.textContent = message;
+            alertElement.classList.remove('d-none', 'alert-success', 'alert-danger');
+            alertElement.classList.add(isError ? 'alert-danger' : 'alert-success');
+        }
+
+        function openEditor(customer) {
+            selectedCustomer = customer;
+            const isCreating = customer === null;
+
+            formElement.reset();
+            editorTitleElement.textContent = isCreating ? 'New customer' : 'Edit customer';
+            editorNumberElement.textContent = isCreating
+                ? 'The customer number is assigned automatically.'
+                : customer.number || customer.id;
+            document.getElementById('gettingstarted-customer-first-name').value = customer?.firstName || '';
+            document.getElementById('gettingstarted-customer-last-name').value = customer?.lastName || '';
+            document.getElementById('gettingstarted-customer-email').value = customer?.email || '';
+            document.getElementById('gettingstarted-customer-birth-date').value = customer?.dateOfBirth || '';
+            document.getElementById('gettingstarted-customer-status').value = customer?.status || 'Lead';
+            editorStatusElement.textContent = '';
+            saveElement.innerHTML = isCreating
+                ? '<i class="bi bi-plus-lg me-1"></i>Create customer'
+                : '<i class="bi bi-check-lg me-1"></i>Save changes';
+            bootstrap.Modal.getOrCreateInstance(modalElement).show();
+        }
+
+        document.getElementById('gettingstarted-customer-create').addEventListener('click', () => openEditor(null));
+
+        contentElement.addEventListener('click', event => {
+            const editButton = event.target.closest('[data-customer-edit]');
+            if (editButton) {
+                openEditor(JSON.parse(editButton.dataset.customerEdit));
+                return;
+            }
+
+            const deleteButton = event.target.closest('[data-customer-delete]');
+            if (deleteButton) {
+                customerToDelete = {
+                    id: deleteButton.dataset.customerDelete,
+                    name: deleteButton.dataset.customerName
+                };
+                deleteNameElement.textContent = customerToDelete.name || customerToDelete.id;
+                deleteStatusElement.textContent = '';
+                bootstrap.Modal.getOrCreateInstance(deleteModalElement).show();
+            }
+        });
+
+        formElement.addEventListener('submit', async event => {
+            event.preventDefault();
+            const isCreating = selectedCustomer === null;
+            const customer = {
+                ...(selectedCustomer || {}),
+                firstName: document.getElementById('gettingstarted-customer-first-name').value.trim(),
+                lastName: document.getElementById('gettingstarted-customer-last-name').value.trim(),
+                email: document.getElementById('gettingstarted-customer-email').value.trim(),
+                dateOfBirth: document.getElementById('gettingstarted-customer-birth-date').value || null,
+                status: document.getElementById('gettingstarted-customer-status').value,
+                addresses: selectedCustomer?.addresses || []
+            };
+
+            saveElement.disabled = true;
+            editorStatusElement.textContent = isCreating ? 'Creating...' : 'Saving...';
+            try {
+                const response = await fetch(isCreating ? '@createPath' : '@updatePath', {
+                    method: 'POST',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'fetch'
+                    },
+                    body: JSON.stringify(customer)
+                });
+
+                if (!response.ok) {
+                    const details = await response.text();
+                    throw new Error(details || `HTTP ${response.status}`);
+                }
+
+                bootstrap.Modal.getOrCreateInstance(modalElement).hide();
+                showAlert(isCreating ? 'Customer was created.' : 'Customer changes were saved.', false);
+                await refresher.refresh(false);
+            } catch (error) {
+                editorStatusElement.textContent = isCreating
+                    ? 'The customer could not be created.'
+                    : 'The customer could not be updated.';
+                showAlert(`${editorStatusElement.textContent} Check the values and try again.`, true);
+            } finally {
+                saveElement.disabled = false;
+            }
+        });
+
+        deleteConfirmElement.addEventListener('click', async () => {
+            if (!customerToDelete?.id) {
+                return;
+            }
+
+            deleteConfirmElement.disabled = true;
+            deleteStatusElement.textContent = 'Deleting...';
+            try {
+                const response = await fetch(`@deletePath/${encodeURIComponent(customerToDelete.id)}`, {
+                    method: 'DELETE',
+                    cache: 'no-store',
+                    headers: { 'X-Requested-With': 'fetch' }
+                });
+
+                if (!response.ok) {
+                    const details = await response.text();
+                    throw new Error(details || `HTTP ${response.status}`);
+                }
+
+                bootstrap.Modal.getOrCreateInstance(deleteModalElement).hide();
+                showAlert('Customer was deleted.', false);
+                customerToDelete = null;
+                await refresher.refresh(false);
+            } catch (error) {
+                deleteStatusElement.textContent = 'The customer could not be deleted.';
+                showAlert('The customer could not be deleted. Refresh and try again.', true);
+            } finally {
+                deleteConfirmElement.disabled = false;
+            }
+        });
+
+        refresher.refresh(true);
+    })();
+</script>
+
+@functions {
+    public override string PageTitle => "Customers";
+}

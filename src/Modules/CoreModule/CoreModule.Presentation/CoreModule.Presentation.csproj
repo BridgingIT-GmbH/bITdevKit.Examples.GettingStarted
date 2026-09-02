@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <ModuleName>CoreModule</ModuleName>
@@ -9,6 +9,7 @@
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);NU5104;CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +17,7 @@
     <PackageReference Include="BridgingIT.DevKit.Presentation.Web" />
     <PackageReference Include="BridgingIT.DevKit.Presentation.Serilog" />
     <PackageReference Include="BridgingIT.DevKit.Presentation.Web.Jobs" />
+    <PackageReference Include="RazorSlices" />
   </ItemGroup>
 
   <ItemGroup>

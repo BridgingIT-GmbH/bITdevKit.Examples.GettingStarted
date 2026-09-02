@@ -110,11 +110,10 @@ public partial class CustomerUpdateCommand
                 await repository.UpdateResultAsync(e, ct), cancellationToken)
 
             // STEP 5 — Side effects (audit/logging)
-            .Log(logger, "AUDIT - Customer {Id} updated for {Email}", r => [r.Value.Id, r.Value.Email.Value])
+            .Log(logger, "AUDIT - Customer {CustomerId} updated", r => [r.Value.Id])
 
             // STEP 6 — Map updated Aggregate -> Model
-            .MapResult<Customer, CustomerModel>(mapper)
-            .Log(logger, "Aggregate mapped to {@Model}", r => [r.Value]);
+            .MapResult<Customer, CustomerModel>(mapper);
 
     /// <summary>
     /// Updates the customer's basic properties (name, email, birth date, status).
