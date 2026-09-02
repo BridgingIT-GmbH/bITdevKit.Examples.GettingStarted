@@ -30,6 +30,8 @@ public class EndpointTestFixture<TProgram> : IAsyncLifetime where TProgram : cla
 
     public HttpClient Client { get; private set; }
 
+    public IServiceProvider Services => this.factory?.ServiceProvider;
+
     public void Options(EndpointTestFixtureOptions options)
     {
         if (this.optionsConfigured)
