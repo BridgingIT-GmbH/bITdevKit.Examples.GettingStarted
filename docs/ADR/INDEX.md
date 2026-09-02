@@ -19,7 +19,7 @@ We use the **MADR (Markdown Architectural Decision Records)** format for consist
 ## Quick Reference
 
 | ADR | Title | Status |
-|-----|-------|--------|
+| ----- | ------- | -------- |
 | [ADR-0001](0001-clean-onion-architecture.md) | Clean/Onion Architecture with Strict Layer Boundaries | Accepted |
 | [ADR-0002](0002-result-pattern-error-handling.md) | Result Pattern for Error Handling | Accepted |
 | [ADR-0003](0003-modular-monolith-architecture.md) | Modular Monolith Architecture | Accepted |
@@ -34,7 +34,7 @@ We use the **MADR (Markdown Architectural Decision Records)** format for consist
 | [ADR-0012](0012-domain-logic-in-domain-layer.md) | Domain Logic in Domain Layer | Accepted |
 | [ADR-0013](0013-unit-testing-high-coverage-strategy.md) | Unit Testing Strategy with High Coverage Goals | Accepted |
 | [ADR-0014](0014-minimal-api-endpoints-dto-exposure.md) | Minimal API Endpoints with DTO Exposure | Accepted |
-| [ADR-0015](0015-background-jobs-quartz-scheduling.md) | Background Jobs & Scheduling with Quartz.NET | Accepted |
+| [ADR-0015](0015-devkit-native-durable-jobs.md) | DevKit-Native Durable Jobs | Accepted |
 | [ADR-0016](0016-logging-observability-strategy.md) | Logging & Observability Strategy (Serilog) | Accepted |
 | [ADR-0017](0017-integration-testing-strategy.md) | Integration Testing Strategy | Accepted |
 | [ADR-0018](0018-dependency-injection-service-lifetimes.md) | Dependency Injection & Service Lifetime Management | Accepted |

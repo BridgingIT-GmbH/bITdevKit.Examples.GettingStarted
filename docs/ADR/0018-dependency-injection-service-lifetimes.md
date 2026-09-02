@@ -34,7 +34,7 @@ The application needed a DI strategy that:
 
 ## Decision
 
-Adopt **Microsoft.Extensions.DependencyInjection** with **module-based registration**, **explicit lifetime choices**, **factory pattern for scoped dependencies in singletons**, and **decorator chains for cross-cutting concerns**.
+Adopt **Microsoft.Extensions.DependencyInjection** with **module-based registration**, **explicit lifetime choices**, **framework-owned execution scopes for DevKit Jobs**, **factory patterns for application-owned singletons**, and **decorator chains for cross-cutting concerns**.
 
 ### Service Lifetime Guidelines
 
@@ -82,12 +82,15 @@ public class CoreModule : WebModuleBase
         services.AddMapping().WithMapster<CoreModuleMapperRegister>();
 
         // Jobs
-        services.AddJobScheduling(o => o
-            .StartupDelay(configuration["JobScheduling:StartupDelay"]), configuration)
-            .WithJob<CustomerExportJob>()
-                .Cron(CronExpressions.EveryMinute)
-                .Named($"{this.Name}_{nameof(CustomerExportJob)}")
-                .RegisterScoped();
+        services.AddJobScheduler(configuration)
+            .StartupDelay(TimeSpan.FromSeconds(30))
+            .WithJob<CustomerExportJob>(CustomerExportJob.JobName, job => job
+                .Module(this.Name)
+                .UseLifetime(ServiceLifetime.Scoped)
+                .AddTrigger(CustomerExportJob.TriggerName, trigger => trigger
+                    .Cron(CronExpressions.EveryMinute)))
+            .WithEntityFramework<CoreModuleDbContext>()
+            .WithBehavior<ModuleScopeBehavior>();
 
         return services;
     }
@@ -142,38 +145,35 @@ services.AddTransient<ISpecification<Customer>, CustomerEmailSpecification>();
 services.AddTransient<IEmailAddressFactory, EmailAddressFactory>();
 ```
 
-### Factory Pattern for Scoped Dependencies in Singletons
+### Scoped Jobs and Factory Pattern for Singleton Services
 
 ```csharp
-// WRONG: Captive dependency (scoped in singleton)
-public class CustomerExportJob : JobBase
+// WRONG: A singleton job captures a scoped repository.
+services.AddJobScheduler(configuration)
+    .WithJob<CustomerExportJob>(CustomerExportJob.JobName, job => job
+        .UseLifetime(ServiceLifetime.Singleton));
+
+// CORRECT: The Jobs runtime creates an execution scope for a scoped job.
+services.AddJobScheduler(configuration)
+    .WithJob<CustomerExportJob>(CustomerExportJob.JobName, job => job
+        .UseLifetime(ServiceLifetime.Scoped));
+
+public sealed class CustomerExportJob(
+    IGenericRepository<Customer> repository) : JobBase
 {
-    private readonly IGenericRepository<Customer> repository; // SCOPED!
-
-    public CustomerExportJob(IGenericRepository<Customer> repository) // Injected into SINGLETON job
+    public override async Task<Result> ExecuteAsync(
+        IJobExecutionContext<Unit> context,
+        CancellationToken cancellationToken = default)
     {
-        this.repository = repository; // ObjectDisposedException when scope ends
-    }
-}
-
-// Correct: Use IServiceScopeFactory
-[DisallowConcurrentExecution]
-public class CustomerExportJob(
-    ILoggerFactory loggerFactory,
-    IServiceScopeFactory scopeFactory) : JobBase(loggerFactory)
-{
-    public override async Task Process(
-        IJobExecutionContext context,
-        CancellationToken cancellationToken)
-    {
-        using var scope = scopeFactory.CreateScope();
-        var repository = scope.ServiceProvider.GetRequiredService<IGenericRepository<Customer>>();
-
-        // Use repository within scope
         var result = await repository.FindAllResultAsync(cancellationToken: cancellationToken);
+        return result.IsSuccess
+            ? Result.Success()
+            : Result.Failure(result.Messages, result.Errors);
     }
 }
 ```
+
+When an application-owned singleton must resolve a scoped dependency outside a framework-managed operation, inject `IServiceScopeFactory` and create a bounded scope at the point of use. Jobs do not need that workaround when their registration uses `ServiceLifetime.Scoped`.
 
 ### Decorator Pattern for Behaviors
 
@@ -227,12 +227,12 @@ services.AddTransient(typeof(IValidator<>), typeof(FluentValidationValidator<>))
 3. **Safety**: Prevents captive dependencies
 4. **Documentation**: Lifetime expresses intent
 
-### Why Factory Pattern for Captive Dependencies
+### Why Explicit Scope Ownership
 
 1. **Correctness**: Prevents `ObjectDisposedException` from scoped in singleton
-2. **Explicit**: Code clearly shows scope creation
-3. **Flexibility**: Can create multiple scopes per operation
-4. **Standard Pattern**: Well-known .NET pattern
+2. **Framework integration**: DevKit Jobs owns and disposes each scoped execution lifetime
+3. **Explicitness**: Application-owned singletons create a scope only where one is required
+4. **Simplicity**: Scoped jobs receive repositories and other scoped services directly
 
 ## Consequences
 
@@ -240,7 +240,7 @@ services.AddTransient(typeof(IValidator<>), typeof(FluentValidationValidator<>))
 
 - **Testability**: Easy to replace implementations with mocks via constructor injection
 - **Modularity**: Each module self-contained with own service registrations
-- **Lifetime Safety**: Factory pattern prevents captive dependencies
+- **Lifetime Safety**: Scoped activation and bounded factory-created scopes prevent captive dependencies
 - **Performance**: Singleton caching for expensive, stateless services
 - **Maintainability**: Services registered in predictable locations (module `Register()`)
 - **Discoverability**: IDE navigation from interface to implementation
@@ -252,7 +252,7 @@ services.AddTransient(typeof(IValidator<>), typeof(FluentValidationValidator<>))
 - **Complexity**: Understanding lifetimes requires learning curve
 - **Indirection**: More interfaces and abstractions
 - **Debugging**: Stack traces deeper due to decorator chains
-- **Boilerplate**: Factory pattern adds code in singletons
+- **Boilerplate**: Application-owned singletons still require explicit scope-management code when they consume scoped services
 - **Resolution Failures**: Service not registered errors only at runtime
 
 ### Neutral
@@ -307,11 +307,13 @@ public class MyModule : WebModuleBase
         services.AddMapping().WithMapster<MyModuleMapperRegister>();
 
         // 8. Jobs (if any)
-        services.AddJobScheduling(o => o.StartupDelay("00:00:10"), configuration)
-            .WithJob<MyJob>()
-                .Cron(CronExpressions.EveryHour)
-                .Named($"{this.Name}_{nameof(MyJob)}")
-                .RegisterScoped();
+        services.AddJobScheduler(configuration)
+            .StartupDelay(TimeSpan.FromSeconds(10))
+            .WithJob<MyJob>($"{this.Name}_{nameof(MyJob)}", job => job
+                .Module(this.Name)
+                .UseLifetime(ServiceLifetime.Scoped)
+                .AddTrigger("hourly", trigger => trigger
+                    .Cron(CronExpressions.EveryHour)));
 
         return services;
     }
@@ -510,7 +512,7 @@ public class MyService
 ## Related Decisions
 
 - [ADR-0003](0003-modular-monolith-architecture.md): Module-based registration pattern
-- [ADR-0015](0015-background-jobs-quartz-scheduling.md): Factory pattern for scoped dependencies in jobs
+- [ADR-0015](0015-devkit-native-durable-jobs.md): Scoped jobs receive scoped dependencies directly
 - [ADR-0017](0017-integration-testing-strategy.md): Service replacement in tests
 - [ADR-0004](0004-repository-decorator-behaviors.md): Decorator registration pattern
 

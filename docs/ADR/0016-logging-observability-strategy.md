@@ -398,7 +398,7 @@ catch (Exception ex)
 
 ## Related Decisions
 
-- [ADR-0015](0015-background-jobs-quartz-scheduling.md): Jobs use structured logging via `JobBase`
+- [ADR-0015](0015-devkit-native-durable-jobs.md): Jobs use structured logging and shared telemetry
 - [ADR-0017](0017-integration-testing-strategy.md): Tests capture logs via `ITestOutputHelper`
 - [ADR-0003](0003-modular-monolith-architecture.md): ModuleName enricher enables module-specific filtering
 - [ADR-0004](0004-repository-decorator-behaviors.md): Repository logging behavior uses structured logging

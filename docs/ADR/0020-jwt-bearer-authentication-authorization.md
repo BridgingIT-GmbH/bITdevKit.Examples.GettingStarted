@@ -182,20 +182,20 @@ app.MapScalarApiReference(o =>
 
 ### Production Migration Path
 
-**Phase 1: Development (Current)**
+#### Phase 1: Development (Current)
 
 - Use Fake Identity Provider
 - Enabled in `IsLocalDevelopment() || IsContainerized()`
 - No external dependencies
 
-**Phase 2: Staging**
+#### Phase 2: Staging
 
 - Replace with production identity provider (Azure AD, Keycloak, Auth0)
 - Update `Authentication:Authority` to external IDP
 - Configure client credentials
 - Test OAuth2 flows
 
-**Phase 3: Production**
+#### Phase 3: Production
 
 - Remove `AddFakeIdentityProvider` registration
 - Keep `AddJwtBearerAuthentication` unchanged
@@ -451,7 +451,7 @@ builder.Services.AddAuthorization(options =>
 
 1. Client redirects to authorization endpoint:
 
-   ```
+   ```text
    /api/_system/identity/connect/authorize
      ?response_type=code
      &client_id=blazor-wasm
@@ -464,7 +464,7 @@ builder.Services.AddAuthorization(options =>
 
 3. IDP redirects back with authorization code:
 
-   ```
+   ```text
    https://localhost:5001/authentication/login-callback
      ?code=xyz789
      &state=random123
@@ -657,7 +657,7 @@ group.MapDelete("/{id:guid}", async (/* ... */) => { /* ... */ })
 ### Comparison: Development vs Production
 
 | Feature | Fake IDP (Development) | Production IDP (e.g., Azure AD) |
-|---------|------------------------|----------------------------------|
+| --------- | ------------------------ | ---------------------------------- |
 | **Setup Complexity** | Minimal (3 lines of code) | High (cloud configuration, certs) |
 | **External Dependencies** | None | Internet, external service |
 | **Cost** | Free | Pay-per-user or subscription |

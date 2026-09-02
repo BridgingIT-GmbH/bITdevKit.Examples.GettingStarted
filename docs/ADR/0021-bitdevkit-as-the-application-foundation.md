@@ -35,7 +35,7 @@ The repository standardizes on bITdevKit for the architectural building blocks t
 4. **Persistence integration** through repository abstractions and Entity Framework Core integration packages
 5. **Presentation composition** through endpoint registration and mapping helpers
 6. **Boundary mapping** through the devkit mapping abstraction with Mapster integration
-7. **Background processing** through the job scheduling packages and behaviors
+7. **Background processing** through DevKit Jobs, durable persistence, and job behaviors
 8. **Operational consistency** through shared logging, module context, correlation, and related helpers
 
 We do not treat bITdevKit as an optional convenience library in this repository. It is the architectural backbone that ties the application's modules, application flow, persistence, and presentation model together.
@@ -70,7 +70,7 @@ We do not treat bITdevKit as an optional convenience library in this repository.
 
 ### Neutral
 
-- The repository still uses mainstream .NET libraries such as ASP.NET Core, EF Core, Quartz.NET, FluentValidation, and Mapster, but bITdevKit is the integration layer that standardizes how they are used here.
+- The repository still uses mainstream .NET libraries such as ASP.NET Core, EF Core, FluentValidation, and Mapster, but bITdevKit is the integration layer that standardizes how they are used here.
 - The solution remains modular and testable because the devkit is consumed via packages and abstractions rather than copied source code.
 - The decision does not prevent custom code; it sets the default foundation that custom code is expected to build upon.
 
@@ -94,7 +94,7 @@ We do not treat bITdevKit as an optional convenience library in this repository.
 - [ADR-0010](0010-mapster-object-mapping.md): Uses the devkit mapping abstraction with Mapster
 - [ADR-0011](0011-application-logic-in-commands-queries.md): Places use-case orchestration in command and query handlers executed through the devkit requester
 - [ADR-0014](0014-minimal-api-endpoints-dto-exposure.md): Uses the devkit endpoint model for presentation
-- [ADR-0015](0015-background-jobs-quartz-scheduling.md): Uses the devkit job scheduling integration
+- [ADR-0015](0015-devkit-native-durable-jobs.md): Uses the DevKit Jobs subsystem and its operational integrations
 - [ADR-0016](0016-logging-observability-strategy.md): Benefits from shared tracing, correlation, and structured logging patterns
 
 ## References
@@ -106,7 +106,7 @@ We do not treat bITdevKit as an optional convenience library in this repository.
 - [bITdevKit Domain Repositories](../../.bdk/docs/features-domain-repositories.md)
 - [bITdevKit Common Mapping](../../.bdk/docs/common-mapping.md)
 - [bITdevKit Presentation Endpoints](../../.bdk/docs/features-presentation-endpoints.md)
-- [bITdevKit JobScheduling](../../.bdk/docs/features-jobscheduling.md)
+- [bITdevKit Jobs](../../.bdk/docs/features-jobs.md)
 
 ## Notes
 
@@ -115,15 +115,15 @@ We do not treat bITdevKit as an optional convenience library in this repository.
 The solution consumes the devkit through centrally managed package versions:
 
 ```xml
-<PackageVersion Include="BridgingIT.DevKit.Application.JobScheduling" Version="10.0.106-preview.0.20" />
-<PackageVersion Include="BridgingIT.DevKit.Common.Mapping" Version="10.0.106-preview.0.20" />
-<PackageVersion Include="BridgingIT.DevKit.Domain" Version="10.0.106-preview.0.20" />
-<PackageVersion Include="BridgingIT.DevKit.Domain.CodeGen" Version="10.0.106-preview.0.20" />
-<PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework" Version="10.0.106-preview.0.20" />
-<PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" Version="10.0.106-preview.0.20" />
-<PackageVersion Include="BridgingIT.DevKit.Presentation.Web" Version="10.0.106-preview.0.20" />
-<PackageVersion Include="BridgingIT.DevKit.Presentation.Web.JobScheduling" Version="10.0.106-preview.0.20" />
-<PackageVersion Include="BridgingIT.DevKit.Presentation.Serilog" Version="10.0.106-preview.0.20" />
+<PackageVersion Include="BridgingIT.DevKit.Application.Jobs" Version="10.0.111" />
+<PackageVersion Include="BridgingIT.DevKit.Common.Mapping" Version="10.0.111" />
+<PackageVersion Include="BridgingIT.DevKit.Domain" Version="10.0.111" />
+<PackageVersion Include="BridgingIT.DevKit.Domain.CodeGen" Version="10.0.111" />
+<PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework" Version="10.0.111" />
+<PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" Version="10.0.111" />
+<PackageVersion Include="BridgingIT.DevKit.Presentation.Web" Version="10.0.111" />
+<PackageVersion Include="BridgingIT.DevKit.Presentation.Web.Jobs" Version="10.0.111" />
+<PackageVersion Include="BridgingIT.DevKit.Presentation.Serilog" Version="10.0.111" />
 ```
 
 ### Composition Root Example
@@ -131,20 +131,17 @@ The solution consumes the devkit through centrally managed package versions:
 The host composes the application through devkit registration points instead of custom startup infrastructure:
 
 ```csharp
-builder.Services.AddModules(builder.Configuration, builder.Environment)
-    .WithModule<CoreModuleModule>();
+var builder = DevKitWebApplication.CreateBuilder(args)
+    .AddConfiguration()
+    .AddLogging()
+    .AddModules(modules => modules
+        .WithModule(new CoreModuleModule()))
+    .AddMcp();
 
 builder.Services.AddRequester()
     .AddHandlers().WithDefaultBehaviors();
 builder.Services.AddNotifier()
     .AddHandlers().WithDefaultBehaviors();
-
-builder.Services.AddJobScheduling(o => o
-    .StartupDelay(builder.Configuration["JobScheduling:StartupDelay"]), builder.Configuration)
-    .WithSqlServerStore(builder.Configuration["JobScheduling:Quartz:quartz.dataSource.default.connectionString"])
-    .WithBehavior<ModuleScopeJobSchedulingBehavior>()
-    .AddEndpoints()
-    .AddConsoleCommands();
 
 builder.Services.AddMapping().WithMapster();
 builder.Services.AddEndpoints<SystemEndpoints>(builder.Environment.IsLocalDevelopment() || builder.Environment.IsContainerized());
@@ -160,11 +157,22 @@ services.AddStartupTasks(o => o
     .WithTask<CoreModuleDomainSeederTask>(o => o
         .Enabled(environment.IsLocalDevelopment() || environment.IsContainerized()));
 
-services.AddJobScheduling(o => o
-   .StartupDelay(configuration["JobScheduling:StartupDelay"]), configuration)
-   .WithJob<CustomerExportJob>()
-       .Cron(CronExpressions.EveryMinute)
-       .Named($"{this.Name}_{nameof(CustomerExportJob)}").RegisterScoped();
+services.AddJobScheduler(configuration)
+    .StartupDelay(TimeSpan.FromSeconds(30))
+    .WithJob<CustomerExportJob>(CustomerExportJob.JobName, job => job
+        .Description("Exports all customers from the repository.")
+        .Module(this.Name)
+        .UseLifetime(ServiceLifetime.Scoped)
+        .WithConcurrency(1)
+        .WithRetry(retry => retry
+            .MaxAttempts(3)
+            .FixedDelay(TimeSpan.FromSeconds(1)))
+        .AddTrigger(CustomerExportJob.TriggerName, trigger => trigger
+            .Cron(CronExpressions.EveryMinute)))
+    .WithEntityFramework<CoreModuleDbContext>()
+    .WithBehavior<ModuleScopeBehavior>()
+    .AddEndpoints()
+    .AddConsoleCommands();
 
 services.AddSqlServerDbContext<CoreModuleDbContext>(o => o
         .UseConnectionString(moduleConfiguration.ConnectionStrings["Default"]))
@@ -183,4 +191,5 @@ services.AddEntityFrameworkRepository<Customer, CoreModuleDbContext>()
     .WithBehavior<RepositoryAuditStateBehavior<Customer>>()
     .WithBehavior<RepositoryOutboxDomainEventBehavior<Customer, CoreModuleDbContext>>();
 
-services.AddEndpoints<CustomerEndpoints>();```
+services.AddEndpoints<CustomerEndpoints>();
+```
