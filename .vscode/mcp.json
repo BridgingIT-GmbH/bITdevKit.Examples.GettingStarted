@@ -1,22 +1,9 @@
 {
   "servers": {
-    "ado": {
+    "bdk": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@azure-devops/mcp", "${input:ado_org}"]
-    },
-    "bdk-mcp": {
-      "type": "stdio",
-      "command": "dotnet-script",
-      "cwd": "${workspaceFolder}",
-      "args": [".bdk/mcp/bdk-mcp.csx"]
+      "command": "dotnet",
+      "args": ["tool", "run", "bdk", "mcp"]
     }
-  },
-  "inputs": [
-    {
-      "id": "ado_org",
-      "type": "promptString",
-      "description": "Azure DevOps organization name  (e.g. 'bitdevelopment')"
-    }
-  ]
+  }
 }

@@ -99,6 +99,13 @@
         "dotnet-inspect"
       ],
       "rollForward": false
+    },
+    "bridgingit.devkit.cli": {
+      "version": "10.0.111",
+      "commands": [
+        "bdk"
+      ],
+      "rollForward": false
     }
   }
 }

@@ -462,14 +462,14 @@
         }
       }
     },
-    "/api/_system/jobs": {
+    "/_bdk/api/jobs": {
       "get": {
         "tags": [
-          "_System.JobScheduling"
+          "_bdk.JobScheduling"
         ],
         "summary": "Get all jobs",
         "description": "Retrieves a list of all scheduled jobs.",
-        "operationId": "_System.JobScheduling.GetJobs",
+        "operationId": "_bdk.JobScheduling.GetJobs",
         "responses": {
           "200": {
             "description": "OK",
@@ -497,14 +497,14 @@
         }
       }
     },
-    "/api/_system/jobs/{jobName}/{jobGroup}": {
+    "/_bdk/api/jobs/{jobName}/{jobGroup}": {
       "get": {
         "tags": [
-          "_System.JobScheduling"
+          "_bdk.JobScheduling"
         ],
         "summary": "Get job details",
         "description": "Retrieves details for a specific job.",
-        "operationId": "_System.JobScheduling.GetJob",
+        "operationId": "_bdk.JobScheduling.GetJob",
         "parameters": [
           {
             "name": "jobName",
@@ -557,14 +557,14 @@
         }
       }
     },
-    "/api/_system/jobs/{jobName}/{jobGroup}/runs": {
+    "/_bdk/api/jobs/{jobName}/{jobGroup}/runs": {
       "get": {
         "tags": [
-          "_System.JobScheduling"
+          "_bdk.JobScheduling"
         ],
         "summary": "Get job run history",
         "description": "Retrieves execution history for a specific job with optional filters.",
-        "operationId": "_System.JobScheduling.GetJobRuns",
+        "operationId": "_bdk.JobScheduling.GetJobRuns",
         "parameters": [
           {
             "name": "jobName",
@@ -664,11 +664,11 @@
       },
       "delete": {
         "tags": [
-          "_System.JobScheduling"
+          "_bdk.JobScheduling"
         ],
         "summary": "Purge old job run history",
         "description": "Purges job run history older than a specified date.",
-        "operationId": "_System.JobScheduling.PurgeJobRuns",
+        "operationId": "_bdk.JobScheduling.PurgeJobRuns",
         "parameters": [
           {
             "name": "jobName",
@@ -720,14 +720,14 @@
         }
       }
     },
-    "/api/_system/jobs/{jobName}/{jobGroup}/stats": {
+    "/_bdk/api/jobs/{jobName}/{jobGroup}/stats": {
       "get": {
         "tags": [
-          "_System.JobScheduling"
+          "_bdk.JobScheduling"
         ],
         "summary": "Get job run statistics",
         "description": "Retrieves aggregated statistics for a job’s execution history.",
-        "operationId": "_System.JobScheduling.GetJobRunStats",
+        "operationId": "_bdk.JobScheduling.GetJobRunStats",
         "parameters": [
           {
             "name": "jobName",
@@ -786,14 +786,14 @@
         }
       }
     },
-    "/api/_system/jobs/{jobName}/{jobGroup}/triggers": {
+    "/_bdk/api/jobs/{jobName}/{jobGroup}/triggers": {
       "get": {
         "tags": [
-          "_System.JobScheduling"
+          "_bdk.JobScheduling"
         ],
         "summary": "Get job triggers",
         "description": "Retrieves all triggers associated with a specific job.",
-        "operationId": "_System.JobScheduling.GetJobTriggers",
+        "operationId": "_bdk.JobScheduling.GetJobTriggers",
         "parameters": [
           {
             "name": "jobName",
@@ -839,14 +839,14 @@
         }
       }
     },
-    "/api/_system/jobs/{jobName}/{jobGroup}/trigger": {
+    "/_bdk/api/jobs/{jobName}/{jobGroup}/trigger": {
       "post": {
         "tags": [
-          "_System.JobScheduling"
+          "_bdk.JobScheduling"
         ],
         "summary": "Trigger job immediately",
         "description": "Triggers a job to run immediately with optional data.",
-        "operationId": "_System.JobScheduling.TriggerJob",
+        "operationId": "_bdk.JobScheduling.TriggerJob",
         "parameters": [
           {
             "name": "jobName",
@@ -915,14 +915,14 @@
         }
       }
     },
-    "/api/_system/jobs/{jobName}/{jobGroup}/pause": {
+    "/_bdk/api/jobs/{jobName}/{jobGroup}/pause": {
       "post": {
         "tags": [
-          "_System.JobScheduling"
+          "_bdk.JobScheduling"
         ],
         "summary": "Pause a job",
         "description": "Pauses the execution of a specific job.",
-        "operationId": "_System.JobScheduling.PauseJob",
+        "operationId": "_bdk.JobScheduling.PauseJob",
         "parameters": [
           {
             "name": "jobName",
@@ -975,14 +975,14 @@
         }
       }
     },
-    "/api/_system/jobs/{jobName}/{jobGroup}/resume": {
+    "/_bdk/api/jobs/{jobName}/{jobGroup}/resume": {
       "post": {
         "tags": [
-          "_System.JobScheduling"
+          "_bdk.JobScheduling"
         ],
         "summary": "Resume a paused job",
         "description": "Resumes the execution of a paused job.",
-        "operationId": "_System.JobScheduling.ResumeJob",
+        "operationId": "_bdk.JobScheduling.ResumeJob",
         "parameters": [
           {
             "name": "jobName",
@@ -1035,14 +1035,14 @@
         }
       }
     },
-    "/api/_system/jobs/{jobName}/{jobGroup}/interrupt": {
+    "/_bdk/api/jobs/{jobName}/{jobGroup}/interrupt": {
       "post": {
         "tags": [
-          "_System.JobScheduling"
+          "_bdk.JobScheduling"
         ],
         "summary": "Interrupt a running job",
         "description": "Interrupts the execution of a currently running job.",
-        "operationId": "_System.JobScheduling.InterruptJob",
+        "operationId": "_bdk.JobScheduling.InterruptJob",
         "parameters": [
           {
             "name": "jobName",
@@ -1095,12 +1095,12 @@
         }
       }
     },
-    "/api/_system": {
+    "/_bdk/api/system": {
       "get": {
         "tags": [
-          "_System"
+          "_bdk.System"
         ],
-        "operationId": "_System.Get",
+        "operationId": "_bdk.System.Get",
         "responses": {
           "200": {
             "description": "OK",
@@ -1128,12 +1128,12 @@
         }
       }
     },
-    "/api/_system/echo": {
+    "/_bdk/api/system/echo": {
       "get": {
         "tags": [
-          "_System"
+          "_bdk.System"
         ],
-        "operationId": "_System.GetEcho",
+        "operationId": "_bdk.System.GetEcho",
         "responses": {
           "200": {
             "description": "OK",
@@ -1158,12 +1158,12 @@
         }
       }
     },
-    "/api/_system/info": {
+    "/_bdk/api/system/info": {
       "get": {
         "tags": [
-          "_System"
+          "_bdk.System"
         ],
-        "operationId": "_System.GetInfo",
+        "operationId": "_bdk.System.GetInfo",
         "responses": {
           "200": {
             "description": "OK",
@@ -1188,12 +1188,12 @@
         }
       }
     },
-    "/api/_system/modules": {
+    "/_bdk/api/system/modules": {
       "get": {
         "tags": [
-          "_System"
+          "_bdk.System"
         ],
-        "operationId": "_System.GetModules",
+        "operationId": "_bdk.System.GetModules",
         "responses": {
           "200": {
             "description": "OK",
@@ -1221,14 +1221,14 @@
         }
       }
     },
-    "/api/_system/identity/connect/.well-known/openid-configuration": {
+    "/_bdk/api/identity/connect/.well-known/openid-configuration": {
       "get": {
         "tags": [
-          "_System.IdentityProvider"
+          "_bdk.IdentityProvider"
         ],
         "summary": "OIDC Discovery Document",
         "description": "Returns the OpenID Connect discovery document.",
-        "operationId": "_System.IdentityProvider.WellKnownConfiguration",
+        "operationId": "_bdk.IdentityProvider.WellKnownConfiguration",
         "responses": {
           "200": {
             "description": "OK",
@@ -1243,14 +1243,14 @@
         }
       }
     },
-    "/api/_system/identity/connect/authorize": {
+    "/_bdk/api/identity/connect/authorize": {
       "get": {
         "tags": [
-          "_System.IdentityProvider"
+          "_bdk.IdentityProvider"
         ],
         "summary": "Authorization",
         "description": "Shows the signin page for user selection.",
-        "operationId": "_System.IdentityProvider.Authorize",
+        "operationId": "_bdk.IdentityProvider.Authorize",
         "parameters": [
           {
             "name": "response_type",
@@ -1286,6 +1286,13 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "nonce",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1312,14 +1319,14 @@
         }
       }
     },
-    "/api/_system/identity/connect/authorize/callback": {
+    "/_bdk/api/identity/connect/authorize/callback": {
       "get": {
         "tags": [
-          "_System.IdentityProvider"
+          "_bdk.IdentityProvider"
         ],
         "summary": "Authorization Callback",
         "description": "Handles the user selection and generates authorization code.",
-        "operationId": "_System.IdentityProvider.AuthorizeCallback",
+        "operationId": "_bdk.IdentityProvider.AuthorizeCallback",
         "parameters": [
           {
             "name": "email",
@@ -1369,6 +1376,13 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "nonce",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1388,14 +1402,14 @@
         }
       }
     },
-    "/api/_system/identity/connect/token": {
+    "/_bdk/api/identity/connect/token": {
       "post": {
         "tags": [
-          "_System.IdentityProvider"
+          "_bdk.IdentityProvider"
         ],
         "summary": "Token",
         "description": "Issues tokens for various grant types.",
-        "operationId": "_System.IdentityProvider.Token",
+        "operationId": "_bdk.IdentityProvider.Token",
         "requestBody": {
           "content": {
             "application/x-www-form-urlencoded": {
@@ -1504,14 +1518,14 @@
         }
       }
     },
-    "/api/_system/identity/connect/userinfo": {
+    "/_bdk/api/identity/connect/userinfo": {
       "get": {
         "tags": [
-          "_System.IdentityProvider"
+          "_bdk.IdentityProvider"
         ],
         "summary": "UserInfo",
         "description": "Returns information about the authenticated user.",
-        "operationId": "_System.IdentityProvider.UserInfo",
+        "operationId": "_bdk.IdentityProvider.UserInfo",
         "responses": {
           "200": {
             "description": "OK",
@@ -1536,14 +1550,14 @@
         }
       }
     },
-    "/api/_system/identity/connect/logout": {
+    "/_bdk/api/identity/connect/logout": {
       "get": {
         "tags": [
-          "_System.IdentityProvider"
+          "_bdk.IdentityProvider"
         ],
         "summary": "Logout",
         "description": "Handles user logout.",
-        "operationId": "_System.IdentityProvider.Logout",
+        "operationId": "_bdk.IdentityProvider.Logout",
         "parameters": [
           {
             "name": "id_token_hint",
@@ -1577,14 +1591,14 @@
         }
       }
     },
-    "/api/_system/identity/connect/debuginfo": {
+    "/_bdk/api/identity/connect/debuginfo": {
       "get": {
         "tags": [
-          "_System.IdentityProvider"
+          "_bdk.IdentityProvider"
         ],
         "summary": "Debug Information",
         "description": "Returns debug information about the identity provider configuration.",
-        "operationId": "_System.IdentityProvider.DebugInfo",
+        "operationId": "_bdk.IdentityProvider.DebugInfo",
         "responses": {
           "200": {
             "description": "OK",
@@ -2750,8 +2764,8 @@
         "description": "Authenticate using the OAuth2 authorization code flow.",
         "flows": {
           "authorizationCode": {
-            "authorizationUrl": "https://localhost:5001/api/_system/identity/connect/authorize",
-            "tokenUrl": "https://localhost:5001/api/_system/identity/connect/token",
+            "authorizationUrl": "https://localhost:5001/_bdk/api/identity/connect/authorize",
+            "tokenUrl": "https://localhost:5001/_bdk/api/identity/connect/token",
             "scopes": {
               "openid": "Request the openid scope.",
               "profile": "Request the profile scope.",
@@ -2787,13 +2801,13 @@
       "name": "CoreModule.Customers"
     },
     {
-      "name": "_System.JobScheduling"
+      "name": "_bdk.JobScheduling"
     },
     {
-      "name": "_System"
+      "name": "_bdk.System"
     },
     {
-      "name": "_System.IdentityProvider"
+      "name": "_bdk.IdentityProvider"
     }
   ]
 }
