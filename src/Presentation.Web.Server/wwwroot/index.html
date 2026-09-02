@@ -7,7 +7,7 @@
     <title>BDK GettingStarted</title>
     <base href="/" />
 
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect fill='%23111010' width='16' height='16'/><path fill='%23fd971f' d='M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z'/><path fill='%23fd971f' d='M6.854 4.646a.5.5 0 0 1 0 .708L4.207 8l2.647 2.646a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 0 1 .708 0zm2.292 0a.5.5 0 0 0 0 .708L11.793 8l-2.647 2.646a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708 0z'/></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128' viewBox='0 0 128 128'><defs><style>.cls-1{fill:%23e40b30}.cls-1,.cls-2{stroke-width:0}.cls-2{fill:%23b1cfe5}</style></defs><polygon class='cls-2' points='41.379 68.675 25.76 60.179 25.707 88.887 41.326 97.383 41.379 68.675'/><path class='cls-2' d='M27.182 59.441l14.986 8.152 17.034-2.394.008-4.121-17.127 2.407c-.031.005-.062.006-.093.006-.099 0-.193-.029-.281-.071-.011-.005-.025-.003-.036-.009l-8.777-4.774-5.714.803Z'/><path class='cls-2' d='M59.244 78.093c0-.024.015-.043.018-.067.002-.018-.01-.033-.007-.051.006-.03.032-.048.041-.076.026-.081.062-.151.116-.216.03-.037.058-.067.095-.097.024-.019.036-.048.063-.064.051-.03.109-.031.164-.046.03-.009.05-.036.082-.04l5.923-.832-6.203-3.375c-.214-.115-.347-.34-.347-.584l.011-6.105-16.494 2.318-.053 28.877 16.56-2.327.032-17.316Z'/><polygon class='cls-2' points='41.328 61.712 41.379 34.347 40.254 32.396 25.762 24.513 25.71 53.217 41.328 61.712'/><path class='cls-2' d='M38.985 30.195l-.521-.904c-.011-.018-.003-.04-.012-.059-.033-.071-.068-.141-.075-.221-.002-.028.013-.052.014-.08.002-.042.011-.078.021-.119.022-.091.061-.17.118-.245.016-.021.015-.051.034-.07.01-.01.026-.009.037-.019.014-.013.02-.033.036-.045l10.07-7.682-21.523 3.024 11.801 6.42Z'/><path class='cls-2' d='M59.217 57.303l-6.547-3.562c-.108-.058-.197-.145-.258-.251l-9.709-16.846-.047 25.42 16.557-2.327.004-2.434Z'/><polygon class='cls-1' points='53.469 52.664 59.22 55.793 59.24 45.154 55.503 38.671 46.291 33.661 40.79 30.668 53.469 52.664'/><polygon class='cls-1' points='40.257 28.867 55.924 37.389 79.039 19.757 63.372 11.234 40.257 28.867'/><path class='cls-1' d='M56.851 38.351l2.393 4.152v-.076c0-.024.015-.043.018-.067.002-.018-.01-.033-.007-.051.006-.03.032-.048.041-.076.026-.081.062-.151.116-.216.03-.037.058-.067.095-.097.024-.019.036-.048.063-.064.051-.03.11-.031.165-.047.029-.009.049-.035.081-.039l27.992-3.934c.14-.023.285.006.41.074l2.613 1.421-10.773-18.682-23.207 17.701Z'/><polygon class='cls-2' points='76.189 87.706 60.57 79.21 60.517 107.918 76.136 116.414 76.189 87.706'/><path class='cls-2' d='M76.89 82.522c-.031.005-.062.006-.093.006-.099 0-.193-.029-.281-.071-.011-.005-.025-.003-.036-.009l-8.783-4.779-5.706.802 14.986 8.152 25.784-3.624-6.009-3.269-19.863 2.792Z'/><polygon class='cls-2' points='77.517 87.889 77.463 116.766 104.127 113.018 104.181 84.141 77.517 87.889'/><polygon class='cls-2' points='76.136 80.749 76.189 52.041 60.57 43.545 60.517 72.253 76.136 80.749'/><polygon class='cls-2' points='87.776 39.183 61.992 42.807 76.978 50.958 102.762 47.334 87.776 39.183'/><polygon class='cls-2' points='77.517 52.224 77.463 81.101 104.127 77.353 104.181 48.476 77.517 52.224'/></svg>">
 
     <script>
         (function() {
@@ -198,16 +198,29 @@
 
         .hero-panel {
             display: grid;
-            grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr);
+            grid-template-columns: minmax(0, 1fr) minmax(220px, .28fr);
             background: transparent;
             border: 1px solid var(--bdk-panel-border);
             border-radius: .1rem;
+            overflow: hidden;
         }
 
         .hero-copy {
             padding: clamp(1.5rem, 4vw, 3.75rem);
             background: var(--bdk-surface);
-            border-right: 1px solid var(--bdk-panel-border);
+        }
+
+        .hero-brand {
+            padding: clamp(1.5rem, 4vw, 3.75rem);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bdk-surface);
+        }
+
+        .hero-logo {
+            width: clamp(8rem, 12vw, 10rem);
+            height: auto;
         }
 
         .hero-copy h1 {
@@ -268,72 +281,6 @@
             color: var(--bs-primary);
             background: rgba(var(--bs-primary-rgb), .08);
             border-color: var(--bs-primary);
-        }
-
-        .runtime-panel {
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            background: var(--bdk-code-bg);
-        }
-
-        .runtime-heading {
-            padding: .7rem .8rem;
-            border-bottom: 1px solid var(--bdk-panel-border);
-        }
-
-        .runtime-title {
-            margin-top: .25rem;
-            font-size: .85rem;
-            font-weight: 700;
-        }
-
-        .runtime-link {
-            flex: 1;
-            min-height: 5.75rem;
-            padding: .8rem;
-            display: grid;
-            grid-template-columns: 2rem minmax(0, 1fr) auto;
-            align-items: center;
-            gap: .65rem;
-            color: inherit;
-            text-decoration: none;
-            border-bottom: 1px solid var(--bdk-panel-border);
-        }
-
-        .runtime-link:last-child {
-            border-bottom: 0;
-        }
-
-        .runtime-link:hover {
-            color: inherit;
-            background: var(--bdk-active-bg);
-        }
-
-        .runtime-link.featured {
-            box-shadow: inset 3px 0 var(--bdk-active-fg);
-        }
-
-        .runtime-icon {
-            color: var(--bdk-active-fg);
-            font-size: 1.2rem;
-        }
-
-        .runtime-label {
-            display: block;
-            margin-bottom: .2rem;
-            color: var(--bs-body-color);
-            font-weight: 700;
-        }
-
-        .runtime-description {
-            display: block;
-            color: var(--bs-secondary-color);
-            font-size: .7rem;
-        }
-
-        .runtime-arrow {
-            color: var(--bs-secondary-color);
         }
 
         .section {
@@ -518,12 +465,23 @@
 
         .tech-badge {
             padding: .3rem .5rem;
+            display: inline-flex;
+            align-items: center;
             color: var(--bs-secondary-color);
             background: var(--bdk-code-bg);
             border: 1px solid var(--bdk-panel-border-hover);
             border-radius: .1rem;
             font-size: .68rem;
             font-weight: 700;
+            text-decoration: none;
+            transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+        }
+
+        .tech-badge:hover,
+        .tech-badge:focus-visible {
+            color: var(--bdk-active-fg);
+            background: var(--bdk-active-bg);
+            border-color: var(--bdk-active-fg);
         }
 
         .page-footer {
@@ -540,19 +498,25 @@
         }
 
         @media (max-width: 991.98px) {
-            .hero-panel,
+            .hero-panel {
+                grid-template-columns: minmax(0, 1fr) minmax(140px, .25fr);
+            }
+
+            .hero-brand {
+                padding: 1.5rem;
+            }
+
+            .hero-logo {
+                width: clamp(6rem, 14vw, 8rem);
+            }
+
             .info-layout {
                 grid-template-columns: 1fr;
             }
 
-            .hero-copy,
             .intro-panel {
                 border-right: 0;
                 border-bottom: 1px solid var(--bdk-panel-border);
-            }
-
-            .runtime-link {
-                min-height: 5rem;
             }
         }
 
@@ -578,6 +542,19 @@
 
             .hero-copy h1 {
                 letter-spacing: -.04em;
+            }
+
+            .hero-panel {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-brand {
+                padding: 0 1.5rem 1.5rem;
+                justify-content: flex-end;
+            }
+
+            .hero-logo {
+                width: 4.5rem;
             }
 
             .section-heading {
@@ -642,7 +619,7 @@
                 <div class="eyebrow">Reference application / Modular DDD</div>
                 <h1 id="hero-title">GettingStarted with bITdevKit.</h1>
                 <p class="lead">
-                    A runnable .NET 10 example for building modular, domain-driven applications with clean boundaries, durable jobs, and observable runtime behavior.
+                    A runnable .NET 10 example for building modular, domain-driven applications with clean boundaries, durable jobs, and observable runtime behavior. Use the included BDK MCP to give coding agents DevKit guidance and local runtime diagnostics.
                 </p>
                 <div class="hero-actions">
                     <a href="/_bdk/dashboard" class="btn-bdk-primary">
@@ -654,44 +631,38 @@
                         <i class="bi bi-braces"></i>
                         Explore the API
                     </a>
+                    <a href="https://bridgingit-gmbh.github.io/bITdevKit/agent-support/" class="btn-bdk-outline" target="_blank" rel="noopener">
+                        <i class="bi bi-robot"></i>
+                        Agent support
+                        <i class="bi bi-box-arrow-up-right"></i>
+                    </a>
                 </div>
             </div>
-            <aside class="runtime-panel" aria-label="Runtime entry points">
-                <div class="runtime-heading">
-                    <div class="panel-kicker">Local runtime</div>
-                    <div class="runtime-title">Operational entry points</div>
-                </div>
-                <a class="runtime-link featured" href="/_bdk/dashboard">
-                    <i class="bi bi-grid-3x3-gap runtime-icon"></i>
-                    <span>
-                        <span class="runtime-label">DevKit Dashboard</span>
-                        <span class="runtime-description">Inspect identity, health, jobs, metrics, and runtime tools.</span>
-                    </span>
-                    <i class="bi bi-arrow-up-right runtime-arrow"></i>
-                </a>
-                <a class="runtime-link" href="/scalar">
-                    <i class="bi bi-code-square runtime-icon"></i>
-                    <span>
-                        <span class="runtime-label">Scalar API</span>
-                        <span class="runtime-description">Explore the HTTP surface and execute requests.</span>
-                    </span>
-                    <i class="bi bi-arrow-up-right runtime-arrow"></i>
-                </a>
-                <a class="runtime-link" href="/health">
-                    <i class="bi bi-heart-pulse runtime-icon"></i>
-                    <span>
-                        <span class="runtime-label">Health endpoint</span>
-                        <span class="runtime-description">Read the current application health response.</span>
-                    </span>
-                    <i class="bi bi-arrow-up-right runtime-arrow"></i>
-                </a>
-            </aside>
+            <div class="hero-brand" aria-hidden="true">
+                <svg class="hero-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" focusable="false">
+                    <polygon fill="#b1cfe5" points="41.379 68.675 25.76 60.179 25.707 88.887 41.326 97.383 41.379 68.675" />
+                    <path fill="#b1cfe5" d="M27.182,59.441l14.986,8.152,17.034-2.394.008-4.121-17.127,2.407c-.031.005-.062.006-.093.006-.099,0-.193-.029-.281-.071-.011-.005-.025-.003-.036-.009l-8.777-4.774-5.714.803Z" />
+                    <path fill="#b1cfe5" d="M59.244,78.093c0-.024.015-.043.018-.067.002-.018-.01-.033-.007-.051.006-.03.032-.048.041-.076.026-.081.062-.151.116-.216.03-.037.058-.067.095-.097.024-.019.036-.048.063-.064.051-.03.109-.031.164-.046.03-.009.05-.036.082-.04l5.923-.832-6.203-3.375c-.214-.115-.347-.34-.347-.584l.011-6.105-16.494,2.318-.053,28.877,16.56-2.327.032-17.316Z" />
+                    <polygon fill="#b1cfe5" points="41.328 61.712 41.379 34.347 40.254 32.396 25.762 24.513 25.71 53.217 41.328 61.712" />
+                    <path fill="#b1cfe5" d="M38.985,30.195l-.521-.904c-.011-.018-.003-.04-.012-.059-.033-.071-.068-.141-.075-.221-.002-.028.013-.052.014-.08.002-.042.011-.078.021-.119.022-.091.061-.17.118-.245.016-.021.015-.051.034-.07.01-.01.026-.009.037-.019.014-.013.02-.033.036-.045l10.07-7.682-21.523,3.024,11.801,6.42Z" />
+                    <path fill="#b1cfe5" d="M59.217,57.303l-6.547-3.562c-.108-.058-.197-.145-.258-.251l-9.709-16.846-.047,25.42,16.557-2.327.004-2.434Z" />
+                    <polygon fill="#e40b30" points="53.469 52.664 59.22 55.793 59.24 45.154 55.503 38.671 46.291 33.661 40.79 30.668 53.469 52.664" />
+                    <polygon fill="#e40b30" points="40.257 28.867 55.924 37.389 79.039 19.757 63.372 11.234 40.257 28.867" />
+                    <path fill="#e40b30" d="M56.851,38.351l2.393,4.152v-.076c0-.024.015-.043.018-.067.002-.018-.01-.033-.007-.051.006-.03.032-.048.041-.076.026-.081.062-.151.116-.216.03-.037.058-.067.095-.097.024-.019.036-.048.063-.064.051-.03.11-.031.165-.047.029-.009.049-.035.081-.039l27.992-3.934c.14-.023.285.006.41.074l2.613,1.421-10.773-18.682-23.207,17.701Z" />
+                    <polygon fill="#b1cfe5" points="76.189 87.706 60.57 79.21 60.517 107.918 76.136 116.414 76.189 87.706" />
+                    <path fill="#b1cfe5" d="M76.89,82.522c-.031.005-.062.006-.093.006-.099,0-.193-.029-.281-.071-.011-.005-.025-.003-.036-.009l-8.783-4.779-5.706.802,14.986,8.152,25.784-3.624-6.009-3.269-19.863,2.792Z" />
+                    <polygon fill="#b1cfe5" points="77.517 87.889 77.463 116.766 104.127 113.018 104.181 84.141 77.517 87.889" />
+                    <polygon fill="#b1cfe5" points="76.136 80.749 76.189 52.041 60.57 43.545 60.517 72.253 76.136 80.749" />
+                    <polygon fill="#b1cfe5" points="87.776 39.183 61.992 42.807 76.978 50.958 102.762 47.334 87.776 39.183" />
+                    <polygon fill="#b1cfe5" points="77.517 52.224 77.463 81.101 104.127 77.353 104.181 48.476 77.517 52.224" />
+                </svg>
+            </div>
         </section>
 
         <section class="section" aria-labelledby="quick-start-title">
             <div class="section-heading">
                 <div>
-                    <div class="section-kicker">01 / Navigate</div>
+                    <div class="section-kicker">Navigate</div>
                     <h2 id="quick-start-title">Quick access</h2>
                 </div>
                 <p>Move directly from the example to its operational, API, and documentation surfaces.</p>
@@ -739,11 +710,11 @@
                         <span class="quick-link-description">Structured application logs</span>
                     </span>
                 </a>
-                <a href="https://github.com/BridgingIT-GmbH/bITdevKit" class="quick-link" target="_blank" rel="noopener" aria-label="View bITdevKit documentation on GitHub">
-                    <i class="bi bi-github"></i>
+                <a href="https://bridgingit-gmbh.github.io/bITdevKit/docs/" class="quick-link" target="_blank" rel="noopener" aria-label="View bITdevKit documentation">
+                    <i class="bi bi-journal-code"></i>
                     <span>
                         <span class="quick-link-title">DevKit Docs <i class="bi bi-box-arrow-up-right"></i></span>
-                        <span class="quick-link-description">Guides, features, and source</span>
+                        <span class="quick-link-description">Guides, features, and API reference</span>
                     </span>
                 </a>
             </div>
@@ -752,7 +723,7 @@
         <section class="section" aria-labelledby="example-title">
             <div class="section-heading">
                 <div>
-                    <div class="section-kicker">02 / Explore</div>
+                    <div class="section-kicker">Explore</div>
                     <h2 id="example-title">Inside the example</h2>
                 </div>
                 <p>A compact application that shows how the core DevKit patterns work together.</p>
@@ -770,8 +741,7 @@
                     <div class="guide-note">
                         <i class="bi bi-info-circle"></i>
                         <span>
-                            New to bITdevKit or DDD? Start with the
-                            <a href="https://github.com/BridgingIT-GmbH/bITdevKit/tree/main/docs/introduction-ddd-guide.md" target="_blank" rel="noopener">Introduction Guide</a>.
+                            <a href="https://bridgingit-gmbh.github.io/bITdevKit/getting-started/" target="_blank" rel="noopener">New to bITdevKit or DDD? Start with the bITdevKit getting-started guide.</a>
                         </span>
                     </div>
                 </div>
@@ -823,27 +793,26 @@
         <section class="section" aria-labelledby="stack-title">
             <div class="section-heading">
                 <div>
-                    <div class="section-kicker">03 / Stack</div>
+                    <div class="section-kicker">Stack</div>
                     <h2 id="stack-title">Built with</h2>
                 </div>
             </div>
             <div class="stack-panel">
-                <span class="tech-badge">.NET 10</span>
-                <span class="tech-badge">ASP.NET Core</span>
-                <span class="tech-badge">Entity Framework Core</span>
-                <span class="tech-badge">SQL Server</span>
-                <span class="tech-badge">Mapster</span>
-                <span class="tech-badge">FluentValidation</span>
-                <span class="tech-badge">Serilog</span>
-                <span class="tech-badge">bITdevKit Jobs</span>
-                <span class="tech-badge">xUnit</span>
-                <span class="tech-badge">bITdevKit</span>
+                <a class="tech-badge" href="https://learn.microsoft.com/dotnet/core/whats-new/dotnet-10/overview" target="_blank" rel="noopener">.NET 10</a>
+                <a class="tech-badge" href="https://learn.microsoft.com/aspnet/core/" target="_blank" rel="noopener">ASP.NET Core</a>
+                <a class="tech-badge" href="https://learn.microsoft.com/ef/core/" target="_blank" rel="noopener">Entity Framework Core</a>
+                <a class="tech-badge" href="https://bridgingit-gmbh.github.io/bITdevKit/" target="_blank" rel="noopener">bITdevKit</a>
+                <a class="tech-badge" href="https://learn.microsoft.com/sql/sql-server/" target="_blank" rel="noopener">SQL Server</a>
+                <a class="tech-badge" href="https://github.com/MapsterMapper/Mapster" target="_blank" rel="noopener">Mapster</a>
+                <a class="tech-badge" href="https://docs.fluentvalidation.net/" target="_blank" rel="noopener">FluentValidation</a>
+                <a class="tech-badge" href="https://serilog.net/" target="_blank" rel="noopener">Serilog</a>
+                <a class="tech-badge" href="https://xunit.net/" target="_blank" rel="noopener">xUnit</a>
             </div>
         </section>
 
         <footer class="page-footer">
             <span>BridgingIT.DevKit.Examples.GettingStarted</span>
-            <span>Reference application / .NET 10</span>
+            <span>Reference application</span>
         </footer>
     </main>
 
