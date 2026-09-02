@@ -54,7 +54,12 @@ jobs:
           global-json-file: global.json
 
       - name: Restore .NET tools
-        run: dotnet tool restore
+        run: |
+          # Work around https://github.com/dotnet/sdk/issues/53783 on fresh runners.
+          if ! dotnet tool restore; then
+            echo "::warning::Initial tool restore failed; retrying with the populated resolver cache."
+            dotnet tool restore
+          fi
 
       - name: Calculate version
         id: calculate
