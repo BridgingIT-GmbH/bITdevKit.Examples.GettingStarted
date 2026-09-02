@@ -129,6 +129,8 @@ csharp_style_prefer_top_level_statements = true:silent
 csharp_style_prefer_primary_constructors = true:suggestion
 
 # New line preferences
+dotnet_style_allow_multiple_blank_lines_experimental = false
+dotnet_style_allow_statement_immediately_after_block_experimental = false
 csharp_new_line_before_catch = true
 csharp_new_line_before_else = true
 csharp_new_line_before_finally = true
@@ -194,11 +196,12 @@ dotnet_diagnostic.ide0055.severity = suggestion
 # SA1408: Conditional Expressions Must Declare Precedence
 dotnet_diagnostic.sa1408.severity = none
 
-# CA1873: Avoid potentially expensive logging
-dotnet_diagnostic.ca1873.severity = none
-
 # Microsoft .NET properties
 dotnet_diagnostic.IDE0161.severity = error
+# IDE2000: Avoid multiple blank lines (experimental)
+dotnet_diagnostic.IDE2000.severity = error
+# IDE2003: Require a blank line between a block and a subsequent statement (experimental)
+dotnet_diagnostic.IDE2003.severity = error
 dotnet_naming_rule.private_constants_rule.severity = warning
 dotnet_naming_rule.private_constants_rule.style = upper_camel_case_style
 dotnet_naming_rule.private_constants_rule.symbols = private_constants_symbols
@@ -263,9 +266,6 @@ resharper_comment_typo_highlighting = none
 resharper_suggest_var_or_type_built_in_types_highlighting = hint
 resharper_suggest_var_or_type_elsewhere_highlighting = hint
 resharper_suggest_var_or_type_simple_types_highlighting = hint
-
-# Default severity for analyzer diagnostics with category 'Style'
-dotnet_analyzer_diagnostic.category-Style.severity = silent
 
 [*.proto]
 indent_style = tab

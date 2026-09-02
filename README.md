@@ -50,7 +50,7 @@ An application built using .NET 10 and following a Domain-Driven Design (DDD) ap
       - [Step 1: Create Builder and Configure Logging](#step-1-create-builder-and-configure-logging)
       - [Step 2: Register Modules](#step-2-register-modules)
       - [Step 3: Register Requester and Notifier](#step-3-register-requester-and-notifier)
-      - [Step 4: Configure Job Scheduling](#step-4-configure-job-scheduling)
+      - [Step 4: Configure Durable Jobs in CoreModule](#step-4-configure-durable-jobs-in-coremodule)
       - [Step 5. Register Application Endpoints](#step-5-register-application-endpoints)
       - [Step 6. Configure JSON Serialization](#step-6-configure-json-serialization)
       - [Step 7. Configure OpenAPI](#step-7-configure-openapi)
@@ -94,7 +94,9 @@ An application built using .NET 10 and following a Domain-Driven Design (DDD) ap
 - Infrastructure layer with Entity Framework Core (CoreModuleDbContext, migrations, configurations) and Generic Repositories with behaviors (tracing, logging, audit, outbox domain event publishing). [Repositories](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-domain-repositories.md)
 - Presentation layer with Web API Endpoints for CRUD operations on Customers, using minimal API-style routing. [Endpoints](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-presentation-endpoints.md)
 - Startup tasks for seeding domain data (CoreModuleDomainSeederTask). [StartupTasks](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-startuptasks.md)
-- Job scheduling with Quartz (e.g., CustomerExportJob in Application layer). [JobScheduling](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-jobscheduling.md)
+- Durable background jobs with the DevKit Jobs subsystem (for example, `CustomerExportJob`), including retries, history, dashboard pages, console commands, and MCP diagnostics. [Jobs](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-jobs.md)
+- A protected DevKit dashboard with Jobs, Metrics, Profiling, and application-specific customer management pages. [Dashboard](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-presentation-dashboard.md)
+- In-process metrics and development profiling for operational inspection. [Metrics](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-metrics.md), [Profiling](https://github.com/BridgingIT-GmbH/bITdevKit/blob/main/docs/features-profiling.md)
 - Comprehensive testing: Unit tests (command/query handlers, architecture rules), Integration tests (endpoints, persistence), Architecture tests (boundary enforcement).
 - Build-time OpenAPI generation with Kiota client support for C#, TypeScript and Python.
 
@@ -106,7 +108,7 @@ An application built using .NET 10 and following a Domain-Driven Design (DDD) ap
 - [Serilog](https://serilog.net/) for structured logging
 - [Mapster](https://github.com/MapsterMapper/Mapster) for object mapping
 - [FluentValidation](https://fluentvalidation.net/) for validation
-- [Quartz.NET](https://www.quartz-scheduler.net/) for job scheduling
+- [RazorSlices](https://github.com/DamianEdwards/RazorSlices) for application dashboard pages
 - [xUnit.net](https://xunit.net/), [NSubstitute](https://nsubstitute.github.io/), [Shouldly](https://docs.shouldly.org/) for testing
 
 ---
@@ -126,6 +128,8 @@ Access points:
 - **Scalar UI**: [https://localhost:5001/scalar](https://localhost:5001/scalar)
 - **OpenAPI Spec**: [https://localhost:5001/openapi.json](https://localhost:5001/openapi.json)
 - **Health Checks**: [https://localhost:5001/health](https://localhost:5001/health)
+- **DevKit Dashboard**: [https://localhost:5001/_bdk/dashboard](https://localhost:5001/_bdk/dashboard)
+- **Customer Dashboard**: [https://localhost:5001/_bdk/dashboard/app/coremodule/customers](https://localhost:5001/_bdk/dashboard/app/coremodule/customers)
 - **Seq Dashboard** (if using containers): [http://localhost:15349](http://localhost:15349)
 
 The application will automatically migrate the database on startup (via DatabaseMigratorService in CoreModule) and seed initial data (via CoreModuleDomainSeederTask) in development mode.
@@ -148,19 +152,19 @@ Commit messages use this format:
 
 Common types:
 
-| Type       | Purpose                        |
+| Type | Purpose |
 | ---------- | ------------------------------ |
-| `feat`     | New feature                    |
-| `fix`      | Bug fix                        |
-| `docs`     | Documentation only             |
-| `style`    | Formatting/style (no logic)    |
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `docs` | Documentation only |
+| `style` | Formatting/style (no logic) |
 | `refactor` | Code refactor (no feature/fix) |
-| `perf`     | Performance improvement        |
-| `test`     | Add/update tests               |
-| `build`    | Build system/dependencies      |
-| `ci`       | CI/config changes              |
-| `chore`    | Maintenance/misc               |
-| `revert`   | Revert commit                  |
+| `perf` | Performance improvement |
+| `test` | Add/update tests |
+| `build` | Build system/dependencies |
+| `ci` | CI/config changes |
+| `chore` | Maintenance/misc |
+| `revert` | Revert commit |
 
 Breaking changes are marked either with an exclamation mark after type/scope or with a `BREAKING CHANGE:` footer.
 
@@ -238,7 +242,7 @@ services.AddSqlServerDbContext<CoreModuleDbContext>(o => o
 
 The bITdevKit GettingStarted project implements **Clean/Onion Architecture** principles combined with **Domain-Driven Design (DDD)** and a **Modular Monolith** approach. This section explains the architectural decisions, layer responsibilities and how components interact.
 
-> **Architectural Decisions**: For detailed rationale and alternatives considered for key architectural choices, see the [Architectural Decision Records (ADRs)](./docs/ADR/README.md) in the `/docs/ADR` directory. Key ADRs include Clean Architecture boundaries ([ADR-0001](./docs/ADR/0001-clean-onion-architecture.md)), Result pattern ([ADR-0002](./docs/ADR/0002-result-pattern-error-handling.md)), Modular Monolith structure ([ADR-0003](./docs/ADR/0003-modular-monolith-architecture.md)), and implementation patterns for repositories ([ADR-0004](./docs/ADR/0004-repository-decorator-behaviors.md)), jobs ([ADR-0015](./docs/ADR/0015-background-jobs-quartz-scheduling.md)), logging ([ADR-0016](./docs/ADR/0016-logging-observability-strategy.md)), and testing ([ADR-0013](./docs/ADR/0013-unit-testing-high-coverage-strategy.md), [ADR-0017](./docs/ADR/0017-integration-testing-strategy.md)).
+> **Architectural Decisions**: For rationale and alternatives behind key choices, see the [Architectural Decision Records](./docs/adr/INDEX.md). Relevant decisions include Clean Architecture ([ADR-0001](./docs/adr/0001-clean-onion-architecture.md)), the Result pattern ([ADR-0002](./docs/adr/0002-result-pattern-error-handling.md)), the modular monolith ([ADR-0003](./docs/adr/0003-modular-monolith-architecture.md)), durable DevKit Jobs ([ADR-0015](./docs/adr/0015-devkit-native-durable-jobs.md)), observability ([ADR-0016](./docs/adr/0016-logging-observability-strategy.md)), and testing ([ADR-0013](./docs/adr/0013-unit-testing-high-coverage-strategy.md), [ADR-0017](./docs/adr/0017-integration-testing-strategy.md)).
 
 ### Overview
 
@@ -272,7 +276,7 @@ graph TB
     subgraph Infrastructure["Infrastructure Layer (Outer)"]
         Repos[Repositories<br/>Generic Repository]
         DB[(Entity Framework<br/>SQL Server)]
-        Scheduler[Job Scheduler<br/>Quartz]
+        Scheduler[DevKit Jobs<br/>Durable EF storage]
     end
 
     %% Request Flow
@@ -676,6 +680,7 @@ src/Modules/CoreModule/
 │   ├── EntityFramework/            # DbContext, Configurations
 │   └── StartupTasks/               # Seeder tasks
 └── CoreModule.Presentation/        # API layer
+    ├── Dashboard/                  # Customer dashboard page set and RazorSlices
     ├── Web/Endpoints/              # HTTP endpoints
     └── CoreModuleModule.cs         # Module registration
 ```
@@ -683,10 +688,12 @@ src/Modules/CoreModule/
 #### Module Registration in Program.cs
 
 ```csharp
-builder.Services.AddModules(builder.Configuration, builder.Environment)
-    .WithModule<CoreModuleModule>()
-    .WithModuleContextAccessors()
-    .WithRequestModuleContextAccessors();
+var builder = DevKitWebApplication.CreateBuilder(args)
+    .AddConfiguration()
+    .AddLogging()
+    .AddModules(modules => modules
+        .WithModule(new CoreModuleModule()))
+    .AddMcp();
 ```
 
 ---
@@ -702,8 +709,8 @@ graph TD
     A[Create WebApplication Builder] --> B[Configure Host & Logging]
     B --> C[Register Modules]
     C --> D[Register Requester/Notifier]
-    D --> E[Configure Job Scheduling]
-    E --> F[Register Endpoints]
+    D --> E[Register Endpoints and Operations UI]
+    E --> F[Configure Metrics and Profiling]
     F --> G[Configure OpenAPI]
     G --> H[Configure CORS]
     H --> I[Configure Authentication]
@@ -724,9 +731,12 @@ graph TD
 #### Step 1: Create Builder and Configure Logging
 
 ```csharp
-var builder = WebApplication.CreateBuilder(args);
-builder.Host.ConfigureLogging();
-builder.Services.AddConsoleCommandsInteractive();
+var builder = DevKitWebApplication.CreateBuilder(args)
+    .AddConfiguration()
+    .AddLogging()
+    .AddModules(modules => modules
+        .WithModule(new CoreModuleModule()))
+    .AddMcp();
 ```
 
 **What happens**: Creates `WebApplicationBuilder` with configuration from `appsettings.json`, environment variables and command-line args. Configures Serilog for structured logging.
@@ -734,10 +744,7 @@ builder.Services.AddConsoleCommandsInteractive();
 #### Step 2: Register Modules
 
 ```csharp
-builder.Services.AddModules(builder.Configuration, builder.Environment)
-    .WithModule<CoreModuleModule>()
-    .WithModuleContextAccessors()
-    .WithRequestModuleContextAccessors();
+// CoreModuleModule.Register owns its database, repositories, jobs and endpoints.
 ```
 
 **What happens**: Each module's `Register()` method is called to register services (DbContext, repositories, handlers, endpoints, jobs).
@@ -756,17 +763,23 @@ builder.Services.AddNotifier()
 
 **What happens**: Scans assemblies for handlers and registers pipeline behaviors (Module Scope, Validation, Retry, Timeout).
 
-#### Step 4: Configure Job Scheduling
+#### Step 4: Configure Durable Jobs in CoreModule
 
 ```csharp
-builder.Services.AddJobScheduling(o => o
-    .StartupDelay(builder.Configuration["JobScheduling:StartupDelay"]),
-    builder.Configuration)
-    .WithSqlServerStore(builder.Configuration["JobScheduling:Quartz:..."])
-    .WithBehavior<ModuleScopeJobSchedulingBehavior>();
+services.AddJobScheduler(configuration)
+    .StartupDelay(TimeSpan.FromSeconds(30))
+    .WithJob<CustomerExportJob>(CustomerExportJob.JobName, job => job
+        .UseLifetime(ServiceLifetime.Scoped)
+        .WithConcurrency(1)
+        .WithRetry(retry => retry.MaxAttempts(3).FixedDelay(TimeSpan.FromSeconds(1)))
+        .AddTrigger(CustomerExportJob.TriggerName, trigger => trigger.Cron(CronExpressions.EveryMinute)))
+    .WithEntityFramework<CoreModuleDbContext>()
+    .WithBehavior<ModuleScopeBehavior>()
+    .AddEndpoints()
+    .AddConsoleCommands();
 ```
 
-**What happens**: Configures Quartz.NET with SQL Server persistence for background jobs.
+**What happens**: CoreModule configures DevKit Jobs with durable EF storage, retries, concurrency control, operational endpoints, console commands, dashboard discovery, metrics, and MCP handlers.
 
 #### Step 5. Register Application Endpoints
 

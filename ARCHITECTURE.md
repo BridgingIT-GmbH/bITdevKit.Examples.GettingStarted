@@ -243,13 +243,13 @@ Modules can communicate in two primary ways, each with a clear intent and trade-
 
 **When to use which:**
 
-| Concern          | Synchronous (Contracts)               | Asynchronous (Messages)                      |
+| Concern | Synchronous (Contracts) | Asynchronous (Messages) |
 | ---------------- | ------------------------------------- | -------------------------------------------- |
-| Consistency      | Immediate                             | Eventual                                     |
-| Coupling         | Temporal (caller waits)               | Loose (fire-and-forget)                      |
-| Failure handling | Caller handles errors                 | Retry, dead-letter, idempotency              |
-| Use case         | "Show me the customer I just created" | "Notify billing that a customer was created" |
-| Scalability      | Bounded by provider throughput        | Independently scalable                       |
+| Consistency | Immediate | Eventual |
+| Coupling | Temporal (caller waits) | Loose (fire-and-forget) |
+| Failure handling | Caller handles errors | Retry, dead-letter, idempotency |
+| Use case | "Show me the customer I just created" | "Notify billing that a customer was created" |
+| Scalability | Bounded by provider throughput | Independently scalable |
 
 **Guidelines:**
 
@@ -276,6 +276,7 @@ Domain events and messages are related but separate concepts. Conflating them is
 Domain events may lead to messages, but they are not the same artifact and they are not handled through the same pipeline. Domain events express domain intent; messages express inter-module communication intent.
 
 Consider a `CustomerCreatedEvent` domain event. Inside CoreModule, this event might trigger:
+
 - Generating a customer number.
 - Logging an audit trail.
 - Updating an internal read model.
@@ -288,14 +289,14 @@ This separation ensures that internal domain evolution does not force downstream
 
 **Lifecycle comparison:**
 
-| Aspect           | Domain Event                    | Message                           |
+| Aspect | Domain Event | Message |
 | ---------------- | ------------------------------- | --------------------------------- |
-| Scope            | Internal to module              | Cross-module                      |
-| Transport        | In-process dispatcher           | Message broker                    |
-| Schema ownership | Domain model                    | Application/messaging boundary    |
-| Versioning       | Internal (no external contract) | Explicit (external contract)      |
-| Reliability      | Outbox (optional)               | Outbox (recommended)              |
-| Idempotency      | Typically not needed            | Required (at-least-once delivery) |
+| Scope | Internal to module | Cross-module |
+| Transport | In-process dispatcher | Message broker |
+| Schema ownership | Domain model | Application/messaging boundary |
+| Versioning | Internal (no external contract) | Explicit (external contract) |
+| Reliability | Outbox (optional) | Outbox (recommended) |
+| Idempotency | Typically not needed | Required (at-least-once delivery) |
 
 ## Architectural Patterns
 
@@ -359,11 +360,11 @@ flowchart TB
 
 **Trade-offs:**
 
-| Advantage                                       | Limitation                                 |
+| Advantage | Limitation |
 | ----------------------------------------------- | ------------------------------------------ |
-| Simple deployment and operations                | All modules must deploy together           |
-| In-process communication (fast, reliable)       | Cannot scale modules independently         |
-| Shared infrastructure (logging, auth, config)   | Shared process means shared failure domain |
+| Simple deployment and operations | All modules must deploy together |
+| In-process communication (fast, reliable) | Cannot scale modules independently |
+| Shared infrastructure (logging, auth, config) | Shared process means shared failure domain |
 | Lower operational complexity than microservices | Requires discipline to maintain boundaries |
 
 **When to extract a module into a service:** If a module has fundamentally different scaling requirements, a different deployment cadence, or is owned by a separate team with its own release cycle, it is a candidate for extraction. The explicit contracts and data isolation make this extraction mechanical rather than architectural.
@@ -511,10 +512,10 @@ sequenceDiagram
 
 **Two flavors in this system:**
 
-| Outbox type         | Purpose                                       | Records                          |
+| Outbox type | Purpose | Records |
 | ------------------- | --------------------------------------------- | -------------------------------- |
-| Domain-event outbox | Reliable dispatch of in-process domain events | Domain events pending dispatch   |
-| Message outbox      | Reliable publishing to the message broker     | Messages pending broker delivery |
+| Domain-event outbox | Reliable dispatch of in-process domain events | Domain events pending dispatch |
+| Message outbox | Reliable publishing to the message broker | Messages pending broker delivery |
 
 **Operational considerations:**
 
@@ -634,11 +635,11 @@ Why value objects matter: they move validation to the type system. Rather than c
 
 **When to use each:**
 
-| Concept      | Identity        | Mutability | When to use                                                      |
+| Concept | Identity | Mutability | When to use |
 | ------------ | --------------- | ---------- | ---------------------------------------------------------------- |
-| Aggregate    | Yes (root only) | Yes        | A cluster of objects that must be consistent together            |
-| Entity       | Yes             | Yes        | A domain object that changes over time and needs unique identity |
-| Value Object | No              | No         | A domain concept with structural validation and no identity      |
+| Aggregate | Yes (root only) | Yes | A cluster of objects that must be consistent together |
+| Entity | Yes | Yes | A domain object that changes over time and needs unique identity |
+| Value Object | No | No | A domain concept with structural validation and no identity |
 
 **Anti-patterns to avoid:**
 
@@ -714,11 +715,11 @@ flowchart TB
 
 **Implementation options (in order of increasing isolation):**
 
-| Strategy                             | Isolation    | Complexity | Migration path      |
+| Strategy | Isolation | Complexity | Migration path |
 | ------------------------------------ | ------------ | ---------- | ------------------- |
-| Separate DbContexts, shared database | Logical      | Low        | Good starting point |
-| Separate schemas, shared database    | Schema-level | Medium     | Natural next step   |
-| Separate databases                   | Physical     | High       | Full autonomy       |
+| Separate DbContexts, shared database | Logical | Low | Good starting point |
+| Separate schemas, shared database | Schema-level | Medium | Natural next step |
+| Separate databases | Physical | High | Full autonomy |
 
 **Why "no direct DB access" matters:**
 
@@ -790,14 +791,14 @@ flowchart LR
 
 **What to test:**
 
-| Rule                       | Example                                                               |
+| Rule | Example |
 | -------------------------- | --------------------------------------------------------------------- |
-| Layer dependency direction | Domain does not reference Infrastructure                              |
-| Module isolation           | CoreModule internals are not referenced by other modules              |
-| Domain purity              | Domain layer has no framework dependencies                            |
-| Naming conventions         | Commands end with `Command`, queries end with `Query`                 |
-| Aggregate access           | Entities inside an aggregate are not referenced directly from outside |
-| Contract stability         | Contracts project only contains DTOs and interfaces                   |
+| Layer dependency direction | Domain does not reference Infrastructure |
+| Module isolation | CoreModule internals are not referenced by other modules |
+| Domain purity | Domain layer has no framework dependencies |
+| Naming conventions | Commands end with `Command`, queries end with `Query` |
+| Aggregate access | Entities inside an aggregate are not referenced directly from outside |
+| Contract stability | Contracts project only contains DTOs and interfaces |
 
 **Example rules (conceptual):**
 
@@ -933,11 +934,11 @@ Without behaviors, every repository operation would need to manually handle trac
 
 **Behavior responsibilities:**
 
-| Behavior                  | Responsibility                                                                                |
+| Behavior | Responsibility |
 | ------------------------- | --------------------------------------------------------------------------------------------- |
-| TracingBehavior           | Creates trace spans for observability                                                         |
-| LoggingBehavior           | Logs operation type, entity type, and duration                                                |
-| AuditStateBehavior        | Sets CreatedDate, CreatedBy, UpdatedDate, UpdatedBy                                           |
+| TracingBehavior | Creates trace spans for observability |
+| LoggingBehavior | Logs operation type, entity type, and duration |
+| AuditStateBehavior | Sets CreatedDate, CreatedBy, UpdatedDate, UpdatedBy |
 | DomainEventOutboxBehavior | Collects domain events from aggregates, writes outbox records, dispatches events after commit |
 
 **Design guidelines:**
@@ -1014,12 +1015,12 @@ They are primarily used for onboarding, architecture reviews, and as a stable re
 
 **C4 model levels (for reference):**
 
-| Level        | Audience               | Shows                                                                |
+| Level | Audience | Shows |
 | ------------ | ---------------------- | -------------------------------------------------------------------- |
-| 1. Context   | Everyone               | System and its environment                                           |
-| 2. Container | Technical stakeholders | Deployable units and their interactions                              |
-| 3. Component | Developers             | Internal structure of a container                                    |
-| 4. Code      | Developers             | Class-level detail (usually auto-generated, not maintained manually) |
+| 1. Context | Everyone | System and its environment |
+| 2. Container | Technical stakeholders | Deployable units and their interactions |
+| 3. Component | Developers | Internal structure of a container |
+| 4. Code | Developers | Class-level detail (usually auto-generated, not maintained manually) |
 
 This document covers levels 1–3. Level 4 is left to the code itself and IDE tooling.
 

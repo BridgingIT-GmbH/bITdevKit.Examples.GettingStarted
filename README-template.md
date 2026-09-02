@@ -145,9 +145,9 @@ SolutionName/
 ## Available Templates
 
 | Template Name | Short Name | Description |
-|---------------|------------|-------------|
+| --------------- | ------------ | ------------- |
 | bITdevKit Solution | `bdksolution` | Creates a complete solution with initial module following Onion Architecture |
-| bITdevKit Module   | `bdkmodule`   | Adds a new module to an existing solution |
+| bITdevKit Module | `bdkmodule` | Adds a new module to an existing solution |
 
 ## Troubleshooting
 

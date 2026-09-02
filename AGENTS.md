@@ -2,7 +2,7 @@
 
 This document provides AI agents with concise, high-signal context about this repository to produce high-quality, maintainable code and helpful developer assistance. It complements `.github/copilot-instructions.md` with a broader perspective on architecture, patterns, workflows, and conventions.
 
-### bITdevKit Documentation Guidance (Critical)
+## bITdevKit Documentation Guidance (Critical)
 
 This project consumes the **bITdevKit** (BDK) exclusively via NuGet packages (`BridgingIT.DevKit.*`).
 
@@ -121,7 +121,7 @@ test: add domain tests for task status transitions
 
 ## Tech Stack
 
-- **Frameworks**: ASP.NET Core minimal API, EF Core (SQL Server), Mapster, Serilog, Quartz, FluentValidation.
+- **Frameworks**: ASP.NET Core minimal API, EF Core (SQL Server), Mapster, Serilog, DevKit Jobs, RazorSlices, FluentValidation.
 - **bITdevKit**: Requester/Notifier, repositories, startup tasks, job scheduling, module infrastructure.
 - **Testing**: xUnit, NSubstitute, Shouldly; WebApplicationFactory for integration.
 
