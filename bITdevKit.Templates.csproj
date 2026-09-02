@@ -48,7 +48,7 @@
   <!-- Template-Inhalt für Multi-Template Package -->
   <ItemGroup>
     <!-- Source Verzeichnis komplett mit Struktur -->
-    <Content Include="src\**\*" Exclude="src\**\bin\**\*;src\**\obj\**\*" Pack="true" PackagePath="content/src/" />
+    <Content Include="src\**\*" Exclude="src\**\bin\**\*;src\**\obj\**\*;src\**\logs\**\*" Pack="true" PackagePath="content/src/" />
 
     <Content Include=".bdk\**\*" Pack="true" PackagePath="content/.bdk/" />
     <Content Include="bdk*" Pack="true" PackagePath="content/" />
@@ -66,7 +66,7 @@
     <Content Include="GlobalSuppressions.cs" Pack="true" PackagePath="content/" />
     <Content Include=".vscode\**\*" Pack="true" PackagePath="content/.vscode/" />
     <Content Include="assets\**\*" Pack="true" PackagePath="content/assets/" />
-    <Content Include=".github\**\*" Pack="true" PackagePath="content/.github/" />
+    <Content Include=".github\**\*" Exclude=".github\workflows\templates.yml" Pack="true" PackagePath="content/.github/" />
 
     <None Include="AGENTS.md" Pack="true" PackagePath="content/" />
     <None Include="docker-compose.yml" Pack="true" PackagePath="content/" />

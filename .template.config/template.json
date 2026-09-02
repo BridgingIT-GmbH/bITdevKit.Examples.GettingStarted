@@ -96,7 +96,9 @@
             ".git/**/*",
             ".gitignore",
             ".gitattributes",
-            ".azure/azure-pipelines-template.yml",
+            ".tmp/**",
+            ".github/workflows/templates.yml",
+            "**/logs/**",
             "**/*g.cs",
             "bITdevKit.Templates.csproj",
             "README-template.md"

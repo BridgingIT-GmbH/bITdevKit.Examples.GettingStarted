@@ -1,0 +1,201 @@
+name: Templates
+
+on:
+  push:
+    branches:
+      - main
+      - 'features/**'
+    tags:
+      - '*'
+    paths-ignore:
+      - README.md
+      - .gitignore
+      - 'docs/**'
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: templates-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  BUILD_CONFIGURATION: Release
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  MinVerDefaultPreReleaseIdentifiers: preview.0
+  NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+  NUGET_SOURCE: https://api.nuget.org/v3/index.json
+  PACKAGE_DIRECTORY: ${{ github.workspace }}/artifacts/packages
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  version:
+    name: Calculate version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.calculate.outputs.version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Restore .NET tools
+        run: dotnet tool restore
+
+      - name: Calculate version
+        id: calculate
+        run: |
+          version="$(dotnet minver -v d)"
+
+          if [[ "${GITHUB_REF}" == "refs/heads/main" && "${version}" != *preview* ]]; then
+            version="${version}-preview"
+          fi
+
+          echo "Version: ${version}"
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+
+          {
+            echo "## Template package"
+            echo ""
+            echo "Version: \`${version}\`"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+  build:
+    name: Validate and package templates
+    needs: version
+    runs-on: ubuntu-latest
+    env:
+      BUILD_VERSION: ${{ needs.version.outputs.version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Inspect environment
+        run: dotnet --info
+
+      - name: Restore solution
+        run: dotnet restore bITdevKit.Examples.GettingStarted.slnx --verbosity normal
+
+      - name: Build solution
+        run: >-
+          dotnet build bITdevKit.Examples.GettingStarted.slnx
+          --configuration "${BUILD_CONFIGURATION}"
+          --no-restore
+          --nologo
+          /p:UseSharedCompilation=false
+
+      - name: Validate template configuration
+        run: |
+          mapfile -d '' templates < <(find . -name template.json -type f -print0)
+
+          if [[ "${#templates[@]}" -eq 0 ]]; then
+            echo "::error::No template.json files found."
+            exit 1
+          fi
+
+          for template in "${templates[@]}"; do
+            echo "Validating ${template}"
+            python3 -m json.tool "${template}" > /dev/null
+          done
+
+      - name: Install and create templates
+        run: |
+          dotnet new install .
+          dotnet new list bdksolution
+          dotnet new list bdkmodule
+
+          output_directory="${RUNNER_TEMP}/template-test/test-solution"
+          dotnet new bdksolution \
+            --output "${output_directory}" \
+            --SolutionName TestSolution \
+            --ModuleName Core \
+            --allow-scripts yes
+
+          test -d "${output_directory}/src"
+          test -d "${output_directory}/src/Modules/Core"
+          test -d "${output_directory}/src/Presentation.Web.Server"
+
+      - name: Restore template package
+        run: dotnet restore bITdevKit.Templates.csproj --verbosity minimal
+
+      - name: Pack templates
+        run: |
+          mkdir -p "${PACKAGE_DIRECTORY}"
+          dotnet pack bITdevKit.Templates.csproj \
+            --configuration "${BUILD_CONFIGURATION}" \
+            --no-build \
+            --nologo \
+            --include-symbols \
+            --output "${PACKAGE_DIRECTORY}" \
+            --verbosity normal \
+            -p:Version="${BUILD_VERSION}" \
+            -p:PackageVersion="${BUILD_VERSION}"
+
+      - name: Push package to NuGet.org
+        if: >-
+          github.repository == 'BridgingIT-GmbH/bITdevKit.Examples.GettingStarted' &&
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [[ -z "${NUGET_API_KEY}" ]]; then
+            echo "::error::NUGET_API_KEY secret is not configured."
+            exit 1
+          fi
+
+          shopt -s nullglob
+          packages=("${PACKAGE_DIRECTORY}"/*.nupkg)
+
+          if [[ "${#packages[@]}" -eq 0 ]]; then
+            echo "::error::No NuGet packages found."
+            exit 1
+          fi
+
+          for package in "${packages[@]}"; do
+            dotnet nuget push "${package}" \
+              --source "${NUGET_SOURCE}" \
+              --api-key "${NUGET_API_KEY}" \
+              --skip-duplicate
+          done
+
+      - name: Upload package artifacts
+        if: >-
+          github.event_name == 'push' &&
+          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: template-packages-${{ needs.version.outputs.version }}
+          if-no-files-found: error
+          retention-days: 7
+          path: ${{ env.PACKAGE_DIRECTORY }}/*.nupkg
+
+      - name: Uninstall templates
+        if: always()
+        continue-on-error: true
+        run: |
+          dotnet new uninstall BridgingIT.DevKit.Templates || true
+          dotnet new uninstall BridgingIT.DevKit.Solution.Template || true
+          dotnet new uninstall . || true
