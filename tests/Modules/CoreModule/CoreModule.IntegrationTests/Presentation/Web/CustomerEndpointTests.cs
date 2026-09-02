@@ -5,247 +5,355 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.IntegrationTests.Presentation.Web;
 
-using System.Text;
+using System.Net.Http.Json;
 using System.Text.Json;
 using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Application;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation.Web;
 
 [IntegrationTest("Presentation.Web")]
 [Category("integration")]
 [Collection(nameof(EndpointCollection))]
 public class CustomerEndpointTests
 {
+    private const string Route = "/api/coremodule/customers";
+    private static readonly JsonSerializerOptions JsonOptions = Common.DefaultJsonSerializerOptions.Create();
     private readonly EndpointTestFixture<Program> fixture;
-    private readonly ITestOutputHelper output;
 
     public CustomerEndpointTests(ITestOutputHelper output, EndpointTestFixture<Program> fixture)
     {
         this.fixture = fixture;
-        this.output = output;
         this.fixture.Attach(output);
-        this.fixture.Options(new()
-        {
-            TokenEndpoint = "/_bdk/api/identity/connect/token",
-            ClientId = "test-client",
-            Username = "clever.dragon@example.com",
-            Password = "fantasy",
-            Scope = "openid profile email roles"
-        });
     }
 
-    /// <summary>
-    /// Ensures that retrieving an existing entity by ID returns HTTP 200 (OK) and the response body contains the expected entity details.
-    /// </summary>
-    [Theory]
-    [InlineData("api/coremodule/customers")]
-    public async Task Get_SingleExisting_ReturnsOk(string route)
+    [Fact]
+    public async Task GetById_ExistingCustomer_ReturnsExactCustomer()
     {
-        // Arrange
-        var model = await this.SeedEntity(route);
+        var expected = await this.SeedCustomerAsync();
 
-        // Act
-        this.output.WriteLine($"Request: method=GET, url={route + $"/{model.Id}"}");
-        var response = await this.fixture.Client.GetAsync(route + $"/{model.Id}");
-        this.output.WriteLine($"Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
+        using var response = await this.fixture.Client.GetAsync($"{Route}/{expected.Id}");
 
-        // Assert
         response.Should().Be200Ok();
-        response.Should().MatchInContent($"*{model.FirstName}*");
-        response.Should().MatchInContent($"*{model.LastName}*");
-        response.Should().MatchInContent($"*{model.Email}*");
-
-        var responseModel = await response.Content.ReadAsAsync<CustomerModel>();
-        responseModel.ShouldNotBeNull();
-
-        this.output.WriteLine($"ResponseModel: {responseModel.DumpText()}");
+        var actual = await ReadCustomerAsync(response);
+        AssertCustomer(actual, expected);
     }
 
-    /// <summary>
-    /// Ensures that retrieving a non-existing entity by a random ID returns HTTP 404 (Not Found).
-    /// </summary>
-    [Theory]
-    [InlineData("api/coremodule/customers")]
-    public async Task Get_SingleNotExisting_ReturnsNotFound(string route)
+    [Fact]
+    public async Task GetById_MissingCustomer_ReturnsNotFound()
     {
-        // Arrange
-        var id = Guid.NewGuid();
+        using var response = await this.fixture.Client.GetAsync($"{Route}/{Guid.NewGuid()}");
 
-        // Act
-        this.output.WriteLine($"Request: method=GET, url={route + $"/{id}"}");
-        var response = await this.fixture.Client.GetAsync(route + $"/{id}");
-        this.output.WriteLine($"Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
-
-        // Assert
         response.Should().Be404NotFound();
     }
 
-    /// <summary>
-    /// Verifies that retrieving all entities returns HTTP 200 (OK) and contains at least one entity with valid details.
-    /// </summary>
-    [Theory]
-    [InlineData("api/coremodule/customers")]
-    public async Task Get_MultipleExisting_ReturnsOk(string route)
+    [Fact]
+    public async Task GetAll_ExistingCustomer_ReturnsCustomerInCollection()
     {
-        // Arrange
-        var model = await this.SeedEntity(route);
+        var expected = await this.SeedCustomerAsync();
 
-        // Act
-        this.output.WriteLine($"Request: method=GET, url={route}");
-        var response = await this.fixture.Client.GetAsync(route);
-        this.output.WriteLine($"Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
+        using var response = await this.fixture.Client.GetAsync(Route);
 
-        // Assert
         response.Should().Be200Ok();
-        response.Should().MatchInContent($"*{model.FirstName}*");
-        response.Should().MatchInContent($"*{model.LastName}*");
-        response.Should().MatchInContent($"*{model.Email}*");
-        var responseModel = await response.Content.ReadAsAsync<ICollection<CustomerModel>>();
-        responseModel.ShouldNotBeNull();
-
-        this.output.WriteLine($"ResponseModel: {responseModel.DumpText()}");
+        var customers = await ReadCustomersAsync(response);
+        var actual = customers.Single(customer => customer.Id == expected.Id);
+        AssertCustomer(actual, expected);
     }
 
-    /// <summary>
-    /// Verifies that retrieving entities by filter returns HTTP 200 (OK) and contains at least one matching entity with valid details.
-    /// </summary>
-    [Theory]
-    [InlineData("api/coremodule/customers")]
-    public async Task Post_MultipleByFilter_ReturnsOk(string route)
+    [Fact]
+    public async Task Search_MatchingFilters_ReturnsOnlyMatchingCustomers()
     {
-        // Arrange
-        var model = await this.SeedEntity(route);
+        var expected = await this.SeedCustomerAsync();
         var filter = FilterModelBuilder.For<CustomerModel>()
-            .AddFilter(e => e.Email, FilterOperator.Equal, model.Email)
-            .AddFilter(e => e.LastName, FilterOperator.Equal, model.LastName).Build();
-        var filterJson = JsonSerializer.Serialize(filter, Common.DefaultJsonSerializerOptions.Create());
-        var content = new StringContent(filterJson, Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
-        this.output.WriteLine($"RequestModel: {model.DumpText()}");
+            .AddFilter(customer => customer.Email, FilterOperator.Equal, expected.Email)
+            .AddFilter(customer => customer.LastName, FilterOperator.Equal, expected.LastName)
+            .Build();
 
-        // Act
-        this.output.WriteLine($"Request: method=POST, url={route + "/search"}, body={filterJson}");
-        var response = await this.fixture.Client.PostAsync(route + "/search", content);
-        this.output.WriteLine($"Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
+        using var response = await this.fixture.Client.PostAsJsonAsync($"{Route}/search", filter, JsonOptions);
 
-        // Assert
         response.Should().Be200Ok();
-        response.Should().MatchInContent($"*{model.Email}*");
-        var responseModel = await response.Content.ReadAsAsync<ICollection<CustomerModel>>();
-        responseModel.ShouldNotBeNull();
-
-        this.output.WriteLine($"ResponseModel: {responseModel.DumpText()}");
+        var customers = await ReadCustomersAsync(response);
+        customers.ShouldNotBeEmpty();
+        customers.ShouldAllBe(customer => customer.Email == expected.Email && customer.LastName == expected.LastName);
+        customers.ShouldContain(customer => customer.Id == expected.Id);
     }
 
-    /// <summary>
-    /// Confirms that posting a valid model returns HTTP 201 (Created) and the response includes the newly created entity.
-    /// </summary>
-    [Theory]
-    [InlineData("api/coremodule/customers")]
-    public async Task Post_ValidModel_ReturnsCreated(string route)
+    [Fact]
+    public async Task GetAll_MatchingQueryFilter_ReturnsOnlyMatchingCustomers()
     {
-        // Arrange
-        var ticks = DateTime.UtcNow.Ticks;
-        var model = new CustomerModel { FirstName = $"John{ticks}", LastName = $"Doe{ticks}", Email = $"john.doe{ticks}@example.com" };
-        var json = JsonSerializer.Serialize(model, Common.DefaultJsonSerializerOptions.Create());
-        var content = new StringContent(json, Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
-        this.output.WriteLine($"RequestModel: {model.DumpText()}");
+        var expected = await this.SeedCustomerAsync();
+        var filter = FilterModelBuilder.For<CustomerModel>()
+            .AddFilter(customer => customer.Email, FilterOperator.Equal, expected.Email)
+            .Build();
 
-        // Act
-        this.output.WriteLine($"Request: method=POST, url={route}, body={json}");
-        var response = await this.fixture.Client.PostAsync(route, content);
-        this.output.WriteLine($"Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
+        var filterJson = JsonSerializer.Serialize(filter, JsonOptions);
+        using var response = await this.fixture.Client.GetAsync($"{Route}?filter={Uri.EscapeDataString(filterJson)}");
 
-        // Assert
+        response.Should().Be200Ok();
+        var customers = await ReadCustomersAsync(response);
+        customers.ShouldNotBeEmpty();
+        customers.ShouldAllBe(customer => customer.Email == expected.Email);
+        customers.ShouldContain(customer => customer.Id == expected.Id);
+    }
+
+    [Fact]
+    public async Task Create_ValidCustomer_ReturnsCreatedCustomerAndLocation()
+    {
+        var request = CreateCustomerRequest();
+
+        using var response = await this.fixture.Client.PostAsJsonAsync(Route, request);
+
         response.Should().Be201Created();
-        var responseModel = await response.Content.ReadAsAsync<CustomerModel>();
-        responseModel.ShouldNotBeNull();
-        this.output.WriteLine($"ResponseModel: {responseModel.DumpText()}");
+        var created = await ReadCustomerAsync(response);
+        AssertCreatedCustomer(created, request);
+        response.Headers.Location.ShouldNotBeNull();
+        response.Headers.Location.OriginalString.ShouldBe($"{Route}/{created.Id}");
+
+        var persisted = await this.GetCustomerAsync(created.Id);
+        AssertCustomer(persisted, created);
     }
 
-    /// <summary>
-    /// Ensures that posting an invalid entity model returns HTTP 400 (Bad Request) with validation error messages.
-    /// </summary>
-    [Theory]
-    [InlineData("api/coremodule/customers")]
-    public async Task Post_InvalidEntity_ReturnsBadRequest(string route)
+    [Fact]
+    public async Task Create_InvalidCustomer_ReturnsValidationProblem()
     {
-        // Arrange
-        var model = new CustomerModel { FirstName = string.Empty, LastName = string.Empty, Email = string.Empty };
-        var json = JsonSerializer.Serialize(model, Common.DefaultJsonSerializerOptions.Create());
-        var content = new StringContent(json, Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
-        this.output.WriteLine($"RequestModel: {model.DumpText()}");
+        var request = new CustomerModel
+        {
+            FirstName = string.Empty,
+            LastName = string.Empty,
+            Email = string.Empty,
+            Addresses = []
+        };
 
-        // Act
-        this.output.WriteLine($"Request: method=POST, url={route}, body={json}");
-        var response = await this.fixture.Client.PostAsync(route, content);
-        this.output.WriteLine($"Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
+        using var response = await this.fixture.Client.PostAsJsonAsync(Route, request);
 
-        // Assert
         response.Should().Be400BadRequest();
-        response.Should().MatchInContent("*[FluentValidationError]*");
-        response.Should().MatchInContent($"*{nameof(model.FirstName)}*");
-        response.Should().MatchInContent($"*{nameof(model.LastName)}*");
-        response.Should().MatchInContent($"*{nameof(model.Email)}*");
+        await AssertValidationProblemAsync(response, nameof(CustomerModel.FirstName), nameof(CustomerModel.LastName), nameof(CustomerModel.Email));
     }
 
-    /// <summary>
-    /// Validates that updating an existing entity returns HTTP 200 (OK) and persists the modified entity details.
-    /// </summary>
-    [Theory]
-    [InlineData("api/coremodule/customers")]
-    public async Task Put_ValidModel_ReturnsOk(string route)
+    [Fact]
+    public async Task Update_ValidCustomer_PersistsChanges()
     {
-        // Arrange
-        var model = await this.SeedEntity(route);
-        model.FirstName += "changed";
-        model.LastName += "changed";
-        var json = JsonSerializer.Serialize(model, Common.DefaultJsonSerializerOptions.Create());
-        var content = new StringContent(json, Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
-        this.output.WriteLine($"RequestModel: {model.DumpText()}");
+        var customer = await this.SeedCustomerAsync();
+        var originalConcurrencyVersion = customer.ConcurrencyVersion;
+        customer.FirstName = $"Updated{Guid.NewGuid():N}";
+        customer.LastName = $"Updated{Guid.NewGuid():N}";
 
-        // Act
-        this.output.WriteLine($"Request: method=PUT, url={route + $"/{model.Id}"}, body={json}");
-        var response = await this.fixture.Client.PutAsync(route + $"/{model.Id}", content);
-        this.output.WriteLine($"Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
+        using var response = await this.fixture.Client.PutAsJsonAsync($"{Route}/{customer.Id}", customer);
 
-        // Assert
         response.Should().Be200Ok();
-        response.Should().MatchInContent($"*{model.FirstName}*");
-        response.Should().MatchInContent($"*{model.LastName}*");
-        var responseModel = await response.Content.ReadAsAsync<CustomerModel>();
-        responseModel.ShouldNotBeNull();
-        this.output.WriteLine($"ResponseModel: {responseModel.DumpText()}");
+        var updated = await ReadCustomerAsync(response);
+        updated.FirstName.ShouldBe(customer.FirstName);
+        updated.LastName.ShouldBe(customer.LastName);
+        updated.ConcurrencyVersion.ShouldNotBe(originalConcurrencyVersion);
+
+        var persisted = await this.GetCustomerAsync(customer.Id);
+        AssertCustomer(persisted, updated);
     }
 
-    /// <summary>
-    /// Validates that updating an existing entity returns HTTP 200 (OK) and persists the modified entity details.
-    /// </summary>
-    [Theory]
-    [InlineData("api/coremodule/customers")]
-    public async Task Delete_SingleExisting_ReturnsOk(string route)
+    [Fact]
+    public async Task Update_MismatchedRouteAndBodyIds_ReturnsBadRequest()
     {
-        // Arrange
-        var model = await this.SeedEntity(route);
+        var customer = await this.SeedCustomerAsync();
 
-        // Act
-        this.output.WriteLine($"Request: method=DELETE, url={route + $"/{model.Id}"}");
-        var response = await this.fixture.Client.DeleteAsync(route + $"/{model.Id}");
-        this.output.WriteLine($"Response: status={(int)response.StatusCode}");
+        using var response = await this.fixture.Client.PutAsJsonAsync($"{Route}/{Guid.NewGuid()}", customer);
 
-        // Assert
+        response.Should().Be400BadRequest();
+        (await response.Content.ReadAsStringAsync()).ShouldContain("ID in the route must match");
+    }
+
+    [Fact]
+    public async Task Update_StaleConcurrencyVersion_ReturnsConflict()
+    {
+        var staleCustomer = await this.SeedCustomerAsync();
+        var currentCustomer = Copy(staleCustomer);
+        currentCustomer.FirstName = $"Current{Guid.NewGuid():N}";
+        using var firstResponse = await this.fixture.Client.PutAsJsonAsync($"{Route}/{currentCustomer.Id}", currentCustomer);
+        firstResponse.Should().Be200Ok();
+
+        staleCustomer.LastName = $"Stale{Guid.NewGuid():N}";
+        using var staleResponse = await this.fixture.Client.PutAsJsonAsync($"{Route}/{staleCustomer.Id}", staleCustomer);
+
+        staleResponse.Should().Be409Conflict();
+    }
+
+    [Fact]
+    public async Task Update_MissingCustomer_ReturnsNotFound()
+    {
+        var customer = CreateCustomerRequest();
+        customer.Id = Guid.NewGuid().ToString();
+        customer.ConcurrencyVersion = Guid.NewGuid().ToString();
+
+        using var response = await this.fixture.Client.PutAsJsonAsync($"{Route}/{customer.Id}", customer);
+
+        response.Should().Be404NotFound();
+    }
+
+    [Fact]
+    public async Task UpdateStatus_ValidStatus_PersistsStatus()
+    {
+        var customer = await this.SeedCustomerAsync();
+        var request = new CustomerUpdateStatusRequestModel { Status = "Active" };
+
+        using var response = await this.fixture.Client.PutAsJsonAsync($"{Route}/{customer.Id}/status", request);
+
+        response.Should().Be200Ok();
+        var updated = await ReadCustomerAsync(response);
+        updated.Status.ShouldBe("Active");
+
+        var persisted = await this.GetCustomerAsync(customer.Id);
+        persisted.Status.ShouldBe("Active");
+    }
+
+    [Fact]
+    public async Task UpdateStatus_InvalidStatus_ReturnsValidationProblem()
+    {
+        var customer = await this.SeedCustomerAsync();
+        var request = new CustomerUpdateStatusRequestModel { Status = "Unknown" };
+
+        using var response = await this.fixture.Client.PutAsJsonAsync($"{Route}/{customer.Id}/status", request);
+
+        response.Should().Be400BadRequest();
+        await AssertValidationProblemAsync(response, nameof(CustomerUpdateStatusRequestModel.Status));
+    }
+
+    [Fact]
+    public async Task Delete_ExistingCustomer_RemovesCustomer()
+    {
+        var customer = await this.SeedCustomerAsync();
+
+        using var response = await this.fixture.Client.DeleteAsync($"{Route}/{customer.Id}");
+
         response.Should().Be204NoContent();
+        using var getResponse = await this.fixture.Client.GetAsync($"{Route}/{customer.Id}");
+        getResponse.Should().Be404NotFound();
     }
 
-    /// <summary>
-    /// Creates and posts a new entity to the provided endpoint returning the created model.
-    /// </summary>
-    private async Task<CustomerModel> SeedEntity(string route)
+    [Fact]
+    public async Task Delete_MissingCustomer_ReturnsNotFound()
     {
-        var ticks = DateTime.UtcNow.Ticks;
-        var model = new CustomerModel { FirstName = $"John{ticks}", LastName = $"Doe{ticks}", Email = $"john.doe{ticks}@example.com", Number = $"CUS-2026-{ticks % 1000000:D6}"};
-        var json = JsonSerializer.Serialize(model, Common.DefaultJsonSerializerOptions.Create());
-        var content = new StringContent(json, Encoding.UTF8, System.Net.Mime.MediaTypeNames.Application.Json);
-        var response = await this.fixture.Client.PostAsync(route, content);
-        response.EnsureSuccessStatusCode();
+        using var response = await this.fixture.Client.DeleteAsync($"{Route}/{Guid.NewGuid()}");
 
-        return await response.Content.ReadAsAsync<CustomerModel>();
+        response.Should().Be404NotFound();
+    }
+
+    [Fact]
+    public async Task GetAll_WithoutAuthentication_ReturnsUnauthorized()
+    {
+        using var client = this.fixture.CreateUnauthenticatedClient();
+
+        using var response = await client.GetAsync(Route);
+
+        response.Should().Be401Unauthorized();
+    }
+
+    private static CustomerModel CreateCustomerRequest()
+    {
+        var suffix = Guid.NewGuid().ToString("N");
+        return new CustomerModel
+        {
+            FirstName = $"First{suffix}",
+            LastName = $"Last{suffix}",
+            Email = $"customer.{suffix}@example.com",
+            DateOfBirth = new DateOnly(1990, 5, 15),
+            Status = "Lead",
+            Addresses = []
+        };
+    }
+
+    private static CustomerModel Copy(CustomerModel source) => new()
+    {
+        Id = source.Id,
+        FirstName = source.FirstName,
+        LastName = source.LastName,
+        Number = source.Number,
+        DateOfBirth = source.DateOfBirth,
+        Email = source.Email,
+        Status = source.Status,
+        ConcurrencyVersion = source.ConcurrencyVersion,
+        Addresses = source.Addresses?.Select(address => new CustomerAddressModel
+        {
+            Id = address.Id,
+            Name = address.Name,
+            Line1 = address.Line1,
+            Line2 = address.Line2,
+            PostalCode = address.PostalCode,
+            City = address.City,
+            Country = address.Country,
+            IsPrimary = address.IsPrimary
+        }).ToList() ?? []
+    };
+
+    private static void AssertCreatedCustomer(CustomerModel actual, CustomerModel request)
+    {
+        Guid.TryParse(actual.Id, out var id).ShouldBeTrue();
+        id.ShouldNotBe(Guid.Empty);
+        actual.Number.ShouldMatch("^CUS-[0-9]{4}-[0-9]{6}$");
+        Guid.TryParse(actual.ConcurrencyVersion, out var concurrencyVersion).ShouldBeTrue();
+        concurrencyVersion.ShouldNotBe(Guid.Empty);
+        actual.FirstName.ShouldBe(request.FirstName);
+        actual.LastName.ShouldBe(request.LastName);
+        actual.Email.ShouldBe(request.Email);
+        actual.DateOfBirth.ShouldBe(request.DateOfBirth);
+        actual.Status.ShouldBe(request.Status);
+    }
+
+    private static void AssertCustomer(CustomerModel actual, CustomerModel expected)
+    {
+        actual.Id.ShouldBe(expected.Id);
+        actual.FirstName.ShouldBe(expected.FirstName);
+        actual.LastName.ShouldBe(expected.LastName);
+        actual.Number.ShouldBe(expected.Number);
+        actual.DateOfBirth.ShouldBe(expected.DateOfBirth);
+        actual.Email.ShouldBe(expected.Email);
+        actual.Status.ShouldBe(expected.Status);
+        actual.ConcurrencyVersion.ShouldBe(expected.ConcurrencyVersion);
+    }
+
+    private static async Task AssertValidationProblemAsync(HttpResponseMessage response, params string[] expectedProperties)
+    {
+        await using var stream = await response.Content.ReadAsStreamAsync();
+        using var document = await JsonDocument.ParseAsync(stream);
+        var root = document.RootElement;
+        root.GetProperty("status").GetInt32().ShouldBe(400);
+        root.GetProperty("title").GetString().ShouldBe("Validation Error");
+
+        var errors = root.GetProperty("data").GetProperty("errors");
+        var propertyNames = errors.EnumerateObject().Select(property => property.Name).ToArray();
+        foreach (var expectedProperty in expectedProperties)
+        {
+            propertyNames.ShouldContain(name => name.EndsWith(expectedProperty, StringComparison.Ordinal));
+        }
+    }
+
+    private static async Task<CustomerModel> ReadCustomerAsync(HttpResponseMessage response)
+    {
+        var customer = await response.Content.ReadFromJsonAsync<CustomerModel>();
+        customer.ShouldNotBeNull();
+        return customer;
+    }
+
+    private static async Task<IReadOnlyCollection<CustomerModel>> ReadCustomersAsync(HttpResponseMessage response)
+    {
+        var customers = await response.Content.ReadFromJsonAsync<List<CustomerModel>>();
+        customers.ShouldNotBeNull();
+        return customers;
+    }
+
+    private async Task<CustomerModel> SeedCustomerAsync()
+    {
+        var request = CreateCustomerRequest();
+        using var response = await this.fixture.Client.PostAsJsonAsync(Route, request);
+        response.Should().Be201Created();
+
+        var created = await ReadCustomerAsync(response);
+        AssertCreatedCustomer(created, request);
+        response.Headers.Location.ShouldNotBeNull();
+        response.Headers.Location.OriginalString.ShouldBe($"{Route}/{created.Id}");
+        return created;
+    }
+
+    private async Task<CustomerModel> GetCustomerAsync(string id)
+    {
+        using var response = await this.fixture.Client.GetAsync($"{Route}/{id}");
+        response.Should().Be200Ok();
+        return await ReadCustomerAsync(response);
     }
 }

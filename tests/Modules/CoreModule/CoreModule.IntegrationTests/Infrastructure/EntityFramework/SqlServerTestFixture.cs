@@ -26,6 +26,8 @@ public class SqlServerTestFixture : IAsyncLifetime
 
     public DbContextOptions<CoreModuleDbContext> Options { get; private set; }
 
+    public string ConnectionString { get; private set; }
+
     public bool Available { get; private set; }
 
     public string FailureReason { get; private set; }
@@ -63,9 +65,9 @@ public class SqlServerTestFixture : IAsyncLifetime
             await this.container.StartAsync();
             this.Log("Container started. Building DbContext options...");
 
-            var connectionString = this.container.GetConnectionString() + ";TrustServerCertificate=True;MultipleActiveResultSets=true";
+            this.ConnectionString = this.container.GetConnectionString() + ";TrustServerCertificate=True;MultipleActiveResultSets=true";
             this.Options = new DbContextOptionsBuilder<CoreModuleDbContext>()
-                .UseSqlServer(connectionString, sql => sql
+                .UseSqlServer(this.ConnectionString, sql => sql
                     .EnableRetryOnFailure(3, TimeSpan.FromSeconds(1), null)
                     .MigrationsAssembly(typeof(CoreModuleDbContext).Assembly.FullName))
                 .Options;
@@ -88,6 +90,7 @@ public class SqlServerTestFixture : IAsyncLifetime
             this.Log("Falling back to LocalDB...");
             this.fallbackDatabaseName = $"bit_devkit_gettingstarted_test_{Guid.NewGuid():N}";
             this.fallbackConnectionString = $"Server=(localdb)\\MSSQLLocalDB;Database={this.fallbackDatabaseName};Trusted_Connection=True;MultipleActiveResultSets=true";
+            this.ConnectionString = this.fallbackConnectionString;
 
             this.Options = new DbContextOptionsBuilder<CoreModuleDbContext>()
                 .UseSqlServer(this.fallbackConnectionString, sql => sql

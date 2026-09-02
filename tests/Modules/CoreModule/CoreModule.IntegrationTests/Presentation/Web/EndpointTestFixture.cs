@@ -5,9 +5,13 @@
 
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.IntegrationTests.Presentation.Web;
 
-using System.Text;
-using System.Text.Json;
+using System.Net.Http.Headers;
 using BridgingIT.DevKit.Domain.Repositories;
+using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.IntegrationTests.Infrastructure.EntityFramework;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 
 [CollectionDefinition(nameof(EndpointCollection))]
 public class EndpointCollection : ICollectionFixture<EndpointTestFixture<Program>>
@@ -20,35 +24,19 @@ public class EndpointCollection : ICollectionFixture<EndpointTestFixture<Program
 /// </summary>
 public class EndpointTestFixture<TProgram> : IAsyncLifetime where TProgram : class
 {
-    private CustomWebApplicationFactoryFixture<TProgram> factory;
-    private bool initialized;
-    private string accessToken;
-    private bool optionsConfigured;
+    private static readonly FakeUser TestUser = new(
+        "endpoint.tests@example.com",
+        "Endpoint Tests",
+        ["Administrator"]);
+
+    private EndpointWebApplicationFactory<TProgram> factory;
+    private SqlServerTestFixture database;
     private ITestOutputHelper output;
-    private EndpointTestFixtureOptions options = new();
     private readonly List<string> logs = new();
 
     public HttpClient Client { get; private set; }
 
-    public IServiceProvider Services => this.factory?.ServiceProvider;
-
-    public void Options(EndpointTestFixtureOptions options)
-    {
-        if (this.optionsConfigured)
-        {
-            return; // idempotent
-        }
-
-        this.options = options ?? new EndpointTestFixtureOptions();
-        this.optionsConfigured = true;
-        this.Log($"Auth configured: endpoint={this.options.TokenEndpoint}, clientId={this.options.ClientId}, user={this.options.Username}");
-
-        // If initialization already completed, authenticate immediately (blocking) to avoid race conditions.
-        if (this.initialized)
-        {
-            this.AuthenticateAsync().GetAwaiter().GetResult();
-        }
-    }
+    public IServiceProvider Services => this.factory?.Services;
 
     public void Attach(ITestOutputHelper testOutput)
     {
@@ -58,6 +46,7 @@ public class EndpointTestFixture<TProgram> : IAsyncLifetime where TProgram : cla
         }
 
         this.output = testOutput;
+        this.database?.Attach(testOutput);
         foreach (var m in this.logs)
         {
             try { this.output.WriteLine(m); } catch { }
@@ -73,56 +62,55 @@ public class EndpointTestFixture<TProgram> : IAsyncLifetime where TProgram : cla
 
     public async Task InitializeAsync()
     {
-        this.Log("Initializing Fixture (factory + client)...");
-        this.factory = new CustomWebApplicationFactoryFixture<TProgram>();
-        this.Client = this.factory.CreateClient();
-        this.Log("HttpClient created from WebApplicationFactory.");
-        this.initialized = true;
+        this.Log("Initializing isolated endpoint test database...");
+        this.database = new SqlServerTestFixture();
+        await this.database.InitializeAsync();
+        if (!this.database.Available)
+        {
+            throw new InvalidOperationException($"No SQL Server is available for endpoint tests. {this.database.FailureReason}");
+        }
+
+        this.factory = new EndpointWebApplicationFactory<TProgram>(this.database.ConnectionString, TestUser);
+        this.Client = this.factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        this.Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "FakeUser",
+            TestUser.Email);
+        this.Log("Authenticated HttpClient created with DevKit fake authentication.");
 
         this.Log("Waiting for database readiness...");
-        var databaseReadyService = this.factory.ServiceProvider.GetRequiredService<IDatabaseReadyService>();
-        await databaseReadyService?.WaitForReadyAsync();
-
-        if (this.optionsConfigured)
-        {
-            await this.AuthenticateAsync();
-        }
+        var databaseReadyService = this.factory.Services.GetRequiredService<IDatabaseReadyService>();
+        await databaseReadyService.WaitForReadyAsync();
     }
 
-    public Task DisposeAsync()
+    public HttpClient CreateUnauthenticatedClient() =>
+        this.factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+    public async Task DisposeAsync()
     {
         this.Log("Disposing Fixture...");
         try { this.Client?.Dispose(); } catch { }
         try { this.factory?.Dispose(); } catch { }
+        if (this.database is not null)
+        {
+            await this.database.DisposeAsync();
+        }
         this.Log("Fixture disposed.");
-
-        return Task.CompletedTask;
     }
 
-    private async Task AuthenticateAsync()
+    private sealed class EndpointWebApplicationFactory<TEntryPoint>(
+        string connectionString,
+        FakeUser user) : WebApplicationFactory<TEntryPoint>
+        where TEntryPoint : class
     {
-        if (!this.optionsConfigured || this.accessToken != null)
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            return;
+            builder.UseEnvironment("Development");
+            builder.ConfigureAppConfiguration((_, configuration) =>
+                configuration.AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    ["Modules:CoreModule:ConnectionStrings:Default"] = connectionString
+                }));
+            builder.ConfigureTestServices(services => services.AddFakeAuthentication([user]));
         }
-
-        var form = $"grant_type=password&client_id={this.options.ClientId}&username={this.options.Username}&password={this.options.Password}&scope={Uri.EscapeDataString(this.options.Scope)}";
-        var content = new StringContent(form, Encoding.UTF8, "application/x-www-form-urlencoded");
-        var response = await this.Client.PostAsync(this.options.TokenEndpoint, content);
-        this.Log($"Token Response: status={(int)response.StatusCode}, content={await response.Content.ReadAsStringAsync()}");
-        response.EnsureSuccessStatusCode();
-
-        await using var stream = await response.Content.ReadAsStreamAsync();
-        using var doc = await JsonDocument.ParseAsync(stream);
-        if (doc.RootElement.TryGetProperty("access_token", out var tokenElement))
-        {
-            this.accessToken = tokenElement.GetString();
-            this.Log("Access token acquired.");
-            this.Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", this.accessToken);
-            this.Log("Bearer token attached to HttpClient.");
-            return;
-        }
-
-        throw new InvalidOperationException("Access token not found in response.");
     }
 }
