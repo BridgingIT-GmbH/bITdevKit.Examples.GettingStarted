@@ -12,7 +12,6 @@ var builder = DevKitWebApplication.CreateBuilder(args)
     .AddLogging()
     .AddModules(modules => modules
         .WithModule(new CoreModuleModule()))
-        //WithModule<CoreModuleModule>())
     .AddMcp();
 
 // ===============================================================================================
@@ -53,10 +52,13 @@ builder.Services.AddScoped<ICurrentUserAccessor, HttpCurrentUserAccessor>();
 builder.Services.AddJwtBearerAuthentication(builder.Configuration); //.AddCookieAuthentication(); // optional cookie authentication for web applications
 builder.Services.AddAppIdentityProvider(builder.Environment.IsLocalDevelopment() || builder.Environment.IsContainerized(), builder.Configuration);
 builder.Services.AddAppDashboard(builder.Environment.IsLocalDevelopment() || builder.Environment.IsContainerized(), builder.Configuration);
+builder.Services.AddProfiling(options => options
+        .Enabled(builder.Environment.IsLocalDevelopment()))
+    .AddConsoleCommands(builder.Environment.IsLocalDevelopment());
 
 // ===============================================================================================
 // Configure Health Checks
-builder.Services.AddHealthChecks(builder.Configuration);
+builder.Services.AddAppHealthChecks();
 
 // ===============================================================================================
 // Configure Metrics and Observability
@@ -78,6 +80,8 @@ if (app.Environment.IsLocalDevelopment() || app.Environment.IsContainerized())
 
 app.UseRuleLogger();
 app.UseResultLogger();
+app.UseProblemDetails();
+app.UseHttpsRedirection();
 
 if (app.Environment.IsLocalDevelopment())
 {
@@ -90,11 +94,8 @@ app.UseRequestLogging();
 app.UseRequestMetrics();
 
 app.UseCors(builder.Configuration);
-app.UseProblemDetails();
-app.UseHttpsRedirection();
 
 app.UseModules();
-//app.UseExceptionHandler();
 
 app.UseAuthentication();
 app.UseAuthorization();

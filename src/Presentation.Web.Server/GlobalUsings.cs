@@ -7,5 +7,7 @@ global using System;
 global using System.Diagnostics.CodeAnalysis;
 global using System.Linq;
 global using BridgingIT.DevKit.Common;
+global using BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Presentation;
+global using BridgingIT.DevKit.Examples.GettingStarted.Presentation.Web.Server;
 global using BridgingIT.DevKit.Presentation;
 global using BridgingIT.DevKit.Presentation.Web;
