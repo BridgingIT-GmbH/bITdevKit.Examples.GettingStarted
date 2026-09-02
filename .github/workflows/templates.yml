@@ -23,13 +23,15 @@ permissions:
   contents: read
 
 env:
-  BUILD_CONFIGURATION: Release
+  Build_Configuration: Release
   DOTNET_NOLOGO: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   MinVerDefaultPreReleaseIdentifiers: preview.0
+  NUGET_PUSH: ${{ vars.NUGET_PUSH || 'false' }}
   NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
   NUGET_SOURCE: https://api.nuget.org/v3/index.json
-  PACKAGE_DIRECTORY: ${{ github.workspace }}/artifacts/packages
+  NUGET_DIRECTORY: ${{ github.workspace }}/artifacts/packages
+  PUBLISHABLE_BRANCHES: main
 
 defaults:
   run:
@@ -106,7 +108,7 @@ jobs:
       - name: Build solution
         run: >-
           dotnet build bITdevKit.Examples.GettingStarted.slnx
-          --configuration "${BUILD_CONFIGURATION}"
+          --configuration ${{ env.Build_Configuration }}
           --no-restore
           --nologo
           /p:UseSharedCompilation=false
@@ -145,57 +147,115 @@ jobs:
       - name: Restore template package
         run: dotnet restore bITdevKit.Templates.csproj --verbosity minimal
 
-      - name: Pack templates
+      - name: Package evaluation (nuget)
+        id: publishing
         run: |
-          mkdir -p "${PACKAGE_DIRECTORY}"
+          is_publishable=false
+          should_push=false
+
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            is_publishable=true
+          else
+            IFS=',' read -ra publishable_branches <<< "${PUBLISHABLE_BRANCHES}"
+
+            for branch in "${publishable_branches[@]}"; do
+              if [[ "${GITHUB_REF_NAME}" == "${branch}" ]]; then
+                is_publishable=true
+                break
+              fi
+            done
+          fi
+
+          if [[ "${NUGET_PUSH,,}" == "true" ]]; then
+            should_push=true
+          fi
+
+          echo "is_publishable=${is_publishable}" >> "${GITHUB_OUTPUT}"
+          echo "should_push=${should_push}" >> "${GITHUB_OUTPUT}"
+          echo "Publishable branch: ${is_publishable}"
+          echo "NuGet push enabled: ${should_push}"
+
+          {
+            echo "## Package publishing"
+            echo ""
+            echo "| Item | Value |"
+            echo "| --- | --- |"
+            echo "| Ref | \`${GITHUB_REF_NAME}\` |"
+            echo "| Ref type | \`${GITHUB_REF_TYPE}\` |"
+            echo "| Publishable ref | \`${is_publishable}\` |"
+            echo "| NuGet push enabled | \`${should_push}\` |"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Package pack (nuget)
+        run: |
+          mkdir -p "${NUGET_DIRECTORY}"
           dotnet pack bITdevKit.Templates.csproj \
-            --configuration "${BUILD_CONFIGURATION}" \
+            --configuration ${{ env.Build_Configuration }} \
             --no-build \
             --nologo \
             --include-symbols \
-            --output "${PACKAGE_DIRECTORY}" \
+            --output "${NUGET_DIRECTORY}" \
             --verbosity normal \
             -p:Version="${BUILD_VERSION}" \
             -p:PackageVersion="${BUILD_VERSION}"
 
-      - name: Push package to NuGet.org
-        if: >-
-          github.repository == 'BridgingIT-GmbH/bITdevKit.Examples.GettingStarted' &&
-          github.event_name == 'push' &&
-          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: |
-          if [[ -z "${NUGET_API_KEY}" ]]; then
-            echo "::error::NUGET_API_KEY secret is not configured."
-            exit 1
-          fi
-
-          shopt -s nullglob
-          packages=("${PACKAGE_DIRECTORY}"/*.nupkg)
+          mapfile -t packages < <(find "${NUGET_DIRECTORY}" -maxdepth 1 -name '*.nupkg' -type f | sort)
 
           if [[ "${#packages[@]}" -eq 0 ]]; then
-            echo "::error::No NuGet packages found."
+            echo "::error::No NuGet packages were created."
             exit 1
           fi
 
-          for package in "${packages[@]}"; do
-            dotnet nuget push "${package}" \
-              --source "${NUGET_SOURCE}" \
-              --api-key "${NUGET_API_KEY}" \
-              --skip-duplicate
+          {
+            echo ""
+            echo "### Packages created"
+            echo ""
+            echo "Packages created: ${#packages[@]}"
+            echo ""
+            echo "| Package |"
+            echo "| --- |"
+
+            for package in "${packages[@]}"; do
+              echo "| \`$(basename "${package}")\` |"
+            done
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Package push (nuget)
+        if: ${{ success() && steps.publishing.outputs.is_publishable == 'true' && steps.publishing.outputs.should_push == 'true' }}
+        env:
+          API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [[ -z "${API_KEY}" ]]; then
+            echo "::error::NUGET_API_KEY secret is not set."
+            exit 1
+          fi
+
+          {
+            echo ""
+            echo "### Packages pushed"
+            echo ""
+            echo "| Package | Result |"
+            echo "| --- | --- |"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+          for package in "${NUGET_DIRECTORY}"/*.nupkg; do
+            echo "Publishing package: ${package}"
+            if dotnet nuget push "${package}" --source "${NUGET_SOURCE}" --api-key "${API_KEY}" --skip-duplicate; then
+              echo "| \`$(basename "${package}")\` | Pushed |" >> "${GITHUB_STEP_SUMMARY}"
+            else
+              echo "| \`$(basename "${package}")\` | Failed |" >> "${GITHUB_STEP_SUMMARY}"
+              exit 1
+            fi
           done
 
-      - name: Upload package artifacts
-        if: >-
-          github.event_name == 'push' &&
-          (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+      - name: Publish package artifacts
+        if: ${{ success() && steps.publishing.outputs.is_publishable == 'true' }}
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: template-packages-${{ needs.version.outputs.version }}
+          name: NuGet packages
           if-no-files-found: error
           retention-days: 7
-          path: ${{ env.PACKAGE_DIRECTORY }}/*.nupkg
+          path: ${{ env.NUGET_DIRECTORY }}/*.nupkg
 
       - name: Uninstall templates
         if: always()
