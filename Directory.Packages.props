@@ -5,18 +5,18 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
-    <PackageVersion Include="BridgingIT.DevKit.Application.Jobs" Version="10.0.111" />
-    <PackageVersion Include="BridgingIT.DevKit.Common.Mapping" Version="10.0.111" />
-    <PackageVersion Include="BridgingIT.DevKit.Common.Utilities.CodeGen" Version="10.0.111" />
-    <PackageVersion Include="BridgingIT.DevKit.Common.Utilities.Xunit" Version="10.0.111" />
-    <PackageVersion Include="BridgingIT.DevKit.Domain" Version="10.0.111" />
-    <PackageVersion Include="BridgingIT.DevKit.Domain.CodeGen" Version="10.0.111" />
-    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework" Version="10.0.111" />
-    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" Version="10.0.111" />
-    <PackageVersion Include="BridgingIT.DevKit.Presentation.Configuration" Version="10.0.111" />
-    <PackageVersion Include="BridgingIT.DevKit.Presentation.Web" Version="10.0.111" />
-    <PackageVersion Include="BridgingIT.DevKit.Presentation.Web.Jobs" Version="10.0.111" />
-    <PackageVersion Include="BridgingIT.DevKit.Presentation.Serilog" Version="10.0.111" />
+    <PackageVersion Include="BridgingIT.DevKit.Application.Jobs" Version="10.0.112" />
+    <PackageVersion Include="BridgingIT.DevKit.Common.Mapping" Version="10.0.112" />
+    <PackageVersion Include="BridgingIT.DevKit.Common.Utilities.CodeGen" Version="10.0.112" />
+    <PackageVersion Include="BridgingIT.DevKit.Common.Utilities.Xunit" Version="10.0.112" />
+    <PackageVersion Include="BridgingIT.DevKit.Domain" Version="10.0.112" />
+    <PackageVersion Include="BridgingIT.DevKit.Domain.CodeGen" Version="10.0.112" />
+    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework" Version="10.0.112" />
+    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" Version="10.0.112" />
+    <PackageVersion Include="BridgingIT.DevKit.Presentation.Configuration" Version="10.0.112" />
+    <PackageVersion Include="BridgingIT.DevKit.Presentation.Web" Version="10.0.112" />
+    <PackageVersion Include="BridgingIT.DevKit.Presentation.Web.Jobs" Version="10.0.112" />
+    <PackageVersion Include="BridgingIT.DevKit.Presentation.Serilog" Version="10.0.112" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <PackageVersion Include="Dumpify" Version="0.7.0" />
     <PackageVersion Include="FluentAssertions.Web" Version="2.0.3" />
