@@ -31,10 +31,10 @@ Launch the interactive terminal user interface:
 
 ```bash
 # Windows
-./bdk-cli.ps1
+./bdk.ps1
 
 # Linux/macOS
-./bdk-cli.sh
+./bdk.sh
 ```
 
 The TUI provides:
@@ -50,14 +50,14 @@ Run tasks directly from command line:
 
 ```bash
 # Windows
-./bdk-cli.ps1 build
-./bdk-cli.ps1 test-unit
-./bdk-cli.ps1 ef-apply
+./bdk.ps1 build
+./bdk.ps1 test-unit
+./bdk.ps1 ef-apply
 
 # Linux/macOS
-./bdk-cli.sh build
-./bdk-cli.sh test-unit
-./bdk-cli.sh ef-apply
+./bdk.sh build
+./bdk.sh test-unit
+./bdk.sh ef-apply
 ```
 
 ### Help Command
@@ -65,8 +65,8 @@ Run tasks directly from command line:
 List all available tasks:
 
 ```bash
-./bdk-cli.ps1 help
-./bdk-cli.ps1 --help
+./bdk.ps1 help
+./bdk.ps1 --help
 ```
 
 Displays tasks in a formatted table with:
@@ -83,8 +83,8 @@ Displays tasks in a formatted table with:
 ```text
 .bdk/cli/
 ├── bdk-cli.csx          # Main entry point (C# script)
-├── bdk-cli.ps1          # Windows launcher
-├── bdk-cli.sh           # Linux/macOS launcher
+├── bdk.ps1          # Windows launcher
+├── bdk.sh           # Linux/macOS launcher
 ├── install.ps1           # Windows installation helper
 ├── install.sh            # Linux/macOS installation helper
 ├── .env                 # Configuration file
@@ -417,7 +417,7 @@ var config = await Prompts.SelectConfigurationAsync("Debug");
 Test from command line:
 
 ```bash
-./bdk-cli.ps1 your-task-key
+./bdk.ps1 your-task-key
 ```
 
 Task is automatically available in:
@@ -444,7 +444,7 @@ The `.bdk/cli/.env` file contains local development settings.
 List all tasks with descriptions and categories:
 
 ```bash
-./bdk-cli.ps1 help
+./bdk.ps1 help
 ```
 
 Output format:
@@ -465,7 +465,7 @@ Output format:
 Browse tasks by category with search:
 
 ```bash
-./bdk-cli.ps1
+./bdk.ps1
 ```
 
 Use arrow keys to navigate, type to search, Enter to execute.
@@ -474,8 +474,8 @@ Use arrow keys to navigate, type to search, Enter to execute.
 
 BDK CLI is designed to work on Windows, Linux, and macOS:
 
-- **Windows**: Uses `bdk-cli.ps1` (PowerShell launcher)
-- **Linux/macOS**: Uses `bdk-cli.sh` (Bash launcher)
+- **Windows**: Uses `bdk.ps1` (PowerShell launcher)
+- **Linux/macOS**: Uses `bdk.sh` (Bash launcher)
 - **Command execution**: Cross-platform via `CommandExecutor.csx`
 
 Both launchers delegate to the same `bdk-cli.csx` script, ensuring consistent behavior across platforms.

@@ -106,6 +106,13 @@
         "bdk"
       ],
       "rollForward": false
+    },
+    "dotnet-script": {
+      "version": "2.0.1",
+      "commands": [
+        "dotnet-script"
+      ],
+      "rollForward": false
     }
   }
 }

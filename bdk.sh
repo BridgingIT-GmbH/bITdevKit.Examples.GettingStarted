@@ -13,18 +13,30 @@ if [[ -d "$DOTNET_TOOLS_PATH" ]] && [[ ":$PATH:" != *":$DOTNET_TOOLS_PATH:"* ]];
     export PATH="$PATH:$DOTNET_TOOLS_PATH"
 fi
 
-# Check if dotnet-script is installed
-if ! command -v dotnet-script &> /dev/null; then
-    if ! dotnet tool list --global | grep -q "dotnet-script"; then
-        echo "ERROR: dotnet-script is not installed"
-        echo ""
-        echo "To install dotnet-script:"
-        echo "  dotnet tool install -g dotnet-script"
-        echo ""
-        echo "After installation, add to your shell profile:"
-        echo "  export PATH=\"\$PATH:\$HOME/.dotnet/tools\""
-        exit 1
-    fi
+if ! command -v dotnet &> /dev/null; then
+    echo "ERROR: .NET SDK (dotnet) was not found on PATH" >&2
+    echo "Install it from https://dotnet.microsoft.com/download" >&2
+    exit 1
+fi
+
+# Prefer the repo-local tool (.config/dotnet-tools.json), fall back to a global install
+if ! dotnet dotnet-script --version &> /dev/null; then
+    echo "dotnet-script not found, running 'dotnet tool restore'..." >&2
+    dotnet tool restore >&2 || true
+fi
+
+if dotnet dotnet-script --version &> /dev/null; then
+    RUNNER=(dotnet dotnet-script)
+elif command -v dotnet-script &> /dev/null; then
+    RUNNER=(dotnet-script)
+else
+    echo "ERROR: dotnet-script is not available and 'dotnet tool restore' did not provide it" >&2
+    echo "" >&2
+    echo "Check that .config/dotnet-tools.json lists dotnet-script and that NuGet is reachable," >&2
+    echo "or install it globally:" >&2
+    echo "  dotnet tool install -g dotnet-script" >&2
+    echo "  export PATH=\"\$PATH:\$HOME/.dotnet/tools\"" >&2
+    exit 1
 fi
 
 # Check if the tool exists
@@ -35,4 +47,4 @@ fi
 
 # Execute with dotnet-script, passing all arguments
 # Use -- to separate dotnet-script options from script arguments
-exec dotnet script "$TOOL_PATH" -- "$@"
+exec "${RUNNER[@]}" "$TOOL_PATH" -- "$@"
