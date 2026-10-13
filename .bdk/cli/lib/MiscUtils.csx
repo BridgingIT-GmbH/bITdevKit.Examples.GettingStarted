@@ -11,8 +11,13 @@ public static class MiscUtils
     private static readonly HashSet<string> ExcludedDocsDirectories = new(StringComparer.OrdinalIgnoreCase)
     {
         "adr",
+        "api",
         "assets",
-        "designs"
+        "designs",
+        "prd",
+        "presentations",
+        "site",
+        "specs"
     };
 
     public static async Task<ExecutionResult> GenerateDocsAsync(TaskContext ctx)
