@@ -34,6 +34,7 @@ Launch the interactive terminal user interface:
 ./bdk.ps1
 
 # Linux/macOS
+chmod +x bdk.sh
 ./bdk.sh
 ```
 
