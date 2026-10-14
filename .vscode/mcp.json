@@ -1,9 +1,4 @@
 {
   "servers": {
-    "bdk": {
-      "type": "stdio",
-      "command": "dotnet",
-      "args": ["tool", "run", "bdk", "mcp"]
-    }
   }
 }

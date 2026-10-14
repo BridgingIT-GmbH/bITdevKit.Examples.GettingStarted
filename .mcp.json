@@ -23,5 +23,18 @@
       "type": "promptString",
       "description": "Azure DevOps organization name  (e.g. 'bitdevelopment')"
     }
-  ]
+  ],
+  "bdk": {
+    "type": "local",
+    "command": "dotnet",
+    "args": [
+      "tool",
+      "run",
+      "bdk",
+      "mcp"
+    ],
+    "tools": [
+      "*"
+    ]
+  }
 }
