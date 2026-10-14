@@ -5952,65 +5952,81 @@
         "type": "object",
         "properties": {
           "id": {
+            "examples": [
+              "7fa85f64-5717-4562-b3fc-2c963f66afa7"
+            ],
             "type": [
               "null",
               "string"
             ],
-            "description": "Gets or sets the unique identifier of the address.",
-            "example": "7fa85f64-5717-4562-b3fc-2c963f66afa7"
+            "description": "Gets or sets the unique identifier of the address."
           },
           "name": {
+            "examples": [
+              "Home"
+            ],
             "type": [
               "null",
               "string"
             ],
-            "description": "Gets or sets the optional name or label for this address.",
-            "example": "Home"
+            "description": "Gets or sets the optional name or label for this address."
           },
           "line1": {
+            "examples": [
+              "123 Main Street"
+            ],
             "type": [
               "null",
               "string"
             ],
-            "description": "Gets or sets the first line of the address (street, number, etc.).",
-            "example": "123 Main Street"
+            "description": "Gets or sets the first line of the address (street, number, etc.)."
           },
           "line2": {
+            "examples": [
+              "Apt 4B"
+            ],
             "type": [
               "null",
               "string"
             ],
-            "description": "Gets or sets the optional second line of the address (apartment, suite, etc.).",
-            "example": "Apt 4B"
+            "description": "Gets or sets the optional second line of the address (apartment, suite, etc.)."
           },
           "postalCode": {
+            "examples": [
+              12345
+            ],
             "type": [
               "null",
               "string"
             ],
-            "description": "Gets or sets the optional postal code.",
-            "example": 12345
+            "description": "Gets or sets the optional postal code."
           },
           "city": {
+            "examples": [
+              "New York"
+            ],
             "type": [
               "null",
               "string"
             ],
-            "description": "Gets or sets the city name.",
-            "example": "New York"
+            "description": "Gets or sets the city name."
           },
           "country": {
+            "examples": [
+              "United States"
+            ],
             "type": [
               "null",
               "string"
             ],
-            "description": "Gets or sets the country name.",
-            "example": "United States"
+            "description": "Gets or sets the country name."
           },
           "isPrimary": {
+            "examples": [
+              true
+            ],
             "type": "boolean",
-            "description": "Gets or sets a value indicating whether this is the primary address.",
-            "example": true
+            "description": "Gets or sets a value indicating whether this is the primary address."
           }
         },
         "description": "Data transfer object (DTO) representing a customer address.\nUsed by the application and presentation layers to expose address details to clients."
@@ -6019,69 +6035,85 @@
         "type": "object",
         "properties": {
           "id": {
+            "examples": [
+              "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            ],
             "type": [
               "null",
               "string"
             ],
-            "description": "Gets or sets the unique identifier of the customer.",
-            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            "description": "Gets or sets the unique identifier of the customer."
           },
           "firstName": {
+            "examples": [
+              "John"
+            ],
             "type": [
               "null",
               "string"
             ],
-            "description": "Gets or sets the customer's first name.",
-            "example": "John"
+            "description": "Gets or sets the customer's first name."
           },
           "lastName": {
+            "examples": [
+              "Doe"
+            ],
             "type": [
               "null",
               "string"
             ],
-            "description": "Gets or sets the customer's last name.",
-            "example": "Doe"
+            "description": "Gets or sets the customer's last name."
           },
           "number": {
+            "examples": [
+              "CUS-2024-100000"
+            ],
             "type": [
               "null",
               "string"
             ],
-            "description": "Gets or sets the customer number in format CUS-YYYY-NNNNNN (e.g., CUS-2024-100000).\nThis is a system-generated sequential identifier unique per year.",
-            "example": "CUS-2024-100000"
+            "description": "Gets or sets the customer number in format CUS-YYYY-NNNNNN (e.g., CUS-2024-100000).\nThis is a system-generated sequential identifier unique per year."
           },
           "dateOfBirth": {
+            "examples": [
+              "1990-05-15"
+            ],
             "type": [
               "null",
               "string"
             ],
             "description": "Gets or sets the date of birth of the customer (optional).",
-            "format": "date",
-            "example": "1990-05-15"
+            "format": "date"
           },
           "email": {
+            "examples": [
+              "john.doe@example.com"
+            ],
             "type": [
               "null",
               "string"
             ],
-            "description": "Gets or sets the customer's email address.",
-            "example": "john.doe@example.com"
+            "description": "Gets or sets the customer's email address."
           },
           "status": {
+            "examples": [
+              "Active"
+            ],
             "type": [
               "null",
               "string"
             ],
-            "description": "Gets or sets the current status of the customer as a string value.\nValid values: \"Lead\", \"Active\", \"Retired\". See CustomerStatus enumeration for valid values.",
-            "example": "Active"
+            "description": "Gets or sets the current status of the customer as a string value.\nValid values: \"Lead\", \"Active\", \"Retired\". See CustomerStatus enumeration for valid values."
           },
           "concurrencyVersion": {
+            "examples": [
+              "8f7a9b2c-3d4e-5f6a-7b8c-9d0e1f2a3b4c"
+            ],
             "type": [
               "null",
               "string"
             ],
-            "description": "Gets or sets the concurrency version token (as a string Guid).\nUsed for optimistic concurrency control to prevent conflicting updates.\nMust be provided when updating to ensure the entity hasn't been modified by another operation.",
-            "example": "8f7a9b2c-3d4e-5f6a-7b8c-9d0e1f2a3b4c"
+            "description": "Gets or sets the concurrency version token (as a string Guid).\nUsed for optimistic concurrency control to prevent conflicting updates.\nMust be provided when updating to ensure the entity hasn't been modified by another operation."
           },
           "addresses": {
             "type": [
@@ -6100,12 +6132,14 @@
         "type": "object",
         "properties": {
           "status": {
+            "examples": [
+              "Active"
+            ],
             "type": [
               "null",
               "string"
             ],
-            "description": "Gets or sets the new status value for the customer.\nValid values: \"Lead\", \"Active\", \"Retired\". See CustomerStatus enumeration for details.",
-            "example": "Active"
+            "description": "Gets or sets the new status value for the customer.\nValid values: \"Lead\", \"Active\", \"Retired\". See CustomerStatus enumeration for details."
           }
         },
         "description": "Request body for changing customer status."

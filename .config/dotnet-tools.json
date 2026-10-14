@@ -3,21 +3,21 @@
   "isRoot": true,
   "tools": {
     "microsoft.openapi.kiota": {
-      "version": "1.34.1",
+      "version": "1.36.1",
       "commands": [
         "kiota"
       ],
       "rollForward": false
     },
     "dotnet-ef": {
-      "version": "10.0.11",
+      "version": "10.0.13",
       "commands": [
         "dotnet-ef"
       ],
       "rollForward": false
     },
     "minver-cli": {
-      "version": "7.0.0",
+      "version": "8.0.0",
       "commands": [
         "minver"
       ],
@@ -38,21 +38,21 @@
       "rollForward": false
     },
     "dotnet-trace": {
-      "version": "9.0.661903",
+      "version": "10.0.750501",
       "commands": [
         "dotnet-trace"
       ],
       "rollForward": false
     },
     "dotnet-dump": {
-      "version": "9.0.661903",
+      "version": "10.0.750501",
       "commands": [
         "dotnet-dump"
       ],
       "rollForward": false
     },
     "nuget-license": {
-      "version": "4.0.16",
+      "version": "4.0.18",
       "commands": [
         "nuget-license"
       ],
@@ -66,7 +66,7 @@
       "rollForward": false
     },
     "roslynator.dotnet.cli": {
-      "version": "1.0.0",
+      "version": "1.0.1",
       "commands": [
         "roslynator"
       ],
@@ -80,7 +80,7 @@
       "rollForward": false
     },
     "dotnet-counters": {
-      "version": "9.0.661903",
+      "version": "10.0.750501",
       "commands": [
         "dotnet-counters"
       ],
@@ -94,14 +94,14 @@
       "rollForward": false
     },
     "dotnet-inspect": {
-      "version": "0.23.0",
+      "version": "0.26.0",
       "commands": [
         "dotnet-inspect"
       ],
       "rollForward": false
     },
     "bridgingit.devkit.cli": {
-      "version": "10.0.113-preview.0.19",
+      "version": "10.0.113-preview.0.22",
       "commands": [
         "bdk"
       ],
