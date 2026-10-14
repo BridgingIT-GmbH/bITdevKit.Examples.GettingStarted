@@ -17,7 +17,7 @@ using BridgingIT.DevKit.Infrastructure.EntityFramework.Jobs;
 /// </remarks>
 /// <param name="options">The database context options (provider, connection string, etc.).</param>
 [ExcludeFromCodeCoverage]
-public class CoreModuleDbContext(DbContextOptions<CoreModuleDbContext> options) : ModuleDbContextBase(options), IOutboxDomainEventContext, IJobsContext
+public class CoreModuleDbContext(DbContextOptions<CoreModuleDbContext> options) : ModuleDbContextBase(options), IOutboxDomainEventContext, IJobsContext, ILoggingContext
 {
     /// <summary>
     /// Gets or sets the <see cref="DbSet{TEntity}"/> for managing <see cref="Customer"/> entities.
@@ -30,6 +30,8 @@ public class CoreModuleDbContext(DbContextOptions<CoreModuleDbContext> options) 
     /// Represents the "OutboxDomainEvents" table in the database.
     /// </summary>
     public DbSet<OutboxDomainEvent> OutboxDomainEvents { get; set; }
+
+    public DbSet<LogEntry> LogEntries { get; set; }
 
     public DbSet<JobRuntimeStateEntity> JobRuntimeStates { get; set; }
 

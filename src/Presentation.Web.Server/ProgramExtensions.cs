@@ -19,6 +19,7 @@ public static partial class ProgramExtensions
     public static RequesterBuilder WithDefaultBehaviors(this RequesterBuilder builder)
     {
         return builder
+            .WithBehavior(typeof(ProfilingRequestBehavior<,>))
             .WithBehavior(typeof(MetricsRequestBehavior<,>))
             .WithBehavior(typeof(TracingBehavior<,>))
             .WithBehavior(typeof(ModuleScopeBehavior<,>))
@@ -35,6 +36,8 @@ public static partial class ProgramExtensions
     public static NotifierBuilder WithDefaultBehaviors(this NotifierBuilder builder)
     {
         return builder
+            .WithBehavior(typeof(ProfilingNotificationBehavior<,>))
+            .WithBehavior(typeof(ProfilingNotificationHandlerBehavior<,>))
             .WithBehavior(typeof(MetricsNotificationBehavior<,>))
             .WithBehavior(typeof(MetricsNotificationHandlerBehavior<,>))
             .WithBehavior(typeof(TracingBehavior<,>))

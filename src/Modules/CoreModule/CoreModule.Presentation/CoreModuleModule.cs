@@ -53,6 +53,7 @@ public class CoreModuleModule() : WebModuleBase("CoreModule")
                 .AddTrigger(CustomerExportJob.TriggerName, trigger => trigger
                     .Cron(CronExpressions.EveryMinute)))
             .WithEntityFramework<CoreModuleDbContext>()
+            .WithBehavior<JobProfilingBehavior>()
             .WithBehavior<ModuleScopeBehavior>()
             .AddEndpoints()
             .AddConsoleCommands();
@@ -75,6 +76,7 @@ public class CoreModuleModule() : WebModuleBase("CoreModule")
         // repository setup
         services.AddEntityFrameworkRepository<Customer, CoreModuleDbContext>()
             .WithBehavior<RepositoryTracingBehavior<Customer>>() // tracing of repository operations
+            .WithBehavior<RepositoryProfilingBehavior<Customer>>() // profiling of repository operations
             .WithBehavior<RepositoryLoggingBehavior<Customer>>() // logging of repository operations
             .WithBehavior<RepositoryMetricsBehavior<Customer>>() // metrics for repository operations
             .WithBehavior<RepositoryAuditStateBehavior<Customer>>() // audit state (created/modified/deleted) and soft delete

@@ -51,10 +51,38 @@ builder.Services.AddCors(builder.Configuration);
 builder.Services.AddScoped<ICurrentUserAccessor, HttpCurrentUserAccessor>();
 builder.Services.AddJwtBearerAuthentication(builder.Configuration); //.AddCookieAuthentication(); // optional cookie authentication for web applications
 builder.Services.AddAppIdentityProvider(builder.Environment.IsLocalDevelopment() || builder.Environment.IsContainerized(), builder.Configuration);
-builder.Services.AddAppDashboard(builder.Environment.IsLocalDevelopment() || builder.Environment.IsContainerized(), builder.Configuration);
-builder.Services.AddProfiling(options => options
-        .Enabled(builder.Environment.IsLocalDevelopment()))
-    .AddConsoleCommands(builder.Environment.IsLocalDevelopment());
+
+// ===============================================================================================
+// Configure Profiling
+builder.Services.AddProfiling(o => o
+        .Enabled(builder.Environment.IsLocalDevelopment() || builder.Environment.IsContainerized()))
+    .WithRuntimeProfiling()
+    .WithOperationProfiling()
+    .WithRequestProfiling()
+    .AddConsoleCommands(builder.Environment.IsDevelopment());
+
+// ===============================================================================================
+// Configure Dashboard
+builder.Services.AddDashboard(o => o
+    .Enabled(builder.Environment.IsDevelopment())
+    .Authorize(o => o
+        .UseOpenIdConnect(builder.Configuration["Authentication:Authority"])
+        .RequireRole(Role.Administrators)));
+
+// ===============================================================================================
+// Register log services and endpoints
+if (!BridgingIT.DevKit.Common.EnvironmentExtensions.IsBuildTimeOpenApiGeneration())
+{
+    builder.Services.AddScoped<ILogEntryService, LogEntryService<CoreModuleDbContext>>();
+    builder.Services.AddSingleton<LogEntryMaintenanceQueue>();
+    builder.Services.AddHostedService<LogEntryMaintenanceService<CoreModuleDbContext>>();
+    builder.Services.AddEndpoints<LogEntryEndpoints>(builder.Environment.IsLocalDevelopment() || builder.Environment.IsContainerized());
+    builder.Services.TryAddBackgroundServiceHealthCheck<LogEntryMaintenanceService<CoreModuleDbContext>>(nameof(LogEntryMaintenanceService<>), tags: ["background", "jobs"]);
+}
+
+// builder.Services.AddLogEntryServices<CoreDbContext>(o => o
+//         .Enabled(builder.Environment.IsDevelopment()))
+//     .AddEndpoints(builder.Environment.IsDevelopment());
 
 // ===============================================================================================
 // Configure Health Checks
@@ -81,6 +109,7 @@ if (app.Environment.IsLocalDevelopment() || app.Environment.IsContainerized())
 app.UseRuleLogger();
 app.UseResultLogger();
 app.UseProblemDetails();
+app.UseRequestProfilingExceptionObserver();
 app.UseHttpsRedirection();
 
 if (app.Environment.IsLocalDevelopment())
@@ -89,6 +118,7 @@ if (app.Environment.IsLocalDevelopment())
 }
 app.UseStaticFiles();
 app.UseRequestCorrelation();
+app.UseRequestProfiling();
 app.UseRequestModuleContext();
 app.UseRequestLogging();
 app.UseRequestMetrics();
