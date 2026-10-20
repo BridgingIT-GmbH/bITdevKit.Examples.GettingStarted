@@ -5,18 +5,18 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
-    <PackageVersion Include="BridgingIT.DevKit.Application.Jobs" Version="10.0.113-preview.0.22" />
-    <PackageVersion Include="BridgingIT.DevKit.Common.Mapping" Version="10.0.113-preview.0.22" />
-    <PackageVersion Include="BridgingIT.DevKit.Common.Utilities.CodeGen" Version="10.0.113-preview.0.22" />
-    <PackageVersion Include="BridgingIT.DevKit.Common.Utilities.Xunit" Version="10.0.113-preview.0.22" />
-    <PackageVersion Include="BridgingIT.DevKit.Domain" Version="10.0.113-preview.0.22" />
-    <PackageVersion Include="BridgingIT.DevKit.Domain.CodeGen" Version="10.0.113-preview.0.22" />
-    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework" Version="10.0.113-preview.0.22" />
-    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" Version="10.0.113-preview.0.22" />
-    <PackageVersion Include="BridgingIT.DevKit.Presentation.Configuration" Version="10.0.113-preview.0.22" />
-    <PackageVersion Include="BridgingIT.DevKit.Presentation.Web" Version="10.0.113-preview.0.22" />
-    <PackageVersion Include="BridgingIT.DevKit.Presentation.Web.Jobs" Version="10.0.113-preview.0.22" />
-    <PackageVersion Include="BridgingIT.DevKit.Presentation.Serilog" Version="10.0.113-preview.0.22" />
+    <PackageVersion Include="BridgingIT.DevKit.Application.Jobs" Version="10.0.113" />
+    <PackageVersion Include="BridgingIT.DevKit.Common.Mapping" Version="10.0.113" />
+    <PackageVersion Include="BridgingIT.DevKit.Common.Utilities.CodeGen" Version="10.0.113" />
+    <PackageVersion Include="BridgingIT.DevKit.Common.Utilities.Xunit" Version="10.0.113" />
+    <PackageVersion Include="BridgingIT.DevKit.Domain" Version="10.0.113" />
+    <PackageVersion Include="BridgingIT.DevKit.Domain.CodeGen" Version="10.0.113" />
+    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework" Version="10.0.113" />
+    <PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" Version="10.0.113" />
+    <PackageVersion Include="BridgingIT.DevKit.Presentation.Configuration" Version="10.0.113" />
+    <PackageVersion Include="BridgingIT.DevKit.Presentation.Web" Version="10.0.113" />
+    <PackageVersion Include="BridgingIT.DevKit.Presentation.Web.Jobs" Version="10.0.113" />
+    <PackageVersion Include="BridgingIT.DevKit.Presentation.Serilog" Version="10.0.113" />
     <PackageVersion Include="coverlet.collector" Version="10.1.0" />
     <PackageVersion Include="Dumpify" Version="0.8.0" />
     <PackageVersion Include="FluentAssertions.Web" Version="3.0.0" />
@@ -34,14 +34,14 @@
     <PackageVersion Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.7.37220.1" />
     <PackageVersion Include="NetArchTest.eNhancedEdition" Version="1.4.5" />
     <PackageVersion Include="NSubstitute" Version="6.2.0" />
-    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.19.1" />
-    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.19.1" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.19.1" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.19.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.19.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.19.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.19.0" />
-    <PackageVersion Include="RazorSlices" Version="0.12.1" />
+    <PackageVersion Include="OpenTelemetry.Exporter.Console" Version="1.20.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.20.0" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.20.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.20.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.20.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.20.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.20.0" />
+    <PackageVersion Include="RazorSlices" Version="0.12.2" />
     <PackageVersion Include="Scalar.AspNetCore" Version="2.18.0" />
     <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageVersion Include="Serilog.Enrichers.ShortTypeName" Version="1.1.0" />
