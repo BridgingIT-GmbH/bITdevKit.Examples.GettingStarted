@@ -50,6 +50,7 @@ public class CoreModuleModule() : WebModuleBase("CoreModule")
                 .WithRetry(retry => retry
                     .MaxAttempts(3)
                     .FixedDelay(TimeSpan.FromSeconds(1)))
+                .AddTrigger("manual", trigger => trigger.Manual())
                 .AddTrigger(CustomerExportJob.TriggerName, trigger => trigger
                     .Cron(CronExpressions.Every5Minutes)))
             .WithEntityFramework<CoreModuleDbContext>()

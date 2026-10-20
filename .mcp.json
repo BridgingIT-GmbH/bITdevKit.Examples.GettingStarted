@@ -31,7 +31,9 @@
       "tool",
       "run",
       "bdk",
-      "mcp"
+      "mcp",
+      "--toolset",
+      "diagnostics,operations,admin"
     ],
     "tools": [
       "*"
