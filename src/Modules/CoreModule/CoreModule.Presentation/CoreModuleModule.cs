@@ -109,7 +109,7 @@ public class CoreModuleModule() : WebModuleBase("CoreModule")
     /// Configures endpoint routing for the application and returns the provided route builder.
     /// </summary>
     /// <param name="app">The endpoint route builder used to define application routes. Cannot be null.</param>
-    /// <param name="configuration">The configuration settings for the application. Optional; may be null if no configuration is required.</param>
+    /// <param name="configuration">The configuration settings for the application. Optional; may be null if no configuration is requwired.</param>
     /// <param name="environment">The hosting environment information for the application. Optional; may be null if environment-specific configuration is not needed.</param>
     /// <returns>The same <paramref name="app"/> instance provided as input, with any configured endpoints.</returns>
     public override IEndpointRouteBuilder Map(

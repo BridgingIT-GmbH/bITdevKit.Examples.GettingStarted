@@ -62,14 +62,14 @@ Modules live in `src/Modules/<ModuleName>` (e.g., `CoreModule`) and must be self
 
 ## 3. Key Frameworks & Packages
 - .NET 10 SDK
-- bITdevKit packages (version 10.0.x) providing requester/notifier, repositories, startup tasks, job scheduling, module infrastructure.
-- EF Core (SQL Server), Serilog, Mapster, Quartz, FluentValidation, xUnit/NSubstitute/Shouldly.
+- bITdevKit packages (version 10.0.x) providing requester/notifier, repositories, startup tasks, durable jobs (`Application.Jobs`), module infrastructure.
+- EF Core (SQL Server), Serilog, Mapster, FluentValidation, xUnit/NSubstitute/Shouldly.
 
 ## 4. Naming & Folder Conventions
 Within each module:
 - `[Module].Domain` -> domain model (`Model/`, `Events/`, `Rules/`, `Specifications/`).
-- `[Module].Application` -> `Commands/`, `Queries/`, `Models/`, `Handlers/` (co-located with command/query), `Behaviors/` (rare), `Validators/` (if not nested).
-- `[Module].Infrastructure` -> `EntityFramework/` (DbContext, Configurations, Migrations), `Repositories/`, `Jobs/`, `StartupTasks/`.
+- `[Module].Application` -> `Commands/`, `Queries/`, `Models/`, `Handlers/` (co-located with command/query), `Jobs/`, `Behaviors/` (rare), `Validators/` (if not nested).
+- `[Module].Infrastructure` -> `EntityFramework/` (DbContext, Configurations, Migrations), `Repositories/`, `StartupTasks/`.
 - `[Module].Presentation` -> `Web/Endpoints/`, `MapperRegister`, `Module` class.
 - Tests mirror structure: `[Module].UnitTests`, `[Module].IntegrationTests`.
 
@@ -120,7 +120,8 @@ Mapster is used via `services.AddMapping().WithMapster<CoreModuleMapperRegister>
 - Concurrency: implement `IConcurrency` with a `Guid ConcurrencyVersion` property when needed.
 
 ## 11. Jobs & Startup Tasks
-- Jobs (Quartz) registered in module's `Register` with `AddJobScheduling` -> `.WithJob<YourJob>().Cron(...)`.
+- Jobs feature (`BridgingIT.DevKit.Application.Jobs`), see ADR-0015. Registered with the module's `Register` class using `services.AddJobScheduler(configuration).WithJob<YourJob>(...)`.
+
 - Startup tasks via `services.AddStartupTasks(...).WithTask<YourTask>(...)` for environment-scoped seeding/migrations.
 
 ## 12. Logging & Observability

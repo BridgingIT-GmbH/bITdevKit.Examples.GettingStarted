@@ -54,7 +54,7 @@ Use the Entity Framework Jobs provider with `CoreModuleDbContext` as the durable
 3. The trigger uses `CronExpressions.EveryMinute`; the scheduler starts after 30 seconds.
 4. The job uses a scoped lifetime, a concurrency limit of one, and three attempts with a fixed one-second delay.
 5. `WithEntityFramework<CoreModuleDbContext>()` stores scheduler and execution data in the CoreModule database.
-6. `ModuleScopeBehavior` establishes the module context for job execution.
+6. `JobProfilingBehavior` records each execution attempt as a profiling operation, and `ModuleScopeBehavior` establishes the module context for job execution.
 7. Jobs endpoints and console commands are enabled by the module registration. The application dashboard includes the Jobs dashboard plugin, and the DevKit integration supplies metrics and MCP handlers.
 8. A successful execution reports the number of exported customers. A repository failure is returned as a failed `Result` and is eligible for the configured retry policy.
 
@@ -74,6 +74,7 @@ services.AddJobScheduler(configuration)
         .AddTrigger(CustomerExportJob.TriggerName, trigger => trigger
             .Cron(CronExpressions.EveryMinute)))
     .WithEntityFramework<CoreModuleDbContext>()
+    .WithBehavior<JobProfilingBehavior>()
     .WithBehavior<ModuleScopeBehavior>()
     .AddEndpoints()
     .AddConsoleCommands();
@@ -214,6 +215,10 @@ public class CoreModuleDbContext(DbContextOptions<CoreModuleDbContext> options)
     public DbSet<JobLeaseEntity> JobLeases { get; set; }
 }
 ```
+
+### Job Identity
+
+Job and trigger names are scheduler identities. Renaming either one starts a new history.
 
 ### Test Contract
 
