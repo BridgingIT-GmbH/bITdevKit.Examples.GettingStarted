@@ -51,7 +51,7 @@ public class CoreModuleModule() : WebModuleBase("CoreModule")
                     .MaxAttempts(3)
                     .FixedDelay(TimeSpan.FromSeconds(1)))
                 .AddTrigger(CustomerExportJob.TriggerName, trigger => trigger
-                    .Cron(CronExpressions.EveryMinute)))
+                    .Cron(CronExpressions.Every5Minutes)))
             .WithEntityFramework<CoreModuleDbContext>()
             .WithBehavior<JobProfilingBehavior>()
             .WithBehavior<ModuleScopeBehavior>()
