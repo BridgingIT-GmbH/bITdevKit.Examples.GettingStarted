@@ -12,7 +12,7 @@ services:
       SA_PASSWORD: "${MSSQL_PASSWORD}"
       MSSQL_PID: "Developer"
     healthcheck:
-      test: /opt/mssql-tools/bin/sqlcmd -S mssql -U ${MSSQL_USER} -P '${MSSQL_PASSWORD}' -Q 'select 1'
+      test: SQLCMDPASSWORD="$${SA_PASSWORD}" /opt/mssql-tools18/bin/sqlcmd -S localhost -U ${MSSQL_USER} -C -b -l 5 -Q 'SELECT 1'
     ports:
       - "${MSSQL_PORT}:1433"
     volumes:
