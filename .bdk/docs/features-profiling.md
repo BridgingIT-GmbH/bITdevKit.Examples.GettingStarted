@@ -154,7 +154,20 @@ app.MapEndpoints();
 
 The default operation key is the matched route template, including any mount prefix. For example, `/api/orders/42` and `/api/orders/81` both belong to `/api/orders/{id}`, or `/orders/{id}` when stripping `/api`. The actual path and query arguments remain in each request's metadata. Requests without a matched template fall back to their incoming path. A controller's explicit `SetKey(...)` takes precedence; automatic prefix stripping only applies to defaults. Prefix stripping respects path-segment boundaries.
 
-Request Profiling defaults to AllRequests sampling and the blacklist `/_bdk/**`, `/health*`, `/swagger/**`, `/scalar/**`, `/openapi/**`, `/.well-known*`, `/.well-known/**`. `Blacklist(...)` replaces that list; `Blacklist()` clears it. Blacklist patterns use `*` within a path segment and `**` across segments; they match the normalized request path before key-prefix stripping. `/health*` matches `/healthz` but not `/health/live`. The well-known patterns also exclude discovery endpoints such as `/.well-known/openid-configuration`. A match suppresses replacement operations in that request flow by default. `AllowOperationsForBlacklistedPaths(...)` explicitly allows business operations beneath matching excluded URLs without recording their HTTP requests. WeatherFiesta opts in its storage action URLs with `/_bdk/dashboard/storage/*/actions/**`; dashboard reads, polling, and profiling queries remain excluded. Sampling rejections and explicit `Suppress()` scopes remain suppressing. Sampling is decided once at middleware entry using the incoming path; route-template enrichment after routing does not resample the request.
+Request Profiling defaults to AllRequests sampling and the blacklist `/_bdk/**`, `/health*`, `/swagger/**`, `/scalar/**`, `/openapi/**`, `/.well-known*`, `/.well-known/**`. `Blacklist(...)` replaces that list; `Blacklist()` clears it. Blacklist patterns use `*` within a path segment and `**` across segments; they match the normalized request path before key-prefix stripping. `/health*` matches `/healthz` but not `/health/live`. The well-known patterns also exclude discovery endpoints such as `/.well-known/openid-configuration`.
+
+Blacklist exclusions and HTTP sampling skips affect only the automatic HTTP recording. Business behaviors remain eligible: `JoinOrStartAsync` adds a segment when an operation exists and starts its own operation otherwise. Explicit `Suppress()` scopes still disable nested recording. Profiling queries, writers, cleanup and maintenance use explicit suppression to avoid recording their own instrumentation. Sampling is decided once at middleware entry using the incoming path; route-template enrichment after routing does not resample the request.
+
+Server-side RazorSlice pages execute inside the incoming HTTP request that renders the page. Their content refreshes also arrive through HTTP. Although the default blacklist excludes dashboard HTTP requests, their Requester queries and storage behaviors can create independent operations without a whitelist. This includes queries run by automatic dashboard refreshes. `Requester.SendAsync()` itself makes no HTTP call.
+
+To record selected dashboard HTTP requests as well, whitelist their paths. Matching entries override the blacklist, and HTTP sampling still applies:
+
+```csharp
+profiling.WithRequestProfiling(requests => requests
+    .Whitelist("/_bdk/dashboard/app/core/**"));
+```
+
+The HTTP whitelist is empty by default. Use the configured dashboard prefix and pass all desired patterns together; `Whitelist(...)` replaces the list and `Whitelist()` clears it. Whitelisting does not force a sampled-out HTTP request to be recorded. Business operation capture remains independent of both HTTP lists.
 
 `WithInMemoryProvider()` is optional. Use `WithEntityFrameworkProvider<TContext>()` or `WithProvider<TProvider>()` to replace the shared default provider.
 
@@ -268,14 +281,7 @@ Profiling accepts valid CLR strings and JSON strings restored from durable stora
 
 ### Storage behaviors
 
-Storage actions performed through the dashboard need an HTTP exclusion opt-in when Request Profiling is enabled. The default `/_bdk/**` blacklist otherwise suppresses their storage decorators too:
-
-```csharp
-profiling.WithRequestProfiling(requests => requests
-    .AllowOperationsForBlacklistedPaths("/_bdk/dashboard/storage/*/actions/**"));
-```
-
-Use the configured dashboard prefix in that pattern. This enables storage operation records for actions, while keeping automatic dashboard refreshes excluded.
+Storage behaviors remain profileable when their dashboard HTTP requests are blacklisted or sampled out. They need no path whitelist. Dashboard actions and reads, including refreshes, can produce storage operation records; use an explicit `Suppress()` scope around work that should not be recorded.
 
 File, document and blob storage can join the current operation as timed segments or own independent operations. They use these keys and dimensions:
 
@@ -333,7 +339,7 @@ All eligible requests are selected by default. Select a built-in strategy fluent
 | Memory retention | 10,000 operations / 128 MiB / 24 hours |
 | EF retention | 100,000 operations / 7 days |
 | Concurrent query views / deadline | 4, without waiting / 5 seconds |
-| Page size / exact analysis / Runtime overlay | at most 250 / 10,000 roots / 2,000 snapshots |
+| Page size / exact analysis / Runtime overlay | at most 500 / 10,000 roots / 2,000 snapshots |
 
 Batch and retry work is independent of the caller's request token. Provider attempts are idempotent per writer/sequence and atomic per root. A timed-out attempt that ignores cancellation holds its writer slot until it returns; no overlapping write is launched. Health distinguishes local queue/in-flight/age, persistence failure/loss/unknown commits, administrative discards, retention removals and local sampling counters. Shared-provider counts cover retained shared history; live counters belong to the serving node. The next successful maintenance observation includes in-memory capacity evictions performed during append; these are retention removals, not failed incoming diagnostics, and do not consume that tick's deletion work budget. No universal throughput or overhead percentage is implied by the configured ceilings.
 
@@ -341,9 +347,9 @@ The [capacity evidence](../plan/pln-feature-profiling-runtime-and-operations-1-e
 
 ### Operation dashboard and queries
 
-Operations and Requests default to Recent and share Slow, Recent and By count modes, result choices 10/25/50/100/250, typed filters and full retained group counts. Requests always fixes kind to `HttpRequest`. Rows show the executing node and outcome/coverage; details show aggregated segment paths and safe metadata. Exact ID lookup ignores list windows/outcomes but retains authorization/provider scope. Each view remembers its filters, refresh interval, comparison selections and group expansions separately in localStorage. Explicit URL filters take precedence; Reset clears saved filters and restores Recent.
+Operations and Requests default to Recent and share Slow, Recent and By count modes, result choices 50/100/250/500, typed filters and full retained group counts. Requests always fixes kind to `HttpRequest`. Rows show the executing node and outcome/coverage; details show aggregated segment paths and safe metadata. Exact ID lookup ignores list windows/outcomes but retains authorization/provider scope. Each view remembers its filters, Tail setting, comparison selections and group expansions separately in localStorage. Explicit URL filters take precedence; Reset clears saved filters and restores Recent.
 
-Initial rendering and content refresh call the same DI model builder/query facade. Dashboard JSON uses that facade too, without HTTP loopback, direct EF queries in Razor or queue flushing. Auto refresh pauses in hidden tabs, cancels obsolete selectors, preserves expansion/scroll and keeps visibly stale data after errors. Paged selections retain a publication boundary and disable auto refresh until Refresh latest. Clearing, retention, changed filters or an expired five-minute boundary require a fresh selection.
+Initial rendering and content refresh call the same DI model builder/query facade. Dashboard JSON uses that facade too, without HTTP loopback, direct EF queries in Razor or queue flushing. **Load more** is centered below the list and appends the next page of recordings to existing groups or adds new groups, preserving filters, expansion and scroll. Changing **Rows** sets the size of the next older page or Tail batch without restarting the selection; date, node, key and other filters still apply when you select **Apply**. **Tail** is optional in Recent view: it checks for newly published recordings every two seconds, prepends them and updates retained counts without replacing loaded history. Changed groups move to the top. It drains every page of a burst before advancing its publication checkpoint, including delayed recordings with older or identical completion timestamps. Counts and group statistics still cover the complete retained selection. Older paging retains its original boundary while Tail advances independently. Tail keeps the initially resolved From UTC; Refresh resolves empty dates again. Tail pauses in hidden tabs and while filters are edited, cancels obsolete reads and retains displayed data after errors. Refresh replaces the list with the latest page. Clearing, retention, changed filters or an expired five-minute boundary require a fresh selection.
 
 Operation query bounds are independently optional. An omitted To UTC resolves to the current time for each fresh query; a stored paging boundary keeps its original end. An omitted From UTC resolves to fifteen minutes before the resolved end, including when that end is historical. UTC and start-before-end validation still apply.
 
@@ -465,7 +471,7 @@ The dashboard overview also has separate **Operations** and **Requests** cards. 
 3. **Inspect the evidence.** In **Overview**, choose the contributing **Node** and follow the snapshot cards and charts. Select a snapshot to mark it on both charts and inspect its values. The focus actions enlarge both charts or show every metric from the selected snapshot.
 4. **Compare or evaluate.** Use **Comparison** for a bounded earlier-versus-later question. Use **Analysis** for trends across the complete selected-node timeline. Read data-quality limitations first, then review each KPI, signal, supporting evidence, and suggested action.
 5. **Preserve or investigate a useful run.** Stop the session, add metadata or pin it when needed, then use the download action next to **History** for an importable archive or the activity action for a Perfetto trace. Imported archive JSON reappears in History and can be inspected and evaluated normally. A Perfetto trace is for visualization only. Use **Copy JSON** when only the selected snapshot is needed.
-6. **Clean up deliberately.** The overflow menu imports sessions and contains deletion operations. Delete the selected terminal session, remove all unpinned sessions, or use the confirmed clear-all operation to empty the Profiling store.
+6. **Clean up deliberately.** The overflow menu imports sessions and contains deletion operations. Delete the selected terminal session, remove all unpinned sessions, or clear all Profiling data. Each action opens a compact confirmation dialog. Errors stay in the dialog so you can retry or cancel.
 
 For useful timeline analysis, collect at least five snapshots over five seconds. Ten snapshots over ten seconds gives the evaluator enough coverage for high-confidence results when the required metrics and sampling quality are also available. Compare related evidence instead of interpreting one isolated value: for example, CPU together with allocation rate and GC pause, or managed-heap growth together with post-Gen2 evidence.
 
@@ -501,7 +507,7 @@ The **Timeline** tab shows retained operations by their **start time**, with one
 
 Choose **15 min**, **30 min**, **Hour**, **12 hours**, **Day**, **Week** or **Month (30 days)** for a rolling window. With both date inputs empty, the window continuously advances toward now. Setting From UTC holds that start; leaving To UTC empty keeps the end live. Setting To UTC holds the selected range. Use the clock icon for a quick start or edit the UTC minute inputs directly, then select Apply. Explicit dates take precedence over the window length.
 
-Filter by **Kind**, **Key contains** and **Node**. The timeline remembers its window, filters and refresh interval separately from Operations and Requests. Its active tab is remembered when returning to Profiling. Refresh defaults to five seconds; the time axis keeps advancing in live mode even when network refresh is off. Counts describe the last successful refresh, and failed refreshes preserve the chart with a visible failure message.
+Filter by **Kind**, **Key contains** and **Node**. The timeline remembers its window and filters separately from Operations and Requests. Its active tab is remembered when returning to Profiling. An empty **To UTC** keeps the timeline live: the time axis advances continuously and new retained operations load automatically every five seconds. Live updates pause in hidden tabs and resume when you return. An explicit end selects History without automatic updates; use **Refresh latest** to reload that selection. Counts describe the last successful update, and failed updates preserve the chart with a visible failure message.
 
 Counts include every matching retained operation, regardless of outcome or the list's Rows setting. Time buckets are aggregated by the storage provider; the browser loads individual records only on selection. The view supports up to 64 distinct kinds and 12–256 time buckets. Narrow a filter if that kind limit is exceeded. The timeline shows operations after completion and persistence; active operations and captures that were dropped or expired are not reconstructed.
 
@@ -529,7 +535,7 @@ The **Rows** selector defaults to **100** for both Operations and Requests. Prev
 
 Use the **Collapse all groups** toolbar action to close every group. Closed groups and the collapsed default for newly arriving groups are remembered separately for Operations and Requests. You can reopen individual groups; those choices are remembered too.
 
-Recent follows new activity by default. Use By count to rank retained groups or Slow to inspect the longest executions. Counts cover the retained selection, even when the page shows only representative executions. Group headings show the kind, a short work name and the retained execution count. Hover over a heading for its full key. These labels do not change grouping or filters. The circled information button opens execution details in a modal without leaving the list. By count shows the representative execution. Select a group's count badge to view its retained executions. The **Key** filter matches a case-insensitive substring. **Kind** is a dropdown. Advanced filters accept a typed selector for dimension grouping, outcomes and other detailed criteria.
+Recent shows the latest activity. Enable **Tail** to follow new recordings live. Use By count to rank retained groups or Slow to inspect the longest executions. Counts cover the retained selection, even when the page shows only representative executions. Group headings show the kind, a short work name and the retained execution count. Hover over a heading for its full key. These labels do not change grouping or filters. The circled information button opens execution details in a modal without leaving the list. By count shows the representative execution. Select a group's count badge to view its retained executions. The **Key** filter matches a case-insensitive substring. **Kind** is a dropdown. Advanced filters accept a typed selector for dimension grouping, outcomes and other detailed criteria.
 
 Use the **Quick range** clock icon before the date inputs to set From UTC to the last minute, hour, 6 hours, day, week or another offered interval and clear To UTC, then select **Apply**. The comparison dialog provides the same presets independently for each side. Inputs remain editable; a preset sets a fixed start and leaves the end open for newer records. Select it again to move the start forward. In comparisons, empty ends resolve to one shared current instant when you select Compare.
 
@@ -561,7 +567,7 @@ Request details separate application correlation from the transport request ID. 
 
 [![Request detail modal with application correlation, route and transport metadata](assets/dashboard/profiling/request-metadata.png)](assets/dashboard/profiling/request-metadata.png)
 
-The top toolbar provides manual refresh and the auto-refresh interval. Refresh updates persisted history while preserving open groups and details. Pending records appear after the periodic writer persists them; refreshing the page does not force a flush.
+The top toolbar provides manual **Refresh** and a **Tail** switch in Recent view. Tail prepends newly persisted recordings while keeping older loaded rows and open groups. Refresh replaces the list with the latest page. Pending records appear after the periodic writer persists them; neither action forces a flush.
 
 #### Repeated and nested segments
 

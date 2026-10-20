@@ -435,6 +435,7 @@ The current guidance topics cover the major DevKit feature areas:
 - `monitoring`
 - `dashboard`
 - `project_dashboard_page`
+- `project_mcp_tools`
 
 Each guidance response includes a summary, linked official docs, implementation steps, recommended MCP tools and a prompt the agent can use to continue. This sits between raw docs and live runtime diagnostics: it tells the agent how to approach the work before it edits files.
 
@@ -476,6 +477,18 @@ Additional examples:
 }
 ```
 
+### Project-owned MCP tools guidance
+
+Call `bdk_guidance_get` with `topic="project_mcp_tools"` before adding application-specific MCP operations:
+
+```json
+{
+  "topic": "project_mcp_tools"
+}
+```
+
+The guide covers when a project-owned operation fits, client-safe operation names, `McpCapability` metadata and argument schemas, toolset selection, bounded `McpResponse` results, registration through `AddMcp(...)`, tests, and verification with `bdk_project_operations` and `bdk_project_call`. Its `examples` array contains a handler, the builder registration and the discovery/call payloads. Queries such as "how do I add project specific MCP tools" infer this topic.
+
 ### Operation profiling guidance
 
 Call `bdk_guidance_get` with `topic="profiling"` for coding help before an application is running:
@@ -502,7 +515,7 @@ A query about profiling a job or pipeline combines profiling guidance with the m
 
 ## Dashboard inspection
 
-Open MCP at `/_bdk/dashboard/mcp` with the host MCP runtime and [Dashboard](features-presentation-dashboard.md) registered. The page lists handler registrations and their operation counts, toolsets and features. Its Operations table shows each capability's owner, category, handler and description.
+Open MCP from the robot icon in the dashboard header bar, or at `/_bdk/dashboard/mcp`, with the host MCP runtime and [Dashboard](features-presentation-dashboard.md) registered. The page is not listed in the sidebar. The icon stays muted while no `bdk mcp` server is connected to the runtime and uses the theme accent colour with an accent border when one is; it updates every 10 seconds without a page reload. The page lists handler registrations and their operation counts, toolsets and features. Its Operations table shows each capability's owner, category, handler and description.
 
 [![MCP dashboard inventory of registered handlers and their exposed features](assets/dashboard/16-mcp-mcp.png)](assets/dashboard/16-mcp-mcp.png)
 

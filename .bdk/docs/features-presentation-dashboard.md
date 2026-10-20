@@ -223,7 +223,7 @@ Built-in page keys:
 | Profiling | `profiling` | [Profiling](features-profiling.md#dashboard) | [Runtime](assets/dashboard/profiling/runtime-overview.png), [Operations](assets/dashboard/profiling/operations.png), [Requests](assets/dashboard/profiling/requests.png) |
 | Identity | `identity` | [Authentication](features-presentation-authentication.md#dashboard-identity) | [Identity](assets/dashboard/02-identity-identity.png) |
 | Console | `console` | [Console commands](features-presentation-console-commands.md#dashboard-console) | [Console](assets/dashboard/15-console-console.png) |
-| MCP | `mcp` | [MCP](features-cli-mcp.md#dashboard-inspection) | [MCP](assets/dashboard/16-mcp-mcp.png) |
+| MCP | `mcp` | [MCP](features-cli-mcp.md#dashboard-inspection) (opened from the robot icon in the header) | [MCP](assets/dashboard/16-mcp-mcp.png) |
 | Logs | `logging.logs` | [Log Entries](features-log-entries.md#search-persisted-logs) | [Logs](assets/dashboard/07-logentries-logs.png) |
 | Errors | `logging.errors` | [Log Entries](features-log-entries.md#investigate-errors) | [Errors](assets/dashboard/08-errors-errors.png) |
 | Logs Stream | `logging.stream` | [Log Entries](features-log-entries.md#follow-a-live-stream) | [Logs Stream](assets/dashboard/09-logentries-stream-logs-stream.png) |
@@ -446,6 +446,8 @@ Profiling adds **Operations** and **Requests** cards beside its Profiling status
 [![Dashboard overview with feature cards and current operational summaries](assets/dashboard/01-overview-overview.png)](assets/dashboard/01-overview-overview.png)
 
 The [page index](#getting-started) links each feature's dashboard guide and full-size screenshots. Those guides describe filters, detail dialogs, provider requirements and actions. Open a card to inspect that feature; use a correlation link in a detail dialog to continue into Logs.
+
+Dashboard actions use compact, themed confirmation and message dialogs. Cancel, Close or Escape dismisses a confirmation without executing the action. A confirmation opened from a details dialog returns to those details when dismissed.
 
 ### Quick date/time ranges
 
