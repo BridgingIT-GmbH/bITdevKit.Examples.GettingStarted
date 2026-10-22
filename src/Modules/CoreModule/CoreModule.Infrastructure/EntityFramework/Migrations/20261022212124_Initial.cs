@@ -6,11 +6,19 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework.Migrations
 {
     /// <inheritdoc />
-    public partial class AddJobs : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "core");
+
+            migrationBuilder.CreateSequence<int>(
+                name: "CustomerNumbers",
+                schema: "core",
+                startValue: 100000L);
+
             migrationBuilder.CreateTable(
                 name: "__Jobs_AcceptedEvents",
                 schema: "core",
@@ -262,6 +270,123 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
                     table.PrimaryKey("PK___Jobs_TriggerRuntimeStates", x => new { x.JobName, x.TriggerName });
                 });
 
+            migrationBuilder.CreateTable(
+                name: "__Logging_LogEntries",
+                schema: "core",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    MessageTemplate = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Level = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    TimeStamp = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    Exception = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TraceId = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    SpanId = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    CorrelationId = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    LogKey = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    IsArchived = table.Column<bool>(type: "bit", nullable: true),
+                    ModuleName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    ThreadId = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    ShortTypeName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
+                    LogEvent = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK___Logging_LogEntries", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "__Outbox_DomainEvents",
+                schema: "core",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    EventId = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(2048)", maxLength: 2048, nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ContentHash = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    CreatedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    ConcurrencyVersion = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsArchived = table.Column<bool>(type: "bit", nullable: false),
+                    ArchivedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    LockedBy = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    LockedUntil = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    ProcessingStartedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    ProcessedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    LastError = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: true),
+                    Properties = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK___Outbox_DomainEvents", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Customers",
+                schema: "core",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FirstName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: false),
+                    Number = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    DateOfBirth = table.Column<DateTime>(type: "date", nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: true),
+                    ConcurrencyVersion = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AuditState_CreatedBy = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    AuditState_CreatedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    AuditState_CreatedDescription = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true),
+                    AuditState_UpdatedBy = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    AuditState_UpdatedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    AuditState_UpdatedDescription = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true),
+                    AuditState_UpdatedReasons = table.Column<string>(type: "nvarchar(max)", maxLength: 8192, nullable: true),
+                    AuditState_Deactivated = table.Column<bool>(type: "bit", nullable: true),
+                    AuditState_DeactivatedReasons = table.Column<string>(type: "nvarchar(max)", maxLength: 8192, nullable: true),
+                    AuditState_DeactivatedBy = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    AuditState_DeactivatedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    AuditState_DeactivatedDescription = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true),
+                    AuditState_Deleted = table.Column<bool>(type: "bit", nullable: true),
+                    AuditState_DeletedBy = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    AuditState_DeletedDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    AuditState_DeletedReason = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true),
+                    AuditState_DeletedDescription = table.Column<string>(type: "nvarchar(1024)", maxLength: 1024, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Customers", x => x.Id)
+                        .Annotation("SqlServer:Clustered", false);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CustomersAddresses",
+                schema: "core",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Line1 = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Line2 = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    PostalCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    City = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Country = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    IsPrimary = table.Column<bool>(type: "bit", nullable: false),
+                    CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CustomersAddresses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CustomersAddresses_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalSchema: "core",
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX___Jobs_AcceptedEvents_Source_AcceptedUtc_AcceptedEventId",
                 schema: "core",
@@ -421,6 +546,84 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
                 schema: "core",
                 table: "__Jobs_Occurrences",
                 columns: new[] { "Status", "DueUtc" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Logging_LogEntries_CorrelationId",
+                schema: "core",
+                table: "__Logging_LogEntries",
+                column: "CorrelationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Logging_LogEntries_IsArchived",
+                schema: "core",
+                table: "__Logging_LogEntries",
+                column: "IsArchived");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Logging_LogEntries_Level",
+                schema: "core",
+                table: "__Logging_LogEntries",
+                column: "Level");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Logging_LogEntries_LogKey",
+                schema: "core",
+                table: "__Logging_LogEntries",
+                column: "LogKey");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Logging_LogEntries_ModuleName",
+                schema: "core",
+                table: "__Logging_LogEntries",
+                column: "ModuleName");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Logging_LogEntries_ShortTypeName",
+                schema: "core",
+                table: "__Logging_LogEntries",
+                column: "ShortTypeName");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Logging_LogEntries_TimeStamp",
+                schema: "core",
+                table: "__Logging_LogEntries",
+                column: "TimeStamp");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Logging_LogEntries_TraceId",
+                schema: "core",
+                table: "__Logging_LogEntries",
+                column: "TraceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX___Outbox_DomainEvents_EventId",
+                schema: "core",
+                table: "__Outbox_DomainEvents",
+                column: "EventId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX___Outbox_DomainEvents_IsArchived_ArchivedDate",
+                schema: "core",
+                table: "__Outbox_DomainEvents",
+                columns: new[] { "IsArchived", "ArchivedDate" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX___Outbox_DomainEvents_IsArchived_ProcessedDate_LockedUntil_CreatedDate",
+                schema: "core",
+                table: "__Outbox_DomainEvents",
+                columns: new[] { "IsArchived", "ProcessedDate", "LockedUntil", "CreatedDate" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX___Outbox_DomainEvents_IsArchived_Type_ProcessedDate_CreatedDate",
+                schema: "core",
+                table: "__Outbox_DomainEvents",
+                columns: new[] { "IsArchived", "Type", "ProcessedDate", "CreatedDate" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomersAddresses_CustomerId",
+                schema: "core",
+                table: "CustomersAddresses",
+                column: "CustomerId");
         }
 
         /// <inheritdoc />
@@ -470,6 +673,25 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
                 name: "__Jobs_TriggerRuntimeStates",
                 schema: "core");
 
+            migrationBuilder.DropTable(
+                name: "__Logging_LogEntries",
+                schema: "core");
+
+            migrationBuilder.DropTable(
+                name: "__Outbox_DomainEvents",
+                schema: "core");
+
+            migrationBuilder.DropTable(
+                name: "CustomersAddresses",
+                schema: "core");
+
+            migrationBuilder.DropTable(
+                name: "Customers",
+                schema: "core");
+
+            migrationBuilder.DropSequence(
+                name: "CustomerNumbers",
+                schema: "core");
         }
     }
 }

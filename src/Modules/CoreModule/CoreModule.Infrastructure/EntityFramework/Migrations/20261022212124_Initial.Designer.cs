@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastructure.EntityFramework.Migrations
 {
     [DbContext(typeof(CoreModuleDbContext))]
-    [Migration("20260902081605_AddJobs")]
-    partial class AddJobs
+    [Migration("20261022212124_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,7 +21,7 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("core")
-                .HasAnnotation("ProductVersion", "10.0.11")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -665,6 +665,86 @@ namespace BridgingIT.DevKit.Examples.GettingStarted.Modules.CoreModule.Infrastru
                     b.HasKey("JobName", "TriggerName");
 
                     b.ToTable("__Jobs_TriggerRuntimeStates", "core");
+                });
+
+            modelBuilder.Entity("BridgingIT.DevKit.Infrastructure.EntityFramework.LogEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("CorrelationId")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("Exception")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool?>("IsArchived")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Level")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("LogEventsJson")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("LogEvent");
+
+                    b.Property<string>("LogKey")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MessageTemplate")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ModuleName")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("ShortTypeName")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("SpanId")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("ThreadId")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<DateTimeOffset>("TimeStamp")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("TraceId")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex(new[] { "CorrelationId" }, "IX_Logging_LogEntries_CorrelationId");
+
+                    b.HasIndex(new[] { "IsArchived" }, "IX_Logging_LogEntries_IsArchived");
+
+                    b.HasIndex(new[] { "Level" }, "IX_Logging_LogEntries_Level");
+
+                    b.HasIndex(new[] { "LogKey" }, "IX_Logging_LogEntries_LogKey");
+
+                    b.HasIndex(new[] { "ModuleName" }, "IX_Logging_LogEntries_ModuleName");
+
+                    b.HasIndex(new[] { "ShortTypeName" }, "IX_Logging_LogEntries_ShortTypeName");
+
+                    b.HasIndex(new[] { "TimeStamp" }, "IX_Logging_LogEntries_TimeStamp");
+
+                    b.HasIndex(new[] { "TraceId" }, "IX_Logging_LogEntries_TraceId");
+
+                    b.ToTable("__Logging_LogEntries", "core");
                 });
 
             modelBuilder.Entity("BridgingIT.DevKit.Infrastructure.EntityFramework.OutboxDomainEvent", b =>

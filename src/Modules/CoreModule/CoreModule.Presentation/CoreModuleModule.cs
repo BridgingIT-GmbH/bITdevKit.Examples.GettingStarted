@@ -66,8 +66,8 @@ public class CoreModuleModule() : WebModuleBase("CoreModule")
                 /*.UseSimpleLogger()*/)
             .WithSequenceNumberGenerator()
             .WithDatabaseMigratorService(o => o // create the database and apply existing migrations
-                .Enabled(environment.IsLocalDevelopment() || environment.IsContainerized()))
-                //.DeleteOnStartup(environment.IsLocalDevelopment() || environment.IsContainerized()))
+                .Enabled(environment.IsLocalDevelopment() || environment.IsContainerized())
+                .DeleteOnStartup(environment.IsLocalDevelopment() || environment.IsContainerized()))
             .WithOutboxDomainEventService(o => o
                 .ProcessingInterval("00:00:30")
                 .ProcessingModeImmediate() // forwards the outbox event, through a queue, directly to the outbox worker

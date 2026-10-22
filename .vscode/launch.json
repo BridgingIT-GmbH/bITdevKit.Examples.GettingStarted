@@ -13,6 +13,7 @@
       "stopAtEntry": false,
       "justMyCode": true,
       "console": "internalConsole",
+      "env": { "ASPNETCORE_ENVIRONMENT": "Development" },
       "envFile": "${workspaceFolder}/.vscode/launch.env",
       "serverReadyAction": {
         "action": "openExternally",
@@ -37,6 +38,7 @@
       "cwd": "${workspaceFolder}/src/Presentation.Web.Server",
       "justMyCode": true,
       "console": "internalConsole",
+      "env": { "ASPNETCORE_ENVIRONMENT": "Development" },
       "envFile": "${workspaceFolder}/.vscode/launch.env",
       "serverReadyAction": {
         "action": "openExternally",
