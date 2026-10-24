@@ -743,14 +743,6 @@ public static class TaskRegistry
                 Category = "Utilities",
                 Execute = async (ctx) => await MiscUtils.OpenBrowserUrlAsync(ctx, "http://localhost:8080/scalar", "Server Docker")
             },
-            new BdkTask
-            {
-                Key = "docs-update",
-                Label = "DevKit Docs Update",
-                Description = "Download latest DevKit docs",
-                Category = "Utilities",
-                Execute = async (ctx) => await MiscUtils.UpdateDocsAsync(ctx)
-            },
 
             // ===== Performance & Diagnostics =====
             new BdkTask
