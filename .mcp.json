@@ -8,14 +8,7 @@
 				"@azure-devops/mcp",
 				"${input:ado_org}"
 			]
-		},
-    "bdk-mcp": {
-      "type": "stdio",
-      "command": "dotnet-script",
-      "args": [
-        ".bdk/mcp/bdk-mcp.csx"
-      ]
-    }
+		}
   },
   "inputs": [
     {
