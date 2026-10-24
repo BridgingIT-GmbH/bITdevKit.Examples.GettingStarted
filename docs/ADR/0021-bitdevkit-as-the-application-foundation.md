@@ -115,15 +115,15 @@ We do not treat bITdevKit as an optional convenience library in this repository.
 The solution consumes the devkit through centrally managed package versions:
 
 ```xml
-<PackageVersion Include="BridgingIT.DevKit.Application.Jobs" Version="10.0.111" />
-<PackageVersion Include="BridgingIT.DevKit.Common.Mapping" Version="10.0.111" />
-<PackageVersion Include="BridgingIT.DevKit.Domain" Version="10.0.111" />
-<PackageVersion Include="BridgingIT.DevKit.Domain.CodeGen" Version="10.0.111" />
-<PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework" Version="10.0.111" />
-<PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" Version="10.0.111" />
-<PackageVersion Include="BridgingIT.DevKit.Presentation.Web" Version="10.0.111" />
-<PackageVersion Include="BridgingIT.DevKit.Presentation.Web.Jobs" Version="10.0.111" />
-<PackageVersion Include="BridgingIT.DevKit.Presentation.Serilog" Version="10.0.111" />
+<PackageVersion Include="BridgingIT.DevKit.Application.Jobs" Version="10.0.114" />
+<PackageVersion Include="BridgingIT.DevKit.Common.Mapping" Version="10.0.114" />
+<PackageVersion Include="BridgingIT.DevKit.Domain" Version="10.0.114" />
+<PackageVersion Include="BridgingIT.DevKit.Domain.CodeGen" Version="10.0.114" />
+<PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework" Version="10.0.114" />
+<PackageVersion Include="BridgingIT.DevKit.Infrastructure.EntityFramework.SqlServer" Version="10.0.114" />
+<PackageVersion Include="BridgingIT.DevKit.Presentation.Web" Version="10.0.114" />
+<PackageVersion Include="BridgingIT.DevKit.Presentation.Web.Jobs" Version="10.0.114" />
+<PackageVersion Include="BridgingIT.DevKit.Presentation.Serilog" Version="10.0.114" />
 ```
 
 ### Composition Root Example

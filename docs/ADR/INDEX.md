@@ -42,6 +42,8 @@ We use the **MADR (Markdown Architectural Decision Records)** format for consist
 | [ADR-0020](0020-jwt-bearer-authentication-authorization.md) | JWT Bearer Authentication & Authorization Strategy | Accepted | JWT bearer auth with the DevKit fake identity provider for development and tests. |
 | [ADR-0021](0021-bitdevkit-as-the-application-foundation.md) | bITdevKit as the Application Foundation | Accepted | bITdevKit NuGet packages as the architectural backbone of the application. |
 | [ADR-0022](0022-bdk-local-mcp-server-for-development-and-introspection.md) | BDK Local MCP Server for DevKit Development and Runtime Introspection | Accepted | Local bdk MCP server for DevKit guidance and live inspection of the running app. |
+| [ADR-0023](0023-openapi-documentation-and-client-generation.md) | OpenAPI Documentation, Scalar API Reference, and Generated Clients | Accepted | Build-time OpenAPI spec, Scalar reference, and Kiota/Spectral/httpgenerator tooling via bdk. |
+| [ADR-0024](0024-central-package-management-and-versioning.md) | Central Package Management and Versioning | Accepted | Central NuGet versions, aligned DevKit packages and CLI, pinned tools, SDK, and sources. |
 
 ## When to Write an ADR
 
