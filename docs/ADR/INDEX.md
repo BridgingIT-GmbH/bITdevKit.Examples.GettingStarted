@@ -18,29 +18,30 @@ We use the **MADR (Markdown Architectural Decision Records)** format for consist
 
 ## Quick Reference
 
-| ADR | Title | Status |
-| ----- | ------- | -------- |
-| [ADR-0001](0001-clean-onion-architecture.md) | Clean/Onion Architecture with Strict Layer Boundaries | Accepted |
-| [ADR-0002](0002-result-pattern-error-handling.md) | Result Pattern for Error Handling | Accepted |
-| [ADR-0003](0003-modular-monolith-architecture.md) | Modular Monolith Architecture | Accepted |
-| [ADR-0004](0004-repository-decorator-behaviors.md) | Repository Pattern with Decorator Behaviors | Accepted |
-| [ADR-0005](0005-requester-notifier-mediator-pattern.md) | Requester/Notifier (Mediator) Pattern | Accepted |
-| [ADR-0006](0006-outbox-pattern-domain-events.md) | Outbox Pattern for Domain Events | Accepted |
-| [ADR-0007](0007-entity-framework-core-code-first-migrations.md) | Entity Framework Core with Code-First Migrations | Accepted |
-| [ADR-0008](0008-typed-entity-ids-source-generators.md) | Typed Entity IDs using Source Generators | Accepted |
-| [ADR-0009](0009-fluentvalidation-strategy.md) | FluentValidation Strategy | Accepted |
-| [ADR-0010](0010-mapster-object-mapping.md) | Mapster for Object Mapping | Accepted |
-| [ADR-0011](0011-application-logic-in-commands-queries.md) | Application Logic in Commands/Queries | Accepted |
-| [ADR-0012](0012-domain-logic-in-domain-layer.md) | Domain Logic in Domain Layer | Accepted |
-| [ADR-0013](0013-unit-testing-high-coverage-strategy.md) | Unit Testing Strategy with High Coverage Goals | Accepted |
-| [ADR-0014](0014-minimal-api-endpoints-dto-exposure.md) | Minimal API Endpoints with DTO Exposure | Accepted |
-| [ADR-0015](0015-devkit-native-durable-jobs.md) | DevKit-Native Durable Jobs | Accepted |
-| [ADR-0016](0016-logging-observability-strategy.md) | Logging & Observability Strategy (Serilog) | Accepted |
-| [ADR-0017](0017-integration-testing-strategy.md) | Integration Testing Strategy | Accepted |
-| [ADR-0018](0018-dependency-injection-service-lifetimes.md) | Dependency Injection & Service Lifetime Management | Accepted |
-| [ADR-0019](0019-specification-pattern-repository-queries.md) | Specification Pattern for Repository Queries | Accepted |
-| [ADR-0020](0020-jwt-bearer-authentication-authorization.md) | JWT Bearer Authentication & Authorization Strategy | Accepted |
-| [ADR-0021](0021-bitdevkit-as-the-application-foundation.md) | bITdevKit as the Application Foundation | Accepted |
+| ADR | Title | Status | Description |
+| ----- | ------- | -------- | ------------- |
+| [ADR-0001](0001-clean-onion-architecture.md) | Clean/Onion Architecture with Strict Layer Boundaries | Accepted | Layered architecture with inward-only dependencies, enforced by architecture tests. |
+| [ADR-0002](0002-result-pattern-error-handling.md) | Result Pattern for Error Handling | Accepted | Use `Result<T>` for expected failures instead of exceptions. |
+| [ADR-0003](0003-modular-monolith-architecture.md) | Modular Monolith Architecture | Accepted | Self-contained vertical-slice modules hosted in a single application. |
+| [ADR-0004](0004-repository-decorator-behaviors.md) | Repository Pattern with Decorator Behaviors | Accepted | Generic repositories extended with chainable behaviors for logging, audit, and events. |
+| [ADR-0005](0005-requester-notifier-mediator-pattern.md) | Requester/Notifier (Mediator) Pattern | Accepted | Commands, queries, and events dispatched through the DevKit requester and notifier. |
+| [ADR-0006](0006-outbox-pattern-domain-events.md) | Outbox Pattern for Domain Events | Accepted | Reliable, transactional domain event delivery through an outbox table. |
+| [ADR-0007](0007-entity-framework-core-code-first-migrations.md) | Entity Framework Core with Code-First Migrations | Accepted | EF Core as ORM with code-first migrations and one DbContext per module. |
+| [ADR-0008](0008-typed-entity-ids-source-generators.md) | Typed Entity IDs using Source Generators | Accepted | Strongly typed entity IDs generated with `[TypedEntityId<T>]`. |
+| [ADR-0009](0009-fluentvalidation-strategy.md) | FluentValidation Strategy | Accepted | Input validation with FluentValidation validators nested in commands and queries. |
+| [ADR-0010](0010-mapster-object-mapping.md) | Mapster for Object Mapping | Accepted | Explicit Mapster mappings in module `MapperRegister` classes in the Presentation layer. |
+| [ADR-0011](0011-application-logic-in-commands-queries.md) | Application Logic in Commands/Queries | Accepted | Use-case orchestration lives in command and query handlers. |
+| [ADR-0012](0012-domain-logic-in-domain-layer.md) | Domain Logic in Domain Layer | Accepted | Business rules and invariants live in aggregates, value objects, and rules. |
+| [ADR-0013](0013-unit-testing-high-coverage-strategy.md) | Unit Testing Strategy with High Coverage Goals | Accepted | Unit tests across all layers with an 80% minimum and 90% target coverage. |
+| [ADR-0014](0014-minimal-api-endpoints-dto-exposure.md) | Minimal API Endpoints with DTO Exposure | Accepted | Endpoint classes using Minimal APIs, exposing DTOs only, with OpenAPI metadata. |
+| [ADR-0015](0015-devkit-native-durable-jobs.md) | DevKit-Native Durable Jobs | Accepted | Background jobs with the DevKit Jobs subsystem and an EF Core durable store. |
+| [ADR-0016](0016-logging-observability-strategy.md) | Logging & Observability Strategy (Serilog) | Accepted | Structured Serilog logging with enrichers, multiple sinks, and config-driven levels. |
+| [ADR-0017](0017-integration-testing-strategy.md) | Integration Testing Strategy | Accepted | Endpoint-focused integration tests with WebApplicationFactory and test fixtures. |
+| [ADR-0018](0018-dependency-injection-service-lifetimes.md) | Dependency Injection & Service Lifetime Management | Accepted | Module-based DI registration with explicit service lifetimes. |
+| [ADR-0019](0019-specification-pattern-repository-queries.md) | Specification Pattern for Repository Queries | Accepted | Composable, testable query specifications used with repository find options. |
+| [ADR-0020](0020-jwt-bearer-authentication-authorization.md) | JWT Bearer Authentication & Authorization Strategy | Accepted | JWT bearer auth with the DevKit fake identity provider for development and tests. |
+| [ADR-0021](0021-bitdevkit-as-the-application-foundation.md) | bITdevKit as the Application Foundation | Accepted | bITdevKit NuGet packages as the architectural backbone of the application. |
+| [ADR-0022](0022-bdk-local-mcp-server-for-development-and-introspection.md) | BDK Local MCP Server for DevKit Development and Runtime Introspection | Accepted | Local bdk MCP server for DevKit guidance and live inspection of the running app. |
 
 ## When to Write an ADR
 
