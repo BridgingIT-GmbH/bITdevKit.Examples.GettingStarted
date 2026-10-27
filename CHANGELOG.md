@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [10.0.113] - 2026-10-27
+
+### Added
+
+- **Database Log Storage**: Serilog now also writes to the `core.__Logging_LogEntries` table through the `Serilog.Sinks.MSSqlServer` sink. `CoreModuleDbContext` implements `ILoggingContext` and exposes `LogEntries`
+- **Log Entry Endpoints**: New `LogEntryEndpoints` backed by `ILogEntryService`, plus a `LogEntryMaintenanceService` background service with a health check. Registered in local development and containers only
+- **Profiling**: Runtime, operation, and request profiling through `AddProfiling(...)` with `ProfilingRequestBehavior`, `ProfilingNotificationBehavior`, `JobProfilingBehavior`, and `RepositoryProfilingBehavior<Customer>`. Enabled in local development and containers
+- **Manual Job Trigger**: `CustomerExportJob` can now be started on demand through a new `manual` trigger
+
+### Changed
+
+- **Dashboard**: `AddAppDashboard` is replaced by `AddDashboard`. It is enabled in development and requires OpenID Connect sign-in with the `Administrators` role
+- **Customer Export Schedule**: `CustomerExportJob` now runs every 5 minutes instead of every minute
+- **Migrations**: The CoreModule migrations are consolidated into a single `Initial` migration that also creates the job, outbox, and log tables. Existing databases must be recreated. In local development and containers the database is now deleted and recreated on startup
+- **OpenAPI Document**: Property samples are now emitted as `examples` arrays instead of `example`
+- **Package Updates**: BridgingIT.DevKit 10.0.114, ASP.NET Core and EF Core 10.0.13, OpenTelemetry 1.20.0, plus other minor updates. Central transitive pinning is now enabled, and `System.Security.Cryptography.Pkcs` is pinned to 10.0.13 to address GHSA-846f-f764-76mx and GHSA-2fmv-rv2c-59x7
+
+### Fixed
+
+- **SQL Server Healthcheck**: The `docker-compose.yml` healthcheck now uses `sqlcmd` from `mssql-tools18` against `localhost`, so the SQL Server container reports healthy reliably
+
 ## [10.0.112] - 2026-03-09
 
 ### Added
