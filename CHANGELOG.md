@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **SQL Server Healthcheck**: The `docker-compose.yml` healthcheck now uses `sqlcmd` from `mssql-tools18` against `localhost`, so the SQL Server container reports healthy reliably
 
-## [10.0.112] - 2026-03-09
+## [10.0.112] - 2026-09-03
 
 ### Added
 
