@@ -1,5 +1,6 @@
 {
   "dotnet.defaultSolution": "bITdevKit.Examples.GettingStarted.slnx",
+  "chat.mcp.workspaceRootConfig.enabled": true,
   "editor.formatOnSave": false,
   "[csharp]": {
     "editor.defaultFormatter": "ms-dotnettools.csharp",

@@ -1,0 +1,16 @@
+{
+  "servers": {
+    "bdk": {
+      "type": "stdio",
+      "command": "dotnet",
+      "args": [
+        "tool",
+        "run",
+        "bdk",
+        "mcp",
+        "--toolset",
+        "diagnostics,operations,admin"
+      ]
+    }
+  }
+}
